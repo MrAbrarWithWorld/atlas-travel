@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ATLAS — AI Travel Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body,#root{height:100%;}
+  body{background:#0a0906;color:#e8e0d0;font-family:'DM Sans',sans-serif;}
+  ::-webkit-scrollbar{width:2px;}
+  ::-webkit-scrollbar-thumb{background:rgba(201,169,110,0.15);}
+  @keyframes p{0%,80%,100%{opacity:.2;transform:scale(.6)}40%{opacity:1;transform:scale(1)}}
+  @keyframes up{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+  .msg{animation:up 0.28s ease;}
+  textarea{font-family:'DM Sans',sans-serif;}
+  textarea::placeholder{color:#2e2820;}
+  textarea:focus{outline:none;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const PERSONA = `You are ATLAS — the world's most sophisticated AI travel intelligence. You are a private concierge for the modern traveler.
+
+LANGUAGE: Detect user's language instantly. Respond entirely in that language throughout.
+CURRENCY: Use exactly the currency the user mentions.
+INPUT: Users write however they want — casual, messy, mixed languages. Understand everything.
+
+For every journey request, deliver a complete, detailed plan. Never cut short. Finish every single day.
+
+## ✈️ FLIGHTS
+Airlines, routes with airport codes, price in their currency, booking site, how far in advance.
+
+## 🏨 STAY — [City]
+Specific hotel or hostel, neighborhood, price per night, booking platform. Repeat per city.
+
+## 🍽️ EAT — [City]
+Daily food budget. Each dish: name → specific restaurant → exact location → price. Repeat per city.
+
+## 🚇 MOVE — [City]
+Airport to center: transport, cost, time. City pass name and cost. Metro line or bus numbers. Navigation app. Daily cost. Repeat per city.
+
+## 🗓️ DAY BY DAY
+Complete EVERY single day. Never stop early.
+**Day 1 — [City]**
+Morning: [Activity] at [Venue], [Area] · [cost] · [how to get there]
+Afternoon: [Activity] at [Venue] · [cost] · [transport]
+Evening: [Restaurant], [Street] · order [dish] · [cost]
+
+## 💰 COST
+Flights: [X]
+Hotels [X nights]: [X]
+Food [X days]: [X]
+Local transport: [X]
+Inter-city travel: [X]
+Activities: [X]
+Buffer 10%: [X]
+──────────────
+Total: [X]
+Budget: [X]
+Saved X / Over by X
+
+## 🎬 CREATOR NOTES
+Per city: top 3 filming spots with exact location, golden hour times, hidden gem, best street for B-roll.
+
+## 🔄 ALTERNATIVES
+Two other routes same budget with content potential explained.
+
+## 📋 ESSENTIALS
+Visa, SIM card, ATM tips, safety, weather.
+
+End by asking which part they want to explore further.
+CRITICAL: Never truncate. Complete every day fully.`;
+
+const { useState, useRef, useEffect } = React;
+
+function Prose({ text }) {
+  const lines = text.split("\n");
+  return React.createElement("div", null, lines.map((line, i) => {
+    if (!line.trim()) return React.createElement("div", {key:i, style:{height:"0.45rem"}});
+    if (line.startsWith("## "))
+      return React.createElement("div", {key:i, style:{fontSize:"0.7rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.15em",textTransform:"uppercase",margin:"1.1rem 0 0.4rem",paddingBottom:"0.3rem",borderBottom:"1px solid rgba(201,169,110,0.15)"}}, line.slice(3));
+    if (/^\*\*Day\s+\d+/.test(line))
+      return React.createElement("div", {key:i, style:{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"0.9rem",fontWeight:700,color:"#e8e0d0",margin:"0.7rem 0 0.15rem"}}, line.replace(/\*\*/g,""));
+    if (line.trim().startsWith("──"))
+      return React.createElement("div", {key:i, style:{height:1,background:"rgba(201,169,110,0.12)",margin:"0.4rem 0"}});
+    if (line.startsWith("- ")||line.startsWith("* "))
+      return React.createElement("div", {key:i, style:{display:"flex",gap:"0.45rem",margin:"0.15rem 0",fontSize:"0.82rem",color:"#9a9080"}},
+        React.createElement("span", {style:{color:"#c9a96e",fontSize:"0.55rem",marginTop:"4px",flexShrink:0}}, "◆"),
+        React.createElement("span", null, line.slice(2))
+      );
+    // bold
+    const parts = [];
+    let rem = line, k = 0;
+    while(rem){
+      const m = rem.match(/\*\*(.+?)\*\*/);
+      if(!m){parts.push(React.createElement("span",{key:k++},rem));break;}
+      const idx = rem.indexOf(m[0]);
+      if(idx>0) parts.push(React.createElement("span",{key:k++},rem.slice(0,idx)));
+      parts.push(React.createElement("span",{key:k++,style:{color:"#d8d0c0",fontWeight:600}},m[1]));
+      rem = rem.slice(idx+m[0].length);
+    }
+    return React.createElement("p", {key:i, style:{margin:"0.1rem 0",fontSize:"0.82rem",color:"#9a9080",lineHeight:1.85}}, ...parts);
+  }));
+}
+
+function Dots() {
+  return React.createElement("div", {style:{display:"flex",gap:5}},
+    [0,1,2].map(i => React.createElement("span", {key:i, style:{width:4,height:4,borderRadius:"50%",background:"#c9a96e",display:"inline-block",animation:`p 1.4s ${i*0.2}s ease-in-out infinite`}}))
+  );
+}
+
+function App() {
+  const [msgs, setMsgs] = useState([]);
+  const [draft, setDraft] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const history = useRef([
+    {role:"user",content:"Who are you?"},
+    {role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}
+  ]);
+  const endRef = useRef(null);
+  const taRef = useRef(null);
+
+  useEffect(()=>{ endRef.current?.scrollIntoView({behavior:"smooth"}); },[msgs,busy]);
+
+  async function send(txt) {
+    const t=(txt??draft).trim();
+    if(!t||busy) return;
+    setDraft(""); setError("");
+    if(taRef.current) taRef.current.style.height="auto";
+    setMsgs(m=>[...m,{id:Date.now(),from:"user",text:t}]);
+    setBusy(true);
+    history.current=[...history.current,{role:"user",content:t}];
+    try {
+      const res = await fetch("/api/chat",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({messages:history.current.slice(-14)}),
+      });
+      if(!res.ok) throw new Error(`Server error: ${res.status}`);
+      const data = await res.json();
+      if(data.error) throw new Error(data.error.message||data.error);
+      const reply = data.content?.[0]?.text;
+      if(!reply) throw new Error("No response");
+      history.current=[...history.current,{role:"assistant",content:reply}];
+      setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:reply}]);
+    } catch(e) {
+      setError(e.message);
+    }
+    setBusy(false);
+  }
+
+  function reset() {
+    setMsgs([]); setError(""); setDraft("");
+    history.current=[
+      {role:"user",content:"Who are you?"},
+      {role:"assistant",content:PERSONA+"\n\nI am ATLAS."}
+    ];
+  }
+
+  const isEmpty = msgs.length===0;
+
+  return React.createElement("div", {style:{height:"100vh",display:"flex",flexDirection:"column",background:"#0a0906",overflow:"hidden"}},
+    // Header
+    React.createElement("div", {style:{padding:"1.1rem 1.75rem 1rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}},
+      React.createElement("div", {style:{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"1.25rem",fontWeight:300,letterSpacing:"0.3em",color:"#c9a96e",textTransform:"uppercase"}}, "Atlas"),
+      !isEmpty && React.createElement("button", {onClick:reset,style:{background:"none",border:"none",color:"#3a3025",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.12em",textTransform:"uppercase"}}, "New journey")
+    ),
+
+    // Content
+    React.createElement("div", {style:{flex:1,overflowY:"auto",display:"flex",flexDirection:"column"}},
+      isEmpty && React.createElement("div", {style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center"}},
+        React.createElement("div", {style:{fontFamily:"'Cormorant Garamond',Georgia,serif",fontSize:"2.5rem",fontWeight:300,color:"rgba(201,169,110,0.1)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"2rem"}}, "ATLAS"),
+        React.createElement("p", {style:{fontSize:"0.82rem",color:"#4a4035",lineHeight:1.9,maxWidth:"260px"}}, "Tell me where you want to go.", React.createElement("br"), "Any language. Any budget. Any dream.")
+      ),
+      !isEmpty && React.createElement("div", {style:{padding:"1rem 1.75rem",display:"flex",flexDirection:"column",gap:"1.5rem"}},
+        ...msgs.map(msg =>
+          React.createElement("div", {key:msg.id,className:"msg",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:"0.875rem",alignItems:"flex-start"}},
+            React.createElement("div", {style:{flexShrink:0,width:22,height:22,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.2)":"rgba(201,169,110,0.4)"}`,display:"flex",alignItems:"center",justifyContent:"center",marginTop:2}},
+              React.createElement("span", {style:{fontSize:"0.52rem",color:"#c9a96e"}}, msg.from==="user"?"U":"A")
+            ),
+            React.createElement("div", {style:{maxWidth:"88%",padding:msg.from==="user"?"0.6rem 0.875rem":"0.1rem 0",background:msg.from==="user"?"rgba(201,169,110,0.04)":"transparent",border:msg.from==="user"?"1px solid rgba(201,169,110,0.1)":"none",borderRadius:6}},
+              msg.from==="user"
+                ? React.createElement("p", {style:{fontSize:"0.84rem",color:"#c8bfaf",lineHeight:1.75}}, msg.text)
+                : React.createElement(Prose, {text:msg.text})
+            )
+          )
+        ),
+        busy && React.createElement("div", {className:"msg",style:{display:"flex",gap:"0.875rem",alignItems:"center"}},
+          React.createElement("div", {style:{width:22,height:22,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.4)",display:"flex",alignItems:"center",justifyContent:"center"}},
+            React.createElement("span", {style:{fontSize:"0.52rem",color:"#c9a96e"}}, "A")
+          ),
+          React.createElement(Dots)
+        ),
+        error && React.createElement("div", {style:{fontSize:"0.75rem",color:"#8a5040",padding:"0.5rem 0.875rem",border:"1px solid rgba(139,80,64,0.2)",borderRadius:5}},
+          error, " — ",
+          React.createElement("button", {onClick:()=>setError(""),style:{background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.75rem"}}, "Dismiss")
+        ),
+        React.createElement("div", {ref:endRef})
+      )
+    ),
+
+    // Input
+    React.createElement("div", {style:{padding:"0 1.75rem 1.5rem",flexShrink:0}},
+      React.createElement("div", {style:{height:1,background:"rgba(201,169,110,0.1)",marginBottom:"1rem"}}),
+      React.createElement("div", {style:{display:"flex",gap:"0.75rem",alignItems:"flex-end"}},
+        React.createElement("textarea", {
+          ref:taRef, value:draft,
+          onChange:e=>setDraft(e.target.value),
+          onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}},
+          onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,120)+"px";},
+          placeholder:"Where would you like to go?",
+          disabled:busy, rows:1,
+          style:{flex:1,background:"none",border:"none",outline:"none",color:"#d0c8b8",fontSize:"0.9rem",resize:"none",lineHeight:1.7,maxHeight:120,overflowY:"auto",paddingTop:"0.1rem"}
+        }),
+        React.createElement("button", {
+          onClick:()=>send(), disabled:!draft.trim()||busy,
+          style:{flexShrink:0,background:"none",border:`1px solid ${draft.trim()&&!busy?"rgba(201,169,110,0.4)":"rgba(201,169,110,0.1)"}`,borderRadius:4,width:34,height:34,cursor:draft.trim()&&!busy?"pointer":"default",color:draft.trim()&&!busy?"#c9a96e":"#2a2520",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.85rem",transition:"all 0.2s"}
+        }, busy?"·":"↑")
+      ),
+      React.createElement("div", {style:{marginTop:"0.65rem",fontSize:"0.58rem",color:"#2a2520",letterSpacing:"0.1em",textTransform:"uppercase"}},
+        "Any language · Any currency · Shift+Enter for new line"
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
