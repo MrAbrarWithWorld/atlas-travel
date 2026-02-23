@@ -26,3 +26,188 @@ textarea:focus{outline:none;}
 <body>
 <div id="root"></div>
 <script type="text/babel">
+const PERSONA = `You are ATLAS — the world's most sophisticated AI travel intelligence.
+
+LANGUAGE: Detect user language instantly. Always respond in that language.
+CURRENCY: Use exactly the currency the user mentions.
+
+ROUTING RULES:
+- Always find most efficient route. If A to B to C can be A to C direct, recommend direct.
+- Never repeat same flight segment twice.
+- Always compare direct vs connecting and show savings.
+
+Structure every plan:
+## ✈️ FLIGHTS — best routing, direct vs connecting comparison
+## 🏨 STAY — specific hotel per city, price, booking platform  
+## 🍽️ EAT — daily budget, specific restaurants with prices
+## 🚇 MOVE — airport transfer, city transport, daily cost
+## 🗓️ DAY BY DAY — complete every single day, never stop early
+## 💰 TOTAL COST — full itemized breakdown with savings shown
+## 🎬 CONTENT SPOTS — top filming locations with golden hour times
+## 📋 ESSENTIALS — visa, SIM, ATM, safety
+
+CRITICAL: Never truncate. Complete every day. Always find cheapest routing.`;
+
+const STORAGE_KEY = 'atlas_v2';
+const { useState, useRef, useEffect } = React;
+
+function saveChat(msgs, hist) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({msgs, hist, t: Date.now()})); } catch(e){}
+}
+function loadChat() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+    if(!d || Date.now()-d.t > 24*60*60*1000) return null;
+    return d;
+  } catch(e){return null;}
+}
+
+const defaultHist = [
+  {role:"user",content:"Who are you?"},
+  {role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}
+];
+
+function Modal({hours, plansLeft, onClose}) {
+  const isPlanLimit = plansLeft !== undefined;
+  return React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(10,9,6,0.93)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,animation:"fadeIn 0.25s ease"}},
+    React.createElement("div",{style:{maxWidth:320,padding:"2.5rem 1.75rem",textAlign:"center",border:"1px solid rgba(201,169,110,0.12)",borderRadius:8,background:"#0f0e0b"}},
+      React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",color:"rgba(201,169,110,0.15)",letterSpacing:"0.2em",marginBottom:"1.5rem"}},"ATLAS"),
+      React.createElement("div",{style:{fontSize:"1rem",color:"#c9a96e",marginBottom:"0.75rem",fontFamily:"'Cormorant Garamond',serif"}},
+        isPlanLimit ? "Plan limit reached" : "Session complete"
+      ),
+      React.createElement("p",{style:{fontSize:"0.78rem",color:"#6a6055",lineHeight:1.85,marginBottom:"1.25rem"}},
+        isPlanLimit
+          ? `You've created 2 travel plans this session. You still have ${plansLeft} tokens — ask questions about your existing plans!`
+          : `You've used your complimentary session. Come back in ${hours} hour${hours>1?'s':''} for a fresh start.`
+      ),
+      React.createElement("div",{style:{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.08)",borderRadius:5,padding:"0.875rem",marginBottom:"1.25rem"}},
+        React.createElement("p",{style:{fontSize:"0.65rem",color:"#c9a96e",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"0.35rem"}},"Want unlimited access?"),
+        React.createElement("p",{style:{fontSize:"0.75rem",color:"#5a5045",lineHeight:1.7}},"Upgrade to ATLAS Pro for unlimited plans and priority responses.")
+      ),
+      React.createElement("button",{onClick:onClose,style:{width:"100%",padding:"0.65rem",background:"none",border:"1px solid rgba(201,169,110,0.15)",borderRadius:4,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase"}},"Close")
+    )
+  );
+}
+
+function Prose({text}) {
+  return React.createElement("div",null,text.split("\n").map((line,i)=>{
+    if(!line.trim()) return React.createElement("div",{key:i,style:{height:"0.4rem"}});
+    if(line.startsWith("## ")) return React.createElement("div",{key:i,style:{fontSize:"0.67rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.1)"}},line.slice(3));
+    if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line)) return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.87rem",fontWeight:700,color:"#e0d8c8",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
+    if(line.startsWith("- ")||line.startsWith("* ")) return React.createElement("div",{key:i,style:{display:"flex",gap:"0.4rem",margin:"0.1rem 0",fontSize:"0.79rem",color:"#9a9080"}},React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.48rem",marginTop:"5px",flexShrink:0}},"◆"),React.createElement("span",null,line.slice(2)));
+    const parts=[]; let rem=line,k=0;
+    while(rem){const m=rem.match(/\*\*(.+?)\*\*/);if(!m){parts.push(React.createElement("span",{key:k++},rem));break;}const idx=rem.indexOf(m[0]);if(idx>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,idx)));parts.push(React.createElement("span",{key:k++,style:{color:"#d0c8b8",fontWeight:600}},m[1]));rem=rem.slice(idx+m[0].length);}
+    return React.createElement("p",{key:i,style:{margin:"0.08rem 0",fontSize:"0.79rem",color:"#9a9080",lineHeight:1.85}},...parts);
+  }));
+}
+
+function Dots() {
+  return React.createElement("div",{style:{display:"flex",gap:5}},[0,1,2].map(i=>React.createElement("span",{key:i,style:{width:4,height:4,borderRadius:"50%",background:"#c9a96e",display:"inline-block",animation:`p 1.4s ${i*0.2}s ease-in-out infinite`}})));
+}
+
+function App() {
+  const saved = loadChat();
+  const [msgs, setMsgs] = useState(saved?.msgs||[]);
+  const [draft, setDraft] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [modal, setModal] = useState(null); // {type:'limit',hours} or {type:'plan',hours,left}
+  const hist = useRef(saved?.hist||[...defaultHist]);
+  const endRef = useRef(null);
+  const taRef = useRef(null);
+
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs,busy]);
+
+  async function send(txt) {
+    const t=(txt??draft).trim();
+    if(!t||busy) return;
+    setDraft("");
+    if(taRef.current) taRef.current.style.height="auto";
+    const newMsgs=[...msgs,{id:Date.now(),from:"user",text:t}];
+    setMsgs(newMsgs);
+    setBusy(true);
+    hist.current=[...hist.current,{role:"user",content:t}];
+
+    try {
+      const res = await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:hist.current.slice(-16)})});
+      
+      if(res.status===429) {
+        const data = await res.json();
+        const msg = data.error?.message||"";
+        if(msg.startsWith("LIMIT_REACHED|")) {
+          setModal({type:"limit", hours: parseInt(msg.split("|")[1])||6});
+        } else if(msg.startsWith("PLAN_LIMIT|")) {
+          const parts = msg.split("|");
+          setModal({type:"plan", hours:parseInt(parts[1])||6, left:parseInt(parts[2])||0});
+        }
+        setBusy(false);
+        return;
+      }
+
+      if(!res.ok) throw new Error(`Error ${res.status}`);
+      const data = await res.json();
+      if(data.error) throw new Error(data.error.message||"Error");
+      const reply = data.content?.[0]?.text;
+      if(!reply) throw new Error("No response");
+      hist.current=[...hist.current,{role:"assistant",content:reply}];
+      const final=[...newMsgs,{id:Date.now()+1,from:"ai",text:reply}];
+      setMsgs(final);
+      saveChat(final, hist.current);
+    } catch(e) {
+      setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:"Something went wrong. Please try again."}]);
+    }
+    setBusy(false);
+  }
+
+  function reset() {
+    if(!confirm("Start a new journey? Current conversation will be cleared.")) return;
+    setMsgs([]); setDraft("");
+    hist.current=[...defaultHist];
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  return React.createElement("div",{style:{height:"100vh",display:"flex",flexDirection:"column",background:"#0a0906",overflow:"hidden"}},
+    modal && React.createElement(Modal,{
+      hours:modal.hours,
+      plansLeft:modal.type==="plan"?modal.left:undefined,
+      onClose:()=>setModal(null)
+    }),
+    React.createElement("div",{style:{padding:"1.1rem 1.75rem 1rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}},
+      React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.25rem",fontWeight:300,letterSpacing:"0.3em",color:"#c9a96e",textTransform:"uppercase"}},"Atlas"),
+      msgs.length>0&&React.createElement("button",{onClick:reset,style:{background:"none",border:"none",color:"#3a3025",cursor:"pointer",fontSize:"0.62rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"New journey")
+    ),
+    React.createElement("div",{style:{flex:1,overflowY:"auto",display:"flex",flexDirection:"column"}},
+      msgs.length===0&&React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center"}},
+        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.5rem",fontWeight:300,color:"rgba(201,169,110,0.07)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"2rem"}},"ATLAS"),
+        React.createElement("p",{style:{fontSize:"0.79rem",color:"#332d25",lineHeight:2,maxWidth:"230px"}},"Tell me where you want to go.",React.createElement("br"),"Any language. Any budget. Any dream.")
+      ),
+      msgs.length>0&&React.createElement("div",{style:{padding:"1rem 1.75rem",display:"flex",flexDirection:"column",gap:"1.5rem"}},
+        ...msgs.map(msg=>React.createElement("div",{key:msg.id,className:"msg",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:"0.875rem",alignItems:"flex-start"}},
+          React.createElement("div",{style:{flexShrink:0,width:22,height:22,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.12)":"rgba(201,169,110,0.3)"}`,display:"flex",alignItems:"center",justifyContent:"center",marginTop:2}},
+            React.createElement("span",{style:{fontSize:"0.5rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
+          ),
+          React.createElement("div",{style:{maxWidth:"88%",padding:msg.from==="user"?"0.6rem 0.875rem":"0.1rem 0",background:msg.from==="user"?"rgba(201,169,110,0.03)":"transparent",border:msg.from==="user"?"1px solid rgba(201,169,110,0.07)":"none",borderRadius:6}},
+            msg.from==="user"?React.createElement("p",{style:{fontSize:"0.82rem",color:"#c8bfaf",lineHeight:1.75}},msg.text):React.createElement(Prose,{text:msg.text})
+          )
+        )),
+        busy&&React.createElement("div",{className:"msg",style:{display:"flex",gap:"0.875rem",alignItems:"center"}},
+          React.createElement("div",{style:{width:22,height:22,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.3)",display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:"0.5rem",color:"#c9a96e"}},"A")),
+          React.createElement(Dots)
+        ),
+        React.createElement("div",{ref:endRef})
+      )
+    ),
+    React.createElement("div",{style:{padding:"0 1.75rem 1.5rem",flexShrink:0}},
+      React.createElement("div",{style:{height:1,background:"rgba(201,169,110,0.07)",marginBottom:"1rem"}}),
+      React.createElement("div",{style:{display:"flex",gap:"0.75rem",alignItems:"flex-end"}},
+        React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}},onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,120)+"px";},placeholder:"Where would you like to go?",disabled:busy,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:"#d0c8b8",fontSize:"0.88rem",resize:"none",lineHeight:1.7,maxHeight:120,overflowY:"auto",paddingTop:"0.1rem"}}),
+        React.createElement("button",{onClick:()=>send(),disabled:!draft.trim()||busy,style:{flexShrink:0,background:"none",border:`1px solid ${draft.trim()&&!busy?"rgba(201,169,110,0.3)":"rgba(201,169,110,0.07)"}`,borderRadius:4,width:34,height:34,cursor:draft.trim()&&!busy?"pointer":"default",color:draft.trim()&&!busy?"#c9a96e":"#2a2520",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.85rem",transition:"all 0.2s"}},busy?"·":"↑")
+      ),
+      React.createElement("div",{style:{marginTop:"0.6rem",fontSize:"0.56rem",color:"#1e1a14",letterSpacing:"0.1em",textTransform:"uppercase"}},"Any language · Any currency · Shift+Enter for new line")
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
