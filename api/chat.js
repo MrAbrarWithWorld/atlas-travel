@@ -1,7 +1,7 @@
 const userMap = new Map();
-const RESET_MS = 6 * 60 * 60 * 1000;
-const MAX_TOKENS = 4000;
-const MAX_PLANS = 2;
+const RESET_MS = 2 * 60 * 60 * 1000;
+const MAX_TOKENS = 8000;
+const MAX_PLANS = 3;
 
 function getUser(ip) {
   const now = Date.now();
