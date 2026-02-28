@@ -12,16 +12,17 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body,#root{height:100%;}
-body{background:#0a0906;color:#e8e0d0;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;}
+body{background:#12100d;color:#ede5d5;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;}
 ::-webkit-scrollbar{width:2px;}
-::-webkit-scrollbar-thumb{background:rgba(201,169,110,0.15);}
+::-webkit-scrollbar-thumb{background:rgba(201,169,110,0.2);}
 @keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.6)}40%{opacity:1;transform:scale(1)}}
 @keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes ripple{0%{transform:scale(1);opacity:1}100%{transform:scale(2.2);opacity:0}}
+@keyframes ripple{0%{transform:scale(1);opacity:0.8}100%{transform:scale(2.5);opacity:0}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(201,169,110,0.3)}50%{box-shadow:0 0 16px rgba(201,169,110,0.6)}}
 .msg{animation:up 0.28s ease;}
 textarea{font-family:'DM Sans',sans-serif;-webkit-appearance:none;}
-textarea::placeholder{color:#2e2820;}
+textarea::placeholder{color:#3d3528;}
 textarea:focus{outline:none;}
 button{-webkit-tap-highlight-color:transparent;}
 </style>
@@ -78,19 +79,19 @@ const defaultHist = [
 
 function Modal({hours, plansLeft, onClose}) {
   const isPlan = plansLeft !== undefined;
-  return React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(10,9,6,0.93)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,animation:"fadeIn 0.25s ease",padding:"1rem"}},
-    React.createElement("div",{style:{width:"100%",maxWidth:320,padding:"2.5rem 1.75rem",textAlign:"center",border:"1px solid rgba(201,169,110,0.12)",borderRadius:12,background:"#0f0e0b"}},
-      React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",color:"rgba(201,169,110,0.15)",letterSpacing:"0.2em",marginBottom:"1.5rem"}},"ATLAS"),
-      React.createElement("div",{style:{fontSize:"1rem",color:"#c9a96e",marginBottom:"0.75rem",fontFamily:"'Cormorant Garamond',serif"}},isPlan?"Plan limit reached":"Session complete"),
-      React.createElement("p",{style:{fontSize:"0.78rem",color:"#6a6055",lineHeight:1.85,marginBottom:"1.25rem"}},
+  return React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(8,7,5,0.95)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,animation:"fadeIn 0.25s ease",padding:"1rem"}},
+    React.createElement("div",{style:{width:"100%",maxWidth:320,padding:"2.5rem 1.75rem",textAlign:"center",border:"1px solid rgba(201,169,110,0.18)",borderRadius:14,background:"#1a1710"}},
+      React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",color:"rgba(201,169,110,0.2)",letterSpacing:"0.2em",marginBottom:"1.5rem"}},"ATLAS"),
+      React.createElement("div",{style:{fontSize:"1rem",color:"#d4aa6e",marginBottom:"0.75rem",fontFamily:"'Cormorant Garamond',serif"}},isPlan?"Plan limit reached":"Session complete"),
+      React.createElement("p",{style:{fontSize:"0.78rem",color:"#7a7060",lineHeight:1.85,marginBottom:"1.25rem"}},
         isPlan?`You've created 2 travel plans. You still have ${plansLeft} tokens — ask questions about your plans!`
               :`Come back in ${hours} hour${hours>1?'s':''} for a fresh session.`
       ),
-      React.createElement("div",{style:{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.08)",borderRadius:6,padding:"0.875rem",marginBottom:"1.25rem"}},
+      React.createElement("div",{style:{background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,padding:"0.875rem",marginBottom:"1.25rem"}},
         React.createElement("p",{style:{fontSize:"0.65rem",color:"#c9a96e",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"0.35rem"}},"Want unlimited access?"),
-        React.createElement("p",{style:{fontSize:"0.75rem",color:"#5a5045",lineHeight:1.7}},"Upgrade to ATLAS Pro for unlimited plans.")
+        React.createElement("p",{style:{fontSize:"0.75rem",color:"#6a6050",lineHeight:1.7}},"Upgrade to ATLAS Pro for unlimited plans.")
       ),
-      React.createElement("button",{onClick:onClose,style:{width:"100%",padding:"0.75rem",background:"none",border:"1px solid rgba(201,169,110,0.15)",borderRadius:6,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase"}},"Close")
+      React.createElement("button",{onClick:onClose,style:{width:"100%",padding:"0.75rem",background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase"}},"Close")
     )
   );
 }
@@ -98,25 +99,39 @@ function Modal({hours, plansLeft, onClose}) {
 function Prose({text}) {
   return React.createElement("div",null,text.split("\n").map((line,i)=>{
     if(!line.trim()) return React.createElement("div",{key:i,style:{height:"0.35rem"}});
-    if(line.startsWith("## ")) return React.createElement("div",{key:i,style:{fontSize:"0.67rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.1)"}},line.slice(3));
-    if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line)) return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.87rem",fontWeight:700,color:"#e0d8c8",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
-    if(line.startsWith("- ")||line.startsWith("* ")) return React.createElement("div",{key:i,style:{display:"flex",gap:"0.4rem",margin:"0.1rem 0",fontSize:"0.79rem",color:"#9a9080"}},React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.48rem",marginTop:"5px",flexShrink:0}},"◆"),React.createElement("span",null,line.slice(2)));
+    if(line.startsWith("## ")) return React.createElement("div",{key:i,style:{fontSize:"0.68rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.12)"}},line.slice(3));
+    if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line)) return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.9rem",fontWeight:700,color:"#ede5d5",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
+    if(line.startsWith("- ")||line.startsWith("* ")) return React.createElement("div",{key:i,style:{display:"flex",gap:"0.4rem",margin:"0.12rem 0",fontSize:"0.81rem",color:"#a8a090"}},React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.48rem",marginTop:"5px",flexShrink:0}},"◆"),React.createElement("span",null,line.slice(2)));
     const parts=[]; let rem=line,k=0;
-    while(rem){const m=rem.match(/\*\*(.+?)\*\*/);if(!m){parts.push(React.createElement("span",{key:k++},rem));break;}const idx=rem.indexOf(m[0]);if(idx>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,idx)));parts.push(React.createElement("span",{key:k++,style:{color:"#d0c8b8",fontWeight:600}},m[1]));rem=rem.slice(idx+m[0].length);}
-    return React.createElement("p",{key:i,style:{margin:"0.08rem 0",fontSize:"0.79rem",color:"#9a9080",lineHeight:1.85}},...parts);
+    while(rem){const m=rem.match(/\*\*(.+?)\*\*/);if(!m){parts.push(React.createElement("span",{key:k++},rem));break;}const idx=rem.indexOf(m[0]);if(idx>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,idx)));parts.push(React.createElement("span",{key:k++,style:{color:"#ddd5c5",fontWeight:600}},m[1]));rem=rem.slice(idx+m[0].length);}
+    return React.createElement("p",{key:i,style:{margin:"0.08rem 0",fontSize:"0.81rem",color:"#a8a090",lineHeight:1.85}},...parts);
   }));
 }
 
 function Dots() {
-  return React.createElement("div",{style:{display:"flex",gap:5}},[0,1,2].map(i=>React.createElement("span",{key:i,style:{width:4,height:4,borderRadius:"50%",background:"#c9a96e",display:"inline-block",animation:`pulse 1.4s ${i*0.2}s ease-in-out infinite`}})));
+  return React.createElement("div",{style:{display:"flex",gap:6}},[0,1,2].map(i=>React.createElement("span",{key:i,style:{width:5,height:5,borderRadius:"50%",background:"#c9a96e",display:"inline-block",animation:`pulse 1.4s ${i*0.2}s ease-in-out infinite`}})));
 }
 
-function MicIcon({active}) {
-  return React.createElement("svg",{width:"16",height:"16",viewBox:"0 0 24 24",fill:"none",stroke:active?"#c9a96e":"#4a4035",strokeWidth:"1.5",strokeLinecap:"round",strokeLinejoin:"round"},
-    React.createElement("rect",{x:"9",y:"2",width:"6",height:"12",rx:"3"}),
-    React.createElement("path",{d:"M5 10a7 7 0 0 0 14 0"}),
-    React.createElement("line",{x1:"12",y1:"19",x2:"12",y2:"22"}),
-    React.createElement("line",{x1:"8",y1:"22",x2:"16",y2:"22"})
+function MicButton({listening, onClick}) {
+  return React.createElement("button",{
+    onClick,
+    style:{
+      flexShrink:0,width:40,height:40,borderRadius:"50%",
+      border:`1.5px solid ${listening?"#c9a96e":"rgba(201,169,110,0.2)"}`,
+      background:listening?"rgba(201,169,110,0.1)":"rgba(201,169,110,0.03)",
+      cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",
+      transition:"all 0.25s",position:"relative",
+      animation:listening?"glow 1.5s ease-in-out infinite":"none"
+    }
+  },
+    listening&&React.createElement("span",{style:{position:"absolute",inset:-4,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.25)",animation:"ripple 1.2s ease-out infinite"}}),
+    listening&&React.createElement("span",{style:{position:"absolute",inset:-8,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.1)",animation:"ripple 1.2s 0.4s ease-out infinite"}}),
+    React.createElement("svg",{width:"17",height:"17",viewBox:"0 0 24 24",fill:"none",stroke:listening?"#c9a96e":"#7a6a50",strokeWidth:"1.8",strokeLinecap:"round",strokeLinejoin:"round"},
+      React.createElement("rect",{x:"9",y:"2",width:"6",height:"12",rx:"3",fill:listening?"rgba(201,169,110,0.15)":"none"}),
+      React.createElement("path",{d:"M5 10a7 7 0 0 0 14 0"}),
+      React.createElement("line",{x1:"12",y1:"19",x2:"12",y2:"22"}),
+      React.createElement("line",{x1:"8",y1:"22",x2:"16",y2:"22"})
+    )
   );
 }
 
@@ -215,22 +230,18 @@ function App() {
   const hasSpeech=!!window.speechSynthesis;
   const hasVoice=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
 
-  return React.createElement("div",{style:{height:"100vh",display:"flex",flexDirection:"column",background:"#0a0906",overflow:"hidden"}},
+  return React.createElement("div",{style:{height:"100vh",display:"flex",flexDirection:"column",background:"#12100d",overflow:"hidden"}},
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null)}),
-
-    // Header
-    React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.05)"}},
+    React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.07)"}},
       React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem",fontWeight:300,letterSpacing:"0.3em",color:"#c9a96e",textTransform:"uppercase"}},"Atlas"),
-      msgs.length>0&&React.createElement("button",{onClick:reset,style:{background:"none",border:"none",color:"#3a3025",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"New journey")
+      msgs.length>0&&React.createElement("button",{onClick:reset,style:{background:"none",border:"none",color:"#4a4030",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"New journey")
     ),
-
-    // Messages
     React.createElement("div",{style:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",display:"flex",flexDirection:"column"}},
       msgs.length===0&&React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center"}},
-        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.2rem",fontWeight:300,color:"rgba(201,169,110,0.07)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"1.5rem"}},"ATLAS"),
-        React.createElement("p",{style:{fontSize:"0.78rem",color:"#2e2820",lineHeight:2,maxWidth:"220px"}},"Tell me where you want to go.",React.createElement("br"),"Any language. Any budget. Any dream."),
-        hasVoice&&React.createElement("div",{style:{marginTop:"1.5rem",display:"flex",alignItems:"center",gap:"0.4rem",color:"#252015",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase"}},
-          React.createElement("svg",{width:"10",height:"10",viewBox:"0 0 24 24",fill:"none",stroke:"#2a2015",strokeWidth:"1.5",strokeLinecap:"round",strokeLinejoin:"round"},
+        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.4rem",fontWeight:300,color:"rgba(201,169,110,0.1)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"1.5rem"}},"ATLAS"),
+        React.createElement("p",{style:{fontSize:"0.8rem",color:"#3d3528",lineHeight:2,maxWidth:"220px"}},"Tell me where you want to go.",React.createElement("br"),"Any language. Any budget. Any dream."),
+        hasVoice&&React.createElement("div",{style:{marginTop:"1.75rem",display:"flex",alignItems:"center",gap:"0.5rem",color:"#2e2518",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase"}},
+          React.createElement("svg",{width:"11",height:"11",viewBox:"0 0 24 24",fill:"none",stroke:"#3a2e1e",strokeWidth:"1.5",strokeLinecap:"round",strokeLinejoin:"round"},
             React.createElement("rect",{x:"9",y:"2",width:"6",height:"12",rx:"3"}),
             React.createElement("path",{d:"M5 10a7 7 0 0 0 14 0"}),
             React.createElement("line",{x1:"12",y1:"19",x2:"12",y2:"22"}),
@@ -239,44 +250,35 @@ function App() {
           "Voice enabled"
         )
       ),
-      msgs.length>0&&React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",flexDirection:"column",gap:"1.25rem"}},
-        ...msgs.map(msg=>React.createElement("div",{key:msg.id,className:"msg",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:"0.7rem",alignItems:"flex-start"}},
-          React.createElement("div",{style:{flexShrink:0,width:20,height:20,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.12)":"rgba(201,169,110,0.3)"}`,display:"flex",alignItems:"center",justifyContent:"center",marginTop:2}},
-            React.createElement("span",{style:{fontSize:"0.45rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
+      msgs.length>0&&React.createElement("div",{style:{padding:"1.25rem 1.5rem",display:"flex",flexDirection:"column",gap:"1.35rem"}},
+        ...msgs.map(msg=>React.createElement("div",{key:msg.id,className:"msg",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:"0.75rem",alignItems:"flex-start"}},
+          React.createElement("div",{style:{flexShrink:0,width:22,height:22,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.15)":"rgba(201,169,110,0.35)"}`,display:"flex",alignItems:"center",justifyContent:"center",marginTop:2}},
+            React.createElement("span",{style:{fontSize:"0.46rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
           ),
           React.createElement("div",{style:{maxWidth:"88%"}},
             msg.from==="user"
-              ? React.createElement("p",{style:{fontSize:"0.83rem",color:"#c8bfaf",lineHeight:1.75,padding:"0.55rem 0.8rem",background:"rgba(201,169,110,0.03)",border:"1px solid rgba(201,169,110,0.07)",borderRadius:8}},msg.text)
+              ? React.createElement("p",{style:{fontSize:"0.84rem",color:"#d5cdc0",lineHeight:1.75,padding:"0.6rem 0.9rem",background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.09)",borderRadius:10}},msg.text)
               : React.createElement("div",null,
                   React.createElement(Prose,{text:msg.text}),
-                  hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{marginTop:"0.5rem",background:"none",border:"1px solid rgba(201,169,110,0.1)",borderRadius:4,padding:"0.25rem 0.6rem",color:speaking?"#c9a96e":"#3a3025",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen")
+                  hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{marginTop:"0.6rem",background:"none",border:"1px solid rgba(201,169,110,0.12)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#4a4030",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen")
                 )
           )
         )),
-        busy&&React.createElement("div",{className:"msg",style:{display:"flex",gap:"0.7rem",alignItems:"center"}},
-          React.createElement("div",{style:{width:20,height:20,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.3)",display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:"0.45rem",color:"#c9a96e"}},"A")),
+        busy&&React.createElement("div",{className:"msg",style:{display:"flex",gap:"0.75rem",alignItems:"center"}},
+          React.createElement("div",{style:{width:22,height:22,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.35)",display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:"0.46rem",color:"#c9a96e"}},"A")),
           React.createElement(Dots)
         ),
         React.createElement("div",{ref:endRef,style:{height:"0.5rem"}})
       )
     ),
-
-    // Input
-    React.createElement("div",{style:{padding:"0 1.5rem 1.25rem",flexShrink:0}},
-      React.createElement("div",{style:{height:1,background:"rgba(201,169,110,0.07)",marginBottom:"0.875rem"}}),
-      React.createElement("div",{style:{display:"flex",gap:"0.6rem",alignItems:"flex-end"}},
-
-        // Mic button — SVG icon
-        hasVoice&&React.createElement("button",{onClick:toggleVoice,style:{flexShrink:0,width:36,height:36,borderRadius:"50%",border:`1px solid ${listening?"rgba(201,169,110,0.45)":"rgba(201,169,110,0.12)"}`,background:listening?"rgba(201,169,110,0.07)":"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.3s",position:"relative"}},
-          listening&&React.createElement("span",{style:{position:"absolute",inset:-3,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.2)",animation:"ripple 1.2s ease-out infinite"}}),
-          React.createElement(MicIcon,{active:listening})
-        ),
-
-        React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}},onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";},placeholder:listening?"Listening...":"Where would you like to go?",disabled:busy||listening,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:listening?"#c9a96e":"#d0c8b8",fontSize:"0.87rem",resize:"none",lineHeight:1.7,maxHeight:100,overflowY:"auto",paddingTop:"0.15rem"}}),
-
-        React.createElement("button",{onClick:()=>send(),disabled:!draft.trim()||busy,style:{flexShrink:0,background:"none",border:`1px solid ${draft.trim()&&!busy?"rgba(201,169,110,0.3)":"rgba(201,169,110,0.07)"}`,borderRadius:6,width:36,height:36,cursor:draft.trim()&&!busy?"pointer":"default",color:draft.trim()&&!busy?"#c9a96e":"#2a2520",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.85rem",transition:"all 0.2s"}},busy?"·":"↑")
+    React.createElement("div",{style:{padding:"0 1.5rem 1.35rem",flexShrink:0}},
+      React.createElement("div",{style:{height:"1px",background:"rgba(201,169,110,0.1)",marginBottom:"1rem"}}),
+      React.createElement("div",{style:{display:"flex",gap:"0.65rem",alignItems:"flex-end"}},
+        hasVoice&&React.createElement(MicButton,{listening,onClick:toggleVoice}),
+        React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}},onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";},placeholder:listening?"Listening...":"Where would you like to go?",disabled:busy||listening,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:listening?"#c9a96e":"#d5cdc0",fontSize:"0.88rem",resize:"none",lineHeight:1.7,maxHeight:100,overflowY:"auto",paddingTop:"0.15rem"}}),
+        React.createElement("button",{onClick:()=>send(),disabled:!draft.trim()||busy,style:{flexShrink:0,background:draft.trim()&&!busy?"rgba(201,169,110,0.08)":"none",border:`1.5px solid ${draft.trim()&&!busy?"rgba(201,169,110,0.35)":"rgba(201,169,110,0.08)"}`,borderRadius:8,width:40,height:40,cursor:draft.trim()&&!busy?"pointer":"default",color:draft.trim()&&!busy?"#c9a96e":"#2e2820",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1rem",transition:"all 0.2s"}},busy?"·":"↑")
       ),
-      React.createElement("div",{style:{marginTop:"0.5rem",fontSize:"0.54rem",color:"#1a1712",letterSpacing:"0.09em",textTransform:"uppercase"}},"Any language · Any currency")
+      React.createElement("div",{style:{marginTop:"0.55rem",fontSize:"0.54rem",color:"#252015",letterSpacing:"0.09em",textTransform:"uppercase"}},"Any language · Any currency")
     )
   );
 }
