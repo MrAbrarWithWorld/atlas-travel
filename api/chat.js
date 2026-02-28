@@ -38,9 +38,7 @@ export default async function handler(req, res) {
   const resetInHours = Math.ceil((user.resetAt - Date.now()) / (1000 * 60 * 60));
 
   if (user.tokensUsed >= MAX_TOKENS) {
-    return res.status(429).json({
-      error: { message: `LIMIT_REACHED|${resetInHours}` }
-    });
+    return res.status(429).json({ error: { message: `LIMIT_REACHED|${resetInHours}` } });
   }
 
   const { messages } = req.body;
@@ -51,13 +49,47 @@ export default async function handler(req, res) {
   const requestingNewPlan = isNewPlan(messages);
   if (requestingNewPlan && user.plansUsed >= MAX_PLANS) {
     const tokensLeft = MAX_TOKENS - user.tokensUsed;
-    return res.status(429).json({
-      error: { message: `PLAN_LIMIT|${resetInHours}|${tokensLeft}` }
-    });
+    return res.status(429).json({ error: { message: `PLAN_LIMIT|${resetInHours}|${tokensLeft}` } });
   }
 
+  const tokensLeft = MAX_TOKENS - user.tokensUsed;
+
+  // Try Groq first (free), fallback to Anthropic
+  if (process.env.GROQ_API_KEY) {
+    try {
+      const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          max_tokens: Math.min(tokensLeft, 3000),
+          messages: messages,
+        }),
+      });
+
+      const groqData = await groqRes.json();
+      if (groqData.choices?.[0]?.message?.content) {
+        const reply = groqData.choices[0].message.content;
+        const used = (groqData.usage?.prompt_tokens || 0) + (groqData.usage?.completion_tokens || 0);
+        user.tokensUsed += used;
+        if (requestingNewPlan) user.plansUsed += 1;
+
+        // Return in Anthropic format so frontend works unchanged
+        return res.status(200).json({
+          content: [{ type: "text", text: reply }],
+          usage: { input_tokens: groqData.usage?.prompt_tokens || 0, output_tokens: groqData.usage?.completion_tokens || 0 }
+        });
+      }
+    } catch(e) {
+      // Groq failed, fall through to Anthropic
+    }
+  }
+
+  // Anthropic fallback
   try {
-    const tokensLeft = MAX_TOKENS - user.tokensUsed;
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
