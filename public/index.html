@@ -33,6 +33,24 @@ button{-webkit-tap-highlight-color:transparent;}
 <div id="root"></div>
 <script type="text/babel">
 
+function getLocation() {
+  return new Promise((resolve) => {
+    if(!navigator.geolocation) { resolve(""); return; }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
+          const d = await r.json();
+          const city = d.address?.city || d.address?.town || d.address?.village || "";
+          const country = d.address?.country || "";
+          resolve(city && country ? `${city}, ${country}` : country || "");
+        } catch { resolve(""); }
+      },
+      () => resolve("")
+    );
+  });
+}
+  
 function getDateTime() {
   const now = new Date();
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -257,8 +275,11 @@ function App() {
     if(taRef.current)taRef.current.style.height="auto";
 
     // Inject current date/time into message
-    const dateTime = getDateTime();
-    const msgWithTime = `${t}\n\n[Current date & time: ${dateTime}]`;
+   const dateTime = getDateTime();
+   const location = await getLocation();
+   const locationStr = location ? `\nUser location: ${location}` : "";
+   const msgWithTime = `${t}\n\n[Current date & time: ${dateTime}${locationStr}]`;
+   ```
 
     const newMsgs=[...msgs,{id:Date.now(),from:"user",text:t}];
     setMsgs(newMsgs);
