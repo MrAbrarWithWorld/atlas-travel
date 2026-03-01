@@ -278,8 +278,7 @@ function App() {
    const dateTime = getDateTime();
    const location = await getLocation();
    const locationStr = location ? `\nUser location: ${location}` : "";
-   const msgWithTime = `${t}\n\n[Current date & time: ${dateTime}${locationStr}]`;
-   ```
+   const msgWithTime = ${t}\n\n[Current date & time: ${dateTime}${locationStr}];
 
     const newMsgs=[...msgs,{id:Date.now(),from:"user",text:t}];
     setMsgs(newMsgs);
