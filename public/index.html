@@ -165,7 +165,6 @@ function Prose({text}) {
     if(line.startsWith("## ")) return React.createElement("div",{key:i,style:{fontSize:"0.68rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.2)"}},line.slice(3));
     if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line)) return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.9rem",fontWeight:700,color:"#ede5d5",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
     if(line.startsWith("- ")||line.startsWith("* ")) return React.createElement("div",{key:i,style:{display:"flex",gap:"0.4rem",margin:"0.12rem 0",fontSize:"0.81rem",color:"#b8b0a0"}},React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.48rem",marginTop:"5px",flexShrink:0}},"◆"),React.createElement("span",null,line.slice(2)));
-
     const parts=[]; let rem=line,k=0;
     while(rem){
       const link=rem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);
@@ -183,7 +182,10 @@ function Prose({text}) {
         rem=rem.slice(bi+bold[0].length);
       }
     }
-    
+    return React.createElement("p",{key:i,style:{margin:"0.08rem 0",fontSize:"0.81rem",color:"#b8b0a0",lineHeight:1.85}},...parts);
+  }));
+}
+  
     const link=rem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);
       const bold=rem.match(/\*\*(.+?)\*\*/);
       if(!link&&!bold){parts.push(React.createElement("span",{key:k++},rem));break;}
