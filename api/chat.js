@@ -83,7 +83,9 @@ export default async function handler(req, res) {
           usage: { input_tokens: groqData.usage?.prompt_tokens || 0, output_tokens: groqData.usage?.completion_tokens || 0 }
         });
       }
-    } catch(e) {
+    } catch(e){
+      setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:`Error: ${e.message}`}]);
+    }
       // Groq failed, fall through to Anthropic
     }
   }
