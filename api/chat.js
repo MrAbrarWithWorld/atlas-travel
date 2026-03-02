@@ -27,6 +27,8 @@ function isNewPlan(messages) {
   return keywords.some(k => last.includes(k));
 }
 
+const SYSTEM_MSG = "You are ATLAS — AI travel intelligence. MANDATORY: Every hotel must have a clickable link formatted as [Hotel Name](https://www.booking.com/search.html?ss=Hotel+Name). Every flight must link to [Search Flights](https://www.google.com/flights). Every visa must link to the official government website. NEVER mention a hotel, flight, or visa without a markdown link. Format: [Text](https://url.com)";
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -66,7 +68,10 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
           max_tokens: Math.min(tokensLeft, 3000),
-          messages: messages,
+          messages: [
+            { role: "system", content: SYSTEM_MSG },
+            ...messages.filter(m => m.role !== "system")
+          ],
         }),
       });
 
@@ -76,16 +81,12 @@ export default async function handler(req, res) {
         const used = (groqData.usage?.prompt_tokens || 0) + (groqData.usage?.completion_tokens || 0);
         user.tokensUsed += used;
         if (requestingNewPlan) user.plansUsed += 1;
-
-        // Return in Anthropic format so frontend works unchanged
         return res.status(200).json({
           content: [{ type: "text", text: reply }],
           usage: { input_tokens: groqData.usage?.prompt_tokens || 0, output_tokens: groqData.usage?.completion_tokens || 0 }
         });
       }
-    } catch(e){
-      setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:`Error: ${e.message}`}]);
-    }
+    } catch(e) {
       // Groq failed, fall through to Anthropic
     }
   }
@@ -100,16 +101,11 @@ export default async function handler(req, res) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-  model: "llama-3.3-70b-versatile",
-  max_tokens: Math.min(tokensLeft, 3000),
-  messages: [
-    {
-      role: "system",
-      content: "You are ATLAS — AI travel intelligence. MANDATORY: Every hotel must have a clickable link formatted as [Hotel Name](https://www.booking.com/search.html?ss=Hotel+Name). Every flight must link to [Search Flights](https://www.google.com/flights). Every visa must link to the official government website. NEVER mention a hotel, flight, or visa without a markdown link. Format: [Text](https://url.com)"
-    },
-    ...messages.filter(m => m.role !== "system")
-  ],
-}),
+        model: "claude-sonnet-4-20250514",
+        max_tokens: Math.min(tokensLeft, 3000),
+        messages: messages,
+      }),
+    });
 
     const data = await response.json();
     if (data.error) return res.status(500).json({ error: data.error });
