@@ -98,11 +98,16 @@ export default async function handler(req, res) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: Math.min(tokensLeft, 3000),
-        messages: messages,
-      }),
-    });
+  model: "llama-3.3-70b-versatile",
+  max_tokens: Math.min(tokensLeft, 3000),
+  messages: [
+    {
+      role: "system",
+      content: "You are ATLAS — AI travel intelligence. MANDATORY: Every hotel must have a clickable link formatted as [Hotel Name](https://www.booking.com/search.html?ss=Hotel+Name). Every flight must link to [Search Flights](https://www.google.com/flights). Every visa must link to the official government website. NEVER mention a hotel, flight, or visa without a markdown link. Format: [Text](https://url.com)"
+    },
+    ...messages.filter(m => m.role !== "system")
+  ],
+}),
 
     const data = await response.json();
     if (data.error) return res.status(500).json({ error: data.error });
