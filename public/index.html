@@ -36,8 +36,10 @@ button{-webkit-tap-highlight-color:transparent;}
 function getLocation() {
   return new Promise((resolve) => {
     if(!navigator.geolocation) { resolve(""); return; }
+    const timer = setTimeout(() => resolve(""), 4000);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        clearTimeout(timer);
         try {
           const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
           const d = await r.json();
@@ -46,7 +48,8 @@ function getLocation() {
           resolve(city && country ? `${city}, ${country}` : country || "");
         } catch { resolve(""); }
       },
-      () => resolve("")
+      () => { clearTimeout(timer); resolve(""); },
+      { timeout: 4000 }
     );
   });
 }
