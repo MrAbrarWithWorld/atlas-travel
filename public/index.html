@@ -168,8 +168,6 @@ function Prose({text}) {
     const parts=[]; let rem=line,k=0;
     while(rem){const m=rem.match(/\*\*(.+?)\*\*/);if(!m){parts.push(React.createElement("span",{key:k++},rem));break;}const idx=rem.indexOf(m[0]);if(idx>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,idx)));parts.push(React.createElement("span",{key:k++,style:{color:"#e8dcc8",fontWeight:600}},m[1]));rem=rem.slice(idx+m[0].length);}
     
-    const parts=[]; let rem=line,k=0;
-    while(rem){
       const link=rem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);
       const bold=rem.match(/\*\*(.+?)\*\*/);
       if(!link&&!bold){parts.push(React.createElement("span",{key:k++},rem));break;}
