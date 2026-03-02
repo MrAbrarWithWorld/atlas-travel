@@ -165,10 +165,26 @@ function Prose({text}) {
     if(line.startsWith("## ")) return React.createElement("div",{key:i,style:{fontSize:"0.68rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.2)"}},line.slice(3));
     if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line)) return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.9rem",fontWeight:700,color:"#ede5d5",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
     if(line.startsWith("- ")||line.startsWith("* ")) return React.createElement("div",{key:i,style:{display:"flex",gap:"0.4rem",margin:"0.12rem 0",fontSize:"0.81rem",color:"#b8b0a0"}},React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.48rem",marginTop:"5px",flexShrink:0}},"◆"),React.createElement("span",null,line.slice(2)));
+
     const parts=[]; let rem=line,k=0;
-    while(rem){const m=rem.match(/\*\*(.+?)\*\*/);if(!m){parts.push(React.createElement("span",{key:k++},rem));break;}const idx=rem.indexOf(m[0]);if(idx>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,idx)));parts.push(React.createElement("span",{key:k++,style:{color:"#e8dcc8",fontWeight:600}},m[1]));rem=rem.slice(idx+m[0].length);}
-    
+    while(rem){
       const link=rem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);
+      const bold=rem.match(/\*\*(.+?)\*\*/);
+      if(!link&&!bold){parts.push(React.createElement("span",{key:k++},rem));break;}
+      const li=link?rem.indexOf(link[0]):Infinity;
+      const bi=bold?rem.indexOf(bold[0]):Infinity;
+      if(link&&li<=bi){
+        if(li>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,li)));
+        parts.push(React.createElement("a",{key:k++,href:link[2],target:"_blank",rel:"noopener noreferrer",style:{color:"#c9a96e",textDecoration:"underline",textDecorationColor:"rgba(201,169,110,0.4)"}},link[1]));
+        rem=rem.slice(li+link[0].length);
+      } else {
+        if(bi>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,bi)));
+        parts.push(React.createElement("span",{key:k++,style:{color:"#e8dcc8",fontWeight:600}},bold[1]));
+        rem=rem.slice(bi+bold[0].length);
+      }
+    }
+    
+    const link=rem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);
       const bold=rem.match(/\*\*(.+?)\*\*/);
       if(!link&&!bold){parts.push(React.createElement("span",{key:k++},rem));break;}
       const li=link?rem.indexOf(link[0]):Infinity;
