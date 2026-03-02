@@ -186,25 +186,6 @@ function Prose({text}) {
   }));
 }
   
-    const link=rem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);
-      const bold=rem.match(/\*\*(.+?)\*\*/);
-      if(!link&&!bold){parts.push(React.createElement("span",{key:k++},rem));break;}
-      const li=link?rem.indexOf(link[0]):Infinity;
-      const bi=bold?rem.indexOf(bold[0]):Infinity;
-      if(link&&li<=bi){
-        if(li>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,li)));
-        parts.push(React.createElement("a",{key:k++,href:link[2],target:"_blank",rel:"noopener noreferrer",style:{color:"#c9a96e",textDecoration:"underline",textDecorationColor:"rgba(201,169,110,0.4)"}},link[1]));
-        rem=rem.slice(li+link[0].length);
-      } else {
-        if(bi>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,bi)));
-        parts.push(React.createElement("span",{key:k++,style:{color:"#e8dcc8",fontWeight:600}},bold[1]));
-        rem=rem.slice(bi+bold[0].length);
-      }
-    }
-    return React.createElement("p",{key:i,style:{margin:"0.08rem 0",fontSize:"0.81rem",color:"#b8b0a0",lineHeight:1.85}},...parts);
-  }));
-}
-
 function Dots() {
   return React.createElement("div",{style:{display:"flex",gap:6}},[0,1,2].map(i=>React.createElement("span",{key:i,style:{width:5,height:5,borderRadius:"50%",background:"#c9a96e",display:"inline-block",animation:`pulse 1.4s ${i*0.2}s ease-in-out infinite`}})));
 }
