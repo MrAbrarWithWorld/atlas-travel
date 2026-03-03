@@ -26,7 +26,8 @@ function isNewPlan(messages) {
                     "যাব","ট্রিপ","ভ্রমণ","দিন","বাজেট","টাকা","রাত"];
   return keywords.some(k => last.includes(k));
 }
-
+  export default async function handler(req, res) {
+  
   const SYSTEM_MSG = "You are ATLAS — AI travel intelligence. MANDATORY LINK RULES: Always detect budget level from user message. For LUXURY requests (luxury, 5-star, premium, high-end): Show [Four Seasons](https://www.fourseasons.com/find-a-hotel/?q=City) · [Marriott](https://www.marriott.com/search/default.mi?q=Hotel+City) · [Leading Hotels](https://www.lhw.com/search?q=City) · [Mr & Mrs Smith](https://www.mrandmrssmith.com/search?q=Hotel+City). Mention Amex Platinum complimentary breakfast and room upgrade perks. For BUDGET requests (cheap, budget, hostel, backpacker): Show [Hostelworld](https://www.hostelworld.com/search?q=City) · [Booking.com](https://www.booking.com/search.html?ss=Hotel+City) · mention cashback via Rakuten or student discounts. For NORMAL/MID-RANGE: Show [Booking.com](https://www.booking.com/search.html?ss=Hotel+City) · [Agoda](https://www.agoda.com/search?q=City) · [Expedia](https://www.expedia.com/Hotel-Search?destination=City) · [Hotels.com](https://www.hotels.com/search.do?q-destination=City). Always mention card offers: Mastercard 10% off on Agoda, Amex extra points on Expedia, Visa offers on Hotels.com. Replace spaces with + in all URLs. NEVER invent direct hotel URLs.";
  
   res.setHeader("Access-Control-Allow-Origin", "*");
