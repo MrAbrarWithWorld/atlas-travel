@@ -27,9 +27,8 @@ function isNewPlan(messages) {
   return keywords.some(k => last.includes(k));
 }
 
-const SYSTEM_MSG = "You are ATLAS — AI travel intelligence. MANDATORY: Every hotel must have a clickable link formatted as [Hotel Name](https://www.booking.com/search.html?ss=Hotel+Name). Every flight must link to [Search Flights](https://www.google.com/flights). Every visa must link to the official government website. NEVER mention a hotel, flight, or visa without a markdown link. Format: [Text](https://url.com)";
-
-export default async function handler(req, res) {
+const SYSTEM_MSG = "You are ATLAS — AI travel intelligence. MANDATORY LINK RULES: For ALL hotels, ALWAYS use booking.com SEARCH format: [Hotel Name](https://www.booking.com/search.html?ss=Hotel+Name+City) — NEVER use direct hotel URLs as they cause 404 errors. For flights: [Search Flights](https://www.google.com/flights). For visas: link to official government embassy website. EXAMPLE: [Hotel Gajoen Tokyo](https://www.booking.com/search.html?ss=Hotel+Gajoen+Tokyo) — replace spaces with + signs. NEVER invent direct URLs.";export default async function handler(req, res) {
+  
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
