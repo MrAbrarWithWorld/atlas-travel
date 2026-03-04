@@ -112,7 +112,7 @@ LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable 
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
-          max_tokens: Math.min(tokensLeft, 3000),
+          max_tokens: Math.min(tokensLeft, 6000),
           messages: [
             { role: "system", content: SYSTEM_MSG },
             ...groqMessages.filter(m => m.role !== "system")
