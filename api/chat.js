@@ -20,16 +20,50 @@ function getUser(ip) {
 function isNewPlan(messages) {
   const userMsgs = messages.filter(m => m.role === "user");
   if (userMsgs.length > 2) return false;
-  const last = userMsgs[userMsgs.length - 1]?.content?.toLowerCase() || "";
+  const lastContent = userMsgs[userMsgs.length - 1]?.content;
+  const last = typeof lastContent === "string"
+    ? lastContent.toLowerCase()
+    : Array.isArray(lastContent)
+      ? (lastContent.find(c => c.type === "text")?.text || "").toLowerCase()
+      : "";
   const keywords = ["trip","travel","visit","plan","itinerary","days","budget",
                     "fly","tour","vacation","holiday","night","week",
                     "যাব","ট্রিপ","ভ্রমণ","দিন","বাজেট","টাকা","রাত"];
   return keywords.some(k => last.includes(k));
 }
-  export default async function handler(req, res) {
-  
-  const SYSTEM_MSG = "You are ATLAS — AI travel intelligence. MANDATORY LINK RULES: Always detect budget level from user message. For LUXURY requests (luxury, 5-star, premium, high-end): Show [Four Seasons](https://www.fourseasons.com/find-a-hotel/?q=City) · [Marriott](https://www.marriott.com/search/default.mi?q=Hotel+City) · [Leading Hotels](https://www.lhw.com/search?q=City) · [Mr & Mrs Smith](https://www.mrandmrssmith.com/search?q=Hotel+City). Mention Amex Platinum complimentary breakfast and room upgrade perks. For BUDGET requests (cheap, budget, hostel, backpacker): Show [Hostelworld](https://www.hostelworld.com/search?q=City) · [Booking.com](https://www.booking.com/search.html?ss=Hotel+City) · mention cashback via Rakuten or student discounts. For NORMAL/MID-RANGE: Show [Booking.com](https://www.booking.com/search.html?ss=Hotel+City) · [Agoda](https://www.agoda.com/search?q=City) · [Expedia](https://www.expedia.com/Hotel-Search?destination=City) · [Hotels.com](https://www.hotels.com/search.do?q-destination=City). Always mention card offers: Mastercard 10% off on Agoda, Amex extra points on Expedia, Visa offers on Hotels.com. Replace spaces with + in all URLs. NEVER invent direct hotel URLs. TRIP PLANNING — MANDATORY: For every trip plan, always provide complete DAY BY DAY breakdown. Each day must include: morning/afternoon/evening activities, exact transport (metro line number, bus number, taxi cost, walk time), entry fees, meal spots with prices, and distance between places. NEVER skip days. NEVER give a summary — give FULL details every single day. Format each day as: **Day 1 — [Area Name]** then bullet points for each activity with transport.";
- 
+
+function hasImage(messages) {
+  return messages.some(m =>
+    Array.isArray(m.content) && m.content.some(c => c.type === "image")
+  );
+}
+
+export default async function handler(req, res) {
+
+  const SYSTEM_MSG = `You are ATLAS — AI travel intelligence.
+
+LANGUAGE: Detect user language instantly. Respond ENTIRELY in that language.
+CURRENCY: Use exactly the currency the user mentions.
+
+PHOTO IDENTIFICATION: If the user sends a photo, identify the location, landmark, or place shown. Provide: place name, city/country, travel info, nearby attractions, best time to visit, how to get there, and hotel/booking links for that area.
+
+TRIP PLANNING — MANDATORY: For every trip plan, always provide complete DAY BY DAY breakdown. Each day must include: morning/afternoon/evening activities, exact transport (metro line number, bus number, taxi cost, walk time), entry fees, meal spots with prices, and distance between places. NEVER skip days. NEVER give a summary — give FULL details every single day. Format each day as:
+**Day 1 — [Area Name]**
+- Morning: [activity] → go by [transport, cost, time]
+- Lunch: [restaurant, cost]
+- Afternoon: [activity] → go by [transport, cost, time]
+- Dinner: [restaurant, cost]
+- Return to hotel by [transport, cost]
+
+HOTEL LINKS — detect budget level:
+For LUXURY (luxury, 5-star, premium): Show [Four Seasons](https://www.fourseasons.com/find-a-hotel/?q=City) · [Marriott](https://www.marriott.com/search/default.mi?q=Hotel+City) · [Leading Hotels](https://www.lhw.com/search?q=City) · [Mr & Mrs Smith](https://www.mrandmrssmith.com/search?q=Hotel+City). Mention Amex Platinum perks.
+For BUDGET (cheap, budget, hostel): Show [Hostelworld](https://www.hostelworld.com/search?q=City) · [Booking.com](https://www.booking.com/search.html?ss=City). Mention Rakuten cashback.
+For NORMAL/MID-RANGE: Show [Booking.com](https://www.booking.com/search.html?ss=City) · [Agoda](https://www.agoda.com/search?q=City) · [Expedia](https://www.expedia.com/Hotel-Search?destination=City) · [Hotels.com](https://www.hotels.com/search.do?q-destination=City).
+Card offers: Mastercard 10% off on Agoda, Amex extra points on Expedia, Visa offers on Hotels.com.
+Replace spaces with + in all URLs. NEVER invent direct hotel URLs.
+
+LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable [Text](https://url.com) link.`;
+
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
@@ -55,10 +89,21 @@ function isNewPlan(messages) {
   }
 
   const tokensLeft = MAX_TOKENS - user.tokensUsed;
+  const imageInMessages = hasImage(messages);
 
-  // Try Groq first (free), fallback to Anthropic
-  if (process.env.GROQ_API_KEY) {
+  // Image আছে → directly Anthropic (Groq vision support নেই)
+  // Image নেই → Groq first, Anthropic fallback
+  if (!imageInMessages && process.env.GROQ_API_KEY) {
     try {
+      const groqMessages = messages.map(m => ({
+        role: m.role,
+        content: typeof m.content === "string"
+          ? m.content
+          : Array.isArray(m.content)
+            ? (m.content.find(c => c.type === "text")?.text || "")
+            : m.content
+      }));
+
       const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -70,7 +115,7 @@ function isNewPlan(messages) {
           max_tokens: Math.min(tokensLeft, 3000),
           messages: [
             { role: "system", content: SYSTEM_MSG },
-            ...messages.filter(m => m.role !== "system")
+            ...groqMessages.filter(m => m.role !== "system")
           ],
         }),
       });
@@ -87,11 +132,11 @@ function isNewPlan(messages) {
         });
       }
     } catch(e) {
-      // Groq failed, fall through to Anthropic
+      // Groq failed, Anthropic এ যাও
     }
   }
 
-  // Anthropic fallback
+  // Anthropic — text + image দুটোই handle করে
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -103,7 +148,8 @@ function isNewPlan(messages) {
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: Math.min(tokensLeft, 3000),
-        messages: messages,
+        system: SYSTEM_MSG,
+        messages: messages.filter(m => m.role !== "system"),
       }),
     });
 
