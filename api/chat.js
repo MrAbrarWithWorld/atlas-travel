@@ -40,9 +40,9 @@ function hasImage(messages) {
 
 export default async function handler(req, res) {
 
-  const SYSTEM_MSG = `You are ATLAS — AI travel intelligence.
+  const SYSTEM_MSG = `You are ATLAS — AI travel intelligence. If the user asks for 10-15 days, you MUST provide ALL days completely. Never use "..." or stop early. Never say you "will plan" — just give the full plan immediately.
 
-LANGUAGE: Detect user language instantly. Respond ENTIRELY in that language.
+LANGUAGE: Detect user language instantly. Respond ENTIRELY in that language. If user writes in Bengali script (বাংলা), respond in Bengali script only. NEVER use romanized Bengali (Banglish). If user writes in English, respond in English.
 CURRENCY: Use exactly the currency the user mentions.
 
 PHOTO IDENTIFICATION: If the user sends a photo, identify the location, landmark, or place shown. Provide: place name, city/country, travel info, nearby attractions, best time to visit, how to get there, and hotel/booking links for that area.
@@ -147,7 +147,7 @@ LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable 
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: Math.min(tokensLeft, 3000),
+        max_tokens: Math.min(tokensLeft, 6000),
         system: SYSTEM_MSG,
         messages: messages.filter(m => m.role !== "system"),
       }),
