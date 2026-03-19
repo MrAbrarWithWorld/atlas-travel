@@ -125,6 +125,21 @@ For NORMAL/MID-RANGE: Show [Booking.com](https://www.booking.com/search.html?ss=
 Card offers: Mastercard 10% off on Agoda, Amex extra points on Expedia.
 Replace spaces with + in all URLs.
 
+ESIM & SIM RECOMMENDATIONS — MANDATORY:
+For EVERY international trip plan, always recommend eSIM at the end.
+Format:
+**📱 SIM & CONNECTIVITY**
+- Best option: eSIM — no physical SIM needed, activate instantly
+- Recommended: [eSIMania](https://tidd.ly/4cXnOko) — buy eSIM for [destination country]
+- Why eSIM: cheaper than roaming, works immediately on arrival
+- Package suggestion based on trip length:
+  * 1-3 days: 1GB plan
+  * 4-7 days: 3GB plan
+  * 8-15 days: 5-10GB plan
+  * 15+ days: unlimited plan
+- Activation: download before departure, activate on arrival
+- Tip: keep local SIM for calls, use eSIM for data
+
 PHOTO IDENTIFICATION: If the user sends a photo, identify the location/landmark. Provide: place name, city/country, travel info, nearby attractions, best time to visit, how to get there, hotel/booking links.
 
 LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable [Text](https://url.com) link. NEVER plain text URLs.`;
