@@ -372,16 +372,6 @@ function App() {
     setSpeaking(false);
     setDraft("");
     if(taRef.current)taRef.current.style.height="auto";
-    const interval=setInterval(()=>{
-  i+=3;
-  setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply.slice(0,i)}:msg));
-  if(i>=reply.length){
-    clearInterval(interval);
-    setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply}:msg));
-    saveChat([...newMsgs,{id:aiId,from:"ai",text:reply}],hist.current);
-    setBusy(false);
-  }
-},10);
 
     const dateTime = getDateTime();
     const location = await getLocation();
@@ -415,20 +405,21 @@ function App() {
       const data=await res.json();
       if(data.error)throw new Error(data.error.message||"Error");
       const reply=data.content?.[0]?.text;
-if(!reply)throw new Error("No response");
-hist.current=[...hist.current,{role:"assistant",content:reply}];
-const aiId=Date.now()+1;
-setMsgs([...newMsgs,{id:aiId,from:"ai",text:""}]);
-let i=0;
-const interval=setInterval(()=>{
-  i+=3;
-  setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply.slice(0,i)}:msg));
-  if(i>=reply.length){
-    clearInterval(interval);
-    setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply}:msg));
-    saveChat([...newMsgs,{id:aiId,from:"ai",text:reply}],hist.current);
-  }
-},10);
+      if(!reply)throw new Error("No response");
+      hist.current=[...hist.current,{role:"assistant",content:reply}];
+      const aiId=Date.now()+1;
+      setMsgs([...newMsgs,{id:aiId,from:"ai",text:""}]);
+      let i=0;
+      const interval=setInterval(()=>{
+        i+=3;
+        setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply.slice(0,i)}:msg));
+        if(i>=reply.length){
+          clearInterval(interval);
+          setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply}:msg));
+          saveChat([...newMsgs,{id:aiId,from:"ai",text:reply}],hist.current);
+          setBusy(false);
+        }
+      },10);
     } catch(e){
       setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:`Something went wrong: ${e.message}`}]);
       setBusy(false);
