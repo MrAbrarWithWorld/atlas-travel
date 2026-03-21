@@ -421,10 +421,21 @@ const interval=setInterval(()=>{
 },10);
     } catch(e){
       setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:`Something went wrong: ${e.message}`}]);
+      setBusy(false);
     }
-    setBusy(false);
   }
 
+  const interval=setInterval(()=>{
+  i+=3;
+  setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply.slice(0,i)}:msg));
+  if(i>=reply.length){
+    clearInterval(interval);
+    setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply}:msg));
+    saveChat([...newMsgs,{id:aiId,from:"ai",text:reply}],hist.current);
+    setBusy(false);
+  }
+},10);
+  
   function reset(){
     if(!confirm("Start a new journey?"))return;
     setMsgs([]);setDraft("");setEditingId(null);setPhoto(null);
