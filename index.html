@@ -372,6 +372,16 @@ function App() {
     setSpeaking(false);
     setDraft("");
     if(taRef.current)taRef.current.style.height="auto";
+    const interval=setInterval(()=>{
+  i+=3;
+  setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply.slice(0,i)}:msg));
+  if(i>=reply.length){
+    clearInterval(interval);
+    setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply}:msg));
+    saveChat([...newMsgs,{id:aiId,from:"ai",text:reply}],hist.current);
+    setBusy(false);
+  }
+},10);
 
     const dateTime = getDateTime();
     const location = await getLocation();
@@ -424,17 +434,6 @@ const interval=setInterval(()=>{
       setBusy(false);
     }
   }
-
-  const interval=setInterval(()=>{
-  i+=3;
-  setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply.slice(0,i)}:msg));
-  if(i>=reply.length){
-    clearInterval(interval);
-    setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply}:msg));
-    saveChat([...newMsgs,{id:aiId,from:"ai",text:reply}],hist.current);
-    setBusy(false);
-  }
-},10);
   
   function reset(){
     if(!confirm("Start a new journey?"))return;
