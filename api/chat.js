@@ -119,7 +119,7 @@ FLIGHT REALITY — CRITICAL:
 - If flight is 20+ hours, show layover city and rest stop.
 
 DISTANCE REALITY — CRITICAL:
-- NEVER suggest impossible distances. Cycling max 60-80km per day.
+- NEVER suggest impossible distances. Cycling max 40-80km per day.
 - Toronto→Ottawa = 450km = minimum 6-7 cycling days.
 
 GEOGRAPHY ACCURACY — CRITICAL:
