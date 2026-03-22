@@ -63,14 +63,17 @@ function detectDestinationOnly(messages) {
 // ✅ Claude routing: Complex plan হলে Claude এ পাঠাও (Launch এর পর)
 function needsClaudeQuality(messages) {
   if (!ENABLE_CLAUDE_ROUTING) return false;
+  // Questions হয়ে গেলে (3+ messages) সব Claude এ যাবে
   const userMsgs = messages.filter(m => m.role === "user");
+  if (userMsgs.length >= 3) return true;
+  // অথবা planning keywords থাকলে
   const lastContent = userMsgs[userMsgs.length - 1]?.content;
   const last = typeof lastContent === "string"
     ? lastContent.toLowerCase()
     : Array.isArray(lastContent)
       ? (lastContent.find(c => c.type === "text")?.text || "").toLowerCase()
       : "";
-  return /itinerary|day by day|complete plan|full plan|all days|hotel recommend|visa details|দিন অনুযায়ী|পুরো plan|সম্পূর্ণ|বিস্তারিত|সব দিন|ইটিনারি/i.test(last);
+  return /itinerary|day by day|complete|full plan|visa|hotel|solo|couple|family|budget|passport|rtd|বিস্তারিত|পুরো|সম্পূর্ণ/i.test(last);
 }
 
 const SYSTEM_MSG = `CRITICAL RULE #1 — NO EXCEPTIONS:
