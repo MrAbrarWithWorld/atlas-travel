@@ -4,7 +4,7 @@ const MAX_TOKENS = 999999;
 const MAX_PLANS = 999;
 
 // ✅ LAUNCH এর সময় এটা true করুন — Claude routing on হবে
-const ENABLE_CLAUDE_ROUTING = false;
+const ENABLE_CLAUDE_ROUTING = true;
 
 function getUser(ip) {
   const now = Date.now();
