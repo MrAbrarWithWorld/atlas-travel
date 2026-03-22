@@ -3,6 +3,9 @@ const RESET_MS = 1 * 60 * 1000;
 const MAX_TOKENS = 999999;
 const MAX_PLANS = 999;
 
+// ✅ LAUNCH এর সময় এটা true করুন — Claude routing on হবে
+const ENABLE_CLAUDE_ROUTING = false;
+
 function getUser(ip) {
   const now = Date.now();
   if (!userMap.has(ip)) {
@@ -38,9 +41,39 @@ function hasImage(messages) {
   );
 }
 
-export default async function handler(req, res) {
+// ✅ OPTION 3: Code-level destination detection — 0 API call!
+function detectDestinationOnly(messages) {
+  const userMsgs = messages.filter(m => m.role === "user");
+  if (userMsgs.length > 2) return false;
 
-  const SYSTEM_MSG = `CRITICAL RULE #1 — NO EXCEPTIONS:
+  const lastContent = userMsgs[userMsgs.length - 1]?.content;
+  const last = typeof lastContent === "string"
+    ? lastContent.toLowerCase()
+    : Array.isArray(lastContent)
+      ? (lastContent.find(c => c.type === "text")?.text || "").toLowerCase()
+      : "";
+
+  const hasDestination = /italy|japan|thailand|turkey|australia|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|canada|usa|america|nepal|india|sri lanka|vietnam|indonesia|malaysia|egypt|morocco|brazil|mexico|new zealand|south korea|china|hong kong|taiwan|ইতালি|জাপান|থাইল্যান্ড|তুরস্ক|অস্ট্রেলিয়া|দুবাই|লন্ডন|প্যারিস|বালি|মালদ্বীপ|গ্রীস|স্পেন|ফ্রান্স|জার্মানি|সুইজারল্যান্ড|নেপাল|ভারত|শ্রীলঙ্কা|ভিয়েতনাম|মিশর|ব্রাজিল|মেক্সিকো|কোরিয়া|চীন|হংকং|jabo|jaite|jete|যাবো|যাব|যেতে|visit|dekhte|দেখতে/i.test(last);
+
+  const hasInfo = /\d+\s*(day|night|days|nights|দিন|রাত)|budget|\$|cad|usd|bdt|tk|taka|টাকা|বাজেট|\d+\s*(people|person|জন)|solo|couple|family|friends|সোলো|কাপল|পরিবার/i.test(last);
+
+  return hasDestination && !hasInfo;
+}
+
+// ✅ Claude routing: Complex plan হলে Claude এ পাঠাও (Launch এর পর)
+function needsClaudeQuality(messages) {
+  if (!ENABLE_CLAUDE_ROUTING) return false;
+  const userMsgs = messages.filter(m => m.role === "user");
+  const lastContent = userMsgs[userMsgs.length - 1]?.content;
+  const last = typeof lastContent === "string"
+    ? lastContent.toLowerCase()
+    : Array.isArray(lastContent)
+      ? (lastContent.find(c => c.type === "text")?.text || "").toLowerCase()
+      : "";
+  return /itinerary|day by day|complete plan|full plan|all days|hotel recommend|visa details|দিন অনুযায়ী|পুরো plan|সম্পূর্ণ|বিস্তারিত|সব দিন|ইটিনারি/i.test(last);
+}
+
+const SYSTEM_MSG = `CRITICAL RULE #1 — NO EXCEPTIONS:
 When a user mentions ANY destination or travel intention, you MUST ONLY ask questions. DO NOT give any plan, flight info, hotel, visa, or cost. ONLY ask:
 "Before I plan your trip, I need a few details:
 1. How many days are you planning to stay?
@@ -61,12 +94,6 @@ Before giving ANY trip plan, ALWAYS ask these questions first if not mentioned:
 3. কোন ধরনের trip? / What type of trip? (relaxation/sightseeing/adventure)
 4. কত রাত থাকবেন? / How many nights?
 STOP. Before ANY plan, you MUST ask these questions. NO EXCEPTIONS.
-If ANY of these are missing, ASK FIRST, plan LATER:
-1. How many days / কত দিন?
-2. Total budget / মোট budget?
-3. Trip type / কী ধরনের trip?
-4. Travel dates / কখন যাবেন?
-Do NOT give any plan, flight info, hotel info, or any travel details until ALL 4 questions are answered.
 
 REALISTIC PRICING — UNIVERSAL:
 NEVER invent or assume hotel prices. ALWAYS base on user's stated budget.
@@ -78,10 +105,9 @@ Every city has hotels from cheap to luxury:
 NEVER show a single fixed price as if it's the only option.
 
 CHECKOUT DAY REALITY:
-If checkout is on the last day (e.g., Day 3 of a 2-night trip):
-- Plan ONLY: breakfast → short beach/area walk → checkout by 12pm
+If checkout is on the last day:
+- Plan ONLY: breakfast → short walk → checkout by 12pm
 - NEVER plan full activities on checkout day
-- Mention: "bag রেখে হালকা ঘুরতে পারেন চেক-আউটের আগে"
 
 FLIGHT REALITY — CRITICAL:
 - ALWAYS use real flight durations. Toronto→Australia = 20-22 hours minimum.
@@ -92,21 +118,13 @@ FLIGHT REALITY — CRITICAL:
 DISTANCE REALITY — CRITICAL:
 - NEVER suggest impossible distances. Cycling max 60-80km per day.
 - Toronto→Ottawa = 450km = minimum 6-7 cycling days.
-- Always calculate: distance ÷ realistic daily pace = days needed.
-- NEVER say "leave morning, arrive afternoon" for 200km+ distances.
 
 GEOGRAPHY ACCURACY — CRITICAL:
-NEVER assume a city belongs to a country without verifying. 
-Common mistakes to avoid:
 - Lahore, Karachi, Islamabad, Rawalpindi = PAKISTAN (not India)
-- Punjab is divided: Indian Punjab (Amritsar, Ludhiana, Chandigarh) vs Pakistani Punjab (Lahore, Multan, Faisalabad)
 - Bangladesh = separate country, NOT part of India
-- Kashmir = disputed, mention both India and Pakistan administered parts
+- Kashmir = disputed territory
 - Hong Kong, Macau = Special Administrative Regions of China
 - Taiwan = separate governance from mainland China
-- Palestine, Gaza = separate from Israel
-- Always double-check which country a city belongs to before including in any plan
-- If user says a city name that could be in multiple countries, ask for clarification
 
 PASSPORT & VISA — CRITICAL:
 - Always ask which passport if not mentioned.
@@ -116,7 +134,6 @@ PASSPORT & VISA — CRITICAL:
 ROUTING RULES:
 - Always find most efficient route. Direct over connecting always.
 - Never repeat same flight segment twice.
-- Always compare direct vs connecting and show savings.
 
 Structure every plan:
 ## ✈️ FLIGHTS — real durations, actual arrival times, layovers
@@ -129,7 +146,7 @@ Structure every plan:
 ## 🎬 CONTENT SPOTS — filming locations, golden hour times
 ## 📋 ESSENTIALS — visa, SIM, ATM, safety, weather
 
-TRIP PLANNING — MANDATORY: For every trip plan, always provide complete DAY BY DAY breakdown. Each day must include: morning/afternoon/evening activities, exact transport (metro line number, bus number, taxi cost, walk time), entry fees, meal spots with prices. NEVER skip days. NEVER give a summary. Format:
+TRIP PLANNING — MANDATORY: Complete DAY BY DAY breakdown. Each day: morning/afternoon/evening activities, exact transport, entry fees, meal spots with prices. NEVER skip days. Format:
 **Day 1 — [Area Name]**
 - Morning: [activity] → go by [transport, cost, time]
 - Lunch: [restaurant, cost]
@@ -137,41 +154,27 @@ TRIP PLANNING — MANDATORY: For every trip plan, always provide complete DAY BY
 - Dinner: [restaurant, cost]
 - Return to hotel by [transport, cost]
 
-If the user asks for 10-15 days, provide ALL days completely. Never use "..." or stop early.
-
 COMFORT JOURNEY — ELDERLY/PARENTS:
-If user mentions parents, elderly, or cannot do long flights:
 - Split flights into max 6-8 hour segments
 - Add 1-2 night layover at best stopover city
 - Recommend airport transit hotels with costs and booking links
-- Suggest: Dhaka→Toronto via Dubai/Doha/Istanbul/London
 
-HOTEL LINKS — detect budget level from user's stated budget:
-For LUXURY: Show [Four Seasons](https://www.fourseasons.com/find-a-hotel/?q=City) · [Marriott](https://www.marriott.com/search/default.mi?q=Hotel+City) · [Leading Hotels](https://www.lhw.com/search?q=City). Mention Amex Platinum perks.
-For BUDGET: Show [Hostelworld](https://www.hostelworld.com/search?q=City) · [Booking.com](https://www.booking.com/search.html?ss=City). Mention Rakuten cashback.
-For NORMAL/MID-RANGE: Show [Booking.com](https://www.booking.com/search.html?ss=City) · [Agoda](https://www.agoda.com/search?q=City) · [Expedia](https://www.expedia.com/Hotel-Search?destination=City) · [Hotels.com](https://www.hotels.com/search.do?q-destination=City).
-Card offers: Mastercard 10% off on Agoda, Amex extra points on Expedia.
+HOTEL LINKS:
+For LUXURY: [Four Seasons](https://www.fourseasons.com/find-a-hotel/?q=City) · [Marriott](https://www.marriott.com/search/default.mi?q=Hotel+City)
+For BUDGET: [Hostelworld](https://www.hostelworld.com/search?q=City) · [Booking.com](https://www.booking.com/search.html?ss=City)
+For MID-RANGE: [Booking.com](https://www.booking.com/search.html?ss=City) · [Agoda](https://www.agoda.com/search?q=City) · [Expedia](https://www.expedia.com/Hotel-Search?destination=City) · [Hotels.com](https://www.hotels.com/search.do?q-destination=City)
 Replace spaces with + in all URLs.
 
-ESIM & SIM RECOMMENDATIONS — MANDATORY:
-For EVERY international trip plan, always recommend eSIM at the end.
-Format:
+ESIM — MANDATORY for every international trip:
 **📱 SIM & CONNECTIVITY**
-- Best option: eSIM — no physical SIM needed, activate instantly
-- Recommended: [eSIMania](https://tidd.ly/4cXnOko) — buy eSIM for [destination country]
-- Why eSIM: cheaper than roaming, works immediately on arrival
-- Package suggestion based on trip length:
-  * 1-3 days: 1GB plan
-  * 4-7 days: 3GB plan
-  * 8-15 days: 5-10GB plan
-  * 15+ days: unlimited plan
-- Activation: download before departure, activate on arrival
-- Tip: keep local SIM for calls, use eSIM for data
+- Recommended: [eSIMania](https://tidd.ly/4cXnOko)
+- 1-3 days: 1GB · 4-7 days: 3GB · 8-15 days: 5-10GB · 15+ days: unlimited
 
-PHOTO IDENTIFICATION: If the user sends a photo, identify the location/landmark. Provide: place name, city/country, travel info, nearby attractions, best time to visit, how to get there, hotel/booking links.
+PHOTO IDENTIFICATION: If user sends a photo, identify location/landmark. Provide: place name, city/country, travel info, nearby attractions, best time to visit, how to get there, hotel/booking links.
 
 LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable [Text](https://url.com) link. NEVER plain text URLs.`;
-  
+
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
@@ -196,12 +199,30 @@ LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable 
     return res.status(429).json({ error: { message: `PLAN_LIMIT|${resetInHours}|${tokensLeft}` } });
   }
 
+  // ✅ OPTION 3: Destination only → Code নিজেই questions করে, 0 API call!
+  if (detectDestinationOnly(messages)) {
+    const lastContent = messages.filter(m => m.role === "user").slice(-1)[0]?.content;
+    const last = typeof lastContent === "string" ? lastContent.toLowerCase()
+      : Array.isArray(lastContent) ? (lastContent.find(c => c.type === "text")?.text || "").toLowerCase() : "";
+
+    const isBengali = /[\u0980-\u09FF]|jabo|jaite|jete|যাব|যেতে|দেখতে/i.test(last);
+
+    const questionText = isBengali
+      ? `✈️ দারুণ পছন্দ! Trip plan করার আগে কিছু জানা দরকার:\n\n1. **কতদিন** থাকবেন?\n2. **মোট budget** কত? (CAD / USD / BDT যেকোনো)\n3. **কতজন** যাবেন?\n4. **কী ধরনের trip?** (relaxation / sightseeing / adventure)\n5. **কোন passport** আছে আপনার?`
+      : `✈️ Great choice! Before I build your plan, I need a few details:\n\n1. **How many days** are you planning to stay?\n2. **What is your total budget?** (CAD / USD / any currency)\n3. **How many people** are traveling?\n4. **What kind of trip?** (relaxation / sightseeing / adventure)\n5. **What passport** do you hold?`;
+
+    return res.status(200).json({
+      content: [{ type: "text", text: questionText }],
+      usage: { input_tokens: 0, output_tokens: 0 }
+    });
+  }
+
   const tokensLeft = MAX_TOKENS - user.tokensUsed;
   const imageInMessages = hasImage(messages);
+  const useClaudeNow = needsClaudeQuality(messages) || imageInMessages;
 
-  // Image আছে → directly Anthropic (Groq vision support নেই)
-  // Image নেই → Groq first, Anthropic fallback
-  if (!imageInMessages && process.env.GROQ_API_KEY) {
+  // ✅ GROQ — Free, Llama 4 Scout (better instruction following)
+  if (!useClaudeNow && process.env.GROQ_API_KEY) {
     try {
       const groqMessages = messages.map(m => ({
         role: m.role,
@@ -219,7 +240,7 @@ LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable 
           "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "meta-llama/llama-4-scout-17b-16e-instruct", // ✅ Llama 4, FREE
           max_tokens: Math.min(tokensLeft, 6000),
           messages: [
             { role: "system", content: SYSTEM_MSG },
@@ -240,11 +261,11 @@ LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable 
         });
       }
     } catch(e) {
-      // Groq failed, Anthropic এ যাও
+      // Groq failed, Claude fallback
     }
   }
 
-  // Anthropic — text + image দুটোই handle করে
+  // ✅ CLAUDE — Image বা complex plan (বা Groq fail হলে fallback)
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
