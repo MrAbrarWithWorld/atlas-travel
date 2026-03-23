@@ -9,6 +9,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body,#root{height:100%;}
@@ -27,6 +29,15 @@ textarea{font-family:'DM Sans',sans-serif;-webkit-appearance:none;}
 textarea::placeholder{color:#6a5a3a;}
 textarea:focus{outline:none;}
 button{-webkit-tap-highlight-color:transparent;}
+.atlas-map{height:220px;width:100%;border-radius:8px;margin-top:0.75rem;border:1px solid rgba(201,169,110,0.2);overflow:hidden;}
+.leaflet-popup-content-wrapper{background:#252018;border:1px solid rgba(201,169,110,0.3);border-radius:8px;color:#ede5d5;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
+.leaflet-popup-tip{background:#252018;}
+.leaflet-popup-content{font-family:'DM Sans',sans-serif;font-size:12px;color:#ede5d5;margin:6px 10px;}
+.leaflet-popup-content b{color:#c9a96e;}
+.leaflet-control-zoom a{background:#252018!important;color:#c9a96e!important;border-color:rgba(201,169,110,0.3)!important;}
+.leaflet-control-attribution{background:rgba(28,25,20,0.8)!important;color:#6a5a3a!important;font-size:9px!important;}
+.leaflet-control-attribution a{color:#8a7a50!important;}
+.map-pin-label{background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:2px 6px;border-radius:4px;font-size:10px;font-family:'DM Sans',sans-serif;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -70,6 +81,21 @@ function getDateTime() {
   return `${day}, ${month} ${date}, ${year} — ${h12}:${mins} ${ampm} (${tz})`;
 }
 
+// ✅ Parse [MAPDATA] from AI reply
+function parseMapData(text) {
+  const match = text.match(/\[MAPDATA\]([\s\S]*?)\[\/MAPDATA\]/);
+  if (!match) return null;
+  try {
+    const data = JSON.parse(match[1]);
+    return data.places || null;
+  } catch(e) { return null; }
+}
+
+// ✅ Strip [MAPDATA] block from display text
+function stripMapData(text) {
+  return text.replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g, '').trim();
+}
+
 const PERSONA = `You are ATLAS — the world's most sophisticated AI travel intelligence.
 
 LANGUAGE: Detect user language instantly from their message. Respond ENTIRELY and ONLY in that exact language.
@@ -86,10 +112,10 @@ NEVER mix languages. NEVER assume Bengali. NEVER use Banglish. Mirror the user's
 CURRENT DATE & TIME: You always know the exact current date and time because it is injected into every message. Use this to calculate travel dates, seasons, visa processing times, and flight booking windows accurately. Never say you don't know the date or time.
 
 PASSPORT & VISA — CRITICAL:
-- Always ask which passport if not mentioned.
+- Always ask which passport/travel document if not mentioned.
 - Never assume strong passport.
-- Handle: Bangladesh, Pakistan, India, Nigeria, RTD, Dual citizenship.
-- For RTD: ask which country issued it, explain visa requirements specifically.
+- Handle: Bangladesh, Pakistan, India, Nigeria, Canadian RTD, USA RTD, UK CTD, EU CTD, Australian RTD, Dual citizenship.
+- For RTD: ALWAYS ask which country issued it — Canada RTD, USA RTD, UK CTD, EU CTD all have very different access.
 
 ROUTING RULES:
 - Always find most efficient route. Direct over connecting always.
@@ -112,17 +138,8 @@ If user mentions parents, elderly, or cannot do long flights:
 - Automatically split flights into max 6-8 hour segments
 - Add 1-2 night layover at best stopover city
 - Recommend AIRPORT TRANSIT HOTELS (inside or near airport)
-  Examples: Dubai (Al Maha by Marriott), Doha (Oryx Airport Hotel),
-  Istanbul (Yotel Istanbul Airport), Singapore (Crowne Plaza Changi)
 - Show exact layover hotel cost, how to book, distance from terminal
-- Calculate total journey time with rest vs direct
-- Show visa requirements for layover country
-- Suggest best stopover cities based on route:
-  Dhaka->Toronto: Dubai, Doha, Istanbul, London
-  Asia->Europe: Dubai, Doha, Singapore
-  Asia->USA: Tokyo, Seoul, Singapore
-- Always show: Flight 1 -> Rest -> Flight 2 -> Rest (if needed) -> Destination
-- Include: wheelchair assistance availability, senior discounts, meal options
+- Suggest best stopover cities: Dhaka→Toronto via Dubai/Doha/Istanbul/London
 
 PHOTO IDENTIFICATION:
 If the user sends a photo, identify the location, landmark, or place shown.
@@ -131,17 +148,10 @@ Provide: place name, city/country, travel info, nearby attractions, best time to
 LINKS — MANDATORY, NO EXCEPTIONS:
 NEVER mention a hotel, flight, visa, or transport without a clickable link.
 ALWAYS format as [Text](https://url.com) — never plain text URLs.
-- Every hotel -> [Book Hotel Name](https://booking.com/hotel-name)
-- Every flight search -> [Search Flights](https://google.com/flights)
-- Every visa -> [Apply for Visa](https://official-visa-site.gov)
-- Every transport -> [Official Site](https://transport-site.com)
-BAD: Hotel Gajoen Tokyo
-GOOD: [Hotel Gajoen Tokyo](https://www.hotelgajoen-tokyo.com)
-If you cannot find exact URL, use booking.com search: [Hotel Name](https://www.booking.com/search.html?ss=Hotel+Name)
 
 CRITICAL: Never truncate. Complete every day. Always cheapest routing.`;
 
-const STORAGE_KEY = 'atlas_v5';
+const STORAGE_KEY = 'atlas_v6';
 const { useState, useRef, useEffect } = React;
 
 function saveChat(msgs, hist) {
@@ -158,6 +168,116 @@ const defaultHist = [
   {role:"user",content:"Who are you?"},
   {role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}
 ];
+
+// ✅ Leaflet Map Component
+function MapView({locations, msgId}) {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+
+  useEffect(() => {
+    if (!locations || locations.length === 0) return;
+    if (!window.L) return;
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
+
+    const containerId = `atlas-map-${msgId}`;
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const map = window.L.map(container, {
+      zoomControl: true,
+      scrollWheelZoom: false,
+      attributionControl: true
+    });
+
+    // Dark CartoDB tiles
+    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    const bounds = [];
+    const colors = ['#c9a96e','#e8b84b','#d4a96e','#f0c070','#b89050'];
+
+    locations.forEach((place, i) => {
+      if (!place.lat || !place.lon) return;
+
+      const color = colors[i % colors.length];
+      const dayLabel = place.day && place.day > 0 ? `Day ${place.day}` : '';
+
+      // Custom golden pin icon
+      const icon = window.L.divIcon({
+        className: '',
+        html: `<div style="
+          width:28px;height:28px;
+          background:${color};
+          border:2px solid #1c1914;
+          border-radius:50% 50% 50% 0;
+          transform:rotate(-45deg);
+          box-shadow:0 2px 8px rgba(0,0,0,0.6);
+          display:flex;align-items:center;justify-content:center;
+        "><span style="
+          transform:rotate(45deg);
+          color:#1c1914;
+          font-size:10px;
+          font-weight:700;
+          font-family:'DM Sans',sans-serif;
+          line-height:1;
+        ">${i+1}</span></div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 28],
+        popupAnchor: [0, -30]
+      });
+
+      const marker = window.L.marker([place.lat, place.lon], {icon}).addTo(map);
+      marker.bindPopup(`<b>${place.name}</b>${dayLabel ? `<br><span style="color:#c9a96e;font-size:10px">${dayLabel}</span>` : ''}${place.type ? `<br><span style="color:#8a7a50;font-size:10px">${place.type}</span>` : ''}`);
+      bounds.push([place.lat, place.lon]);
+    });
+
+    if (bounds.length === 1) {
+      map.setView(bounds[0], 11);
+    } else if (bounds.length > 1) {
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 10 });
+    }
+
+    mapInstanceRef.current = map;
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [locations, msgId]);
+
+  if (!locations || locations.length === 0) return null;
+
+  return React.createElement("div", null,
+    React.createElement("div", {
+      style: {
+        fontSize: "0.6rem",
+        color: "#6a5a3a",
+        letterSpacing: "0.1em",
+        textTransform: "uppercase",
+        marginTop: "0.75rem",
+        marginBottom: "0.35rem",
+        display: "flex",
+        alignItems: "center",
+        gap: "0.4rem"
+      }
+    },
+      React.createElement("span", {style: {color: "#c9a96e"}}, "◆"),
+      `${locations.length} location${locations.length > 1 ? 's' : ''} on map`
+    ),
+    React.createElement("div", {
+      id: `atlas-map-${msgId}`,
+      className: "atlas-map"
+    })
+  );
+}
 
 function Modal({hours, plansLeft, onClose}) {
   const isPlan = plansLeft !== undefined;
@@ -179,7 +299,8 @@ function Modal({hours, plansLeft, onClose}) {
 }
 
 function Prose({text}) {
-  return React.createElement("div",null,text.split("\n").map((line,i)=>{
+  const clean = stripMapData(text);
+  return React.createElement("div",null,clean.split("\n").map((line,i)=>{
     if(!line.trim()) return React.createElement("div",{key:i,style:{height:"0.35rem"}});
     if(line.startsWith("## ")) return React.createElement("div",{key:i,style:{fontSize:"0.68rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.2)"}},line.slice(3));
     if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line)) return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.9rem",fontWeight:700,color:"#ede5d5",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
@@ -309,7 +430,7 @@ function App() {
     if(!window.speechSynthesis) return;
     if(speaking){window.speechSynthesis.cancel();setSpeaking(false);return;}
     setSpeaking(true);
-    const clean = text.replace(/##.*?\n/g,'').replace(/\*\*/g,'').replace(/[◆•]/g,'').slice(0,1000);
+    const clean = stripMapData(text).replace(/##.*?\n/g,'').replace(/\*\*/g,'').replace(/[◆•]/g,'').slice(0,1000);
     const u = new SpeechSynthesisUtterance(clean);
     u.rate=0.95;
     u.onend=()=>setSpeaking(false);
@@ -318,32 +439,32 @@ function App() {
   }
 
   function handlePhotoSelect(e) {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const MAX = 800;
-      let w = img.width, h = img.height;
-      if(w > MAX || h > MAX) {
-        if(w > h) { h = Math.round(h * MAX/w); w = MAX; }
-        else { w = Math.round(w * MAX/h); h = MAX; }
-      }
-      canvas.width = w;
-      canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const compressed = canvas.toDataURL('image/jpeg', 0.7);
-      const base64 = compressed.split(",")[1];
-      setPhoto({ base64, mediaType: 'image/jpeg', preview: compressed });
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX = 600;
+        let w = img.width, h = img.height;
+        if(w > MAX || h > MAX) {
+          if(w > h) { h = Math.round(h * MAX/w); w = MAX; }
+          else { w = Math.round(w * MAX/h); h = MAX; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', 0.5);
+        const base64 = compressed.split(",")[1];
+        setPhoto({ base64, mediaType: 'image/jpeg', preview: compressed });
+      };
+      img.src = ev.target.result;
     };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-  e.target.value = "";
-}
-  
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
+
   function startEdit(msg) {
     setEditingId(msg.id);
     setEditText(msg.text);
@@ -406,17 +527,21 @@ function App() {
       if(data.error)throw new Error(data.error.message||"Error");
       const reply=data.content?.[0]?.text;
       if(!reply)throw new Error("No response");
+
+      // ✅ Parse map locations from reply
+      const locations = parseMapData(reply);
+
       hist.current=[...hist.current,{role:"assistant",content:reply}];
       const aiId=Date.now()+1;
-      setMsgs([...newMsgs,{id:aiId,from:"ai",text:""}]);
+      setMsgs([...newMsgs,{id:aiId,from:"ai",text:"",locations:null}]);
       let i=0;
       const interval=setInterval(()=>{
         i+=3;
         setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply.slice(0,i)}:msg));
         if(i>=reply.length){
           clearInterval(interval);
-          setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply}:msg));
-          saveChat([...newMsgs,{id:aiId,from:"ai",text:reply}],hist.current);
+          setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply,locations}:msg));
+          saveChat([...newMsgs,{id:aiId,from:"ai",text:reply,locations}],hist.current);
           setBusy(false);
         }
       },10);
@@ -425,7 +550,7 @@ function App() {
       setBusy(false);
     }
   }
-  
+
   function reset(){
     if(!confirm("Start a new journey?"))return;
     setMsgs([]);setDraft("");setEditingId(null);setPhoto(null);
@@ -466,6 +591,13 @@ function App() {
               React.createElement("polyline",{points:"21 15 16 10 5 21"})
             ),
             "Photo identification"
+          ),
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.5rem",color:"#4a3a20",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase"}},
+            React.createElement("svg",{width:"11",height:"11",viewBox:"0 0 24 24",fill:"none",stroke:"#5a4a28",strokeWidth:"1.5",strokeLinecap:"round",strokeLinejoin:"round"},
+              React.createElement("path",{d:"M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"}),
+              React.createElement("circle",{cx:"12",cy:"10",r:"3"})
+            ),
+            "Interactive map"
           )
         )
       ),
@@ -474,7 +606,7 @@ function App() {
           React.createElement("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:2}},
             React.createElement("span",{style:{fontSize:"0.46rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
           ),
-          React.createElement("div",{style:{maxWidth:"88%"}},
+          React.createElement("div",{style:{maxWidth:"88%",width:"100%"}},
             msg.from==="user"
               ? editingId===msg.id
                 ? React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"0.5rem"}},
@@ -493,6 +625,9 @@ function App() {
                   )
               : React.createElement("div",null,
                   React.createElement(Prose,{text:msg.text}),
+                  // ✅ Show map if locations exist and streaming is done
+                  msg.locations && msg.locations.length > 0 && msg.text && !msg.text.endsWith('') &&
+                    React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
                   hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{marginTop:"0.6rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen")
                 )
           )
@@ -518,7 +653,7 @@ function App() {
         React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}},onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";},placeholder:listening?"Listening...":photo?"Add a message or just send the photo...":"Where would you like to go?",disabled:busy||listening,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:listening?"#c9a96e":"#e0d8c8",fontSize:"0.9rem",resize:"none",lineHeight:1.7,maxHeight:100,overflowY:"auto",paddingTop:"0.2rem"}}),
         React.createElement("button",{onClick:()=>send(),disabled:(!draft.trim()&&!photo)||busy,style:{flexShrink:0,background:(draft.trim()||photo)&&!busy?"rgba(201,169,110,0.2)":"rgba(201,169,110,0.05)",border:`1.5px solid ${(draft.trim()||photo)&&!busy?"rgba(201,169,110,0.5)":"rgba(201,169,110,0.12)"}`,borderRadius:8,width:40,height:40,cursor:(draft.trim()||photo)&&!busy?"pointer":"default",color:(draft.trim()||photo)&&!busy?"#c9a96e":"#3a3020",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.1rem",transition:"all 0.2s"}},busy?"·":"↑")
       ),
-      React.createElement("div",{style:{marginTop:"0.45rem",textAlign:"center",fontSize:"0.52rem",color:"#3a3020",letterSpacing:"0.09em",textTransform:"uppercase"}},"Any language · Any currency · Any photo")
+      React.createElement("div",{style:{marginTop:"0.45rem",textAlign:"center",fontSize:"0.52rem",color:"#3a3020",letterSpacing:"0.09em",textTransform:"uppercase"}},"Any language · Any currency · Any photo · Interactive map")
     )
   );
 }
