@@ -91,6 +91,56 @@ function parseMapData(text) {
   } catch(e) { return null; }
 }
 
+  // ✅ Fallback: Auto-detect cities from text if no MAPDATA
+const CITY_COORDS = {
+  "rome":{lat:41.9028,lon:12.4964},"florence":{lat:43.7696,lon:11.2558},
+  "venice":{lat:45.4408,lon:12.3155},"milan":{lat:45.4654,lon:9.1859},
+  "naples":{lat:40.8518,lon:14.2681},"berlin":{lat:52.5200,lon:13.4050},
+  "munich":{lat:48.1351,lon:11.5820},"hamburg":{lat:53.5753,lon:10.0153},
+  "paris":{lat:48.8566,lon:2.3522},"london":{lat:51.5074,lon:-0.1278},
+  "barcelona":{lat:41.3851,lon:2.1734},"madrid":{lat:40.4168,lon:-3.7038},
+  "amsterdam":{lat:52.3676,lon:4.9041},"prague":{lat:50.0755,lon:14.4378},
+  "vienna":{lat:48.2082,lon:16.3738},"budapest":{lat:47.4979,lon:19.0402},
+  "athens":{lat:37.9838,lon:23.7275},"istanbul":{lat:41.0082,lon:28.9784},
+  "tokyo":{lat:35.6762,lon:139.6503},"osaka":{lat:34.6937,lon:135.5023},
+  "kyoto":{lat:35.0116,lon:135.7681},"bangkok":{lat:13.7563,lon:100.5018},
+  "singapore":{lat:1.3521,lon:103.8198},"bali":{lat:-8.3405,lon:115.0920},
+  "dubai":{lat:25.2048,lon:55.2708},"abu dhabi":{lat:24.4539,lon:54.3773},
+  "new york":{lat:40.7128,lon:-74.0060},"los angeles":{lat:34.0522,lon:-118.2437},
+  "toronto":{lat:43.6532,lon:-79.3832},"vancouver":{lat:49.2827,lon:-123.1207},
+  "sydney":{lat:-33.8688,lon:151.2093},"melbourne":{lat:-37.8136,lon:144.9631},
+  "dhaka":{lat:23.8103,lon:90.4125},"cox's bazar":{lat:21.4272,lon:91.9768},
+  "karachi":{lat:24.8607,lon:67.0011},"lahore":{lat:31.5204,lon:74.3587},
+  "mumbai":{lat:19.0760,lon:72.8777},"delhi":{lat:28.6139,lon:77.2090},
+  "kathmandu":{lat:27.7172,lon:85.3240},"colombo":{lat:6.9271,lon:79.8612},
+  "cairo":{lat:30.0444,lon:31.2357},"nairobi":{lat:-1.2921,lon:36.8219},
+  "johannesburg":{lat:-26.2041,lon:28.0473},"marrakech":{lat:31.6295,lon:-7.9811},
+  "mexico city":{lat:19.4326,lon:-99.1332},"rio de janeiro":{lat:-22.9068,lon:-43.1729},
+  "buenos aires":{lat:-34.6037,lon:-58.3816},"lima":{lat:-12.0464,lon:-77.0428},
+  "cinque terre":{lat:44.1461,lon:9.6439},"vernazza":{lat:44.1353,lon:9.6836},
+  "monterosso":{lat:44.1466,lon:9.6552},"positano":{lat:40.6280,lon:14.4850},
+  "amalfi":{lat:40.6343,lon:14.6025},"capri":{lat:40.5482,lon:14.2432}
+};
+
+function autoDetectCities(text) {
+  const clean = stripMapData(text).toLowerCase();
+  const found = [];
+  const seen = new Set();
+  Object.entries(CITY_COORDS).forEach(([city, coords]) => {
+    if (clean.includes(city) && !seen.has(city)) {
+      seen.add(city);
+      found.push({
+        name: city.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' '),
+        lat: coords.lat,
+        lon: coords.lon,
+        day: 0,
+        type: "city"
+      });
+    }
+  });
+  return found.length > 0 ? found : null;
+}
+  
 // ✅ Strip [MAPDATA] block from display text
 function stripMapData(text) {
   return text.replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g, '').trim();
@@ -529,7 +579,7 @@ function App() {
       if(!reply)throw new Error("No response");
 
       // ✅ Parse map locations from reply
-      const locations = parseMapData(reply);
+      const locations = parseMapData(reply) || autoDetectCities(reply);
 
       hist.current=[...hist.current,{role:"assistant",content:reply}];
       const aiId=Date.now()+1;
