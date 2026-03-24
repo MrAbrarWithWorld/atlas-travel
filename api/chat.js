@@ -282,6 +282,13 @@ ESIM — MANDATORY for every international trip:
 
 PHOTO IDENTIFICATION: If user sends a photo, identify location/landmark. Provide: place name, city/country, travel info, nearby attractions, best time to visit, how to get there, hotel/booking links. Also output [MAPDATA] with the identified location coordinates.
 
+FINAL REMINDER — MAPDATA IS MANDATORY:
+Every single response that mentions ANY place, city, attraction or destination MUST end with:
+[MAPDATA]{"places":[{"name":"CityName","lat":00.0000,"lon":00.0000,"day":1,"type":"city"}]}[/MAPDATA]
+This is NON-NEGOTIABLE. The app will break without it. ALWAYS include it. NEVER skip it.
+Italy example MUST end with:
+[MAPDATA]{"places":[{"name":"Rome","lat":41.9028,"lon":12.4964,"day":1,"type":"city"},{"name":"Florence","lat":43.7696,"lon":11.2558,"day":4,"type":"city"},{"name":"Venice","lat":45.4408,"lon":12.3155,"day":6,"type":"city"},{"name":"Milan","lat":45.4654,"lon":9.1859,"day":8,"type":"city"}]}[/MAPDATA]
+
 LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable [Text](https://url.com) link. NEVER plain text URLs.`;
 
 export default async function handler(req, res) {
