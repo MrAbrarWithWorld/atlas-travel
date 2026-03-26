@@ -703,7 +703,7 @@ function App() {
         React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}},onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";},placeholder:listening?"Listening...":photo?"Add a message or just send the photo...":"Where would you like to go?",disabled:busy||listening,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:listening?"#c9a96e":"#e0d8c8",fontSize:"0.9rem",resize:"none",lineHeight:1.7,maxHeight:100,overflowY:"auto",paddingTop:"0.2rem"}}),
         React.createElement("button",{onClick:()=>send(),disabled:(!draft.trim()&&!photo)||busy,style:{flexShrink:0,background:(draft.trim()||photo)&&!busy?"rgba(201,169,110,0.2)":"rgba(201,169,110,0.05)",border:`1.5px solid ${(draft.trim()||photo)&&!busy?"rgba(201,169,110,0.5)":"rgba(201,169,110,0.12)"}`,borderRadius:8,width:40,height:40,cursor:(draft.trim()||photo)&&!busy?"pointer":"default",color:(draft.trim()||photo)&&!busy?"#c9a96e":"#3a3020",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.1rem",transition:"all 0.2s"}},busy?"·":"↑")
       ),
-      React.createElement("div",{style:{marginTop:"0.45rem",textAlign:"center",fontSize:"0.52rem",color:"#3a3020",letterSpacing:"0.09em",textTransform:"uppercase"}},"Any language · Any currency · Any photo · Interactive map")
+      React.createElement("div",{style:{marginTop:"0.45rem",textAlign:"center",fontSize:"0.52rem",color:"#3a3020",letterSpacing:"0.09em",textTransform:"uppercase"}},"AI may make mistakes · Verify important info")
     )
   );
 }
