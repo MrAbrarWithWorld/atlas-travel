@@ -564,7 +564,7 @@ function App() {
     setPhoto(null);
 
     try {
-      const res = await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-14)]})});
+      const res = await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-6)]})});
       if(res.status===429){
         const data=await res.json();
         const msg=data.error?.message||"";
