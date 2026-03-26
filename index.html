@@ -676,7 +676,7 @@ function App() {
               : React.createElement("div",null,
                   React.createElement(Prose,{text:msg.text}),
                   // ✅ Show map if locations exist and streaming is done
-                  msg.locations && msg.locations.length > 0 && msg.text && !msg.text.endsWith('') &&
+                  msg.locations && msg.locations.length > 0 && msg.text &&
                     React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
                   hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{marginTop:"0.6rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen")
                 )
