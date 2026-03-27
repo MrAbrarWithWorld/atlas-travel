@@ -652,7 +652,7 @@ function App() {
         )
       ),
       msgs.length>0&&React.createElement("div",{style:{padding:"1.25rem 1.5rem",display:"flex",flexDirection:"column",gap:"1.35rem"}},
-        ...msgs.map(msg=>React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:"0.75rem",alignItems:"flex-start"}},
+        ...msgs.map((msg,msgIndex)=>React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:"0.75rem",alignItems:"flex-start"}},
           React.createElement("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:2}},
             React.createElement("span",{style:{fontSize:"0.46rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
           ),
@@ -676,7 +676,7 @@ function App() {
               : React.createElement("div",null,
                   React.createElement(Prose,{text:msg.text}),
                   // ✅ Show map if locations exist and streaming is done
-                  msg.locations && msg.locations.length > 0 && msg.text &&
+                  msg.locations && msg.locations.length > 0 && msg.text && msgIndex===msgs.length-1 &&
                     React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
                   hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{marginTop:"0.6rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen")
                 )
