@@ -15,10 +15,11 @@
     {
       "source": "/trip/(.*)",
       "destination": "/trip.html"
+    },
     {
-  "source": "/((?!_vercel).*)",
-  "destination": "/index.html"
-  }
+      "source": "/((?!_vercel).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
