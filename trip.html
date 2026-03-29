@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#1c1914"/>
+<title>ATLAS — Trip Plan</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#1c1914;color:#ede5d5;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;min-height:100%;}
+::-webkit-scrollbar{width:2px;}
+::-webkit-scrollbar-thumb{background:rgba(201,169,110,0.3);}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.atlas-map{height:260px;width:100%;border-radius:8px;margin-top:0.75rem;border:1px solid rgba(201,169,110,0.2);overflow:hidden;}
+.leaflet-popup-content-wrapper{background:#252018;border:1px solid rgba(201,169,110,0.3);border-radius:8px;color:#ede5d5;}
+.leaflet-popup-tip{background:#252018;}
+.leaflet-popup-content{font-family:'DM Sans',sans-serif;font-size:12px;color:#ede5d5;margin:6px 10px;}
+.leaflet-popup-content b{color:#c9a96e;}
+.leaflet-control-zoom a{background:#252018!important;color:#c9a96e!important;border-color:rgba(201,169,110,0.3)!important;}
+.leaflet-control-attribution{background:rgba(28,25,20,0.8)!important;color:#6a5a3a!important;font-size:9px!important;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {createClient} = supabase;
+const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_gDzH6bF1tOYuKmx4uIGaLw_On9AG90E';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const {useState, useRef, useEffect} = React;
+
+function stripMapData(text){return text.replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g,'').trim();}
+function parseMapData(text){const m=text.match(/\[MAPDATA\]([\s\S]*?)\[\/MAPDATA\]/);if(!m)return null;try{const d=JSON.parse(m[1]);return d.places||null;}catch{return null;}}
+
+function MapView({locations, msgId}){
+  const mapInstanceRef=useRef(null);
+  useEffect(()=>{
+    if(!locations||locations.length===0)return;
+    if(!window.L)return;
+    if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}
+    const container=document.getElementById(`map-${msgId}`);
+    if(!container)return;
+    const map=window.L.map(container,{zoomControl:true,scrollWheelZoom:false});
+    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
+    const bounds=[];const colors=['#c9a96e','#e8b84b','#d4a96e','#f0c070','#b89050'];
+    locations.forEach((place,i)=>{
+      if(!place.lat||!place.lon)return;
+      const color=colors[i%colors.length];
+      const icon=window.L.divIcon({className:'',html:`<div style="width:28px;height:28px;background:${color};border:2px solid #1c1914;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#1c1914;font-size:10px;font-weight:700;line-height:1;">${i+1}</span></div>`,iconSize:[28,28],iconAnchor:[14,28],popupAnchor:[0,-30]});
+      window.L.marker([place.lat,place.lon],{icon}).addTo(map).bindPopup(`<b>${place.name}</b>`);
+      bounds.push([place.lat,place.lon]);
+    });
+    if(bounds.length===1)map.setView(bounds[0],11);
+    else if(bounds.length>1)map.fitBounds(bounds,{padding:[30,30],maxZoom:10});
+    mapInstanceRef.current=map;
+    return()=>{if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}};
+  },[locations,msgId]);
+  if(!locations||locations.length===0)return null;
+  return React.createElement("div",null,
+    React.createElement("div",{style:{fontSize:"0.6rem",color:"#6a5a3a",letterSpacing:"0.1em",textTransform:"uppercase",marginTop:"0.75rem",marginBottom:"0.35rem",display:"flex",alignItems:"center",gap:"0.4rem"}},
+      React.createElement("span",{style:{color:"#c9a96e"}},"◆"),`${locations.length} locations`
+    ),
+    React.createElement("div",{id:`map-${msgId}`,className:"atlas-map"})
+  );
+}
+
+function Prose({text}){
+  const clean=stripMapData(text);
+  return React.createElement("div",null,clean.split("\n").map((line,i)=>{
+    if(!line.trim())return React.createElement("div",{key:i,style:{height:"0.35rem"}});
+    if(line.startsWith("## "))return React.createElement("div",{key:i,style:{fontSize:"0.68rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.2)"}},line.slice(3));
+    if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line))return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.9rem",fontWeight:700,color:"#ede5d5",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
+    if(line.startsWith("- ")||line.startsWith("* ")){
+      const bparts=[];let brem=line.slice(2),bk=0;
+      while(brem){const bl=brem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);const bb=brem.match(/\*\*(.+?)\*\*/);if(!bl&&!bb){bparts.push(React.createElement("span",{key:bk++},brem));break;}const bli=bl?brem.indexOf(bl[0]):Infinity;const bbi=bb?brem.indexOf(bb[0]):Infinity;if(bl&&bli<=bbi){if(bli>0)bparts.push(React.createElement("span",{key:bk++},brem.slice(0,bli)));bparts.push(React.createElement("a",{key:bk++,href:bl[2],target:"_blank",rel:"noopener noreferrer",style:{color:"#c9a96e",textDecoration:"underline"}},bl[1]));brem=brem.slice(bli+bl[0].length);}else{if(bbi>0)bparts.push(React.createElement("span",{key:bk++},brem.slice(0,bbi)));bparts.push(React.createElement("span",{key:bk++,style:{color:"#e8dcc8",fontWeight:600}},bb[1]));brem=brem.slice(bbi+bb[0].length);}}
+      return React.createElement("div",{key:i,style:{display:"flex",gap:"0.4rem",margin:"0.12rem 0",fontSize:"0.82rem",color:"#b8b0a0"}},React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.48rem",marginTop:"5px",flexShrink:0}},"◆"),React.createElement("span",null,...bparts));
+    }
+    const parts=[];let rem=line,k=0;
+    while(rem){const link=rem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);const bold=rem.match(/\*\*(.+?)\*\*/);if(!link&&!bold){parts.push(React.createElement("span",{key:k++},rem));break;}const li=link?rem.indexOf(link[0]):Infinity;const bi=bold?rem.indexOf(bold[0]):Infinity;if(link&&li<=bi){if(li>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,li)));parts.push(React.createElement("a",{key:k++,href:link[2],target:"_blank",rel:"noopener noreferrer",style:{color:"#c9a96e",textDecoration:"underline"}},link[1]));rem=rem.slice(li+link[0].length);}else{if(bi>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,bi)));parts.push(React.createElement("span",{key:k++,style:{color:"#e8dcc8",fontWeight:600}},bold[1]));rem=rem.slice(bi+bold[0].length);}}
+    return React.createElement("p",{key:i,style:{margin:"0.08rem 0",fontSize:"0.82rem",color:"#b8b0a0",lineHeight:1.85}},...parts);
+  }));
+}
+
+function TripPage(){
+  const [plan, setPlan] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(()=>{
+    const shareId = window.location.pathname.split('/trip/')[1];
+    if(!shareId){setError(true);setLoading(false);return;}
+    sb.from('saved_plans').select('title,messages,locations,created_at').eq('share_id',shareId).eq('is_public',true).single()
+      .then(({data,error})=>{
+        if(error||!data){setError(true);}
+        else{setPlan(data);}
+        setLoading(false);
+      });
+  },[]);
+
+  function copyLink(){
+    navigator.clipboard.writeText(window.location.href);
+    const t=document.createElement('div');
+    t.textContent='✓ Link copied!';
+    t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.5rem 1rem;border-radius:8px;font-size:0.72rem;z-index:999;';
+    document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+  }
+
+  if(loading) return React.createElement("div",{style:{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"1rem"}},
+    React.createElement("svg",{width:"36",height:"36",viewBox:"0 0 400 400"},
+      React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"2.2"}),
+      React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1"}),
+      React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
+    ),
+    React.createElement("p",{style:{color:"#6a5a3a",fontSize:"0.75rem",letterSpacing:"0.1em"}},"Loading trip...")
+  );
+
+  if(error) return React.createElement("div",{style:{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"1rem",padding:"2rem",textAlign:"center"}},
+    React.createElement("p",{style:{color:"#c9a96e",fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem"}},"Trip not found"),
+    React.createElement("p",{style:{color:"#6a5a3a",fontSize:"0.78rem"}},"This trip may be private or the link may be incorrect."),
+    React.createElement("a",{href:"/",style:{color:"#c9a96e",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",marginTop:"1rem"}},"Plan your own trip →")
+  );
+
+  // Build messages from saved data
+  const messages = plan.messages?.slice(2)||[];
+  const aiMessages = messages.filter(m=>m.role==="assistant");
+
+  return React.createElement("div",{style:{maxWidth:680,margin:"0 auto",padding:"0 1rem 4rem"}},
+    // Header
+    React.createElement("div",{style:{padding:"1.25rem 0",borderBottom:"1px solid rgba(201,169,110,0.12)",marginBottom:"1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem"}},
+        React.createElement("svg",{width:"24",height:"24",viewBox:"0 0 400 400"},
+          React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"2.2"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
+        ),
+        React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1rem",fontWeight:300,letterSpacing:"0.3em",color:"#d4aa6e",textTransform:"uppercase"}},"Atlas")
+      ),
+      React.createElement("div",{style:{display:"flex",gap:"0.75rem"}},
+        React.createElement("button",{onClick:copyLink,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.7rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.62rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"🔗 Copy link"),
+        React.createElement("a",{href:"/",style:{background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:6,padding:"0.3rem 0.7rem",color:"#c9a96e",fontSize:"0.62rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",textDecoration:"none"}},"Plan my trip")
+      )
+    ),
+
+    // Title
+    React.createElement("div",{style:{marginBottom:"2rem"}},
+      React.createElement("h1",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",fontWeight:300,color:"#ede5d5",marginBottom:"0.35rem"}},plan.title),
+      React.createElement("p",{style:{fontSize:"0.65rem",color:"#5a4a2a",letterSpacing:"0.08em"}},"Shared via ATLAS · "+new Date(plan.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}))
+    ),
+
+    // Plan content
+    ...aiMessages.map((m,i)=>{
+      const text = typeof m.content==="string"?m.content:"";
+      const locations = parseMapData(text);
+      return React.createElement("div",{key:i,style:{marginBottom:"1.5rem",animation:"up 0.3s ease"}},
+        React.createElement(Prose,{text}),
+        locations&&locations.length>0&&React.createElement(MapView,{locations,msgId:`share-${i}`})
+      );
+    }),
+
+    // CTA
+    React.createElement("div",{style:{marginTop:"3rem",padding:"1.5rem",background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:12,textAlign:"center"}},
+      React.createElement("p",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.1rem",color:"#c9a96e",marginBottom:"0.5rem"}},"Plan your own trip with ATLAS"),
+      React.createElement("a",{href:"/",style:{display:"inline-block",padding:"0.6rem 1.5rem",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.3)",borderRadius:8,color:"#c9a96e",fontSize:"0.72rem",letterSpacing:"0.12em",textTransform:"uppercase",textDecoration:"none",fontFamily:"'DM Sans',sans-serif"}},"Start for free →")
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(TripPage));
+</script>
+</body>
+</html>
