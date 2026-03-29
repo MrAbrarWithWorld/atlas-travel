@@ -5,6 +5,9 @@
     },
     "api/warmup.js": {
       "maxDuration": 10
+    },
+    "api/create-checkout.js": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
