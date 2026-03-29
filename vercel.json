@@ -2,12 +2,19 @@
   "functions": {
     "api/chat.js": {
       "maxDuration": 60
+    },
+    "api/warmup.js": {
+      "maxDuration": 10
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "/api/$1"
+    },
+    {
+      "source": "/trip/(.*)",
+      "destination": "/trip.html"
     },
     {
       "source": "/(.*)",
