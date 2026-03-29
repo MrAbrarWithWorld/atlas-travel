@@ -332,15 +332,33 @@ function App(){
     try{
       const title=extractTitle(hist.current);
       const locs=msgs.filter(m=>m.locations).flatMap(m=>m.locations||[]);
-      const{error}=await sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null});
+      const{data,error}=await sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null}).select('id,share_id').single();
       if(!error){
         await loadPlans();
         const toast=document.createElement('div');
         toast.textContent='✓ Trip saved!';
         toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.5rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:999;letter-spacing:0.08em;';
         document.body.appendChild(toast);setTimeout(()=>toast.remove(),2000);
+        if(data?.id)setActivePlanId(data.id);
       }
     }catch{}setSavingPlan(false);
+  }
+ 
+  async function sharePlan(){
+    if(!activePlanId)return;
+    try{
+      // Make plan public
+      const{data,error}=await sb.from('saved_plans').update({is_public:true}).eq('id',activePlanId).select('share_id').single();
+      if(!error&&data?.share_id){
+        const shareUrl=`${window.location.origin}/trip/${data.share_id}`;
+        // Copy to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        const toast=document.createElement('div');
+        toast.innerHTML='🔗 Link copied!<br><span style="font-size:0.6rem;color:#8a7a50">'+shareUrl+'</span>';
+        toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.6rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:999;letter-spacing:0.08em;text-align:center;max-width:280px;';
+        document.body.appendChild(toast);setTimeout(()=>toast.remove(),3000);
+      }
+    }catch(e){alert("Save the trip first, then share!");}
   }
  
   async function deletePlan(id){
@@ -453,6 +471,7 @@ function App(){
       ),
       React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.75rem"}},
         msgs.length>0&&user&&React.createElement("button",{onClick:savePlan,disabled:savingPlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},savingPlan?"Saving...":"Save trip"),
+        msgs.length>0&&user&&activePlanId&&React.createElement("button",{onClick:sharePlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"🔗 Share"),
         msgs.length>0&&React.createElement("button",{onClick:reset,style:{background:"none",border:"none",color:"#7a6a40",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"New"),
         user?React.createElement(UserAvatar,{user,onLogout:handleLogout,onOpenSidebar:()=>setShowSidebar(true)}):React.createElement("button",{onClick:()=>setShowLogin(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.3)",borderRadius:8,padding:"0.35rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Sign in")
       )
