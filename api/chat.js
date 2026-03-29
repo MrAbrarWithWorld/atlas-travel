@@ -271,7 +271,44 @@ export default async function handler(req, res) {
         });
       }
     } catch(e) {
-      // Groq failed, Claude fallback
+      // Groq failed, try Gemini
+    }
+  }
+
+  // ✅ GEMINI — Fallback when Groq fails
+  if (!useClaudeNow && process.env.GEMINI_API_KEY) {
+    try {
+      const geminiMessages = messages.filter(m => m.role !== "system").map(m => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: typeof m.content === "string"
+          ? m.content
+          : Array.isArray(m.content)
+            ? (m.content.find(c => c.type === "text")?.text || "")
+            : "" }]
+      }));
+
+      const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM_MSG }] },
+          contents: geminiMessages,
+          generationConfig: { maxOutputTokens: 4000, temperature: 0.7 }
+        }),
+      });
+
+      const geminiData = await geminiRes.json();
+      const geminiReply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (geminiReply) {
+        user.tokensUsed += 2000; // estimate
+        if (requestingNewPlan) user.plansUsed += 1;
+        return res.status(200).json({
+          content: [{ type: "text", text: geminiReply }],
+          usage: { input_tokens: 1000, output_tokens: 1000 }
+        });
+      }
+    } catch(e) {
+      // Gemini failed, Claude fallback
     }
   }
 
