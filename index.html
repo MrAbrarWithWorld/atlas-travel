@@ -14,10 +14,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
@@ -380,12 +376,21 @@ function App(){
         const reconstructed=[];
         const msgHistory=data.messages.slice(2);
         for(const m of msgHistory){
-          if(m.role==="user"){const text=typeof m.content==="string"?m.content:Array.isArray(m.content)?(m.content.find(c=>c.type==="text")?.text||""):"";reconstructed.push({id:Date.now()+Math.random(),from:"user",text});}
-          else{const text=typeof m.content==="string"?m.content:"";reconstructed.push({id:Date.now()+Math.random(),from:"ai",text,locations:parseMapData(text)});}
+          if(m.role==="user"){
+            const text=typeof m.content==="string"
+              ?m.content.replace(/\s*\[Current date.*$/s,'').trim()
+              :Array.isArray(m.content)?(m.content.find(c=>c.type==="text")?.text||"").replace(/\s*\[Current date.*$/s,'').trim():"";
+            if(text)reconstructed.push({id:Date.now()+Math.random(),from:"user",text});
+          }else{
+            const text=typeof m.content==="string"?m.content:"";
+            if(text)reconstructed.push({id:Date.now()+Math.random(),from:"ai",text,locations:parseMapData(text)});
+          }
         }
-        setMsgs(reconstructed);setActivePlanId(plan.id);
+        setMsgs(reconstructed);
+        setActivePlanId(plan.id);
       }
-    }catch{}setLoadingPlans(false);
+    }catch(e){console.error(e);}
+    setLoadingPlans(false);
   }
  
   useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs,busy]);
@@ -432,7 +437,9 @@ function App(){
     const msgText=t||"What place is this? Identify the location and give me travel info.";
     const msgWithTime=`${msgText}\n\n[Current date & time: ${dateTime}${locationStr}${userInfo}]`;
     const userContent=photo?[{type:"image",source:{type:"base64",media_type:photo.mediaType,data:photo.base64}},{type:"text",text:msgWithTime}]:msgWithTime;
-    const newMsgs=[...msgs,{id:Date.now(),from:"user",text:msgText,photoPreview:photo?.preview||null}];
+    // Strip injected metadata from display text
+    const displayText = msgText.replace(/\s*\[Current date.*$/s, '').trim();
+    const newMsgs=[...msgs,{id:Date.now(),from:"user",text:displayText,photoPreview:photo?.preview||null}];
     setMsgs(newMsgs);setBusy(true);hist.current=[...hist.current,{role:"user",content:userContent}];setPhoto(null);
     try{
       const headers={"Content-Type":"application/json"};
