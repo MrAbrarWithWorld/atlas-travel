@@ -3,11 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
-// Rate limiting (IP-based for guests)
 const userMap = new Map();
-const RESET_MS = 24 * 60 * 60 * 1000; // 24 hours
+const RESET_MS = 24 * 60 * 60 * 1000;
 
-// Plan limits by tier
 const LIMITS = {
   guest:  { plans: 1,  tokens: 50000  },
   free:   { plans: 3,  tokens: 150000 },
@@ -17,7 +15,6 @@ const LIMITS = {
 const ENABLE_CLAUDE_ROUTING = true;
 
 function getKey(req, userId) {
-  // Logged-in users tracked by userId, guests by IP
   if (userId) return `user_${userId}`;
   return req.headers["x-forwarded-for"]?.split(",")[0] || req.headers["x-real-ip"] || "unknown";
 }
@@ -67,11 +64,8 @@ function detectDestinationOnly(messages) {
     : Array.isArray(lastContent)
       ? (lastContent.find(c => c.type === "text")?.text || "").toLowerCase()
       : "";
-
   const hasDestination = /italy|japan|thailand|turkey|australia|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|canada|usa|america|nepal|india|sri lanka|vietnam|indonesia|malaysia|egypt|morocco|brazil|mexico|new zealand|south korea|china|hong kong|taiwan|pakistan|bangladesh|myanmar|cambodia|laos|philippines|portugal|netherlands|belgium|austria|sweden|norway|denmark|finland|iceland|ireland|scotland|croatia|czechia|hungary|romania|poland|ukraine|russia|kenya|tanzania|south africa|nigeria|ghana|ethiopia|argentina|chile|colombia|peru|cuba|jamaica|jordan|israel|lebanon|iran|georgia|armenia|azerbaijan|uzbekistan|kazakhstan|ইতালি|জাপান|থাইল্যান্ড|তুরস্ক|অস্ট্রেলিয়া|দুবাই|লন্ডন|প্যারিস|বালি|মালদ্বীপ|গ্রীস|স্পেন|ফ্রান্স|জার্মানি|সুইজারল্যান্ড|নেপাল|ভারত|শ্রীলঙ্কা|ভিয়েতনাম|মিশর|ব্রাজিল|মেক্সিকো|কোরিয়া|চীন|হংকং|জর্ডান|পাকিস্তান|বাংলাদেশ|jabo|jaite|jete|যাবো|যাব|যেতে|visit|dekhte|দেখতে/i.test(last);
-
   const hasInfo = /\d+\s*(day|night|days|nights|দিন|রাত)|budget|\$|cad|usd|bdt|tk|taka|টাকা|বাজেট|\d+\s*(people|person|জন)|solo|couple|family|friends|সোলো|কাপল|পরিবার/i.test(last);
-
   return hasDestination && !hasInfo;
 }
 
@@ -164,7 +158,6 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  // ✅ Check if user is logged in via Supabase token
   let userId = null;
   let userTier = 'guest';
 
@@ -176,24 +169,27 @@ export default async function handler(req, res) {
       const { data: { user }, error } = await sb.auth.getUser(token);
       if (!error && user) {
         userId = user.id;
-        // Check if user is in allowed_users (admin free pass)
         const { data: allowed } = await sb.from('allowed_users').select('email').eq('email', user.email).single();
-if (allowed) {
-  userTier = 'pro';
-} else {
-  // Check active subscription
-  const { data: sub } = await sb.from('subscriptions')
-    .select('plan, status, current_period_end')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .gte('current_period_end', new Date().toISOString())
-    .single();
-  if (sub) {
-    userTier = sub.plan?.includes('explorer') ? 'explorer' : 'pro';
-  } else {
-    userTier = 'free';
+        if (allowed) {
+          userTier = 'pro';
+        } else {
+          const { data: sub } = await sb.from('subscriptions')
+            .select('plan, status, current_period_end')
+            .eq('user_id', userId)
+            .eq('status', 'active')
+            .gte('current_period_end', new Date().toISOString())
+            .single();
+          if (sub) {
+            userTier = sub.plan?.includes('explorer') ? 'explorer' : 'pro';
+          } else {
+            userTier = 'free';
+          }
+        }
+      }
+    } catch(e) {
+      // Token invalid, treat as guest
+    }
   }
-}
 
   const key = getKey(req, userId);
   const limits = LIMITS[userTier] || LIMITS.guest;
@@ -215,18 +211,14 @@ if (allowed) {
     return res.status(429).json({ error: { message: `PLAN_LIMIT|${resetInHours}|${tokensLeft}` } });
   }
 
-  // ✅ Destination only → 0 API call
   if (detectDestinationOnly(messages)) {
     const lastContent = messages.filter(m => m.role === "user").slice(-1)[0]?.content;
     const last = typeof lastContent === "string" ? lastContent.toLowerCase()
       : Array.isArray(lastContent) ? (lastContent.find(c => c.type === "text")?.text || "").toLowerCase() : "";
-
     const isBengali = /[\u0980-\u09FF]|jabo|jaite|jete|যাব|যেতে|দেখতে/i.test(last);
-
     const questionText = isBengali
       ? `✈️ দারুণ পছন্দ! Trip plan করার আগে কিছু জানা দরকার:\n\n1. **কতদিন** থাকবেন?\n2. **মোট budget** কত? (CAD / USD / BDT যেকোনো)\n3. **কতজন** যাবেন?\n4. **কী ধরনের trip?** (relaxation / sightseeing / adventure)\n5. **কোন passport বা travel document** আছে আপনার? (যেমন: Canadian passport, RTD, USA RTD, UK CTD ইত্যাদি)`
       : `✈️ Great choice! Before I build your plan, I need a few details:\n\n1. **How many days** are you planning to stay?\n2. **What is your total budget?** (CAD / USD / any currency)\n3. **How many people** are traveling?\n4. **What kind of trip?** (relaxation / sightseeing / adventure)\n5. **What passport or travel document** do you hold? (e.g. Canadian passport, RTD, USA RTD, UK CTD, EU CTD, etc.)`;
-
     return res.status(200).json({
       content: [{ type: "text", text: questionText }],
       usage: { input_tokens: 0, output_tokens: 0 }
@@ -237,7 +229,6 @@ if (allowed) {
   const imageInMessages = hasImage(messages);
   const useClaudeNow = needsClaudeQuality(messages) || imageInMessages || userTier === 'pro';
 
-  // ✅ GROQ — Free users & guests
   if (!useClaudeNow && process.env.GROQ_API_KEY) {
     try {
       const groqMessages = messages.map(m => ({
@@ -248,7 +239,6 @@ if (allowed) {
             ? (m.content.find(c => c.type === "text")?.text || "")
             : m.content
       }));
-
       const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -264,7 +254,6 @@ if (allowed) {
           ],
         }),
       });
-
       const groqData = await groqRes.json();
       if (groqData.choices?.[0]?.message?.content) {
         const reply = groqData.choices[0].message.content;
@@ -276,12 +265,9 @@ if (allowed) {
           usage: { input_tokens: groqData.usage?.prompt_tokens || 0, output_tokens: groqData.usage?.completion_tokens || 0 }
         });
       }
-    } catch(e) {
-      // Groq failed, try Gemini
-    }
+    } catch(e) {}
   }
 
-  // ✅ GEMINI — Fallback when Groq fails
   if (!useClaudeNow && process.env.GEMINI_API_KEY) {
     try {
       const geminiMessages = messages.filter(m => m.role !== "system").map(m => ({
@@ -292,7 +278,6 @@ if (allowed) {
             ? (m.content.find(c => c.type === "text")?.text || "")
             : "" }]
       }));
-
       const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -302,23 +287,19 @@ if (allowed) {
           generationConfig: { maxOutputTokens: 4000, temperature: 0.7 }
         }),
       });
-
       const geminiData = await geminiRes.json();
       const geminiReply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
       if (geminiReply) {
-        user.tokensUsed += 2000; // estimate
+        user.tokensUsed += 2000;
         if (requestingNewPlan) user.plansUsed += 1;
         return res.status(200).json({
           content: [{ type: "text", text: geminiReply }],
           usage: { input_tokens: 1000, output_tokens: 1000 }
         });
       }
-    } catch(e) {
-      // Gemini failed, Claude fallback
-    }
+    } catch(e) {}
   }
 
-  // ✅ CLAUDE — Pro users, complex plans, images, or Groq fallback
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -334,14 +315,11 @@ if (allowed) {
         messages: messages.filter(m => m.role !== "system"),
       }),
     });
-
     const data = await response.json();
     if (data.error) return res.status(500).json({ error: data.error });
-
     const used = (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0);
     user.tokensUsed += used;
     if (requestingNewPlan) user.plansUsed += 1;
-
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ error: { message: error.message } });
