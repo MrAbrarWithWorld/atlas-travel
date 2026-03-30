@@ -68,13 +68,10 @@ const SUPABASE_KEY = 'sb_publishable_gDzH6bF1tOYuKmx4uIGaLw_On9AG90E';
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function getLocation(){return new Promise(resolve=>{if(!navigator.geolocation){resolve("");return;}const t=setTimeout(()=>resolve(""),4000);navigator.geolocation.getCurrentPosition(async pos=>{clearTimeout(t);try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);const d=await r.json();const city=d.address?.city||d.address?.town||d.address?.village||"";const country=d.address?.country||"";resolve(city&&country?`${city}, ${country}`:country||"");}catch{resolve("");}},()=>{clearTimeout(t);resolve("");},{timeout:4000});});}
-
 function getDateTime(){const now=new Date();const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];const months=['January','February','March','April','May','June','July','August','September','October','November','December'];const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;const h=now.getHours();return `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} — ${h%12||12}:${now.getMinutes().toString().padStart(2,'0')} ${h>=12?'PM':'AM'} (${tz})`;}
-
 function parseMapData(text){const m=text.match(/\[MAPDATA\]([\s\S]*?)\[\/MAPDATA\]/);if(!m)return null;try{const d=JSON.parse(m[1]);return d.places||null;}catch{return null;}}
 function stripMapData(text){return text.replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g,'').trim();}
 function formatDate(iso){const d=new Date(iso);const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;}
-
 function extractTitle(messages){
   const userMsgs=messages.filter(m=>m.role==="user");
   for(const m of userMsgs){
@@ -102,6 +99,119 @@ function saveLocal(msgs,hist){try{localStorage.setItem(STORAGE_KEY,JSON.stringif
 function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!d||Date.now()-d.t>24*60*60*1000)return null;return d;}catch{return null;}}
 const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}];
 
+// ===================== PRICING MODAL =====================
+function PricingModal({user, onClose}) {
+  const [loading, setLoading] = useState(null);
+  const [billing, setBilling] = useState('monthly');
+
+  async function handleUpgrade(plan) {
+    if (!user) { alert("Please sign in first to upgrade."); return; }
+    setLoading(plan);
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          plan: `${plan}_${billing}`,
+          userId: user?.id || '',
+          userEmail: user?.email || '',
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Something went wrong. Please try again.');
+        setLoading(null);
+      }
+    } catch(e) {
+      alert('Error: ' + e.message);
+      setLoading(null);
+    }
+  }
+
+  const proPrice = billing === 'monthly' ? '$7.99' : '$79.99';
+  const explorerPrice = billing === 'monthly' ? '$14.99' : '$149.99';
+  const priceSub = billing === 'yearly' ? '/year · 2 months free' : '/month';
+
+  return React.createElement("div", {
+    className: "login-overlay",
+    style: {overflowY:"auto", alignItems:"flex-start", paddingTop:"1.5rem", paddingBottom:"1.5rem"},
+    onClick: e => { if(e.target === e.currentTarget) onClose(); }
+  },
+    React.createElement("div", {style: {width:"100%", maxWidth:400, animation:"slideUp 0.35s ease"}},
+      React.createElement("div", {style: {textAlign:"center", marginBottom:"1.5rem"}},
+        React.createElement("svg",{width:"36",height:"36",viewBox:"0 0 400 400",style:{margin:"0 auto 0.6rem",display:"block"}},
+          React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"2.2"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
+        ),
+        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:300,letterSpacing:"0.25em",color:"#d4aa6e",textTransform:"uppercase"}},"Upgrade Atlas"),
+        React.createElement("p",{style:{fontSize:"0.68rem",color:"#6a5a35",marginTop:"0.3rem"}},"Unlock unlimited AI travel planning")
+      ),
+
+      // Billing toggle
+      React.createElement("div",{style:{display:"flex",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.12)",borderRadius:10,padding:"0.2rem",marginBottom:"1rem"}},
+        React.createElement("button",{onClick:()=>setBilling('monthly'),style:{flex:1,padding:"0.45rem",borderRadius:8,border:"none",background:billing==='monthly'?"rgba(201,169,110,0.18)":"transparent",color:billing==='monthly'?"#c9a96e":"#6a5a3a",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.06em",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},"Monthly"),
+        React.createElement("button",{onClick:()=>setBilling('yearly'),style:{flex:1,padding:"0.45rem",borderRadius:8,border:"none",background:billing==='yearly'?"rgba(201,169,110,0.18)":"transparent",color:billing==='yearly'?"#c9a96e":"#6a5a3a",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.06em",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},"Yearly  🎁 2 free")
+      ),
+
+      // Pro Card
+      React.createElement("div",{style:{background:"#252018",border:"1.5px solid rgba(201,169,110,0.35)",borderRadius:14,padding:"1.25rem",marginBottom:"0.75rem"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.9rem"}},
+          React.createElement("div",null,
+            React.createElement("p",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.15rem",color:"#c9a96e"}},"⭐ Pro"),
+            React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",marginTop:"0.1rem"}},"For serious travelers")
+          ),
+          React.createElement("div",{style:{textAlign:"right"}},
+            React.createElement("span",{style:{fontSize:"1.2rem",color:"#e8dcc8",fontWeight:600}},proPrice),
+            React.createElement("span",{style:{fontSize:"0.56rem",color:"#6a5a3a",marginLeft:"0.2rem"}},priceSub)
+          )
+        ),
+        ["Unlimited travel plans","Detailed day-by-day itineraries","Interactive maps","Multi-language support","Priority AI access"].map((f,i)=>
+          React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.3rem"}},
+            React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.5rem"}},"◆"),
+            React.createElement("span",{style:{fontSize:"0.73rem",color:"#b8b0a0"}},f)
+          )
+        ),
+        React.createElement("button",{
+          onClick:()=>handleUpgrade('pro'),
+          disabled:!!loading,
+          style:{width:"100%",marginTop:"1rem",padding:"0.72rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.4)",borderRadius:9,color:"#c9a96e",cursor:loading?"default":"pointer",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}
+        },loading==='pro'?"Redirecting...":`Get Pro · ${proPrice}`)
+      ),
+
+      // Explorer Card
+      React.createElement("div",{style:{background:"#252018",border:"1px solid rgba(201,169,110,0.15)",borderRadius:14,padding:"1.25rem",marginBottom:"1rem"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.9rem"}},
+          React.createElement("div",null,
+            React.createElement("p",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.15rem",color:"#c9a96e"}},"💎 Explorer"),
+            React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",marginTop:"0.1rem"}},"For power users")
+          ),
+          React.createElement("div",{style:{textAlign:"right"}},
+            React.createElement("span",{style:{fontSize:"1.2rem",color:"#e8dcc8",fontWeight:600}},explorerPrice),
+            React.createElement("span",{style:{fontSize:"0.56rem",color:"#6a5a3a",marginLeft:"0.2rem"}},priceSub)
+          )
+        ),
+        ["Everything in Pro","Advanced trip customization","Priority support"].map((f,i)=>
+          React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.3rem"}},
+            React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.5rem"}},"◆"),
+            React.createElement("span",{style:{fontSize:"0.73rem",color:"#b8b0a0"}},f)
+          )
+        ),
+        React.createElement("button",{
+          onClick:()=>handleUpgrade('explorer'),
+          disabled:!!loading,
+          style:{width:"100%",marginTop:"1rem",padding:"0.72rem",background:"transparent",border:"1px solid rgba(201,169,110,0.2)",borderRadius:9,color:"#8a7a50",cursor:loading?"default":"pointer",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}
+        },loading==='explorer'?"Redirecting...":`Get Explorer · ${explorerPrice}`)
+      ),
+
+      React.createElement("button",{onClick:onClose,style:{width:"100%",padding:"0.6rem",background:"none",border:"none",color:"#4a3a22",cursor:"pointer",fontSize:"0.62rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Maybe later")
+    )
+  );
+}
+
+// ===================== LOGIN MODAL =====================
 function LoginModal({onClose}){
   const [loading,setLoading]=useState(null);
   const [error,setError]=useState("");
@@ -145,6 +255,7 @@ function LoginModal({onClose}){
   );
 }
 
+// ===================== USER AVATAR =====================
 function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade}){
   const [open,setOpen]=useState(false);
   const ref=useRef(null);
@@ -158,15 +269,16 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade}){
     open&&React.createElement("div",{className:"user-menu"},
       React.createElement("div",{style:{padding:"0.5rem 0.75rem",borderBottom:"1px solid rgba(201,169,110,0.1)",marginBottom:"0.35rem"}},
         React.createElement("p",{style:{fontSize:"0.72rem",color:"#c9a96e",fontWeight:500}},name),
-        React.createElement("p",{style:{fontSize:"0.62rem",color:"#6a5a3a",marginTop:"0.1rem"}},"Free Plan · 3 plans/day"),
-        React.createElement("button",{onClick:()=>{setOpen(false);onUpgrade();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:6,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",fontFamily:"'DM Sans',sans-serif",marginTop:"0.35rem"}},"⭐ Upgrade to Pro")                  
+        React.createElement("p",{style:{fontSize:"0.62rem",color:"#6a5a3a",marginTop:"0.1rem"}},"Free Plan · 3 plans/day")
       ),
+      React.createElement("button",{onClick:()=>{setOpen(false);onUpgrade();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",fontFamily:"'DM Sans',sans-serif",marginBottom:"0.35rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"⭐ Upgrade to Pro"),
       React.createElement("button",{onClick:()=>{setOpen(false);onOpenSidebar();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif"}},"📂 My saved trips"),
       React.createElement("button",{onClick:onLogout,style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#8a7a60",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif"}},"Sign out")
     )
   );
 }
 
+// ===================== SIDEBAR =====================
 function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose}){
   return React.createElement(React.Fragment,null,
     React.createElement("div",{className:"sidebar-overlay",onClick:onClose}),
@@ -183,9 +295,7 @@ function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney
           ),
           React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"1.1rem",lineHeight:1}},"✕")
         ),
-        React.createElement("button",{onClick:()=>{onNewJourney();onClose();},style:{width:"100%",padding:"0.6rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem"}},
-          "✦ New journey"
-        )
+        React.createElement("button",{onClick:()=>{onNewJourney();onClose();},style:{width:"100%",padding:"0.6rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem"}},"✦ New journey")
       ),
       React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"0.75rem"}},
         React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"0.5rem",paddingLeft:"0.25rem"}},"Saved Trips"),
@@ -221,6 +331,7 @@ function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney
   );
 }
 
+// ===================== MAP VIEW =====================
 function MapView({locations,msgId}){
   const mapInstanceRef=useRef(null);
   useEffect(()=>{
@@ -254,19 +365,22 @@ function MapView({locations,msgId}){
   );
 }
 
-function Modal({hours,plansLeft,onClose,onLogin}){
+// ===================== LIMIT MODAL =====================
+function Modal({hours,plansLeft,onClose,onLogin,onUpgrade}){
   const isPlan=plansLeft!==undefined;
   return React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(10,8,5,0.96)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,animation:"fadeIn 0.25s ease",padding:"1rem"}},
     React.createElement("div",{style:{width:"100%",maxWidth:320,padding:"2.5rem 1.75rem",textAlign:"center",border:"1px solid rgba(201,169,110,0.25)",borderRadius:14,background:"#252018"}},
       React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.8rem",color:"rgba(201,169,110,0.3)",letterSpacing:"0.2em",marginBottom:"1.5rem"}},"ATLAS"),
       React.createElement("div",{style:{fontSize:"1rem",color:"#d4aa6e",marginBottom:"0.75rem",fontFamily:"'Cormorant Garamond',serif"}},isPlan?"Daily limit reached":"Session complete"),
-      React.createElement("p",{style:{fontSize:"0.78rem",color:"#8a7a60",lineHeight:1.85,marginBottom:"1.25rem"}},isPlan?"Sign in for more plans & to save your trips!":`Come back in ${hours} hour${hours>1?'s':''} for a fresh session.`),
-      isPlan&&onLogin&&React.createElement("button",{onClick:onLogin,style:{width:"100%",padding:"0.75rem",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.75rem",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"0.5rem"}},"Sign In / Sign Up"),
+      React.createElement("p",{style:{fontSize:"0.78rem",color:"#8a7a60",lineHeight:1.85,marginBottom:"1.25rem"}},isPlan?"Upgrade to Pro for unlimited plans!":`Come back in ${hours} hour${hours>1?'s':''} for a fresh session.`),
+      isPlan&&onUpgrade&&React.createElement("button",{onClick:onUpgrade,style:{width:"100%",padding:"0.75rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.4)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.75rem",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"0.5rem"}},"⭐ Upgrade to Pro"),
+      isPlan&&onLogin&&React.createElement("button",{onClick:onLogin,style:{width:"100%",padding:"0.75rem",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:8,color:"#8a7a50",cursor:"pointer",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"0.5rem"}},"Sign In / Sign Up"),
       React.createElement("button",{onClick:onClose,style:{width:"100%",padding:"0.75rem",background:"none",border:"1px solid rgba(201,169,110,0.15)",borderRadius:8,color:"#6a5a40",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase"}},"Close")
     )
   );
 }
 
+// ===================== PROSE =====================
 function Prose({text}){
   const clean=stripMapData(text);
   return React.createElement("div",null,clean.split("\n").map((line,i)=>{
@@ -289,6 +403,7 @@ function MicButton({listening,onClick}){return React.createElement("button",{onC
 function PhotoButton({photo,onClick}){return React.createElement("button",{onClick,style:{flexShrink:0,width:42,height:42,borderRadius:"50%",border:`2px solid ${photo?"#c9a96e":"rgba(201,169,110,0.35)"}`,background:photo?"rgba(201,169,110,0.15)":"rgba(201,169,110,0.05)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.25s",overflow:"hidden",padding:0}},photo?React.createElement("img",{src:photo.preview,style:{width:42,height:42,objectFit:"cover",borderRadius:"50%"}}):React.createElement("svg",{width:"17",height:"17",viewBox:"0 0 24 24",fill:"none",stroke:"#a08a60",strokeWidth:"1.8",strokeLinecap:"round",strokeLinejoin:"round"},React.createElement("rect",{x:"3",y:"3",width:"18",height:"18",rx:"3"}),React.createElement("circle",{cx:"8.5",cy:"8.5",r:"1.5",fill:"#a08a60"}),React.createElement("polyline",{points:"21 15 16 10 5 21"})));}
 function EditIcon(){return React.createElement("svg",{width:"11",height:"11",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round"},React.createElement("path",{d:"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"}),React.createElement("path",{d:"M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"}));}
 
+// ===================== APP =====================
 function App(){
   const saved=loadLocal();
   const [msgs,setMsgs]=useState(saved?.msgs||[]);
@@ -298,6 +413,7 @@ function App(){
   const [busy,setBusy]=useState(false);
   const [modal,setModal]=useState(null);
   const [showLogin,setShowLogin]=useState(false);
+  const [showPricing,setShowPricing]=useState(false);
   const [showSidebar,setShowSidebar]=useState(false);
   const [user,setUser]=useState(null);
   const [listening,setListening]=useState(false);
@@ -315,6 +431,17 @@ function App(){
   const recognitionRef=useRef(null);
   const photoRef=useRef(null);
   const holdTimerRef=useRef(null);
+
+  // Payment success/cancel detection
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    if(params.get('payment')==='success'){
+      showToast('🎉 Welcome to Pro! Enjoy unlimited plans.');
+      window.history.replaceState({},'','/');
+    } else if(params.get('payment')==='cancelled'){
+      window.history.replaceState({},'','/');
+    }
+  },[]);
 
   useEffect(()=>{
     sb.auth.getSession().then(({data:{session}})=>setUser(session?.user||null));
@@ -337,20 +464,11 @@ function App(){
       const title=extractTitle(hist.current);
       const locs=msgs.filter(m=>m.locations).flatMap(m=>m.locations||[]);
       if(activePlanId){
-        // Already exists as draft — mark as saved
         const{error}=await sb.from('saved_plans').update({is_draft:false,title,messages:hist.current,locations:locs.length>0?locs:null}).eq('id',activePlanId);
-        if(!error){
-          await loadPlans();
-          showToast('✓ Trip saved!');
-        }
+        if(!error){await loadPlans();showToast('✓ Trip saved!');}
       } else {
-        // New save
         const{data,error}=await sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null,is_draft:false}).select('id,share_id').single();
-        if(!error){
-          await loadPlans();
-          showToast('✓ Trip saved!');
-          if(data?.id)setActivePlanId(data.id);
-        }
+        if(!error){await loadPlans();showToast('✓ Trip saved!');if(data?.id)setActivePlanId(data.id);}
       }
     }catch{}setSavingPlan(false);
   }
@@ -359,24 +477,22 @@ function App(){
     const toast=document.createElement('div');
     toast.textContent=msg;
     toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.5rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:999;letter-spacing:0.08em;';
-    document.body.appendChild(toast);setTimeout(()=>toast.remove(),2000);
+    document.body.appendChild(toast);setTimeout(()=>toast.remove(),2500);
   }
 
   async function sharePlan(){
     if(!activePlanId)return;
     try{
-      // Make plan public
       const{data,error}=await sb.from('saved_plans').update({is_public:true}).eq('id',activePlanId).select('share_id').single();
       if(!error&&data?.share_id){
         const shareUrl=`${window.location.origin}/trip/${data.share_id}`;
-        // Copy to clipboard
         await navigator.clipboard.writeText(shareUrl);
         const toast=document.createElement('div');
         toast.innerHTML='🔗 Link copied!<br><span style="font-size:0.6rem;color:#8a7a50">'+shareUrl+'</span>';
         toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.6rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:999;letter-spacing:0.08em;text-align:center;max-width:280px;';
         document.body.appendChild(toast);setTimeout(()=>toast.remove(),3000);
       }
-    }catch(e){alert("Save the trip first, then share!");}
+    }catch{alert("Save the trip first, then share!");}
   }
 
   async function deletePlan(id){
@@ -424,22 +540,12 @@ function App(){
 
   function toggleVoice(){if(!recognitionRef.current){alert("Voice not supported.");return;}if(listening){recognitionRef.current.stop();setListening(false);}else{if(window.speechSynthesis)window.speechSynthesis.cancel();recognitionRef.current.start();setListening(true);}}
   function toggleSpeak(text){if(!window.speechSynthesis)return;if(speaking){window.speechSynthesis.cancel();setSpeaking(false);return;}setSpeaking(true);const clean=stripMapData(text).replace(/##.*?\n/g,'').replace(/\*\*/g,'').replace(/[◆•]/g,'').slice(0,1000);const u=new SpeechSynthesisUtterance(clean);u.rate=0.95;u.onend=()=>setSpeaking(false);u.onerror=()=>setSpeaking(false);window.speechSynthesis.speak(u);}
-
   function handlePhotoSelect(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');const MAX=600;let w=img.width,h=img.height;if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);const compressed=canvas.toDataURL('image/jpeg',0.5);setPhoto({base64:compressed.split(",")[1],mediaType:'image/jpeg',preview:compressed});};img.src=ev.target.result;};reader.readAsDataURL(file);e.target.value="";}
   function startEdit(msg){setEditingId(msg.id);setEditText(msg.text);setTimeout(()=>editRef.current?.focus(),50);}
   async function submitEdit(msgId){const t=editText.trim();if(!t)return;setEditingId(null);const msgIndex=msgs.findIndex(m=>m.id===msgId);const newMsgs=msgs.slice(0,msgIndex);setMsgs(newMsgs);const baseHist=[...defaultHist];for(const m of newMsgs)baseHist.push({role:m.from==="user"?"user":"assistant",content:m.text});hist.current=baseHist;await send(t);}
   async function handleLogout(){await sb.auth.signOut();setUser(null);}
-
-  // Hold-to-pause
-  function handleSendDown(){
-    if((!draft.trim()&&!photo)||busy)return;
-    holdTimerRef.current=setTimeout(()=>{setHoldActive(true);if(navigator.vibrate)navigator.vibrate(50);},450);
-  }
-  function handleSendUp(){
-    if(holdTimerRef.current)clearTimeout(holdTimerRef.current);
-    if(!holdActive){send();}
-    else{setHoldActive(false);setTimeout(()=>taRef.current?.focus(),50);}
-  }
+  function handleSendDown(){if((!draft.trim()&&!photo)||busy)return;holdTimerRef.current=setTimeout(()=>{setHoldActive(true);if(navigator.vibrate)navigator.vibrate(50);},450);}
+  function handleSendUp(){if(holdTimerRef.current)clearTimeout(holdTimerRef.current);if(!holdActive){send();}else{setHoldActive(false);setTimeout(()=>taRef.current?.focus(),50);}}
   function handleSendLeave(){if(holdTimerRef.current)clearTimeout(holdTimerRef.current);if(holdActive)setHoldActive(false);}
 
   async function send(txt){
@@ -455,42 +561,45 @@ function App(){
     const msgText=t||"What place is this? Identify the location and give me travel info.";
     const msgWithTime=`${msgText}\n\n[Current date & time: ${dateTime}${locationStr}${userInfo}]`;
     const userContent=photo?[{type:"image",source:{type:"base64",media_type:photo.mediaType,data:photo.base64}},{type:"text",text:msgWithTime}]:msgWithTime;
-    // Strip injected metadata from display text
-    const displayText = msgText.replace(/\s*\[Current date.*$/s, '').trim();
+    const displayText=msgText.replace(/\s*\[Current date.*$/s,'').trim();
     const newMsgs=[...msgs,{id:Date.now(),from:"user",text:displayText,photoPreview:photo?.preview||null}];
     setMsgs(newMsgs);setBusy(true);hist.current=[...hist.current,{role:"user",content:userContent}];setPhoto(null);
     try{
       const headers={"Content-Type":"application/json"};
       if(user){const{data:{session}}=await sb.auth.getSession();if(session?.access_token)headers["Authorization"]=`Bearer ${session.access_token}`;}
       const res=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-14)]})});
-      if(res.status===429){const data=await res.json();const msg=data.error?.message||"";if(msg.startsWith("LIMIT_REACHED|"))setModal({type:"limit",hours:parseInt(msg.split("|")[1])||6});else if(msg.startsWith("PLAN_LIMIT|")){const p=msg.split("|");setModal({type:"plan",hours:parseInt(p[1])||6,left:parseInt(p[2])||0});}setBusy(false);return;}
+      if(res.status===429){
+        const data=await res.json();const msg=data.error?.message||"";
+        if(msg.startsWith("LIMIT_REACHED|"))setModal({type:"limit",hours:parseInt(msg.split("|")[1])||6});
+        else if(msg.startsWith("PLAN_LIMIT|")){const p=msg.split("|");setModal({type:"plan",hours:parseInt(p[1])||6,left:parseInt(p[2])||0});}
+        setBusy(false);return;
+      }
       if(!res.ok)throw new Error(`Error ${res.status}`);
       const data=await res.json();if(data.error)throw new Error(data.error.message||"Error");
       const reply=data.content?.[0]?.text;if(!reply)throw new Error("No response");
       const locations=parseMapData(reply);
       hist.current=[...hist.current,{role:"assistant",content:reply}];
       const aiId=Date.now()+1;setMsgs([...newMsgs,{id:aiId,from:"ai",text:"",locations:null}]);
-      let i=0;const interval=setInterval(()=>{i+=3;setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply.slice(0,i)}:msg));if(i>=reply.length){
+      let i=0;const interval=setInterval(()=>{
+        i+=3;setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply.slice(0,i)}:msg));
+        if(i>=reply.length){
           clearInterval(interval);
-          const finalMsgs=m=>m.map(msg=>msg.id===aiId?{...msg,text:reply,locations}:msg);
-          setMsgs(finalMsgs);
+          setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply,locations}:msg));
           saveLocal([...newMsgs,{id:aiId,from:"ai",text:reply,locations}],hist.current);
           setBusy(false);
-          // ✅ Auto-save draft to Supabase
           if(user){
             const title=extractTitle(hist.current);
             const locs=[...newMsgs,{id:aiId,from:"ai",text:reply,locations}].filter(m=>m.locations).flatMap(m=>m.locations||[]);
             if(activePlanId){
-              // Update existing draft
               sb.from('saved_plans').update({messages:hist.current,locations:locs.length>0?locs:null,title}).eq('id',activePlanId).then(()=>{});
             } else {
-              // Create new draft
               sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null,is_draft:true}).select('id,share_id').single().then(({data})=>{
                 if(data?.id){setActivePlanId(data.id);loadPlans();}
               });
             }
           }
-        }},10);
+        }
+      },10);
     }catch(e){setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:`Something went wrong: ${e.message}`}]);setBusy(false);}
   }
 
@@ -502,7 +611,8 @@ function App(){
 
   return React.createElement("div",{style:{height:"100vh",display:"flex",flexDirection:"column",background:"#1c1914",overflow:"hidden"}},
     showLogin&&React.createElement(LoginModal,{onClose:()=>setShowLogin(false)}),
-    modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);}}),
+    showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false)}),
+    modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
     showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false)}),
 
     // Header
@@ -522,14 +632,20 @@ function App(){
         msgs.length>0&&user&&React.createElement("button",{onClick:savePlan,disabled:savingPlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},savingPlan?"Saving...":"Save trip"),
         msgs.length>0&&user&&activePlanId&&React.createElement("button",{onClick:sharePlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"🔗 Share"),
         msgs.length>0&&React.createElement("button",{onClick:reset,style:{background:"none",border:"none",color:"#7a6a40",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"New"),
-        user?React.createElement(UserAvatar,{user,onLogout:handleLogout,onOpenSidebar:()=>setShowSidebar(true)}):React.createElement("button",{onClick:()=>setShowLogin(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.3)",borderRadius:8,padding:"0.35rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Sign in")
+        user
+          ?React.createElement(UserAvatar,{user,onLogout:handleLogout,onOpenSidebar:()=>setShowSidebar(true),onUpgrade:()=>setShowPricing(true)})
+          :React.createElement(React.Fragment,null,
+              React.createElement("button",{onClick:()=>setShowPricing(true),style:{background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,padding:"0.35rem 0.7rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"⭐ Pro"),
+              React.createElement("button",{onClick:()=>setShowLogin(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.3)",borderRadius:8,padding:"0.35rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Sign in")
+            )
       )
     ),
 
     // Messages
     React.createElement("div",{style:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",display:"flex",flexDirection:"column"}},
       msgs.length===0&&React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center"}},
-        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.4rem",fontWeight:300,color:"rgba(201,169,110,0.15)",letterSpacing:"0.25em",textTransform:"uppercase"}},"ATLAS")
+        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.4rem",fontWeight:300,color:"rgba(201,169,110,0.15)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"1.5rem"}},"ATLAS"),
+        React.createElement("p",{style:{fontSize:"1.05rem",color:"#6a5a35",lineHeight:2,maxWidth:"260px",fontStyle:"italic",fontFamily:"'Cormorant Garamond',serif"}},"Every destination starts with a dream.")
       ),
       msgs.length>0&&React.createElement("div",{style:{padding:"1.25rem 1.5rem",display:"flex",flexDirection:"column",gap:"1.35rem"}},
         ...msgs.map(msg=>React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:"0.75rem",alignItems:"flex-start"}},
@@ -566,12 +682,11 @@ function App(){
       )
     ),
 
-    // Hold indicator bar
     holdActive&&React.createElement("div",{style:{textAlign:"center",padding:"0.35rem",fontSize:"0.62rem",color:"#c9a96e",letterSpacing:"0.1em",background:"rgba(201,169,110,0.06)",borderTop:"1px solid rgba(201,169,110,0.1)",animation:"fadeIn 0.2s ease"}},
       "✋ Paused — add more text, then tap send"
     ),
 
-    // Input area
+    // Input
     React.createElement("div",{style:{padding:"0.75rem 1.25rem 1.25rem",flexShrink:0}},
       photo&&React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"0.5rem",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.07)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:10}},
         React.createElement("img",{src:photo.preview,style:{width:40,height:40,objectFit:"cover",borderRadius:6,border:"1px solid rgba(201,169,110,0.3)"}}),
@@ -583,25 +698,14 @@ function App(){
         React.createElement(PhotoButton,{photo,onClick:()=>photoRef.current?.click()}),
         hasVoice&&React.createElement(MicButton,{listening,onClick:toggleVoice}),
         React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey&&!holdActive){e.preventDefault();send();}},onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";},placeholder:listening?"Listening...":holdActive?"Add more to your message...":photo?"Add a message or just send the photo...":"Where would you like to go?",disabled:busy||listening,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:holdActive?"#e8d890":"#e0d8c8",fontSize:"0.9rem",resize:"none",lineHeight:1.7,maxHeight:100,overflowY:"auto",paddingTop:"0.2rem"}}),
-
-        // Pause toggle button
-        React.createElement("button",{
-          onClick:()=>{if(holdActive){setHoldActive(false);}else{setHoldActive(true);setTimeout(()=>taRef.current?.focus(),50);}},
-          disabled:busy,
-          title:holdActive?"Click to send now":"Click to pause before sending",
-          style:{flexShrink:0,width:32,height:32,borderRadius:"50%",border:`1.5px solid ${holdActive?"#c9a96e":"rgba(201,169,110,0.2)"}`,background:holdActive?"rgba(201,169,110,0.15)":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}},
+        React.createElement("button",{onClick:()=>{if(holdActive){setHoldActive(false);}else{setHoldActive(true);setTimeout(()=>taRef.current?.focus(),50);}},disabled:busy,style:{flexShrink:0,width:32,height:32,borderRadius:"50%",border:`1.5px solid ${holdActive?"#c9a96e":"rgba(201,169,110,0.2)"}`,background:holdActive?"rgba(201,169,110,0.15)":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}},
           holdActive
             ?React.createElement("svg",{width:"12",height:"12",viewBox:"0 0 24 24",fill:"none",stroke:"#c9a96e",strokeWidth:"2.5",strokeLinecap:"round"},React.createElement("line",{x1:"8",y1:"5",x2:"8",y2:"19"}),React.createElement("line",{x1:"16",y1:"5",x2:"16",y2:"19"}))
             :React.createElement("svg",{width:"12",height:"12",viewBox:"0 0 24 24",fill:"none",stroke:"rgba(201,169,110,0.4)",strokeWidth:"2.5",strokeLinecap:"round"},React.createElement("line",{x1:"8",y1:"5",x2:"8",y2:"19"}),React.createElement("line",{x1:"16",y1:"5",x2:"16",y2:"19"}))
         ),
-
-        // Send button — simple click
         React.createElement("div",{style:{position:"relative",flexShrink:0}},
           holdActive&&React.createElement("div",{style:{position:"absolute",inset:-4,borderRadius:"50%",border:"2px solid rgba(201,169,110,0.6)",animation:"glow 1s ease-in-out infinite",pointerEvents:"none"}}),
-          React.createElement("button",{
-            disabled:(!draft.trim()&&!photo)||busy,
-            onClick:()=>{if(!holdActive)send();},
-            style:{width:42,height:42,borderRadius:"50%",border:`2px solid ${canSend?"#c9a96e":"rgba(201,169,110,0.35)"}`,background:holdActive?"rgba(201,169,110,0.2)":canSend?"rgba(201,169,110,0.15)":"rgba(201,169,110,0.05)",cursor:canSend&&!holdActive?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}},
+          React.createElement("button",{disabled:(!draft.trim()&&!photo)||busy,onClick:()=>{if(!holdActive)send();},style:{width:42,height:42,borderRadius:"50%",border:`2px solid ${canSend?"#c9a96e":"rgba(201,169,110,0.35)"}`,background:holdActive?"rgba(201,169,110,0.2)":canSend?"rgba(201,169,110,0.15)":"rgba(201,169,110,0.05)",cursor:canSend&&!holdActive?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}},
             busy
               ?React.createElement("svg",{width:"16",height:"16",viewBox:"0 0 24 24",fill:"none"},React.createElement("circle",{cx:"12",cy:"12",r:"4",fill:"#c9a96e"}))
               :holdActive
