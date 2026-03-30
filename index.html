@@ -644,7 +644,6 @@ function App(){
     React.createElement("div",{style:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",display:"flex",flexDirection:"column"}},
       msgs.length===0&&React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center"}},
         React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.4rem",fontWeight:300,color:"rgba(201,169,110,0.15)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"1.5rem"}},"ATLAS"),
-        React.createElement("p",{style:{fontSize:"1.05rem",color:"#6a5a35",lineHeight:2,maxWidth:"260px",fontStyle:"italic",fontFamily:"'Cormorant Garamond',serif"}},"Every destination starts with a dream.")
       ),
       msgs.length>0&&React.createElement("div",{style:{padding:"1.25rem 1.5rem",display:"flex",flexDirection:"column",gap:"1.35rem"}},
         ...msgs.map(msg=>React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:"0.75rem",alignItems:"flex-start"}},
@@ -713,7 +712,7 @@ function App(){
           )
         )
       ),
-      React.createElement("div",{style:{marginTop:"0.45rem",textAlign:"center",fontSize:"0.52rem",color:"#3a3020",letterSpacing:"0.09em",textTransform:"uppercase"}},"AI may make mistakes · Verify important info")
+      React.createElement("div",{style:{marginTop:"0.45rem",textAlign:"center",fontSize:"0.52rem",color:"#3a3020",letterSpacing:"0.09em",textTransform:"uppercase"}},"AI may make mistakes · please double-check")
     )
   );
 }
