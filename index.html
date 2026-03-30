@@ -158,7 +158,7 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade}){
     open&&React.createElement("div",{className:"user-menu"},
       React.createElement("div",{style:{padding:"0.5rem 0.75rem",borderBottom:"1px solid rgba(201,169,110,0.1)",marginBottom:"0.35rem"}},
         React.createElement("p",{style:{fontSize:"0.72rem",color:"#c9a96e",fontWeight:500}},name),
-        React.createElement("p",{style:{fontSize:"0.62rem",color:"#6a5a3a",marginTop:"0.1rem"}},"Free Plan · 3 plans/day")
+        React.createElement("p",{style:{fontSize:"0.62rem",color:"#6a5a3a",marginTop:"0.1rem"}},"Free Plan · 3 plans/day"),
         React.createElement("button",{onClick:()=>{setOpen(false);onUpgrade();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:6,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",fontFamily:"'DM Sans',sans-serif",marginTop:"0.35rem"}},"⭐ Upgrade to Pro")                  
       ),
       React.createElement("button",{onClick:()=>{setOpen(false);onOpenSidebar();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif"}},"📂 My saved trips"),
