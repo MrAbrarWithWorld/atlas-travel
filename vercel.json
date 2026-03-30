@@ -1,5 +1,4 @@
-{
-  "functions": {
+"functions": {
     "api/chat.js": {
       "maxDuration": 60
     },
@@ -7,6 +6,9 @@
       "maxDuration": 10
     },
     "api/create-checkout.js": {
+      "maxDuration": 30
+    },
+    "api/webhook.js": {
       "maxDuration": 30
     }
   },
