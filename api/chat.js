@@ -178,16 +178,22 @@ export default async function handler(req, res) {
         userId = user.id;
         // Check if user is in allowed_users (admin free pass)
         const { data: allowed } = await sb.from('allowed_users').select('email').eq('email', user.email).single();
-        if (allowed) {
-          userTier = 'pro'; // Unlimited access
-        } else {
-          userTier = user.user_metadata?.plan || 'free';
-        }
-      }
-    } catch(e) {
-      // Token invalid, treat as guest
-    }
+if (allowed) {
+  userTier = 'pro';
+} else {
+  // Check active subscription
+  const { data: sub } = await sb.from('subscriptions')
+    .select('plan, status, current_period_end')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .gte('current_period_end', new Date().toISOString())
+    .single();
+  if (sub) {
+    userTier = sub.plan?.includes('explorer') ? 'explorer' : 'pro';
+  } else {
+    userTier = 'free';
   }
+}
 
   const key = getKey(req, userId);
   const limits = LIMITS[userTier] || LIMITS.guest;
