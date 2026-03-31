@@ -713,8 +713,11 @@ function App(){
   " · ",
   React.createElement("a",{href:"/terms",target:"_blank",style:{color:"#5a4a28",textDecoration:"none"}},"Terms")
 )
-
+    )
+  );
+}
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+
 </script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/service-worker.js');});}
