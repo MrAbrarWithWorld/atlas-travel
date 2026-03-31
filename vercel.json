@@ -19,6 +19,14 @@
       "destination": "/api/$1"
     },
     {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms.html"
+    },
+    {
       "source": "/trip/(.*)",
       "destination": "/trip.html"
     },
