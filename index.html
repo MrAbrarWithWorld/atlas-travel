@@ -455,6 +455,7 @@ function App(){
   const [loadingPlans,setLoadingPlans]=useState(false);
   const [activePlanId,setActivePlanId]=useState(null);
   const [savingPlan,setSavingPlan]=useState(false);
+  const [userTier,setUserTier]=useState('free');
   const [holdActive,setHoldActive]=useState(false);
   const hist=useRef(saved?.hist||[...defaultHist]);
   const endRef=useRef(null);
@@ -481,8 +482,19 @@ function App(){
     return()=>subscription.unsubscribe();
   },[]);
 
-  useEffect(()=>{if(user)loadPlans();else setPlans([]);},[user]);
-
+  useEffect(()=>{
+  if(user){
+    loadPlans();
+    sb.from('subscriptions').select('plan,status,current_period_end').eq('user_id',user.id).eq('status','active').gte('current_period_end',new Date().toISOString()).single().then(({data})=>{
+      if(data)setUserTier(data.plan?.includes('explorer')?'explorer':'pro');
+      else setUserTier('free');
+    });
+  } else {
+    setPlans([]);
+    setUserTier('free');
+  }
+},[user]);
+  
   async function loadPlans(){
     setLoadingPlans(true);
     try{const{data,error}=await sb.from('saved_plans').select('id,title,created_at,is_draft').order('created_at',{ascending:false});if(!error)setPlans(data||[]);}
@@ -665,7 +677,7 @@ function App(){
         msgs.length>0&&user&&activePlanId&&React.createElement("button",{onClick:sharePlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"🔗 Share"),
         msgs.length>0&&React.createElement("button",{onClick:reset,style:{background:"none",border:"none",color:"#7a6a40",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"New"),
         user
-          ?React.createElement(UserAvatar,{user,onLogout:handleLogout,onOpenSidebar:()=>setShowSidebar(true),onUpgrade:()=>setShowPricing(true)})
+          ?React.createElement(UserAvatar,{user,onLogout:handleLogout,onOpenSidebar:()=>setShowSidebar(true),onUpgrade:()=>setShowPricing(true),userTier})
           :React.createElement(React.Fragment,null,
               React.createElement("button",{onClick:()=>setShowPricing(true),style:{background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,padding:"0.35rem 0.7rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"⭐ Pro"),
               React.createElement("button",{onClick:()=>setShowLogin(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.3)",borderRadius:8,padding:"0.35rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Sign in")
