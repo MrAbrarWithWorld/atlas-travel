@@ -485,10 +485,13 @@ function App(){
   useEffect(()=>{
   if(user){
     loadPlans();
-    sb.from('subscriptions').select('plan,status,current_period_end').eq('user_id',user.id).eq('status','active').gte('current_period_end',new Date().toISOString()).single().then(({data})=>{
-      if(data)setUserTier(data.plan?.includes('explorer')?'explorer':'pro');
-      else setUserTier('free');
-    });
+    sb.from('allowed_users').select('email').eq('email',user.email).single().then(({data:allowed})=>{
+  if(allowed){setUserTier('pro');return;}
+  sb.from('subscriptions').select('plan,status,current_period_end').eq('user_id',user.id).eq('status','active').gte('current_period_end',new Date().toISOString()).single().then(({data})=>{
+    if(data)setUserTier(data.plan?.includes('explorer')?'explorer':'pro');
+    else setUserTier('free');
+  });
+});
   } else {
     setPlans([]);
     setUserTier('free');
