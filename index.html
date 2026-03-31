@@ -707,10 +707,12 @@ function App(){
           )
         )
       ),
-      React.createElement("div",{style:{marginTop:"0.45rem",textAlign:"center",fontSize:"0.52rem",color:"#3a3020",letterSpacing:"0.09em",textTransform:"uppercase"}},"AI may make mistakes · please double-check")
-    )
-  );
-}
+      React.createElement("div",{style:{marginTop:"0.45rem",textAlign:"center",fontSize:"0.52rem",color:"#3a3020",letterSpacing:"0.09em",textTransform:"uppercase"}},
+  "AI may make mistakes · please double-check · ",
+  React.createElement("a",{href:"/privacy",target:"_blank",style:{color:"#5a4a28",textDecoration:"none"}},"Privacy"),
+  " · ",
+  React.createElement("a",{href:"/terms",target:"_blank",style:{color:"#5a4a28",textDecoration:"none"}},"Terms")
+)
 
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script>
