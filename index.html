@@ -288,7 +288,7 @@ function LoginModal({onClose}){
 }
 
 // ===================== USER AVATAR =====================
-function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade}){
+function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier}){
   const [open,setOpen]=useState(false);
   const ref=useRef(null);
   useEffect(()=>{function h(e){if(ref.current&&!ref.current.contains(e.target))setOpen(false);}document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
@@ -301,7 +301,7 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade}){
     open&&React.createElement("div",{className:"user-menu"},
       React.createElement("div",{style:{padding:"0.5rem 0.75rem",borderBottom:"1px solid rgba(201,169,110,0.1)",marginBottom:"0.35rem"}},
         React.createElement("p",{style:{fontSize:"0.72rem",color:"#c9a96e",fontWeight:500}},name),
-        React.createElement("p",{style:{fontSize:"0.62rem",color:"#6a5a3a",marginTop:"0.1rem"}},"Free Plan · 3 plans/day")
+        React.createElement("p",{style:{fontSize:"0.62rem",color:userTier==='pro'||userTier==='explorer'?"#c9a96e":"#6a5a3a",marginTop:"0.1rem"}},userTier==='explorer'?"💎 Explorer Plan":userTier==='pro'?"⭐ Pro Plan — Unlimited":"Free Plan · 3 plans/day")
       ),
       React.createElement("button",{onClick:()=>{setOpen(false);onUpgrade();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",fontFamily:"'DM Sans',sans-serif",marginBottom:"0.35rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"⭐ Upgrade to Pro"),
       React.createElement("button",{onClick:()=>{setOpen(false);onOpenSidebar();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif"}},"📂 My saved trips"),
