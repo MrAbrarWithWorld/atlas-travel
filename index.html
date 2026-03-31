@@ -137,6 +137,20 @@ function saveLocal(msgs,hist){try{localStorage.setItem(STORAGE_KEY,JSON.stringif
 function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!d||Date.now()-d.t>24*60*60*1000)return null;return d;}catch{return null;}}
 const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}];
 
+// ===================== COOKIE BANNER =====================
+function CookieBanner(){
+  const [show,setShow]=React.useState(()=>!localStorage.getItem('atlas_cookie_ok'));
+  if(!show)return null;
+  return React.createElement("div",{style:{position:"fixed",bottom:0,left:0,right:0,background:"#252018",borderTop:"1px solid rgba(201,169,110,0.2)",padding:"0.75rem 1.25rem",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"1rem",zIndex:300,flexWrap:"wrap"}},
+    React.createElement("p",{style:{fontSize:"0.65rem",color:"#8a7a60",lineHeight:1.7,flex:1}},
+      "We use cookies to improve your experience. By using Atlas, you agree to our ",
+      React.createElement("a",{href:"/privacy",style:{color:"#c9a96e",textDecoration:"none"}},"Privacy Policy"),
+      "."
+    ),
+    React.createElement("button",{onClick:()=>{localStorage.setItem('atlas_cookie_ok','1');setShow(false);},style:{background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.3)",borderRadius:7,padding:"0.4rem 1rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",flexShrink:0}},"Accept")
+  );
+}
+  
 // ===================== PRICING MODAL =====================
 function PricingModal({user, onClose}) {
   const [loading, setLoading] = useState(null);
@@ -657,7 +671,7 @@ function App(){
   const canSend=(draft.trim()||photo)&&!busy;
 
   return React.createElement("div",{style:{height:"100vh",display:"flex",flexDirection:"column",background:"#1c1914",overflow:"hidden"}},
-    showLogin&&React.createElement(LoginModal,{onClose:()=>setShowLogin(false)}),
+    React.createElement(CookieBanner,null),showLogin&&React.createElement(LoginModal,{onClose:()=>setShowLogin(false)}),
     showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false)}),
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
     showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false)}),
