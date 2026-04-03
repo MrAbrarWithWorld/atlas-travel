@@ -938,7 +938,7 @@ function renamePlan(id,newTitle){
     const dateTime=getDateTime();
     const location=await getLocation();
     const locationStr=location?`\nUser location: ${location}`:"";
-    const userInfo=user?`\nUser: ${user.user_metadata?.full_name||user.email} (logged in, Free plan)`:"\nUser: Guest (not logged in)";
+    const userInfo=user?`\nUser: ${user.user_metadata?.full_name||user.email} (logged in, ${userTier==='pro'?'Pro':'Free'} plan)`:"\nUser: Guest (not logged in)";
     const msgText=t||"What place is this? Identify the location and give me travel info.";
     const msgWithTime=`${msgText}\n\n[Current date & time: ${dateTime}${locationStr}${userInfo}]`;
     const userContent=photo?[{type:"image",source:{type:"base64",media_type:photo.mediaType,data:photo.base64}},{type:"text",text:msgWithTime}]:msgWithTime;
