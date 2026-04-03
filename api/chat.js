@@ -312,7 +312,7 @@ export default async function handler(req, res) {
         model: "claude-sonnet-4-20250514",
         max_tokens: Math.min(tokensLeft, 4000),
         system: systemWithPrefs,
-        const userPrefs=req.headers['x-user-prefs']?JSON.parse(req.headers['x-user-prefs']):{};
+        const userPrefs=req.headers['x-user-prefs']?(()=>{try{return JSON.parse(decodeURIComponent(escape(atob(req.headers['x-user-prefs']))));}catch{return {};}})():{};
 const prefStr=[
   userPrefs.passport?`User passport: ${userPrefs.passport}`:'',
   userPrefs.homeCity?`User home city: ${userPrefs.homeCity}`:'',
