@@ -113,7 +113,7 @@ function extractTitle(messages){
   const userMsgs=messages.filter(m=>m.role==="user");
   for(const m of userMsgs){
     const text=typeof m.content==="string"?m.content:Array.isArray(m.content)?(m.content.find(c=>c.type==="text")?.text||""):"";
-    const match=text.match(/\b(italy|japan|thailand|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|nepal|india|vietnam|egypt|brazil|mexico|korea|toronto|canada|usa|turkey|australia|bangladesh|pakistan|morocco|portugal|indonesia|malaysia|philippines)\b/i);
+    const match=text.match(/\b(italy|japan|thailand|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|nepal|india|vietnam|egypt|brazil|mexico|korea|australia|bangladesh|pakistan|morocco|portugal|indonesia|malaysia|philippines|turkey|maldives|kenya|tanzania|south africa|argentina|chile|colombia|peru|cuba|jordan|georgia|armenia|iceland|norway|sweden|finland|denmark|ireland|scotland|croatia|czech|hungary|romania|poland|ukraine|new zealand|hong kong|taiwan|vietnam|cambodia|myanmar|laos|uzbekistan|qatar|bahrain|kuwait|oman|saudi|lebanon)\b/i);
     if(match)return match[0].charAt(0).toUpperCase()+match[0].slice(1).toLowerCase()+" Trip";
   }
   const first=userMsgs[1]||userMsgs[0];
