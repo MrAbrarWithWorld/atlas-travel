@@ -642,7 +642,7 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier,onSettings})
 }
 
 // ===================== SIDEBAR =====================
-function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject}){
+function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject,onAssignProject}){
   return React.createElement(React.Fragment,null,
     React.createElement("div",{className:"sidebar-overlay",onClick:onClose}),
     React.createElement("div",{className:"sidebar"},
@@ -668,12 +668,12 @@ function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney
   ),
   projects.length===0
     ?React.createElement("p",{style:{fontSize:"0.62rem",color:"#3a2a12",paddingLeft:"0.25rem"}},"No projects yet")
-    :projects.map(proj=>React.createElement("div",{key:proj.id,style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.4rem 0.5rem",borderRadius:6,marginBottom:"0.2rem",background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.1)"}},
+    :projects.map(proj=>{const projPlans=plans.filter(p=>p.project_id===proj.id);return React.createElement("div",{key:proj.id,style:{marginBottom:"0.5rem"}},React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.4rem 0.5rem",borderRadius:6,background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.1)"}},React.createElement("span",{style:{fontSize:"0.72rem",color:"#c9a96e"}},proj.emoji+" "+proj.name+" ("+projPlans.length+")"),React.createElement("button",{onClick:()=>onDeleteProject(proj.id),style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.65rem"}},"🗑")),projPlans.map(p=>React.createElement("div",{key:p.id,style:{padding:"0.3rem 0.5rem 0.3rem 1rem",fontSize:"0.68rem",color:"#8a7a60",cursor:"pointer",borderRadius:5},onClick:()=>{onSelectPlan(p);onClose();}},"↳ "+p.title)));})
         React.createElement("span",{style:{fontSize:"0.72rem",color:"#c9a96e"}},proj.emoji+" "+proj.name),
         React.createElement("button",{onClick:()=>onDeleteProject(proj.id),style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.65rem"}},"🗑")
       ))
 ),                    
-        React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"0.5rem",paddingLeft:"0.25rem"}},"Saved Trips"),
+        React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}},   React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",paddingLeft:"0.25rem"}},"Recent Trips"),   React.createElement("span",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.08em",textTransform:"uppercase",paddingRight:"0.25rem"}},"All") ),
         loadingPlans
           ?React.createElement("div",{style:{textAlign:"center",padding:"2rem",color:"#4a3a22",fontSize:"0.72rem"}},"Loading...")
           :plans.length===0
@@ -687,7 +687,11 @@ function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney
                     ),
                     React.createElement("p",{style:{fontSize:"0.62rem",color:"#5a4a2a",marginTop:"0.2rem"}},formatDate(plan.created_at))
                   ),
-                  React.createElement("div",{style:{display:"flex",gap:"0.25rem",flexShrink:0}},   React.createElement("button",{className:"plan-item-del",onClick:e=>{     e.stopPropagation();     const newName=prompt("Rename trip:",plan.title);     if(newName&&newName.trim()&&newName.trim()!==plan.title){       sb.from('saved_plans').update({title:newName.trim()}).eq('id',plan.id).then(()=>onRenamePlan(plan.id,newName.trim()));     }   },style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"✏️"),   React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();onDeletePlan(plan.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem",padding:"0.1rem"}},"🗑") )
+                  React.createElement("div",{style:{display:"flex",gap:"0.25rem",flexShrink:0}},   React.createElement("button",{className:"plan-item-del",onClick:e=>{     e.stopPropagation();     if(projects.length===0){alert("Create a project first!");return;}     const names=projects.map(p=>p.emoji+" "+p.name);     const choice=prompt("Add to project:
+"+names.map((n,i)=>`${i+1}. ${n}`).join("
+")+"
+
+Enter number:");     const idx=parseInt(choice)-1;     if(idx>=0&&idx<projects.length){       sb.from('saved_plans').update({project_id:projects[idx].id}).eq('id',plan.id).then(()=>onAssignProject(plan.id,projects[idx].id));     }   },style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"📁"),   React.createElement("button",{className:"plan-item-del",onClick:e=>{     e.stopPropagation();     const newName=prompt("Rename trip:",plan.title);     if(newName&&newName.trim()&&newName.trim()!==plan.title){       sb.from('saved_plans').update({title:newName.trim()}).eq('id',plan.id).then(()=>onRenamePlan(plan.id,newName.trim()));     }   },style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"✏️"),   React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();onDeletePlan(plan.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem",padding:"0.1rem"}},"🗑") )     e.stopPropagation();     const newName=prompt("Rename trip:",plan.title);     if(newName&&newName.trim()&&newName.trim()!==plan.title){       sb.from('saved_plans').update({title:newName.trim()}).eq('id',plan.id).then(()=>onRenamePlan(plan.id,newName.trim()));     }   },style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"✏️"),   React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();onDeletePlan(plan.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem",padding:"0.1rem"}},"🗑") )
                 )
               ))
       ),
@@ -862,7 +866,7 @@ async function deleteProject(id){
   
   async function loadPlans(){
     setLoadingPlans(true);
-    try{const{data,error}=await sb.from('saved_plans').select('id,title,created_at,is_draft').order('created_at',{ascending:false});if(!error)setPlans(data||[]);}
+    try{const{data,error}=await sb.from('saved_plans').select('id,title,created_at,is_draft,project_id').order('created_at',{ascending:false});if(!error)setPlans(data||[]);}
     catch{}setLoadingPlans(false);
   }
 
@@ -903,6 +907,9 @@ async function deleteProject(id){
       }
     }catch{alert("Save the trip first, then share!");}
   }
+  function assignProject(planId,projectId){
+  setPlans(p=>p.map(x=>x.id===planId?{...x,project_id:projectId}:x));
+}
 function renamePlan(id,newTitle){
   setPlans(p=>p.map(x=>x.id===id?{...x,title:newTitle}:x));
 }
@@ -1024,7 +1031,7 @@ function renamePlan(id,newTitle){
     React.createElement(CookieBanner,null),showSettings&&React.createElement(SettingsModal,{user,userTier,onClose:()=>setShowSettings(false),onLogout:handleLogout,onUpgrade:()=>setShowPricing(true)}),showLogin&&React.createElement(LoginModal,{onClose:()=>setShowLogin(false)}),
     showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false)}),
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
-    showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject}),
+    showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject}),
 
     // Header
     React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.12)"}},
