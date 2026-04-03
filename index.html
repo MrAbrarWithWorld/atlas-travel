@@ -946,7 +946,7 @@ function renamePlan(id,newTitle){
     const newMsgs=[...msgs,{id:Date.now(),from:"user",text:displayText,photoPreview:photo?.preview||null}];
     setMsgs(newMsgs);setBusy(true);hist.current=[...hist.current,{role:"user",content:userContent}];setPhoto(null);
     try{
-      const headers={"Content-Type":"application/json"};
+      const headers={"Content-Type":"application/json"}; try{const prefs=JSON.parse(localStorage.getItem('atlas_prefs')||'{}');if(Object.keys(prefs).length>0)headers['x-user-prefs']=JSON.stringify(prefs);}catch{}
       if(user){const{data:{session}}=await sb.auth.getSession();if(session?.access_token)headers["Authorization"]=`Bearer ${session.access_token}`;}
       const res=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-14)]})});
       if(res.status===429){
