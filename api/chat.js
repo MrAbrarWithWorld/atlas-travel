@@ -311,7 +311,15 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: Math.min(tokensLeft, 4000),
-        system: SYSTEM_MSG,
+        system: systemWithPrefs,
+        const userPrefs=req.headers['x-user-prefs']?JSON.parse(req.headers['x-user-prefs']):{};
+const prefStr=[
+  userPrefs.passport?`User passport: ${userPrefs.passport}`:'',
+  userPrefs.homeCity?`User home city: ${userPrefs.homeCity}`:'',
+  userPrefs.travelStyle?`User travel style: ${userPrefs.travelStyle}`:'',
+  userPrefs.customPrefs?`User preferences: ${userPrefs.customPrefs}`:'',
+].filter(Boolean).join('\n');
+const systemWithPrefs=prefStr?SYSTEM_MSG+`\n\nUSER PROFILE:\n${prefStr}`:SYSTEM_MSG;
         messages: messages.filter(m => m.role !== "system"),
       }),
     });
