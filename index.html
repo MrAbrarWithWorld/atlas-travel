@@ -642,7 +642,7 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier,onSettings})
 }
 
 // ===================== SIDEBAR =====================
-function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier}){
+function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan}){
   return React.createElement(React.Fragment,null,
     React.createElement("div",{className:"sidebar-overlay",onClick:onClose}),
     React.createElement("div",{className:"sidebar"},
@@ -670,7 +670,7 @@ function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney
                 React.createElement("div",{style:{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"0.5rem"}},
                   React.createElement("div",{style:{flex:1,minWidth:0}},
                     React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.35rem"}},
-                      React.createElement("p",{style:{fontSize:"0.78rem",color:"#d4c8a8",fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},plan.title),
+                      React.createElement("p",{   style:{fontSize:"0.78rem",color:"#d4c8a8",fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",cursor:"text"},   onDoubleClick:e=>{     e.stopPropagation();     const newName=prompt("Rename trip:",plan.title);     if(newName&&newName.trim()&&newName.trim()!==plan.title){       sb.from('saved_plans').update({title:newName.trim()}).eq('id',plan.id).then(()=>onRenamePlan(plan.id,newName.trim()));     }   } },plan.title),
                       plan.is_draft&&React.createElement("span",{style:{fontSize:"0.48rem",color:"#6a5a3a",border:"1px solid rgba(106,90,58,0.4)",borderRadius:3,padding:"1px 4px",letterSpacing:"0.08em",flexShrink:0}},"DRAFT")
                     ),
                     React.createElement("p",{style:{fontSize:"0.62rem",color:"#5a4a2a",marginTop:"0.2rem"}},formatDate(plan.created_at))
@@ -873,7 +873,9 @@ function App(){
       }
     }catch{alert("Save the trip first, then share!");}
   }
-
+function renamePlan(id,newTitle){
+  setPlans(p=>p.map(x=>x.id===id?{...x,title:newTitle}:x));
+}
   async function deletePlan(id){
     await sb.from('saved_plans').delete().eq('id',id);
     setPlans(p=>p.filter(x=>x.id!==id));
@@ -992,7 +994,7 @@ function App(){
     React.createElement(CookieBanner,null),showSettings&&React.createElement(SettingsModal,{user,userTier,onClose:()=>setShowSettings(false),onLogout:handleLogout,onUpgrade:()=>setShowPricing(true)}),showLogin&&React.createElement(LoginModal,{onClose:()=>setShowLogin(false)}),
     showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false)}),
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
-    showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier}),
+    showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan}),
 
     // Header
     React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.12)"}},
