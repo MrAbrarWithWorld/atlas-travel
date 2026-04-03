@@ -642,7 +642,7 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier,onSettings})
 }
 
 // ===================== SIDEBAR =====================
-function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan}){
+function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject}){
   return React.createElement(React.Fragment,null,
     React.createElement("div",{className:"sidebar-overlay",onClick:onClose}),
     React.createElement("div",{className:"sidebar"},
@@ -661,6 +661,18 @@ function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney
         React.createElement("button",{onClick:()=>{onNewJourney();onClose();},style:{width:"100%",padding:"0.6rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem"}},"✦ New journey")
       ),
       React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"0.75rem"}},
+      React.createElement("div",{style:{marginBottom:"1rem"}},
+  React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}},
+    React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",paddingLeft:"0.25rem"}},"Projects"),
+    React.createElement("button",{onClick:()=>{const name=prompt("Project name:");if(name?.trim())onCreateProject(name.trim());},style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"0.9rem",lineHeight:1}},"+")
+  ),
+  projects.length===0
+    ?React.createElement("p",{style:{fontSize:"0.62rem",color:"#3a2a12",paddingLeft:"0.25rem"}},"No projects yet")
+    :projects.map(proj=>React.createElement("div",{key:proj.id,style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.4rem 0.5rem",borderRadius:6,marginBottom:"0.2rem",background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.1)"}},
+        React.createElement("span",{style:{fontSize:"0.72rem",color:"#c9a96e"}},proj.emoji+" "+proj.name),
+        React.createElement("button",{onClick:()=>onDeleteProject(proj.id),style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.65rem"}},"🗑")
+      ))
+),                    
         React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"0.5rem",paddingLeft:"0.25rem"}},"Saved Trips"),
         loadingPlans
           ?React.createElement("div",{style:{textAlign:"center",padding:"2rem",color:"#4a3a22",fontSize:"0.72rem"}},"Loading...")
@@ -788,6 +800,7 @@ function App(){
   const [savingPlan,setSavingPlan]=useState(false);
   const [showSettings,setShowSettings]=useState(false);
   const [userTier,setUserTier]=useState('free');
+  const [projects,setProjects]=useState([]);
   const [holdActive,setHoldActive]=useState(false);
   const hist=useRef(saved?.hist||[...defaultHist]);
   const endRef=useRef(null);
@@ -817,6 +830,7 @@ function App(){
   useEffect(()=>{
   if(user){
     loadPlans();
+    loadProjects();
     sb.from('allowed_users').select('email').eq('email',user.email).single().then(({data:allowed})=>{
   if(allowed){setUserTier('pro');return;}
   sb.from('subscriptions').select('plan,status,current_period_end').eq('user_id',user.id).eq('status','active').gte('current_period_end',new Date().toISOString()).single().then(({data})=>{
@@ -829,6 +843,22 @@ function App(){
     setUserTier('free');
   }
 },[user]);
+
+  async function loadProjects(){
+  try{const{data}=await sb.from('trip_projects').select('*').order('created_at',{ascending:false});if(data)setProjects(data||[]);}catch{}
+}
+
+async function createProject(name){
+  try{
+    const{data}=await sb.from('trip_projects').insert({user_id:user.id,name,emoji:'✈️'}).select().single();
+    if(data)setProjects(p=>[data,...p]);
+  }catch{}
+}
+
+async function deleteProject(id){
+  await sb.from('trip_projects').delete().eq('id',id);
+  setProjects(p=>p.filter(x=>x.id!==id));
+}
   
   async function loadPlans(){
     setLoadingPlans(true);
@@ -994,7 +1024,7 @@ function renamePlan(id,newTitle){
     React.createElement(CookieBanner,null),showSettings&&React.createElement(SettingsModal,{user,userTier,onClose:()=>setShowSettings(false),onLogout:handleLogout,onUpgrade:()=>setShowPricing(true)}),showLogin&&React.createElement(LoginModal,{onClose:()=>setShowLogin(false)}),
     showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false)}),
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
-    showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan}),
+    showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject}),
 
     // Header
     React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.12)"}},
