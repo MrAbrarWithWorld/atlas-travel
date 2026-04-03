@@ -1014,7 +1014,7 @@ function App(){
         user
           ?React.createElement(UserAvatar,{user,onLogout:handleLogout,onOpenSidebar:()=>setShowSidebar(true),onUpgrade:()=>setShowPricing(true),userTier,onSettings:()=>setShowSettings(true)})
           :React.createElement(React.Fragment,null,
-              React.createElement("button",{onClick:()=>setShowPricing(true),style:{background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,padding:"0.35rem 0.7rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"⭐ Pro"),
+              userTier!=='pro'&&userTier!=='explorer'&&React.createElement("button",{onClick:()=>setShowPricing(true),style:{background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,padding:"0.35rem 0.7rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"⭐ Pro"),
               React.createElement("button",{onClick:()=>setShowLogin(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.3)",borderRadius:8,padding:"0.35rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Sign in")
             )
       )
