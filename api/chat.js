@@ -300,7 +300,15 @@ export default async function handler(req, res) {
     } catch(e) {}
   }
 
-  try {
+ try {
+    const userPrefs=req.headers['x-user-prefs']?(()=>{try{return JSON.parse(decodeURIComponent(escape(atob(req.headers['x-user-prefs']))));}catch{return {};}})():{};
+    const prefStr=[
+      userPrefs.passport?`User passport: ${userPrefs.passport}`:'',
+      userPrefs.homeCity?`User home city: ${userPrefs.homeCity}`:'',
+      userPrefs.travelStyle?`User travel style: ${userPrefs.travelStyle}`:'',
+      userPrefs.customPrefs?`User preferences: ${userPrefs.customPrefs}`:'',
+    ].filter(Boolean).join('\n');
+    const systemWithPrefs=prefStr?SYSTEM_MSG+`\n\nUSER PROFILE:\n${prefStr}`:SYSTEM_MSG;
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -312,14 +320,6 @@ export default async function handler(req, res) {
         model: "claude-sonnet-4-20250514",
         max_tokens: Math.min(tokensLeft, 4000),
         system: systemWithPrefs,
-        const userPrefs=req.headers['x-user-prefs']?(()=>{try{return JSON.parse(decodeURIComponent(escape(atob(req.headers['x-user-prefs']))));}catch{return {};}})():{};
-const prefStr=[
-  userPrefs.passport?`User passport: ${userPrefs.passport}`:'',
-  userPrefs.homeCity?`User home city: ${userPrefs.homeCity}`:'',
-  userPrefs.travelStyle?`User travel style: ${userPrefs.travelStyle}`:'',
-  userPrefs.customPrefs?`User preferences: ${userPrefs.customPrefs}`:'',
-].filter(Boolean).join('\n');
-const systemWithPrefs=prefStr?SYSTEM_MSG+`\n\nUSER PROFILE:\n${prefStr}`:SYSTEM_MSG;
         messages: messages.filter(m => m.role !== "system"),
       }),
     });
