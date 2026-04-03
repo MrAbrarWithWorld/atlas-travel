@@ -675,7 +675,7 @@ function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney
                     ),
                     React.createElement("p",{style:{fontSize:"0.62rem",color:"#5a4a2a",marginTop:"0.2rem"}},formatDate(plan.created_at))
                   ),
-                  React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();onDeletePlan(plan.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem",padding:"0.1rem",flexShrink:0}},"🗑")
+                  React.createElement("div",{style:{display:"flex",gap:"0.25rem",flexShrink:0}},   React.createElement("button",{className:"plan-item-del",onClick:e=>{     e.stopPropagation();     const newName=prompt("Rename trip:",plan.title);     if(newName&&newName.trim()&&newName.trim()!==plan.title){       sb.from('saved_plans').update({title:newName.trim()}).eq('id',plan.id).then(()=>onRenamePlan(plan.id,newName.trim()));     }   },style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"✏️"),   React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();onDeletePlan(plan.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem",padding:"0.1rem"}},"🗑") )
                 )
               ))
       ),
