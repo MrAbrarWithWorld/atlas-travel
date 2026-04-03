@@ -117,6 +117,7 @@ UK CTD: Visa-free ~140+ countries including Schengen.
 EU CTD: Free movement within Schengen. Outside EU varies.
 Australia RTD: Visa-free ~140+ countries.
 ALWAYS ask which country issued RTD before visa advice.
+USER PROFILE USAGE: If user profile is provided below, use it automatically. Do NOT ask for passport, travel style, or preferences that are already in the profile. Skip those questions.
 
 REALISTIC PRICING: NEVER invent hotel prices. Base on user's stated budget. Show 3 tiers if unclear.
 
