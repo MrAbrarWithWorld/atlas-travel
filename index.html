@@ -34,17 +34,33 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Atlas",
+  "@type": "SoftwareApplication",
+  "name": "Atlas AI Travel Planner",
   "url": "https://getatlas.ca",
-  "description": "AI-powered travel planner. Get instant itineraries, visa info, flights and hotels for any destination.",
+  "description": "AI-powered travel planner. Get instant itineraries, visa info, flights and hotels for any destination worldwide. Free to use.",
   "applicationCategory": "TravelApplication",
-  "operatingSystem": "Web",
+  "operatingSystem": "Web, iOS, Android",
+  "inLanguage": ["en", "bn", "hi", "ar", "fr", "es", "zh", "ja", "ko"],
+  "audience": {
+    "@type": "Audience",
+    "geographicArea": {
+      "@type": "AdministrativeArea",
+      "name": "Worldwide"
+    }
+  },
   "offers": {
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "USD"
-  }
+  },
+  "featureList": [
+    "AI travel itinerary generator",
+    "Visa information by passport",
+    "Day-by-day trip planning",
+    "Interactive travel maps",
+    "Multi-language support",
+    "Flight and hotel recommendations"
+  ]
 }
 </script>
 
