@@ -1,5 +1,48 @@
 import { createClient } from '@supabase/supabase-js';
 
+async function searchWeb(query) {
+  try {
+    const res = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        api_key: process.env.TAVILY_API_KEY,
+        query,
+        search_depth: 'basic',
+        max_results: 3,
+        include_answer: true,
+      }),
+    });
+    const data = await res.json();
+    return data.answer || data.results?.map(r => r.content).join('\n') || '';
+  } catch { return ''; }
+}
+
+async function getTravelContext(messages) {
+  const userMsgs = messages.filter(m => m.role === 'user');
+  const last = userMsgs[userMsgs.length - 1]?.content;
+  const text = typeof last === 'string' ? last
+    : Array.isArray(last) ? (last.find(c => c.type === 'text')?.text || '') : '';
+
+  const destinations = text.match(/\b(italy|japan|thailand|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|nepal|india|vietnam|egypt|brazil|mexico|korea|australia|bangladesh|pakistan|morocco|portugal|indonesia|malaysia|philippines|turkey|kenya|tanzania|south africa|argentina|chile|colombia|peru|cuba|jordan|georgia|armenia|iceland|norway|sweden|finland|denmark|ireland|scotland|croatia|czech|hungary|romania|poland|ukraine|new zealand|hong kong|taiwan|cambodia|myanmar|laos|uzbekistan|qatar|bahrain|kuwait|oman|saudi|lebanon|uk|england|europe|schengen|usa|canada|china|russia)\b/gi);
+
+  if (!destinations || destinations.length === 0) return '';
+
+  const destination = [...new Set(destinations)].slice(0, 2).join(' and ');
+
+  const passport = text.match(/\b(canadian|american|british|bangladeshi|indian|pakistani|nigerian|australian|eu|european)\s*(passport|rtd|ctd|travel document)\b/i)?.[0] || 'canadian passport';
+
+  const queries = [
+    `${destination} visa requirements 2026 for ${passport}`,
+    `${destination} travel entry requirements current 2026`,
+  ];
+
+  const results = await Promise.all(queries.map(q => searchWeb(q)));
+  const context = results.filter(Boolean).join('\n\n');
+
+  return context ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}` : '';
+}
+
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
@@ -206,6 +249,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Messages required" });
   }
 
+  // Get real-time travel context
+const travelContext = await getTravelContext(messages);
+  
   const requestingNewPlan = isNewPlan(messages);
   if (requestingNewPlan && user.plansUsed >= limits.plans) {
     const tokensLeft = limits.tokens - user.tokensUsed;
@@ -309,7 +355,9 @@ export default async function handler(req, res) {
       userPrefs.travelStyle?`User travel style: ${userPrefs.travelStyle}`:'',
       userPrefs.customPrefs?`User preferences: ${userPrefs.customPrefs}`:'',
     ].filter(Boolean).join('\n');
-    const systemWithPrefs=prefStr?SYSTEM_MSG+`\n\nUSER PROFILE:\n${prefStr}`:SYSTEM_MSG;
+    const systemWithPrefs = SYSTEM_MSG + 
+  (travelContext ? travelContext : '') +
+  (prefStr ? `\n\nUSER PROFILE:\n${prefStr}` : '');
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
