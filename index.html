@@ -1162,9 +1162,9 @@ function renamePlan(id,newTitle){
     const location=await getLocation();
     const locationStr=location?`\nUser location: ${location}`:"";
     const userInfo=user?`\nUser: ${user.user_metadata?.full_name||user.email} (logged in, ${userTier==='pro'?'Pro':'Free'} plan)`:"\nUser: Guest (not logged in)";
-    const msgText=t||"What place is this? Identify the location and give me travel info.";
+    const msgText=t||"";
     const msgWithTime=`${msgText}\n\n[Current date & time: ${dateTime}${locationStr}${userInfo}]`;
-    const userContent=photo?[{type:"image",source:{type:"base64",media_type:photo.mediaType,data:photo.base64}},{type:"text",text:msgWithTime}]:msgWithTime;
+    const msgWithTime2=t?msgWithTime:`[Current date & time: ${dateTime}${locationStr}${userInfo}]`; const userContent=photo   ?[{type:"image",source:{type:"base64",media_type:photo.mediaType,data:photo.base64}},{type:"text",text:msgWithTime2}]   :msgWithTime;
     const displayText=msgText.replace(/\s*\[Current date.*$/s,'').trim();
     const newMsgs=[...msgs,{id:Date.now(),from:"user",text:displayText,photoPreview:photo?.preview||null}];
     setMsgs(newMsgs);setBusy(true);hist.current=[...hist.current,{role:"user",content:userContent}];setPhoto(null);
