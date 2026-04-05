@@ -72,7 +72,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>  
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body,#root{height:100%;}
@@ -123,7 +125,9 @@ const {createClient} = supabase;
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gDzH6bF1tOYuKmx4uIGaLw_On9AG90E';
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-
+const GOOGLE_CLIENT_ID='614751798837-443ekthg12sqi7ijb48rhdfso77hrq0r.apps.googleusercontent.com';
+const GOOGLE_CALENDAR_SCOPE='https://www.googleapis.com/auth/calendar.events';
+  
 function getLocation(){return new Promise(resolve=>{if(!navigator.geolocation){resolve("");return;}const t=setTimeout(()=>resolve(""),4000);navigator.geolocation.getCurrentPosition(async pos=>{clearTimeout(t);try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);const d=await r.json();const city=d.address?.city||d.address?.town||d.address?.village||"";const country=d.address?.country||"";resolve(city&&country?`${city}, ${country}`:country||"");}catch{resolve("");}},()=>{clearTimeout(t);resolve("");},{timeout:4000});});}
 function getDateTime(){const now=new Date();const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];const months=['January','February','March','April','May','June','July','August','September','October','November','December'];const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;const h=now.getHours();return `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} — ${h%12||12}:${now.getMinutes().toString().padStart(2,'0')} ${h>=12?'PM':'AM'} (${tz})`;}
 function parseMapData(text){const m=text.match(/\[MAPDATA\]([\s\S]*?)\[\/MAPDATA\]/);if(!m)return null;try{const d=JSON.parse(m[1]);return d.places||null;}catch{return null;}}
@@ -155,6 +159,196 @@ const {useState,useRef,useEffect}=React;
 function saveLocal(msgs,hist){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({msgs,hist,t:Date.now()}));}catch{}}
 function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!d||Date.now()-d.t>24*60*60*1000)return null;return d;}catch{return null;}}
 const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}];
+
+  // ===================== CALENDAR MODAL =====================
+function CalendarModal({msgs,onClose}){
+  const [tripName,setTripName]=React.useState(()=>extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''}))));
+  const [startDate,setStartDate]=React.useState('');
+  const [endDate,setEndDate]=React.useState('');
+  const [flights,setFlights]=React.useState([{from:'',to:'',date:'',time:'',flightNo:''}]);
+  const [hotels,setHotels]=React.useState([{name:'',city:'',checkIn:'',checkOut:''}]);
+  const [notify,setNotify]=React.useState(true);
+  const [loading,setLoading]=React.useState(false);
+
+  function addFlight(){setFlights(f=>[...f,{from:'',to:'',date:'',time:'',flightNo:''}]);}
+  function removeFlight(i){setFlights(f=>f.filter((_,idx)=>idx!==i));}
+  function updateFlight(i,key,val){setFlights(f=>f.map((x,idx)=>idx===i?{...x,[key]:val}:x));}
+  function addHotel(){setHotels(h=>[...h,{name:'',city:'',checkIn:'',checkOut:''}]);}
+  function removeHotel(i){setHotels(h=>h.filter((_,idx)=>idx!==i));}
+  function updateHotel(i,key,val){setHotels(h=>h.map((x,idx)=>idx===i?{...x,[key]:val}:x));}
+
+  async function handleAddToCalendar(){
+    if(!startDate||!endDate){alert('Please add trip dates!');return;}
+    setLoading(true);
+    try{
+      const events=[];
+
+      // Main trip event
+      events.push({
+        title:`✈️ ${tripName}`,
+        description:`Trip planned by Atlas AI\ngetatlas.ca`,
+        start:startDate,
+        end:endDate,
+        allDay:true,
+        colorId:'5'
+      });
+
+      // Flight events
+      for(const f of flights){
+        if(f.from&&f.to&&f.date){
+          events.push({
+            title:`✈️ Flight: ${f.from} → ${f.to}${f.flightNo?' ('+f.flightNo+')':''}`,
+            description:`Flight from ${f.from} to ${f.to}\nPlanned by Atlas AI`,
+            start:f.date,
+            end:f.date,
+            allDay:!f.time,
+            time:f.time||'09:00',
+            colorId:'1'
+          });
+        }
+      }
+
+      // Hotel events
+      for(const h of hotels){
+        if(h.name&&h.checkIn&&h.checkOut){
+          events.push({
+            title:`🏨 ${h.name}${h.city?' - '+h.city:''}`,
+            description:`Hotel stay\nPlanned by Atlas AI`,
+            start:h.checkIn,
+            end:h.checkOut,
+            allDay:true,
+            colorId:'2'
+          });
+        }
+      }
+
+      // Notification event
+      if(notify&&startDate){
+        const notifyDate=new Date(startDate);
+        notifyDate.setDate(notifyDate.getDate()-1);
+        events.push({
+          title:`⚠️ Trip tomorrow: ${tripName}`,
+          description:`Your trip starts tomorrow!\nPlanned by Atlas AI`,
+          start:notifyDate.toISOString().split('T')[0],
+          end:notifyDate.toISOString().split('T')[0],
+          allDay:true,
+          colorId:'6'
+        });
+      }
+
+      const added=await addToGoogleCalendar(events);
+      showToast(`📅 ${added} events added to Google Calendar!`);
+      onClose();
+    }catch(e){
+      alert('Error: '+e.message);
+    }
+    setLoading(false);
+  }
+
+  const inputStyle={width:"100%",background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:7,padding:"0.45rem 0.65rem",color:"#e0d8c8",fontSize:"0.75rem",fontFamily:"'DM Sans',sans-serif",outline:"none",marginTop:"0.25rem"};
+  const labelStyle={fontSize:"0.58rem",color:"#6a5a3a",letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginTop:"0.75rem"};
+
+  return React.createElement("div",{
+    className:"login-overlay",
+    style:{alignItems:"flex-start",paddingTop:"1.5rem",paddingBottom:"1.5rem",overflowY:"auto"},
+    onClick:e=>{if(e.target===e.currentTarget)onClose();}
+  },
+    React.createElement("div",{style:{width:"100%",maxWidth:420,background:"#1e1a14",border:"1px solid rgba(201,169,110,0.15)",borderRadius:16,overflow:"hidden",animation:"slideUp 0.3s ease"}},
+
+      // Header
+      React.createElement("div",{style:{padding:"1rem 1.25rem",borderBottom:"1px solid rgba(201,169,110,0.1)",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
+          React.createElement("span",{style:{fontSize:"1.1rem"}},"📅"),
+          React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1rem",color:"#d4aa6e",letterSpacing:"0.15em"}},"Add Trip to Calendar")
+        ),
+        React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"1.1rem"}},"✕")
+      ),
+
+      React.createElement("div",{style:{padding:"1.25rem",overflowY:"auto",maxHeight:"70vh"}},
+
+        // Trip name
+        React.createElement("label",{style:labelStyle},"Trip name"),
+        React.createElement("input",{type:"text",value:tripName,onChange:e=>setTripName(e.target.value),style:inputStyle}),
+
+        // Trip dates
+        React.createElement("div",{style:{display:"flex",gap:"0.5rem",marginTop:"0.75rem"}},
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("label",{style:labelStyle},"Start date"),
+            React.createElement("input",{type:"date",value:startDate,onChange:e=>setStartDate(e.target.value),style:inputStyle})
+          ),
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("label",{style:labelStyle},"Return date"),
+            React.createElement("input",{type:"date",value:endDate,onChange:e=>setEndDate(e.target.value),style:inputStyle})
+          )
+        ),
+
+        // Flights
+        React.createElement("div",{style:{marginTop:"1rem"}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.4rem"}},
+            React.createElement("p",{style:{fontSize:"0.58rem",color:"#c9a96e",letterSpacing:"0.1em",textTransform:"uppercase"}},"✈️ Flights & Transport"),
+            React.createElement("button",{onClick:addFlight,style:{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:5,padding:"0.2rem 0.5rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",fontFamily:"'DM Sans',sans-serif"}},"+Add")
+          ),
+          ...flights.map((f,i)=>React.createElement("div",{key:i,style:{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,padding:"0.6rem",marginBottom:"0.4rem"}},
+            React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginBottom:"0.3rem"}},
+              React.createElement("input",{type:"text",placeholder:"From (YYZ)",value:f.from,onChange:e=>updateFlight(i,'from',e.target.value),style:{...inputStyle,marginTop:0,flex:1}}),
+              React.createElement("span",{style:{color:"#c9a96e",alignSelf:"center"}},"→"),
+              React.createElement("input",{type:"text",placeholder:"To (FCO)",value:f.to,onChange:e=>updateFlight(i,'to',e.target.value),style:{...inputStyle,marginTop:0,flex:1}})
+            ),
+            React.createElement("div",{style:{display:"flex",gap:"0.4rem"}},
+              React.createElement("input",{type:"date",value:f.date,onChange:e=>updateFlight(i,'date',e.target.value),style:{...inputStyle,marginTop:0,flex:2}}),
+              React.createElement("input",{type:"time",value:f.time,onChange:e=>updateFlight(i,'time',e.target.value),style:{...inputStyle,marginTop:0,flex:1}}),
+              React.createElement("input",{type:"text",placeholder:"AC870",value:f.flightNo,onChange:e=>updateFlight(i,'flightNo',e.target.value),style:{...inputStyle,marginTop:0,flex:1}}),
+              flights.length>1&&React.createElement("button",{onClick:()=>removeFlight(i),style:{background:"none",border:"none",color:"#8a5050",cursor:"pointer",fontSize:"0.8rem",alignSelf:"center"}},"🗑")
+            )
+          ))
+        ),
+
+        // Hotels
+        React.createElement("div",{style:{marginTop:"1rem"}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.4rem"}},
+            React.createElement("p",{style:{fontSize:"0.58rem",color:"#c9a96e",letterSpacing:"0.1em",textTransform:"uppercase"}},"🏨 Hotels"),
+            React.createElement("button",{onClick:addHotel,style:{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:5,padding:"0.2rem 0.5rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",fontFamily:"'DM Sans',sans-serif"}},"+Add")
+          ),
+          ...hotels.map((h,i)=>React.createElement("div",{key:i,style:{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,padding:"0.6rem",marginBottom:"0.4rem"}},
+            React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginBottom:"0.3rem"}},
+              React.createElement("input",{type:"text",placeholder:"Hotel name",value:h.name,onChange:e=>updateHotel(i,'name',e.target.value),style:{...inputStyle,marginTop:0,flex:2}}),
+              React.createElement("input",{type:"text",placeholder:"City",value:h.city,onChange:e=>updateHotel(i,'city',e.target.value),style:{...inputStyle,marginTop:0,flex:1}}),
+              hotels.length>1&&React.createElement("button",{onClick:()=>removeHotel(i),style:{background:"none",border:"none",color:"#8a5050",cursor:"pointer",fontSize:"0.8rem",alignSelf:"center"}},"🗑")
+            ),
+            React.createElement("div",{style:{display:"flex",gap:"0.4rem"}},
+              React.createElement("div",{style:{flex:1}},
+                React.createElement("label",{style:{...labelStyle,marginTop:0}},"Check-in"),
+                React.createElement("input",{type:"date",value:h.checkIn,onChange:e=>updateHotel(i,'checkIn',e.target.value),style:{...inputStyle,marginTop:"0.2rem"}})
+              ),
+              React.createElement("div",{style:{flex:1}},
+                React.createElement("label",{style:{...labelStyle,marginTop:0}},"Check-out"),
+                React.createElement("input",{type:"date",value:h.checkOut,onChange:e=>updateHotel(i,'checkOut',e.target.value),style:{...inputStyle,marginTop:"0.2rem"}})
+              )
+            )
+          ))
+        ),
+
+        // Notification toggle
+        React.createElement("div",{style:{marginTop:"1rem",display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,padding:"0.75rem"}},
+          React.createElement("div",null,
+            React.createElement("p",{style:{fontSize:"0.75rem",color:"#c9a96e"}},"🔔 Trip reminder"),
+            React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",marginTop:"0.1rem"}},"Add reminder 1 day before trip")
+          ),
+          React.createElement("button",{onClick:()=>setNotify(!notify),style:{width:36,height:20,borderRadius:10,background:notify?"rgba(201,169,110,0.4)":"rgba(100,90,70,0.2)",border:"none",cursor:"pointer",position:"relative",transition:"all 0.2s"}},
+            React.createElement("span",{style:{position:"absolute",top:2,left:notify?18:2,width:16,height:16,borderRadius:"50%",background:notify?"#c9a96e":"#6a5a3a",transition:"all 0.2s"}})
+          )
+        ),
+
+        // Add button
+        React.createElement("button",{
+          onClick:handleAddToCalendar,
+          disabled:loading,
+          style:{width:"100%",marginTop:"1.25rem",padding:"0.85rem",background:"linear-gradient(135deg,rgba(201,169,110,0.2),rgba(201,169,110,0.1))",border:"1px solid rgba(201,169,110,0.4)",borderRadius:10,color:"#c9a96e",cursor:loading?"default":"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500}
+        },loading?"Adding to Calendar...":"📅 Add to Google Calendar")
+      )
+    )
+  );
+}
 
  // ===================== HELP MODAL =====================
 function HelpModal({onClose}){
@@ -1033,6 +1227,7 @@ function App(){
   const [showSettings,setShowSettings]=useState(false); const [showHelp,setShowHelp]=useState(false);
   const [userTier,setUserTier]=useState('free');
   const [projects,setProjects]=useState([]);
+  const [showCalendar,setShowCalendar]=useState(false);
   const [holdActive,setHoldActive]=useState(false);
   const hist=useRef(saved?.hist||[...defaultHist]);
   const endRef=useRef(null);
@@ -1121,6 +1316,41 @@ async function deleteProject(id){
     document.body.appendChild(toast);setTimeout(()=>toast.remove(),2500);
   }
 
+  async function addToGoogleCalendar(events){
+  return new Promise((resolve,reject)=>{
+    const tokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:GOOGLE_CLIENT_ID,
+      scope:GOOGLE_CALENDAR_SCOPE,
+      callback:async(tokenResponse)=>{
+        if(tokenResponse.error){reject(tokenResponse.error);return;}
+        const token=tokenResponse.access_token;
+        let added=0;
+        for(const ev of events){
+          try{
+            await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{
+              method:'POST',
+              headers:{
+                'Authorization':`Bearer ${token}`,
+                'Content-Type':'application/json'
+              },
+              body:JSON.stringify({
+                summary:ev.title,
+                description:ev.description||'Added by Atlas AI Travel Planner\ngetatlas.ca',
+                start:ev.allDay?{date:ev.start}:{dateTime:ev.start+'T'+ev.time+':00',timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone},
+                end:ev.allDay?{date:ev.end}:{dateTime:ev.end+'T'+ev.time+':00',timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone},
+                colorId:ev.colorId||'5',
+              })
+            });
+            added++;
+          }catch(e){console.error(e);}
+        }
+        resolve(added);
+      }
+    });
+    tokenClient.requestAccessToken();
+  });
+}
+  
   function generatePDF(){
   if(!msgs||msgs.length===0){showToast('No trip to export!');return;}
   const{jsPDF}=window.jspdf;
@@ -1390,7 +1620,8 @@ function renamePlan(id,newTitle){
     React.createElement(CookieBanner,null),showSettings&&React.createElement(SettingsModal,{user,userTier,onClose:()=>setShowSettings(false),onLogout:handleLogout,onUpgrade:()=>setShowPricing(true)}), showHelp&&React.createElement(HelpModal,{onClose:()=>setShowHelp(false)}),showLogin&&React.createElement(LoginModal,{onClose:()=>setShowLogin(false)}),
     showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false)}),
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
-    showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject}),
+    showCalendar&&React.createElement(CalendarModal,{msgs,onClose:()=>setShowCalendar(false)}),
+  showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject}),
 
     // Header
     React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.12)"}},
@@ -1446,7 +1677,7 @@ function renamePlan(id,newTitle){
               :React.createElement("div",null,
                   React.createElement(Prose,{text:msg.text}),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
-                  hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{marginTop:"0.6rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen"), isPro&&React.createElement("button",{onClick:()=>generatePDF(),style:{marginTop:"0.6rem",marginLeft:"0.4rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📄 PDF")
+                  hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{marginTop:"0.6rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen"),React.createElement("button",{onClick:()=>setShowCalendar(true),style:{marginTop:"0.6rem",marginLeft:"0.4rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📅 Calendar"), isPro&&React.createElement("button",{onClick:()=>generatePDF(),style:{marginTop:"0.6rem",marginLeft:"0.4rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📄 PDF")
                 )
           )
         )),
