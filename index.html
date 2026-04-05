@@ -457,33 +457,79 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
           ),
 
           // ---- ACCOUNT ----
-          tab==='account'&&React.createElement("div",null,
-            React.createElement("p",{style:sectionTitle},"Account"),
+tab==='account'&&React.createElement("div",null,
+  React.createElement("p",{style:sectionTitle},"Account"),
 
-            React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"1rem",display:"flex",alignItems:"center",gap:"0.75rem"}},
-              user?.user_metadata?.avatar_url
-                ?React.createElement("img",{src:user.user_metadata.avatar_url,style:{width:44,height:44,borderRadius:"50%",objectFit:"cover",border:"1px solid rgba(201,169,110,0.3)"}})
-                :React.createElement("div",{style:{width:44,height:44,borderRadius:"50%",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.1rem",color:"#c9a96e",fontWeight:600}},(user?.user_metadata?.full_name||user?.email||"U")[0]?.toUpperCase()),
-              React.createElement("div",null,
-                React.createElement("p",{style:{fontSize:"0.82rem",color:"#e0d8c8",fontWeight:500}},user?.user_metadata?.full_name||user?.email?.split("@")[0]||"User"),
-                React.createElement("p",{style:{fontSize:"0.65rem",color:"#6a5a3a",marginTop:"0.1rem"}},user?.email),
-                React.createElement("p",{style:{fontSize:"0.62rem",color:isPro?"#c9a96e":"#6a5a3a",marginTop:"0.2rem"}},isPro?"⭐ Pro Plan — Unlimited":"Free Plan · 3 plans/day")
-              )
-            ),
+  // User info
+  React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"1rem",display:"flex",alignItems:"center",gap:"0.75rem"}},
+    user?.user_metadata?.avatar_url
+      ?React.createElement("img",{src:user.user_metadata.avatar_url,style:{width:44,height:44,borderRadius:"50%",objectFit:"cover",border:"1px solid rgba(201,169,110,0.3)"}})
+      :React.createElement("div",{style:{width:44,height:44,borderRadius:"50%",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.1rem",color:"#c9a96e",fontWeight:600}},(user?.user_metadata?.full_name||user?.email||"U")[0]?.toUpperCase()),
+    React.createElement("div",null,
+      React.createElement("p",{style:{fontSize:"0.82rem",color:"#e0d8c8",fontWeight:500}},user?.user_metadata?.full_name||user?.email?.split("@")[0]||"User"),
+      React.createElement("p",{style:{fontSize:"0.65rem",color:"#6a5a3a",marginTop:"0.1rem"}},user?.email),
+      React.createElement("p",{style:{fontSize:"0.62rem",color:isPro?"#c9a96e":"#6a5a3a",marginTop:"0.2rem"}},
+        userTier==='explorer'?"💎 Explorer Plan":userTier==='pro'?"⭐ Pro Plan":"Free Plan"
+      )
+    )
+  ),
 
-            !isPro&&React.createElement("div",{style:{background:"linear-gradient(135deg,rgba(201,169,110,0.08),rgba(201,169,110,0.04))",border:"1px solid rgba(201,169,110,0.25)",borderRadius:10,padding:"1rem",marginBottom:"1rem",display:"flex",alignItems:"center",justifyContent:"space-between"}},
-              React.createElement("div",null,
-                React.createElement("p",{style:{fontSize:"0.75rem",color:"#c9a96e"}},"⭐ Upgrade to Pro"),
-                React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",marginTop:"0.1rem"}},"Unlimited plans · Priority AI · $7.99/mo")
-              ),
-              React.createElement("button",{onClick:()=>{onClose();onUpgrade();},style:{background:"rgba(201,169,110,0.15)",border:"1px solid rgba(201,169,110,0.4)",borderRadius:8,padding:"0.4rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",fontFamily:"'DM Sans',sans-serif"}},"Upgrade")
-            ),
+  // Plan details box
+  React.createElement("div",{style:{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"1rem"}},
+    React.createElement("p",{style:{fontSize:"0.58rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"0.75rem"}},"Your Plan"),
+    
+    // Plan badge
+    React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem"}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
+        React.createElement("span",{style:{fontSize:"1.1rem"}},userTier==='explorer'?"💎":userTier==='pro'?"⭐":"🌍"),
+        React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1rem",color:"#c9a96e"}},
+          userTier==='explorer'?"Explorer":userTier==='pro'?"Pro":"Free"
+        )
+      ),
+      userTier==='pro'||userTier==='explorer'
+        ?React.createElement("span",{style:{fontSize:"0.6rem",color:"#6abf6a",background:"rgba(106,191,106,0.1)",border:"1px solid rgba(106,191,106,0.2)",borderRadius:20,padding:"0.2rem 0.6rem"}},"Active ✓")
+        :React.createElement("span",{style:{fontSize:"0.6rem",color:"#6a5a3a",background:"rgba(106,90,58,0.1)",border:"1px solid rgba(106,90,58,0.2)",borderRadius:20,padding:"0.2rem 0.6rem"}},"Free")
+    ),
 
-            React.createElement("div",{style:{borderTop:"1px solid rgba(201,169,110,0.1)",paddingTop:"0.75rem",display:"flex",flexDirection:"column",gap:"0.4rem"}},
-              React.createElement("button",{onClick:()=>{onLogout();onClose();},style:{width:"100%",padding:"0.6rem 0.75rem",background:"none",border:"1px solid rgba(201,169,110,0.12)",borderRadius:8,color:"#8a7a60",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",textAlign:"left"}},"Sign out"),
-              React.createElement("button",{onClick:logoutAll,style:{width:"100%",padding:"0.6rem 0.75rem",background:"none",border:"1px solid rgba(180,60,60,0.2)",borderRadius:8,color:"#8a5050",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",textAlign:"left"}},"Sign out of all devices")
-            )
-          ),
+    // Features list
+    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"0.35rem",marginBottom:"0.75rem"}},
+      ...(userTier==='explorer'
+        ?["💎 Unlimited travel plans","🤖 Priority AI (Claude always)","📄 Premium PDF export","🗺️ Interactive maps","🌍 Multi-language support","⚡ Advanced customization","🎧 Priority support"]
+        :userTier==='pro'
+        ?["✅ Unlimited travel plans","🤖 Priority AI access","📄 PDF export","🗺️ Interactive maps","🌍 Multi-language support"]
+        :["✅ 3 plans per day","🗺️ Interactive maps","🌍 Multi-language support","❌ No PDF export","❌ No priority AI"]
+      ).map((f,i)=>React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
+        React.createElement("span",{style:{fontSize:"0.75rem",color:"#b8b0a0"}},f)
+      ))
+    ),
+
+    // PDF download button for pro/explorer
+    isPro&&React.createElement("button",{
+      onClick:()=>{showToast('📄 PDF export coming soon!');},
+      style:{width:"100%",padding:"0.6rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",marginBottom:"0.5rem"}
+    },"📄 Download Trip PDF")
+  ),
+
+  // Upgrade/Downgrade
+  !isPro&&React.createElement("div",{style:{background:"linear-gradient(135deg,rgba(201,169,110,0.08),rgba(201,169,110,0.04))",border:"1px solid rgba(201,169,110,0.25)",borderRadius:10,padding:"1rem",marginBottom:"1rem",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+    React.createElement("div",null,
+      React.createElement("p",{style:{fontSize:"0.75rem",color:"#c9a96e"}},"⭐ Upgrade to Pro"),
+      React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",marginTop:"0.1rem"}},"Unlimited plans · PDF export · $7.99/mo")
+    ),
+    React.createElement("button",{onClick:()=>{onClose();onUpgrade();},style:{background:"rgba(201,169,110,0.15)",border:"1px solid rgba(201,169,110,0.4)",borderRadius:8,padding:"0.4rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",fontFamily:"'DM Sans',sans-serif"}},"Upgrade")
+  ),
+
+  isPro&&React.createElement("div",{style:{background:"rgba(201,169,110,0.03)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:10,padding:"0.75rem",marginBottom:"1rem"}},
+    React.createElement("p",{style:{fontSize:"0.65rem",color:"#4a3a22",marginBottom:"0.5rem"}},"Need to make changes to your subscription?"),
+    React.createElement("a",{href:"https://billing.stripe.com/p/login/test_xxx",target:"_blank",style:{fontSize:"0.65rem",color:"#c9a96e",textDecoration:"none"}},"Manage subscription via Stripe →")
+  ),
+
+  // Sign out
+  React.createElement("div",{style:{borderTop:"1px solid rgba(201,169,110,0.1)",paddingTop:"0.75rem",display:"flex",flexDirection:"column",gap:"0.4rem"}},
+    React.createElement("button",{onClick:()=>{onLogout();onClose();},style:{width:"100%",padding:"0.6rem 0.75rem",background:"none",border:"1px solid rgba(201,169,110,0.12)",borderRadius:8,color:"#8a7a60",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",textAlign:"left"}},"Sign out"),
+    React.createElement("button",{onClick:logoutAll,style:{width:"100%",padding:"0.6rem 0.75rem",background:"none",border:"1px solid rgba(180,60,60,0.2)",borderRadius:8,color:"#8a5050",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",textAlign:"left"}},"Sign out of all devices")
+  )
+),
 
           // ---- SECURITY ----
           tab==='security'&&React.createElement("div",null,
