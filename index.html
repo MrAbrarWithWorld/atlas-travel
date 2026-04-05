@@ -1251,6 +1251,7 @@ function renamePlan(id,newTitle){
 
   const hasSpeech=!!window.speechSynthesis;
   const hasVoice=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+  const isPro=userTier==='pro'||userTier==='explorer';
   const canSend=(draft.trim()||photo)&&!busy;
 
   return React.createElement("div",{style:{height:"100vh",display:"flex",flexDirection:"column",background:"#1c1914",overflow:"hidden"}},
