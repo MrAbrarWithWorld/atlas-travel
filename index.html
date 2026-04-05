@@ -503,12 +503,6 @@ tab==='account'&&React.createElement("div",null,
       ))
     ),
 
-    // PDF download button for pro/explorer
-    isPro&&React.createElement("button",{
-      onClick:()=>{showToast('📄 PDF export coming soon!');},
-      style:{width:"100%",padding:"0.6rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",marginBottom:"0.5rem"}
-    },"📄 Download Trip PDF")
-  ),
 
   // Upgrade/Downgrade
   !isPro&&React.createElement("div",{style:{background:"linear-gradient(135deg,rgba(201,169,110,0.08),rgba(201,169,110,0.04))",border:"1px solid rgba(201,169,110,0.25)",borderRadius:10,padding:"1rem",marginBottom:"1rem",display:"flex",alignItems:"center",justifyContent:"space-between"}},
@@ -746,7 +740,6 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier,onSettings,o
         React.createElement("p",{style:{fontSize:"0.62rem",color:userTier==='pro'||userTier==='explorer'?"#c9a96e":"#6a5a3a",marginTop:"0.1rem"}},userTier==='explorer'?"💎 Explorer Plan":userTier==='pro'?"⭐ Pro Plan — Unlimited":"Free Plan · 3 plans/day")
       ),
       React.createElement("button",{onClick:()=>{setOpen(false);onSettings();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif",marginBottom:"0.1rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"⚙️ Settings"), React.createElement("button",{onClick:()=>{setOpen(false);onHelp();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif",marginBottom:"0.1rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"❓ Help & Support"),userTier!=='pro'&&userTier!=='explorer'&&React.createElement("button",{onClick:()=>{setOpen(false);onUpgrade();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",fontFamily:"'DM Sans',sans-serif",marginBottom:"0.35rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"⭐ Upgrade to Pro"),
-      React.createElement("button",{onClick:()=>{setOpen(false);onOpenSidebar();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif"}},"📂 My saved trips"),
       React.createElement("button",{onClick:onLogout,style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#8a7a60",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif"}},"Sign out")
     )
   );
@@ -1320,7 +1313,7 @@ function renamePlan(id,newTitle){
               :React.createElement("div",null,
                   React.createElement(Prose,{text:msg.text}),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
-                  hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{marginTop:"0.6rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen")
+                  hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{marginTop:"0.6rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen"), isPro&&React.createElement("button",{onClick:()=>showToast('📄 PDF export coming soon!'),style:{marginTop:"0.6rem",marginLeft:"0.4rem",background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📄 PDF")
                 )
           )
         )),
