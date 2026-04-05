@@ -50,8 +50,8 @@ const userMap = new Map();
 const RESET_MS = 24 * 60 * 60 * 1000;
 
 const LIMITS = {
-  guest:  { plans: 1,  tokens: 50000  },
-  free:   { plans: 3,  tokens: 150000 },
+  guest:  { plans: 3,  tokens: 100000  },
+  free:   { plans: 7,  tokens: 300000 },
   pro:    { plans: 999, tokens: 999999 },
 };
 
