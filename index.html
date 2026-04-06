@@ -163,10 +163,21 @@ function CalendarModal({msgs,onClose}){
   const [tripName,setTripName]=React.useState(()=>extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''}))));
 const _M={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
 const _yr=new Date().getFullYear();
-const _allDates=(()=>{const found=[];for(const m of msgs){if(m.from==='ai'&&m.text){const matches=[...m.text.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+(\d{1,2})(?:st|nd|rd|th)?(?:[,\s]+(\d{4}))?/gi)];for(const d of matches){const mo=_M[d[1].slice(0,3)];const y=d[3]||_yr;if(mo)found.push(`${y}-${mo}-${d[2].padStart(2,'0')}`);}}}return [...new Set(found)].sort();})();  const [startDate,setStartDate]=React.useState(_allDates[0]||'');
-  const [endDate,setEndDate]=React.useState(_allDates.length>1?_allDates[_allDates.length-1]:'');
-  const [flights,setFlights]=React.useState([{from:'',to:'',date:'',time:'',flightNo:''}]);
-  const [hotels,setHotels]=React.useState([{name:'',city:'',checkIn:'',checkOut:''}]);
+const _allDates=(()=>{const found=[];for(const m of msgs){if(m.from==='ai'&&m.text){const matches=[...m.text.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+(\d{1,2})(?:st|nd|rd|th)?(?:[,\s]+(\d{4}))?/gi)];for(const d of matches){const mo=_M[d[1].slice(0,3)];const y=d[3]||_yr;if(mo)found.push(`${y}-${mo}-${d[2].padStart(2,'0')}`);}}}return [...new Set(found)].sort();})();  
+  const [startDate,setStartDate]=React.useState(_allDates[0]||'');
+const [endDate,setEndDate]=React.useState(_allDates.length>1?_allDates[_allDates.length-1]:'');
+const [flights,setFlights]=React.useState(()=>{
+  const aiText=msgs.filter(m=>m.from==='ai').map(m=>m.text||'').join('\n');
+  const flightMatches=[...aiText.matchAll(/(?:flight|depart|fly)[^\n]*?([A-Z]{3})\s*[→\-to]+\s*([A-Z]{3})/gi)];
+  if(flightMatches.length>0){return flightMatches.slice(0,3).map(f=>({from:f[1]||'',to:f[2]||'',date:'',time:'',flightNo:''}));}
+  return [{from:'',to:'',date:'',time:'',flightNo:''}];
+});
+const [hotels,setHotels]=React.useState(()=>{
+  const aiText=msgs.filter(m=>m.from==='ai').map(m=>m.text||'').join('\n');
+  const cityMatches=[...aiText.matchAll(/(?:hotel|stay|hostel|accommodation)[^\n]*?(?:in|at)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/gi)];
+  if(cityMatches.length>0){return [...new Set(cityMatches.map(c=>c[1]))].slice(0,3).map(city=>({name:'',city,checkIn:'',checkOut:''}));}
+  return [{name:'',city:'',checkIn:'',checkOut:''}];
+});
   const [notify,setNotify]=React.useState(true);
   const [loading,setLoading]=React.useState(false);
 
