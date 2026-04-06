@@ -163,10 +163,8 @@ const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",conten
   // ===================== CALENDAR MODAL =====================
 function CalendarModal({msgs,onClose}){
   const [tripName,setTripName]=React.useState(()=>extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''}))));
-  const [startDate,setStartDate]=React.useState(()=>{
-  for(const m of msgs){if(m.from==='ai'&&m.text){const d=m.text.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/i);if(d){const months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};return `${d[3]}-${months[d[1]]}-${d[2].padStart(2,'0')}`;}}return '';
-});
-const [endDate,setEndDate]=React.useState(()=>{
+  const [startDate,setStartDate]=React.useState(()=>{for(const m of msgs){if(m.from==='ai'&&m.text){const d=m.text.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/i);if(d){const months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};return `${d[3]}-${months[d[1]]}-${d[2].padStart(2,'0')}`;}}return '';});
+  const [endDate,setEndDate]=React.useState(()=>{const found=[];for(const m of msgs){if(m.from==='ai'&&m.text){const matches=[...m.text.matchAll(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/gi)];for(const d of matches){const months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};found.push(`${d[3]}-${months[d[1]]}-${d[2].padStart(2,'0')}`);}}};return found.length>1?found[found.length-1]:'';});
   const found=[];for(const m of msgs){if(m.from==='ai'&&m.text){const matches=[...m.text.matchAll(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/gi)];for(const d of matches){const months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};found.push(`${d[3]}-${months[d[1]]}-${d[2].padStart(2,'0')}`);}}};return found.length>1?found[found.length-1]:'';
 });
   const [flights,setFlights]=React.useState([{from:'',to:'',date:'',time:'',flightNo:''}]);
