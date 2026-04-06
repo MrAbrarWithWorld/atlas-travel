@@ -50,9 +50,10 @@ const userMap = new Map();
 const RESET_MS = 24 * 60 * 60 * 1000;
 
 const LIMITS = {
-  guest:  { plans: 3,  tokens: 100000  },
-  free:   { plans: 7,  tokens: 300000 },
-  pro:    { plans: 999, tokens: 999999 },
+  guest:    { plans: 3,   tokens: 100000 },
+  free:     { plans: 7,   tokens: 300000 },
+  pro:      { plans: 350, tokens: 500000 },
+  explorer: { plans: 999, tokens: 999999 },
 };
 
 const ENABLE_CLAUDE_ROUTING = true;
