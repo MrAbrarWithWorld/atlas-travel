@@ -163,8 +163,12 @@ const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",conten
   // ===================== CALENDAR MODAL =====================
 function CalendarModal({msgs,onClose}){
   const [tripName,setTripName]=React.useState(()=>extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''}))));
-  const [startDate,setStartDate]=React.useState('');
-  const [endDate,setEndDate]=React.useState('');
+  const [startDate,setStartDate]=React.useState(()=>{
+  for(const m of msgs){if(m.from==='ai'&&m.text){const d=m.text.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/i);if(d){const months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};return `${d[3]}-${months[d[1]]}-${d[2].padStart(2,'0')}`;}}return '';
+});
+const [endDate,setEndDate]=React.useState(()=>{
+  const found=[];for(const m of msgs){if(m.from==='ai'&&m.text){const matches=[...m.text.matchAll(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/gi)];for(const d of matches){const months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};found.push(`${d[3]}-${months[d[1]]}-${d[2].padStart(2,'0')}`);}}};return found.length>1?found[found.length-1]:'';
+});
   const [flights,setFlights]=React.useState([{from:'',to:'',date:'',time:'',flightNo:''}]);
   const [hotels,setHotels]=React.useState([{name:'',city:'',checkIn:'',checkOut:''}]);
   const [notify,setNotify]=React.useState(true);
@@ -249,8 +253,7 @@ function CalendarModal({msgs,onClose}){
   const labelStyle={fontSize:"0.58rem",color:"#6a5a3a",letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginTop:"0.75rem"};
 
   return React.createElement("div",{
-    className:"login-overlay",
-    style:{alignItems:"flex-start",paddingTop:"1.5rem",paddingBottom:"1.5rem",overflowY:"auto"},
+    style:{position:"fixed",inset:0,background:"rgba(10,8,5,0.97)",display:"flex",alignItems:"flex-start",justifyContent:"center",zIndex:500,animation:"fadeIn 0.3s ease",padding:"1rem",paddingTop:"1.5rem",paddingBottom:"1.5rem",overflowY:"auto"},
     onClick:e=>{if(e.target===e.currentTarget)onClose();}
   },
     React.createElement("div",{style:{width:"100%",maxWidth:420,background:"#1e1a14",border:"1px solid rgba(201,169,110,0.15)",borderRadius:16,overflow:"hidden",animation:"slideUp 0.3s ease"}},
@@ -1186,7 +1189,7 @@ function Prose({text}){
   return React.createElement("div",null,clean.split("\n").map((line,i)=>{
     if(!line.trim())return React.createElement("div",{key:i,style:{height:"0.35rem"}});
     if(line.startsWith("## "))return React.createElement("div",{key:i,style:{fontSize:"0.68rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.2)"}},line.slice(3));
-    if(/^DAYS?\s+\d+/.test(line)||/^Day\s+\d+\s*\(/.test(line))return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.88rem",fontWeight:700,color:"#c9a96e",margin:"0.75rem 0 0.1rem"}},line.replace(/\*\*/g,""));
+    if(/^DAYS?\s+\d+/.test(line)||/^Day\s+\d+\s*\(/.test(line))return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.88rem",fontWeight:700,color:"#b8b0a0",margin:"0.75rem 0 0.1rem"}},line.replace(/\*\*/g,""));
     if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line))return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.9rem",fontWeight:700,color:"#c9a96e",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
     if(line.startsWith("- ")||line.startsWith("* ")){
       const bparts=[];let brem=line.slice(2),bk=0;
