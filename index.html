@@ -345,6 +345,22 @@ function CalendarModal({msgs,onClose}){
           disabled:loading,
           style:{width:"100%",marginTop:"1.25rem",padding:"0.85rem",background:"linear-gradient(135deg,rgba(201,169,110,0.2),rgba(201,169,110,0.1))",border:"1px solid rgba(201,169,110,0.4)",borderRadius:10,color:"#c9a96e",cursor:loading?"default":"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500}
         },loading?"Adding to Calendar...":"📅 Add to Google Calendar")
+                          ,React.createElement("button",{
+  onClick:()=>{
+    const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Atlas AI//EN"];
+    const addEvent=(title,start,end,desc)=>{lines.push("BEGIN:VEVENT",`DTSTART;VALUE=DATE:${start.replace(/-/g,'')}`,`DTEND;VALUE=DATE:${end.replace(/-/g,'')}`,`SUMMARY:${title}`,`DESCRIPTION:${desc||'Atlas AI Travel Planner - getatlas.ca'}`,`UID:${Date.now()}@getatlas.ca`,"END:VEVENT");};
+    addEvent(`✈️ ${tripName}`,startDate,endDate,`Trip planned by Atlas AI\ngetatlas.ca`);
+    for(const f of flights){if(f.from&&f.to&&f.date)addEvent(`✈️ Flight: ${f.from} → ${f.to}`,f.date,f.date,`Flight planned by Atlas AI`);}
+    for(const h of hotels){if(h.name&&h.checkIn&&h.checkOut)addEvent(`🏨 ${h.name}${h.city?' - '+h.city:''}`,h.checkIn,h.checkOut,`Hotel stay - Atlas AI`);}
+    lines.push("END:VCALENDAR");
+    const blob=new Blob([lines.join('\r\n')],{type:'text/calendar'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 Calendar file downloaded!');
+  },
+  style:{width:"100%",marginTop:"0.6rem",padding:"0.85rem",background:"none",border:"1px solid rgba(201,169,110,0.25)",borderRadius:10,color:"#8a7a60",cursor:"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}
+},"📥 Download for Apple / Outlook")
       )
     )
   );
