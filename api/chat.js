@@ -309,7 +309,7 @@ const travelContext = await getTravelContext(messages);
           model: "meta-llama/llama-4-scout-17b-16e-instruct",
           max_tokens: Math.min(tokensLeft, 4000),
           messages: [
-            { role: "system", content: SYSTEM_MSG },
+  { role: "system", content: SYSTEM_MSG + (travelContext ? travelContext : '') },
             ...groqMessages.filter(m => m.role !== "system")
           ],
         }),
@@ -342,7 +342,7 @@ const travelContext = await getTravelContext(messages);
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_MSG }] },
+          system_instruction: { parts: [{ text: SYSTEM_MSG + (travelContext ? travelContext : '') }] },
           contents: geminiMessages,
           generationConfig: { maxOutputTokens: 4000, temperature: 0.7 }
         }),
