@@ -37,10 +37,24 @@ async function getTravelContext(messages) {
     `${destination} travel entry requirements current 2026`,
   ];
 
+  async function getYouTubeVideos(destination) {
+  try {
+    const query = encodeURIComponent(`${destination} travel guide 2026`);
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=2&key=${process.env.YOUTUBE_API_KEY}`);
+    const data = await res.json();
+    if(!data.items?.length) return '';
+    return data.items.map(v => 
+      `[📺 ${v.snippet.title}](https://youtube.com/watch?v=${v.id.videoId})`
+    ).join('\n');
+  } catch { return ''; }
+}
+
   const results = await Promise.all(queries.map(q => searchWeb(q)));
   const context = results.filter(Boolean).join('\n\n');
 
-  return context ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}` : '';
+  const videos = destination ? await getYouTubeVideos(destination) : '';
+const videoSection = videos ? `\n\n📺 DESTINATION VIDEOS:\n${videos}` : '';
+return (context || videos) ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}${videoSection}` : '';
 }
 
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
