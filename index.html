@@ -161,8 +161,9 @@ const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",conten
   // ===================== CALENDAR MODAL =====================
 function CalendarModal({msgs,onClose}){
   const [tripName,setTripName]=React.useState(()=>extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''}))));
-  const _M={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};const _allDates=(()=>{const found=[];for(const m of msgs){if(m.from==='ai'&&m.text){const matches=[...m.text.matchAll(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/gi)];for(const d of matches)found.push(`${d[3]}-${_M[d[1]]}-${d[2].padStart(2,'0')}`);}}return found;})();
-  const [startDate,setStartDate]=React.useState(_allDates[0]||'');
+const _M={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+const _yr=new Date().getFullYear();
+const _allDates=(()=>{const found=[];for(const m of msgs){if(m.from==='ai'&&m.text){const matches=[...m.text.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+(\d{1,2})(?:st|nd|rd|th)?(?:[,\s]+(\d{4}))?/gi)];for(const d of matches){const mo=_M[d[1].slice(0,3)];const y=d[3]||_yr;if(mo)found.push(`${y}-${mo}-${d[2].padStart(2,'0')}`);}}}return [...new Set(found)].sort();})();  const [startDate,setStartDate]=React.useState(_allDates[0]||'');
   const [endDate,setEndDate]=React.useState(_allDates.length>1?_allDates[_allDates.length-1]:'');
   const [flights,setFlights]=React.useState([{from:'',to:'',date:'',time:'',flightNo:''}]);
   const [hotels,setHotels]=React.useState([{name:'',city:'',checkIn:'',checkOut:''}]);
