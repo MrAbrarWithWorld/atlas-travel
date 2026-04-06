@@ -72,9 +72,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://apis.google.com/js/api.js"></script>
-<script src="https://accounts.google.com/gsi/client"></script>  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body,#root{height:100%;}
@@ -340,13 +338,22 @@ function CalendarModal({msgs,onClose}){
         ),
 
         // Add button
-        React.createElement("button",{
-          onClick:handleAddToCalendar,
-          disabled:loading,
-          style:{width:"100%",marginTop:"1.25rem",padding:"0.85rem",background:"linear-gradient(135deg,rgba(201,169,110,0.2),rgba(201,169,110,0.1))",border:"1px solid rgba(201,169,110,0.4)",borderRadius:10,color:"#c9a96e",cursor:loading?"default":"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500}
-        },loading?"Adding to Calendar...":"📅 Add to Google Calendar")
-                          ,React.createElement("button",{
-  onClick:()=>{
+        React.createElement("button",{onClick:()=>{
+  const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Atlas AI//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
+  const addEv=(title,start,end,desc)=>{lines.push("BEGIN:VEVENT",`DTSTART;VALUE=DATE:${start.replace(/-/g,'')}`,`DTEND;VALUE=DATE:${end.replace(/-/g,'')}`,`SUMMARY:${title}`,`DESCRIPTION:${(desc||'Atlas AI Travel Planner - getatlas.ca').replace(/\n/g,'\\n')}`,`UID:${Date.now()}-${Math.random().toString(36).slice(2)}@getatlas.ca`,"END:VEVENT");};
+  if(startDate&&endDate)addEv(`✈️ ${tripName}`,startDate,endDate,'Trip planned by Atlas AI\\ngetatlas.ca');
+  for(const f of flights){if(f.from&&f.to&&f.date)addEv(`✈️ Flight: ${f.from} → ${f.to}${f.flightNo?' ('+f.flightNo+')':''}`,f.date,f.date,'Flight - Atlas AI');}
+  for(const h of hotels){if(h.name&&h.checkIn&&h.checkOut)addEv(`🏨 ${h.name}${h.city?' - '+h.city:''}`,h.checkIn,h.checkOut,'Hotel stay - Atlas AI');}
+  if(notify&&startDate){const nd=new Date(startDate);nd.setDate(nd.getDate()-1);addEv(`⚠️ Trip tomorrow: ${tripName}`,nd.toISOString().split('T')[0],nd.toISOString().split('T')[0],'Your trip starts tomorrow!');}
+  lines.push("END:VCALENDAR");
+  const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('📅 Calendar file downloaded! Open it to add to your calendar.');
+  onClose();
+},style:{width:"100%",marginTop:"1.25rem",padding:"0.85rem",background:"linear-gradient(135deg,rgba(201,169,110,0.2),rgba(201,169,110,0.1))",border:"1px solid rgba(201,169,110,0.4)",borderRadius:10,color:"#c9a96e",cursor:"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500}},"📅 Download Calendar File")
+,React.createElement("button",{onClick:()=>{
     const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Atlas AI//EN"];
     const addEvent=(title,start,end,desc)=>{lines.push("BEGIN:VEVENT",`DTSTART;VALUE=DATE:${start.replace(/-/g,'')}`,`DTEND;VALUE=DATE:${end.replace(/-/g,'')}`,`SUMMARY:${title}`,`DESCRIPTION:${desc||'Atlas AI Travel Planner - getatlas.ca'}`,`UID:${Date.now()}@getatlas.ca`,"END:VEVENT");};
     addEvent(`✈️ ${tripName}`,startDate,endDate,`Trip planned by Atlas AI\ngetatlas.ca`);
@@ -1331,41 +1338,6 @@ async function deleteProject(id){
     toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.5rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:999;letter-spacing:0.08em;';
     document.body.appendChild(toast);setTimeout(()=>toast.remove(),2500);
   }
-
-  async function addToGoogleCalendar(events){
-  return new Promise((resolve,reject)=>{
-    const tokenClient=google.accounts.oauth2.initTokenClient({
-      client_id:GOOGLE_CLIENT_ID,
-      scope:GOOGLE_CALENDAR_SCOPE,
-      callback:async(tokenResponse)=>{
-        if(tokenResponse.error){reject(tokenResponse.error);return;}
-        const token=tokenResponse.access_token;
-        let added=0;
-        for(const ev of events){
-          try{
-            await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{
-              method:'POST',
-              headers:{
-                'Authorization':`Bearer ${token}`,
-                'Content-Type':'application/json'
-              },
-              body:JSON.stringify({
-                summary:ev.title,
-                description:ev.description||'Added by Atlas AI Travel Planner\ngetatlas.ca',
-                start:ev.allDay?{date:ev.start}:{dateTime:ev.start+'T'+ev.time+':00',timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone},
-                end:ev.allDay?{date:ev.end}:{dateTime:ev.end+'T'+ev.time+':00',timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone},
-                colorId:ev.colorId||'5',
-              })
-            });
-            added++;
-          }catch(e){console.error(e);}
-        }
-        resolve(added);
-      }
-    });
-    tokenClient.requestAccessToken();
-  });
-}
   
   function generatePDF(){
   if(!msgs||msgs.length===0){showToast('No trip to export!');return;}
