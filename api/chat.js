@@ -18,6 +18,16 @@ async function searchWeb(query) {
   } catch { return ''; }
 }
 
+async function getYouTubeVideos(destination) {
+  try {
+    const query = encodeURIComponent(`${destination} travel guide 2026`);
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=2&key=${process.env.YOUTUBE_API_KEY}`);
+    const data = await res.json();
+    if(!data.items?.length) return '';
+    return data.items.map(v => `[📺 ${v.snippet.title}](https://youtube.com/watch?v=${v.id.videoId})`).join('\n');
+  } catch { return ''; }
+}
+
 async function getTravelContext(messages) {
   const userMsgs = messages.filter(m => m.role === 'user');
   const last = userMsgs[userMsgs.length - 1]?.content;
@@ -36,18 +46,6 @@ async function getTravelContext(messages) {
     `${destination} visa requirements 2026 for ${passport}`,
     `${destination} travel entry requirements current 2026`,
   ];
-
-  async function getYouTubeVideos(destination) {
-  try {
-    const query = encodeURIComponent(`${destination} travel guide 2026`);
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=2&key=${process.env.YOUTUBE_API_KEY}`);
-    const data = await res.json();
-    if(!data.items?.length) return '';
-    return data.items.map(v => 
-      `[📺 ${v.snippet.title}](https://youtube.com/watch?v=${v.id.videoId})`
-    ).join('\n');
-  } catch { return ''; }
-}
 
   const results = await Promise.all(queries.map(q => searchWeb(q)));
   const context = results.filter(Boolean).join('\n\n');
