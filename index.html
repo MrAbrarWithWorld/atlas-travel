@@ -163,7 +163,24 @@ function CalendarModal({msgs,onClose}){
   const [tripName,setTripName]=React.useState(()=>extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''}))));
 const _M={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
 const _yr=new Date().getFullYear();
-const _allDates=(()=>{const found=[];for(const m of msgs){if(m.from==='ai'&&m.text){const matches=[...m.text.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+(\d{1,2})(?:st|nd|rd|th)?(?:[,\s]+(\d{4}))?/gi)];for(const d of matches){const mo=_M[d[1].slice(0,3)];const y=d[3]||_yr;if(mo)found.push(`${y}-${mo}-${d[2].padStart(2,'0')}`);}}}return [...new Set(found)].sort();})();  
+const _allDates=(()=>{
+  const found=[];
+  // First check USER messages for dates
+  for(const m of msgs){
+    if(m.from==='user'&&m.text){
+      const matches=[...m.text.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+(\d{1,2})(?:st|nd|rd|th)?(?:[,\s]+(\d{4}))?/gi)];
+      for(const d of matches){const mo=_M[d[1].slice(0,3)];const y=d[3]||_yr;if(mo)found.push(`${y}-${mo}-${d[2].padStart(2,'0')}`);}
+      // Also match "august 2nd to 20th" style
+      const rangeMatch=m.text.match(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?\s+to\s+(\d{1,2})(?:st|nd|rd|th)?/gi);
+      if(rangeMatch){for(const r of [...m.text.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?\s+to\s+(\d{1,2})(?:st|nd|rd|th)?/gi)]{const mo=_M[r[1].slice(0,3)];if(mo){found.push(`${_yr}-${mo}-${r[2].padStart(2,'0')}`);found.push(`${_yr}-${mo}-${r[3].padStart(2,'0')}`);}}}
+    }
+  }
+  // If no dates from user, check AI messages
+  if(found.length===0){
+    for(const m of msgs){if(m.from==='ai'&&m.text){const matches=[...m.text.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+(\d{1,2})(?:st|nd|rd|th)?(?:[,\s]+(\d{4}))?/gi)];for(const d of matches){const mo=_M[d[1].slice(0,3)];const y=d[3]||_yr;if(mo)found.push(`${y}-${mo}-${d[2].padStart(2,'0')}`);}}}
+  }
+  return [...new Set(found)].sort();
+})();
   const [startDate,setStartDate]=React.useState(_allDates[0]||'');
 const [endDate,setEndDate]=React.useState(_allDates.length>1?_allDates[_allDates.length-1]:'');
 const [flights,setFlights]=React.useState(()=>{
