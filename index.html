@@ -181,7 +181,7 @@ const _allDates=(()=>{
   }
   return [...new Set(found)].sort();
 })();
-  const [startDate,setStartDate]=React.useState(_allDates[0]||'');
+const [startDate,setStartDate]=React.useState(_allDates[0]||'');
 const [endDate,setEndDate]=React.useState(_allDates.length>1?_allDates[_allDates.length-1]:'');
 const [flights,setFlights]=React.useState(()=>{
   const aiText=msgs.filter(m=>m.from==='ai').map(m=>m.text||'').join('\n');
