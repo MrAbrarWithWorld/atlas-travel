@@ -115,7 +115,7 @@ async function getTravelContext(messages) {
     Promise.all(queries.map(q => searchWeb(q))),
     Promise.all([...new Set(destinations)].slice(0,3).map(d => geocodeLocation(d))),
     getYouTubeVideos(destination),
-    getPlacesNearby(destination, 'lodging'),
+    getPlacesNearby(destination + ' city center', 'lodging'),
 ]);
 
   let context = results.filter(Boolean).join('\n\n');
