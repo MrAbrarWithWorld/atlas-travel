@@ -98,9 +98,35 @@ async function getTravelContext(messages) {
   const text = typeof last === 'string' ? last
     : Array.isArray(last) ? (last.find(c => c.type === 'text')?.text || '') : '';
 
-  const destinations = text.match(/\b(italy|japan|thailand|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|nepal|india|vietnam|egypt|brazil|mexico|korea|australia|bangladesh|pakistan|morocco|portugal|indonesia|malaysia|philippines|turkey|kenya|tanzania|south africa|argentina|chile|colombia|peru|cuba|jordan|georgia|armenia|iceland|norway|sweden|finland|denmark|ireland|scotland|croatia|czech|hungary|romania|poland|ukraine|new zealand|hong kong|taiwan|cambodia|myanmar|laos|uzbekistan|qatar|bahrain|kuwait|oman|saudi|lebanon|uk|england|europe|schengen|usa|canada|china|russia)\b/gi);
+  // Extract first 5 words as search query instead of regex
+  const cleanText = text.replace(/\[Current date.*$/s, '').trim();
+  const searchQuery = cleanText.slice(0, 80);
+  
+  if (!searchQuery || searchQuery.length < 3) return '';
 
-  if (!destinations || destinations.length === 0) return '';
+  const passport = text.match(/\b(canadian|american|british|bangladeshi|indian|pakistani|nigerian|australian|eu|european)\s*(passport|rtd|ctd|travel document)\b/i)?.[0] || 'canadian passport';
+
+  const queries = [
+    `${searchQuery} visa requirements 2026`,
+    `${searchQuery} travel entry requirements 2026`,
+  ];
+
+  const [results, videos, hotels] = await Promise.all([
+    Promise.all(queries.map(q => searchWeb(q))),
+    getYouTubeVideos(searchQuery),
+    getPlacesNearby(searchQuery + ' city center', 'lodging'),
+  ]);
+
+  let context = results.filter(Boolean).join('\n\n');
+
+  // Geocode from search query
+  const geo = await geocodeLocation(searchQuery);
+  if (geo) context += `\n\nVERIFIED COORDINATES: ${searchQuery}: ${geo.lat},${geo.lon}`;
+
+  const videoSection = videos ? `\n\n📺 DESTINATION VIDEOS:\n${videos}` : '';
+  const hotelSection = hotels ? `\n\n🏨 NEARBY HOTELS (verified):\n${hotels}` : '';
+  return (context || videos || hotels) ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}${videoSection}${hotelSection}` : '';
+}
 
   const destination = [...new Set(destinations)].slice(0, 2).join(' and ');
 
