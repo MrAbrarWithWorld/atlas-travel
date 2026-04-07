@@ -58,15 +58,6 @@ async function getTravelContext(messages) {
 
   const destinations = text.match(/\b(italy|japan|thailand|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|nepal|india|vietnam|egypt|brazil|mexico|korea|australia|bangladesh|pakistan|morocco|portugal|indonesia|malaysia|philippines|turkey|kenya|tanzania|south africa|argentina|chile|colombia|peru|cuba|jordan|georgia|armenia|iceland|norway|sweden|finland|denmark|ireland|scotland|croatia|czech|hungary|romania|poland|ukraine|new zealand|hong kong|taiwan|cambodia|myanmar|laos|uzbekistan|qatar|bahrain|kuwait|oman|saudi|lebanon|uk|england|europe|schengen|usa|canada|china|russia)\b/gi);
 
-  // Pre-geocode destinations for accurate map
-const geoResults = await Promise.all(
-  [...new Set(destinations)].slice(0,3).map(d => geocodeLocation(d))
-);
-const geoStr = geoResults.filter(Boolean).map((g,i) => 
-  `${[...new Set(destinations)][i]}: ${g.lat},${g.lon}`
-).join('; ');
-if (geoStr) context += `\n\nVERIFIED COORDINATES: ${geoStr}`;
-  
   if (!destinations || destinations.length === 0) return '';
 
   const destination = [...new Set(destinations)].slice(0, 2).join(' and ');
@@ -78,12 +69,22 @@ if (geoStr) context += `\n\nVERIFIED COORDINATES: ${geoStr}`;
     `${destination} travel entry requirements current 2026`,
   ];
 
-  const results = await Promise.all(queries.map(q => searchWeb(q)));
-  const context = results.filter(Boolean).join('\n\n');
+  const [results, geoResults, videos] = await Promise.all([
+    Promise.all(queries.map(q => searchWeb(q))),
+    Promise.all([...new Set(destinations)].slice(0,3).map(d => geocodeLocation(d))),
+    getYouTubeVideos(destination),
+  ]);
 
-  const videos = destination ? await getYouTubeVideos(destination) : '';
-const videoSection = videos ? `\n\n📺 DESTINATION VIDEOS:\n${videos}` : '';
-return (context || videos) ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}${videoSection}` : '';
+  let context = results.filter(Boolean).join('\n\n');
+
+  const uniqueDests = [...new Set(destinations)];
+  const geoStr = geoResults
+    .map((g, i) => g ? `${uniqueDests[i]}: ${g.lat},${g.lon}` : null)
+    .filter(Boolean).join('; ');
+  if (geoStr) context += `\n\nVERIFIED COORDINATES: ${geoStr}`;
+
+  const videoSection = videos ? `\n\n📺 DESTINATION VIDEOS:\n${videos}` : '';
+  return (context || videos) ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}${videoSection}` : '';
 }
 
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
