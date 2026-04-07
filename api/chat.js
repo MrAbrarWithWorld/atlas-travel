@@ -15,9 +15,16 @@ async function geocodeLocation(placeName) {
 
 async function getPlacesNearby(destination, type = 'lodging') {
   try {
-    if (!process.env.GOOGLE_MAPS_API_KEY) return '';
+    if (!process.env.GOOGLE_MAPS_API_KEY) {
+      console.log('No GOOGLE_MAPS_API_KEY');
+      return '';
+    }
     const geo = await geocodeLocation(destination);
-    if (!geo) return '';
+    if (!geo) {
+      console.log('Geocode failed for:', destination);
+      return '';
+    }
+    console.log('Geocode success:', destination, geo);
     const res = await fetch(`https://places.googleapis.com/v1/places:searchNearby`, {
       method: 'POST',
       headers: {
@@ -37,11 +44,15 @@ async function getPlacesNearby(destination, type = 'lodging') {
       }),
     });
     const data = await res.json();
+    console.log('Places API response:', JSON.stringify(data).slice(0,200));
     if (!data.places?.length) return '';
     return data.places.map(p => 
       `- [${p.displayName?.text}](${p.googleMapsUri}) ⭐${p.rating||'N/A'}`
     ).join('\n');
-  } catch(e) { return ''; }
+  } catch(e) {
+    console.log('Places error:', e.message);
+    return '';
+  }
 }
 
 async function searchWeb(query) {
