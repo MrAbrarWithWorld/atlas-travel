@@ -207,7 +207,12 @@ For MID-RANGE: [Booking.com](https://www.booking.com/search.html?ss=City) · [Ag
 ESIM — MANDATORY:
 **📱 SIM & CONNECTIVITY** — Recommended: [eSIMania](https://tidd.ly/4cXnOko)
 
-LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable link.`;
+LINKS — MANDATORY: Every hotel, flight, visa, transport must have a clickable link.
+
+YOUTUBE VIDEOS — MANDATORY:
+If DESTINATION VIDEOS are provided in your context, you MUST include them in your response under a section called:
+## 📺 WATCH BEFORE YOU GO
+List every video link exactly as provided. Never skip this section if videos are available.`;
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
