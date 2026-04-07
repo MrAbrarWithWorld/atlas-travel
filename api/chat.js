@@ -274,9 +274,12 @@ Structure every plan:
 ## 🎬 CONTENT SPOTS — filming locations, golden hour times
 ## 📋 ESSENTIALS — visa, SIM, ATM, safety, weather
 
+VERIFIED HOTELS — CRITICAL:
+If "NEARBY HOTELS (verified)" section exists in your context, you MUST use ONLY those hotel links. NEVER invent hotel URLs. NEVER use fake camping or hotel websites. Only link to major booking platforms: Booking.com, Hostelworld, Agoda, Expedia, Airbnb.
+
 HOTEL LINKS:
 For LUXURY: [Four Seasons](https://www.fourseasons.com/find-a-hotel/?q=City) · [Marriott](https://www.marriott.com/search/default.mi?q=Hotel+City)
-For BUDGET: [Hostelworld](https://www.hostelworld.com/search?q=City) · [Booking.com](https://www.booking.com/search.html?ss=City)
+For BUDGET: [Hostelworld](https://www.hostelworld.com/search?q=City) · [Booking.com](https://www.booking.com/search.html?ss=City) · [Airbnb](https://www.airbnb.com/s/City) For CAMPING: [Booking.com Camping](https://www.booking.com/search.html?ss=City+camping) · [Airbnb](https://www.airbnb.com/s/City)
 For MID-RANGE: [Booking.com](https://www.booking.com/search.html?ss=City) · [Agoda](https://www.agoda.com/search?q=City) · [Expedia](https://www.expedia.com/Hotel-Search?destination=City)
 
 ESIM — MANDATORY:
