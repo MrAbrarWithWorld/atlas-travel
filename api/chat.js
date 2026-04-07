@@ -1,5 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
+async function geocodeLocation(placeName) {
+  try {
+    const query = encodeURIComponent(placeName);
+    const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${process.env.GOOGLE_MAPS_API_KEY}`);
+    const data = await res.json();
+    if (data.results?.[0]?.geometry?.location) {
+      const { lat, lng } = data.results[0].geometry.location;
+      return { lat, lon: lng };
+    }
+    return null;
+  } catch { return null; }
+}
+
 async function searchWeb(query) {
   try {
     const res = await fetch('https://api.tavily.com/search', {
@@ -45,6 +58,15 @@ async function getTravelContext(messages) {
 
   const destinations = text.match(/\b(italy|japan|thailand|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|nepal|india|vietnam|egypt|brazil|mexico|korea|australia|bangladesh|pakistan|morocco|portugal|indonesia|malaysia|philippines|turkey|kenya|tanzania|south africa|argentina|chile|colombia|peru|cuba|jordan|georgia|armenia|iceland|norway|sweden|finland|denmark|ireland|scotland|croatia|czech|hungary|romania|poland|ukraine|new zealand|hong kong|taiwan|cambodia|myanmar|laos|uzbekistan|qatar|bahrain|kuwait|oman|saudi|lebanon|uk|england|europe|schengen|usa|canada|china|russia)\b/gi);
 
+  // Pre-geocode destinations for accurate map
+const geoResults = await Promise.all(
+  [...new Set(destinations)].slice(0,3).map(d => geocodeLocation(d))
+);
+const geoStr = geoResults.filter(Boolean).map((g,i) => 
+  `${[...new Set(destinations)][i]}: ${g.lat},${g.lon}`
+).join('; ');
+if (geoStr) context += `\n\nVERIFIED COORDINATES: ${geoStr}`;
+  
   if (!destinations || destinations.length === 0) return '';
 
   const destination = [...new Set(destinations)].slice(0, 2).join(' and ');
