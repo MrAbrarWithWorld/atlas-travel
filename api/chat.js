@@ -100,7 +100,9 @@ async function getTravelContext(messages) {
 
   // Extract first 5 words as search query instead of regex
   const cleanText = text.replace(/\[Current date.*$/s, '').trim();
-  const searchQuery = cleanText.slice(0, 80);
+// Extract destination - first meaningful word(s)
+const destMatch = cleanText.match(/^([a-zA-Z\s]+?)(?:\s+for|\s+\d|\s+solo|\s+budget|,|$)/i);
+const searchQuery = destMatch ? destMatch[1].trim() : cleanText.slice(0, 30);
   
   if (!searchQuery || searchQuery.length < 3) return '';
 
