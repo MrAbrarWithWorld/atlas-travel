@@ -13,6 +13,37 @@ async function geocodeLocation(placeName) {
   } catch { return null; }
 }
 
+async function getPlacesNearby(destination, type = 'lodging') {
+  try {
+    if (!process.env.GOOGLE_MAPS_API_KEY) return '';
+    const geo = await geocodeLocation(destination);
+    if (!geo) return '';
+    const res = await fetch(`https://places.googleapis.com/v1/places:searchNearby`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': process.env.GOOGLE_MAPS_API_KEY,
+        'X-Goog-FieldMask': 'places.displayName,places.rating,places.priceLevel,places.googleMapsUri,places.primaryTypeDisplayName',
+      },
+      body: JSON.stringify({
+        includedTypes: [type],
+        maxResultCount: 3,
+        locationRestriction: {
+          circle: {
+            center: { latitude: geo.lat, longitude: geo.lon },
+            radius: 5000.0
+          }
+        }
+      }),
+    });
+    const data = await res.json();
+    if (!data.places?.length) return '';
+    return data.places.map(p => 
+      `- [${p.displayName?.text}](${p.googleMapsUri}) ⭐${p.rating||'N/A'}`
+    ).join('\n');
+  } catch(e) { return ''; }
+}
+
 async function searchWeb(query) {
   try {
     const res = await fetch('https://api.tavily.com/search', {
@@ -69,11 +100,12 @@ async function getTravelContext(messages) {
     `${destination} travel entry requirements current 2026`,
   ];
 
-  const [results, geoResults, videos] = await Promise.all([
+  const [results, geoResults, videos, hotels] = await Promise.all([
     Promise.all(queries.map(q => searchWeb(q))),
     Promise.all([...new Set(destinations)].slice(0,3).map(d => geocodeLocation(d))),
     getYouTubeVideos(destination),
-  ]);
+    getPlacesNearby(destination, 'lodging'),
+]);
 
   let context = results.filter(Boolean).join('\n\n');
 
@@ -84,7 +116,8 @@ async function getTravelContext(messages) {
   if (geoStr) context += `\n\nVERIFIED COORDINATES: ${geoStr}`;
 
   const videoSection = videos ? `\n\n📺 DESTINATION VIDEOS:\n${videos}` : '';
-  return (context || videos) ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}${videoSection}` : '';
+const hotelSection = hotels ? `\n\n🏨 NEARBY HOTELS (verified):\n${hotels}` : '';
+return (context || videos || hotels) ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}${videoSection}${hotelSection}` : '';
 }
 
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
