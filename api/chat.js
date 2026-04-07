@@ -128,35 +128,6 @@ async function getTravelContext(messages) {
   return (context || videos || hotels) ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}${videoSection}${hotelSection}` : '';
 }
 
-  const destination = [...new Set(destinations)].slice(0, 2).join(' and ');
-
-  const passport = text.match(/\b(canadian|american|british|bangladeshi|indian|pakistani|nigerian|australian|eu|european)\s*(passport|rtd|ctd|travel document)\b/i)?.[0] || 'canadian passport';
-
-  const queries = [
-    `${destination} visa requirements 2026 for ${passport}`,
-    `${destination} travel entry requirements current 2026`,
-  ];
-
-  const [results, geoResults, videos, hotels] = await Promise.all([
-    Promise.all(queries.map(q => searchWeb(q))),
-    Promise.all([...new Set(destinations)].slice(0,3).map(d => geocodeLocation(d))),
-    getYouTubeVideos(destination),
-    getPlacesNearby(destination + ' city center', 'lodging'),
-]);
-
-  let context = results.filter(Boolean).join('\n\n');
-
-  const uniqueDests = [...new Set(destinations)];
-  const geoStr = geoResults
-    .map((g, i) => g ? `${uniqueDests[i]}: ${g.lat},${g.lon}` : null)
-    .filter(Boolean).join('; ');
-  if (geoStr) context += `\n\nVERIFIED COORDINATES: ${geoStr}`;
-
-  const videoSection = videos ? `\n\n📺 DESTINATION VIDEOS:\n${videos}` : '';
-const hotelSection = hotels ? `\n\n🏨 NEARBY HOTELS (verified):\n${hotels}` : '';
-return (context || videos || hotels) ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}${videoSection}${hotelSection}` : '';
-}
-
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
