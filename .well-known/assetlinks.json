@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "ca.getatlas.app",
+    "sha256_cert_fingerprints": ["1A:2F:40:4D:E6:71:09:FE:6D:39:CD:8D:05:3B:9E:EF:C1:97:03:25:6B:1A:12:32:8A:EC:78:8A:3D:B6:0D:AE"]
+  }
+}]
