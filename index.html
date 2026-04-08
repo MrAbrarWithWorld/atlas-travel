@@ -1146,7 +1146,7 @@ const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id
             :React.createElement("div",{style:{width:28,height:28,borderRadius:"50%",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.65rem",color:"#c9a96e",fontWeight:600}},(user.user_metadata?.full_name||user.email||"U")[0]?.toUpperCase()),
           React.createElement("div",null,
             React.createElement("p",{style:{fontSize:"0.68rem",color:"#c9a96e"}},(user.user_metadata?.full_name||user.email?.split("@")[0]||"User")),
-            React.createElement("p",{style:{fontSize:"0.58rem",color:"#4a3a22"}},userTier==='pro'||userTier==='explorer'?"⭐ Pro Plan":"Free Plan")
+            React.createElement("p",{style:{fontSize:"0.58rem",color:userTier==='pro'||userTier==='explorer'?"#c9a96e":"#4a3a22"}},userTier==='explorer'?"💎 Explorer Plan":userTier==='pro'?"⭐ Pro Plan":"Free Plan")
           )
         )
       )
