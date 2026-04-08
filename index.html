@@ -276,7 +276,7 @@ const [hotels,setHotels]=React.useState(()=>{
   const labelStyle={fontSize:"0.58rem",color:"#6a5a3a",letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginTop:"0.75rem"};
 
   return React.createElement("div",{
-    style:{position:"fixed",inset:0,background:"rgba(10,8,5,0.97)",display:"flex",alignItems:"flex-start",justifyContent:"center",zIndex:500,animation:"fadeIn 0.3s ease",padding:"1rem",paddingTop:"1.5rem",paddingBottom:"1.5rem",overflowY:"auto"},
+    style:{position:"fixed",inset:0,background:"rgba(10,8,5,0.97)",display:"flex",alignItems:"flex-start",justifyContent:"center",zIndex:9999,animation:"fadeIn 0.3s ease",padding:"1rem",paddingTop:"1.5rem",paddingBottom:"1.5rem",overflowY:"auto"},
     onClick:e=>{if(e.target===e.currentTarget)onClose();}
   },
     React.createElement("div",{style:{width:"100%",maxWidth:420,background:"#1e1a14",border:"1px solid rgba(201,169,110,0.15)",borderRadius:16,overflow:"hidden",animation:"slideUp 0.3s ease"}},
