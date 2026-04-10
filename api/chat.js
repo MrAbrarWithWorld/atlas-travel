@@ -92,6 +92,24 @@ async function getYouTubeVideos(destination) {
   }
 }
 
+async function getWeather(destination) {
+  try {
+    if (!process.env.GOOGLE_MAPS_API_KEY) return '';
+    const geo = await geocodeLocation(destination);
+    if (!geo) return '';
+    const res = await fetch(`https://weather.googleapis.com/v1/currentConditions:lookup?key=${process.env.GOOGLE_MAPS_API_KEY}&location.latitude=${geo.lat}&location.longitude=${geo.lon}`);
+    const data = await res.json();
+    if (!data || data.error) return '';
+    const temp = data.temperature?.degrees || '';
+    const condition = data.weatherCondition?.description?.text || '';
+    const humidity = data.relativeHumidity || '';
+    return `\n\n🌤️ CURRENT WEATHER (${destination}):\nTemperature: ${temp}°C | ${condition} | Humidity: ${humidity}%`;
+  } catch(e) {
+    console.error('Weather error:', e.message);
+    return '';
+  }
+}
+
 async function getTravelContext(messages) {
   const userMsgs = messages.filter(m => m.role === 'user');
   const last = userMsgs[userMsgs.length - 1]?.content;
@@ -113,8 +131,12 @@ const searchQuery = destMatch ? destMatch[1].trim() : cleanText.slice(0, 30);
     `${searchQuery} travel entry requirements 2026`,
   ];
 
-  const [results, videos, hotels] = await Promise.all([
+ const [results, videos, hotels, weather] = await Promise.all([
     Promise.all(queries.map(q => searchWeb(q))),
+    getYouTubeVideos(searchQuery),
+    getPlacesNearby(searchQuery + ' city center', 'lodging'),
+    getWeather(searchQuery),
+]);    Promise.all(queries.map(q => searchWeb(q))),
     getYouTubeVideos(searchQuery),
     getPlacesNearby(searchQuery + ' city center', 'lodging'),
   ]);
@@ -127,7 +149,8 @@ const searchQuery = destMatch ? destMatch[1].trim() : cleanText.slice(0, 30);
 
   const videoSection = videos ? `\n\n📺 DESTINATION VIDEOS:\n${videos}` : '';
   const hotelSection = hotels ? `\n\n🏨 NEARBY HOTELS (verified):\n${hotels}` : '';
-  return (context || videos || hotels) ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}${videoSection}${hotelSection}` : '';
+const weatherSection = weather || '';
+return (context || videos || hotels || weather) ? `\n\nREAL-TIME TRAVEL DATA (verified ${new Date().toLocaleDateString()}):\n${context}${weatherSection}${videoSection}${hotelSection}` : '';
 }
 
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
