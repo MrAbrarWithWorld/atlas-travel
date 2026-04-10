@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "ATLAS — AI Travel Intelligence",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "stripe": "^14.0.0"
