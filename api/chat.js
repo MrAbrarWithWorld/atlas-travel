@@ -136,10 +136,7 @@ const searchQuery = destMatch ? destMatch[1].trim() : cleanText.slice(0, 30);
     getYouTubeVideos(searchQuery),
     getPlacesNearby(searchQuery + ' city center', 'lodging'),
     getWeather(searchQuery),
-]);    Promise.all(queries.map(q => searchWeb(q))),
-    getYouTubeVideos(searchQuery),
-    getPlacesNearby(searchQuery + ' city center', 'lodging'),
-  ]);
+]);
 
   let context = results.filter(Boolean).join('\n\n');
 
