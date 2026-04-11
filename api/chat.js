@@ -258,7 +258,7 @@ STOP. Before ANY plan, you MUST ask these questions. NO EXCEPTIONS.
 MAP DATA — MANDATORY FOR EVERY TRIP PLAN:
 At the END of every trip plan or destination response, output this EXACT format:
 [MAPDATA]{"places":[{"name":"Place Name","lat":0.0000,"lon":0.0000,"day":1,"type":"city"}]}[/MAPDATA]
-Include EVERY city, attraction, airport mentioned. Use accurate coordinates. NEVER skip.
+Include EVERY destination city and attraction. NEVER include the user's home city or departure airport. Use accurate coordinates. NEVER skip.
 
 RTD & TRAVEL DOCUMENTS:
 RTD = Refugee/Convention Travel Document — NEVER same as passport.
