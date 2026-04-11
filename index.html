@@ -1182,17 +1182,9 @@ if(bounds.length>1){
     const from=locations[i];
     const to=locations[i+1];
     if(!from.lat||!from.lon||!to.lat||!to.lon)continue;
-    fetch('/api/routes',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({origin:{lat:from.lat,lon:from.lon},destination:{lat:to.lat,lon:to.lon}})
-    }).then(r=>r.json()).then(data=>{
-      if(data.distance&&data.duration){
-        window.L.polyline([[from.lat,from.lon],[to.lat,to.lon]],{
-          color:'#c9a96e',weight:2,opacity:0.5,dashArray:'5,8'
-        }).addTo(map).bindPopup(`🚗 ${data.distance} · ${data.duration}`);
-      }
-    }).catch(()=>{});
+    window.L.polyline([[from.lat,from.lon],[to.lat,to.lon]],{
+      color:'#c9a96e',weight:2,opacity:0.4,dashArray:'5,8'
+    }).addTo(map);
   }
 }
     mapInstanceRef.current=map;
