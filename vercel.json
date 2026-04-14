@@ -41,6 +41,15 @@
   ],
   "headers": [
     {
+  "source": "/sitemap.xml",
+  "headers": [
+    {
+      "key": "Cache-Control",
+      "value": "no-store"
+    }
+  ]
+  },
+    {
       "source": "/api/(.*)",
       "headers": [
         {
