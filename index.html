@@ -949,14 +949,17 @@ function LoginModal({onClose}){
     setLoading(provider);setError("");
     try{
       if(provider==='facebook'){
-        const accessToken=await new Promise((resolve,reject)=>{
+        const fbToken=await new Promise((resolve,reject)=>{
           if(typeof FB==='undefined'){reject(new Error('Facebook SDK not loaded, please try again'));return;}
           FB.login(function(res){
-            if(res.authResponse&&res.authResponse.accessToken){resolve(res.authResponse.accessToken);}
-            else{reject(new Error('Facebook login was cancelled'));}
-          },{scope:'email,public_profile'});
+            if(res.authResponse){
+              const token=res.authResponse.idToken||res.authResponse.accessToken;
+              if(token){resolve({token,isIdToken:!!res.authResponse.idToken});}
+              else{reject(new Error('Facebook login was cancelled'));}
+            }else{reject(new Error('Facebook login was cancelled'));}
+          },{scope:'openid,email,public_profile'});
         });
-        const{error}=await sb.auth.signInWithIdToken({provider:'facebook',token:accessToken});
+        const{error}=await sb.auth.signInWithIdToken({provider:'facebook',token:fbToken.token});
         if(error)throw error;
       }else{
         const{error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin}});
