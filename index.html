@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ATLAS"/>
+<meta name="theme-color" content="#1c1914"/>
+<meta name="facebook-domain-verification" content="15k94m7y8nduxox3alosrsvjr9014v" />
+<link rel="manifest" href="/manifest.json"/>
+<title>Atlas — AI Travel Planner | Plan Any Trip Instantly</title>
+<meta name="description" content="Atlas is an AI-powered travel planner. Get instant itineraries, visa info, flights, hotels and day-by-day plans for any destination. Free to use."/>
+<meta name="keywords" content="AI travel planner, travel AI, trip planner AI, atlas travel, AI itinerary, travel planning, atlas AI"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://getatlas.ca/"/>
+<link rel="alternate" hreflang="en" href="https://getatlas.ca/"/>
+<link rel="alternate" hreflang="x-default" href="https://getatlas.ca/"/>  
+
+<!-- Open Graph -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://getatlas.ca/"/>
+<meta property="og:title" content="Atlas — AI Travel Planner"/>
+<meta property="og:description" content="Plan any trip instantly with AI. Flights, hotels, visa, day-by-day itineraries — all in one place."/>
+<meta property="og:image" content="https://getatlas.ca/icon-512.png"/>
+<meta property="og:site_name" content="Atlas"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Atlas — AI Travel Planner"/>
+<meta name="twitter:description" content="Plan any trip instantly with AI. Flights, hotels, visa, day-by-day itineraries."/>
+<meta name="twitter:image" content="https://getatlas.ca/icon-512.png"/>
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Atlas AI Travel Planner",
+  "url": "https://getatlas.ca",
+  "description": "AI-powered travel planner. Get instant itineraries, visa info, flights and hotels for any destination worldwide. Free to use.",
+  "applicationCategory": "TravelApplication",
+  "operatingSystem": "Web, iOS, Android",
+  "inLanguage": ["en", "bn", "hi", "ar", "fr", "es", "zh", "ja", "ko"],
+  "audience": {
+    "@type": "Audience",
+    "geographicArea": {
+      "@type": "AdministrativeArea",
+      "name": "Worldwide"
+    }
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "featureList": [
+    "AI travel itinerary generator",
+    "Visa information by passport",
+    "Day-by-day trip planning",
+    "Interactive travel maps",
+    "Multi-language support",
+    "Flight and hotel recommendations"
+  ]
+}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body,#root{height:100%;}
+body{background:#1c1914;color:#ede5d5;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:2px;}
+::-webkit-scrollbar-thumb{background:rgba(201,169,110,0.3);}
+@keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.6)}40%{opacity:1;transform:scale(1)}}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ripple{0%{transform:scale(1);opacity:0.8}100%{transform:scale(2.5);opacity:0}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(201,169,110,0.4)}50%{box-shadow:0 0 18px rgba(201,169,110,0.7)}}
+.msg{animation:up 0.28s ease;}
+.edit-btn{opacity:0;transition:opacity 0.2s;}
+.msg-wrap:hover .edit-btn{opacity:1;}
+textarea{font-family:'DM Sans',sans-serif;-webkit-appearance:none;}
+textarea::placeholder{color:#6a5a3a;}
+textarea:focus{outline:none;}
+button{-webkit-tap-highlight-color:transparent;}
+.atlas-map{height:220px;width:100%;border-radius:8px;margin-top:0.75rem;border:1px solid rgba(201,169,110,0.2);overflow:hidden;}
+.leaflet-popup-content-wrapper{background:#252018;border:1px solid rgba(201,169,110,0.3);border-radius:8px;color:#ede5d5;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
+.leaflet-popup-tip{background:#252018;}
+.leaflet-popup-content{font-family:'DM Sans',sans-serif;font-size:12px;color:#ede5d5;margin:6px 10px;}
+.leaflet-popup-content b{color:#c9a96e;}
+.leaflet-control-zoom a{background:#252018!important;color:#c9a96e!important;border-color:rgba(201,169,110,0.3)!important;}
+.leaflet-control-attribution{background:rgba(28,25,20,0.8)!important;color:#6a5a3a!important;font-size:9px!important;}
+.leaflet-control-attribution a{color:#8a7a50!important;}
+.login-overlay{position:fixed;inset:0;background:rgba(10,8,5,0.97);display:flex;align-items:center;justify-content:center;z-index:200;animation:fadeIn 0.3s ease;padding:1rem;}
+.login-card{width:100%;max-width:340px;animation:slideUp 0.35s ease;}
+.login-btn{width:100%;padding:0.8rem 1rem;border-radius:10px;border:1px solid rgba(201,169,110,0.2);background:rgba(201,169,110,0.06);color:#e0d8c8;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.82rem;display:flex;align-items:center;gap:0.75rem;transition:all 0.2s;margin-bottom:0.65rem;}
+.login-btn:hover{background:rgba(201,169,110,0.12);border-color:rgba(201,169,110,0.4);}
+.login-btn svg{flex-shrink:0;}
+.user-menu{position:absolute;top:calc(100% + 8px);right:0;background:#252018;border:1px solid rgba(201,169,110,0.2);border-radius:10px;padding:0.5rem;min-width:180px;z-index:50;animation:slideUp 0.2s ease;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;background:#181410;border-right:1px solid rgba(201,169,110,0.1);display:flex;flex-direction:column;z-index:40;transition:transform 0.3s ease;}
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:39;animation:fadeIn 0.2s ease;}
+.plan-item{padding:0.6rem 0.75rem;border-radius:8px;cursor:pointer;transition:background 0.15s;border:1px solid transparent;margin-bottom:0.25rem;}
+.plan-item:hover{background:rgba(201,169,110,0.07);border-color:rgba(201,169,110,0.12);}
+.plan-item.active{background:rgba(201,169,110,0.1);border-color:rgba(201,169,110,0.2);}
+.plan-item-del{opacity:0;transition:opacity 0.15s;}
+.plan-item:hover .plan-item-del{opacity:1;}
+</style>
+</head>
+<body>
+<div id="root">   <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1c1914;color:#ede5d5;font-family:sans-serif;text-align:center;padding:2rem;">     <svg width="48" height="48" viewBox="0 0 400 400" style="margin-bottom:1.5rem;">       <circle cx="200" cy="200" r="170" fill="none" stroke="#c9a96e" stroke-width="2.2"/>       <circle cx="200" cy="200" r="130" fill="none" stroke="#8a6a3a" stroke-width="1"/>       <circle cx="200" cy="200" r="18" fill="#c9a96e"/>     </svg>     <h1 style="font-size:1.8rem;color:#c9a96e;margin-bottom:1rem;letter-spacing:0.1em;">Atlas — AI Travel Planner</h1>     <p style="color:#a8a090;max-width:500px;line-height:1.8;margin-bottom:0.75rem;">Plan any trip instantly with AI. Get personalized itineraries, visa information, flights, hotels and day-by-day plans for any destination worldwide.</p>     <p style="color:#6a5a3a;font-size:0.85rem;margin-bottom:0.5rem;">AI travel planner · Trip itinerary generator · Visa info by passport</p>     <p style="color:#5a4a2a;font-size:0.8rem;">Free to use · Powered by AI · getatlas.ca</p>   </div> </div>
+<script type="text/babel">
+
+const {createClient} = supabase;
+const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_gDzH6bF1tOYuKmx4uIGaLw_On9AG90E';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const GOOGLE_CLIENT_ID='614751798837-443ekthg12sqi7ijb48rhdfso77hrq0r.apps.googleusercontent.com';
+const GOOGLE_CALENDAR_SCOPE='https://www.googleapis.com/auth/calendar.events';
+  
+function getLocation(){return new Promise(resolve=>{if(!navigator.geolocation){resolve("");return;}const t=setTimeout(()=>resolve(""),4000);navigator.geolocation.getCurrentPosition(async pos=>{clearTimeout(t);try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);const d=await r.json();const city=d.address?.city||d.address?.town||d.address?.village||"";const country=d.address?.country||"";resolve(city&&country?`${city}, ${country}`:country||"");}catch{resolve("");}},()=>{clearTimeout(t);resolve("");},{timeout:4000});});}
+function getDateTime(){const now=new Date();const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];const months=['January','February','March','April','May','June','July','August','September','October','November','December'];const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;const h=now.getHours();return `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} — ${h%12||12}:${now.getMinutes().toString().padStart(2,'0')} ${h>=12?'PM':'AM'} (${tz})`;}
+function parseMapData(text){const m=text.match(/\[MAPDATA\]([\s\S]*?)\[\/MAPDATA\]/);if(!m)return null;try{const d=JSON.parse(m[1]);return d.places||null;}catch{return null;}}
+function stripMapData(text){return text.replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g,'').trim();}
+function formatDate(iso){const d=new Date(iso);const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;}
+function extractTitle(messages){
+  const userMsgs=messages.filter(m=>m.role==="user");
+  for(const m of userMsgs){
+    const text=typeof m.content==="string"?m.content:Array.isArray(m.content)?(m.content.find(c=>c.type==="text")?.text||""):"";
+    const match=text.match(/\b(italy|japan|thailand|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|nepal|india|vietnam|egypt|brazil|mexico|korea|australia|bangladesh|pakistan|morocco|portugal|indonesia|malaysia|philippines|turkey|maldives|kenya|tanzania|south africa|argentina|chile|colombia|peru|cuba|jordan|georgia|armenia|iceland|norway|sweden|finland|denmark|ireland|scotland|croatia|czech|hungary|romania|poland|ukraine|new zealand|hong kong|taiwan|vietnam|cambodia|myanmar|laos|uzbekistan|qatar|bahrain|kuwait|oman|saudi|lebanon)\b/i);
+    if(match)return match[0].charAt(0).toUpperCase()+match[0].slice(1).toLowerCase()+" Trip";
+  }
+  const first=userMsgs[1]||userMsgs[0];
+  if(first){const text=typeof first.content==="string"?first.content:(first.content.find&&first.content.find(c=>c.type==="text")?.text)||"";return text.slice(0,28)+(text.length>28?"...":"");}
+  return "Trip Plan";
+}
+
+const PERSONA=`You are ATLAS — the world's most sophisticated AI travel intelligence.
+LANGUAGE: Detect user language instantly. Respond ENTIRELY in that language.
+CURRENT DATE & TIME: Injected into every message. Use it accurately.
+PASSPORT & VISA: Always ask which passport if not mentioned.
+Structure every plan with flights, visa, stay, eat, move, day by day, total cost.
+LINKS — MANDATORY: Every hotel, flight, visa must have a clickable link.
+CRITICAL: Never truncate. Complete every day.`;
+
+const STORAGE_KEY='atlas_v8';
+const {useState,useRef,useEffect}=React;
+
+function saveLocal(msgs,hist){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({msgs,hist,t:Date.now()}));}catch{}}
+function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!d||Date.now()-d.t>24*60*60*1000)return null;return d;}catch{return null;}}
+const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}];
+
+  // ===================== CALENDAR MODAL =====================
+function CalendarModal({msgs,onClose}){
+  const [tripName,setTripName]=React.useState(()=>extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''}))));
+const _M={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+const _yr=new Date().getFullYear();
+const _allDates=(()=>{
+  const found=[];
+  // First check USER messages for dates
+  for(const m of msgs){
+    if(m.from==='user'&&m.text){
+      const matches=[...m.text.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+(\d{1,2})(?:st|nd|rd|th)?(?:[,\s]+(\d{4}))?/gi)];
+      for(const d of matches){const mo=_M[d[1].slice(0,3)];const y=d[3]||_yr;if(mo)found.push(`${y}-${mo}-${d[2].padStart(2,'0')}`);}
+      // Also match "august 2nd to 20th" style
+      const rangeMatch=m.text.match(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?\s+to\s+(?:(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+)?(\d{1,2})/gi);
+if(rangeMatch){const rr=[...m.text.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?\s+to\s+(\d{1,2})/gi)];for(const r of rr){const mo=_M[r[1].slice(0,3)];if(mo){found.push(`${_yr}-${mo}-${r[2].padStart(2,'0')}`);found.push(`${_yr}-${mo}-${r[3].padStart(2,'0')}`);}}}    }
+  }
+  // If no dates from user, check AI messages
+  if(found.length===0){
+    for(const m of msgs){if(m.from==='ai'&&m.text){const matches=[...m.text.matchAll(/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[,.]?\s+(\d{1,2})(?:st|nd|rd|th)?(?:[,\s]+(\d{4}))?/gi)];for(const d of matches){const mo=_M[d[1].slice(0,3)];const y=d[3]||_yr;if(mo)found.push(`${y}-${mo}-${d[2].padStart(2,'0')}`);}}}
+  }
+  return [...new Set(found)].sort();
+})();
+const [startDate,setStartDate]=React.useState(_allDates[0]||'');
+const [endDate,setEndDate]=React.useState(_allDates.length>1?_allDates[_allDates.length-1]:_allDates[0]?_allDates[0]:'');
+const [flights,setFlights]=React.useState(()=>{
+  const aiText=msgs.filter(m=>m.from==='ai').map(m=>m.text||'').join('\n');
+  const flightMatches=[...aiText.matchAll(/(?:flight|depart|fly)[^\n]*?([A-Z]{3})\s*[→\-to]+\s*([A-Z]{3})/gi)];
+  if(flightMatches.length>0){return flightMatches.slice(0,3).map(f=>({from:f[1]||'',to:f[2]||'',date:'',time:'',flightNo:''}));}
+  return [{from:'',to:'',date:'',time:'',flightNo:''}];
+});
+const [hotels,setHotels]=React.useState(()=>{
+  const aiText=msgs.filter(m=>m.from==='ai').map(m=>m.text||'').join('\n');
+  const cityMatches=[...aiText.matchAll(/(?:hotel|stay|hostel|accommodation)[^\n]*?(?:in|at)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/gi)];
+  if(cityMatches.length>0){return [...new Set(cityMatches.map(c=>c[1]))].slice(0,3).map(city=>({name:'',city,checkIn:'',checkOut:''}));}
+  return [{name:'',city:'',checkIn:'',checkOut:''}];
+});
+  const [notify,setNotify]=React.useState(true);
+  const [loading,setLoading]=React.useState(false);
+
+  function addFlight(){setFlights(f=>[...f,{from:'',to:'',date:'',time:'',flightNo:''}]);}
+  function removeFlight(i){setFlights(f=>f.filter((_,idx)=>idx!==i));}
+  function updateFlight(i,key,val){setFlights(f=>f.map((x,idx)=>idx===i?{...x,[key]:val}:x));}
+  function addHotel(){setHotels(h=>[...h,{name:'',city:'',checkIn:'',checkOut:''}]);}
+  function removeHotel(i){setHotels(h=>h.filter((_,idx)=>idx!==i));}
+  function updateHotel(i,key,val){setHotels(h=>h.map((x,idx)=>idx===i?{...x,[key]:val}:x));}
+
+  async function handleAddToCalendar(){
+    if(!startDate||!endDate){alert('Please add trip dates!');return;}
+    setLoading(true);
+    try{
+      const events=[];
+
+      // Main trip event
+      events.push({
+        title:`✈️ ${tripName}`,
+        description:`Trip planned by Atlas AI\ngetatlas.ca`,
+        start:startDate,
+        end:endDate,
+        allDay:true,
+        colorId:'5'
+      });
+
+      // Flight events
+      for(const f of flights){
+        if(f.from&&f.to&&f.date){
+          events.push({
+            title:`✈️ Flight: ${f.from} → ${f.to}${f.flightNo?' ('+f.flightNo+')':''}`,
+            description:`Flight from ${f.from} to ${f.to}\nPlanned by Atlas AI`,
+            start:f.date,
+            end:f.date,
+            allDay:!f.time,
+            time:f.time||'09:00',
+            colorId:'1'
+          });
+        }
+      }
+
+      // Hotel events
+      for(const h of hotels){
+        if(h.name&&h.checkIn&&h.checkOut){
+          events.push({
+            title:`🏨 ${h.name}${h.city?' - '+h.city:''}`,
+            description:`Hotel stay\nPlanned by Atlas AI`,
+            start:h.checkIn,
+            end:h.checkOut,
+            allDay:true,
+            colorId:'2'
+          });
+        }
+      }
+
+      // Notification event
+      if(notify&&startDate){
+        const notifyDate=new Date(startDate);
+        notifyDate.setDate(notifyDate.getDate()-1);
+        events.push({
+          title:`⚠️ Trip tomorrow: ${tripName}`,
+          description:`Your trip starts tomorrow!\nPlanned by Atlas AI`,
+          start:notifyDate.toISOString().split('T')[0],
+          end:notifyDate.toISOString().split('T')[0],
+          allDay:true,
+          colorId:'6'
+        });
+      }
+
+      const added=await addToGoogleCalendar(events);
+      showToast(`📅 ${added} events added to Google Calendar!`);
+      onClose();
+    }catch(e){
+      alert('Error: '+e.message);
+    }
+    setLoading(false);
+  }
+
+  const inputStyle={width:"100%",background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:7,padding:"0.45rem 0.65rem",color:"#e0d8c8",fontSize:"0.75rem",fontFamily:"'DM Sans',sans-serif",outline:"none",marginTop:"0.25rem"};
+  const labelStyle={fontSize:"0.58rem",color:"#6a5a3a",letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginTop:"0.75rem"};
+
+  return React.createElement("div",{
+    style:{position:"fixed",inset:0,background:"rgba(10,8,5,0.97)",display:"flex",alignItems:"flex-start",justifyContent:"center",zIndex:9999,animation:"fadeIn 0.3s ease",padding:"1rem",paddingTop:"1.5rem",paddingBottom:"1.5rem",overflowY:"auto"},
+    onClick:e=>{if(e.target===e.currentTarget)onClose();}
+  },
+    React.createElement("div",{style:{width:"100%",maxWidth:420,background:"#1e1a14",border:"1px solid rgba(201,169,110,0.15)",borderRadius:16,overflow:"hidden",animation:"slideUp 0.3s ease"}},
+
+      // Header
+      React.createElement("div",{style:{padding:"1rem 1.25rem",borderBottom:"1px solid rgba(201,169,110,0.1)",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
+          React.createElement("span",{style:{fontSize:"1.1rem"}},"📅"),
+          React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1rem",color:"#d4aa6e",letterSpacing:"0.15em"}},"Add Trip to Calendar")
+        ),
+        React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"1.1rem"}},"✕")
+      ),
+
+      React.createElement("div",{style:{padding:"1.25rem",overflowY:"auto",maxHeight:"70vh"}},
+
+        // Trip name
+        React.createElement("label",{style:labelStyle},"Trip name"),
+        React.createElement("input",{type:"text",value:tripName,onChange:e=>setTripName(e.target.value),style:inputStyle}),
+
+        // Trip dates
+        React.createElement("div",{style:{display:"flex",gap:"0.5rem",marginTop:"0.75rem"}},
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("label",{style:labelStyle},"Start date"),
+            React.createElement("input",{type:"date",value:startDate,onChange:e=>setStartDate(e.target.value),style:inputStyle})
+          ),
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("label",{style:labelStyle},"Return date"),
+            React.createElement("input",{type:"date",value:endDate,onChange:e=>setEndDate(e.target.value),style:inputStyle})
+          )
+        ),
+
+        // Flights
+        React.createElement("div",{style:{marginTop:"1rem"}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.4rem"}},
+            React.createElement("p",{style:{fontSize:"0.58rem",color:"#c9a96e",letterSpacing:"0.1em",textTransform:"uppercase"}},"✈️ Flights & Transport"),
+            React.createElement("button",{onClick:addFlight,style:{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:5,padding:"0.2rem 0.5rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",fontFamily:"'DM Sans',sans-serif"}},"+Add")
+          ),
+          ...flights.map((f,i)=>React.createElement("div",{key:i,style:{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,padding:"0.6rem",marginBottom:"0.4rem"}},
+            React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginBottom:"0.3rem"}},
+              React.createElement("input",{type:"text",placeholder:"From (YYZ)",value:f.from,onChange:e=>updateFlight(i,'from',e.target.value),style:{...inputStyle,marginTop:0,flex:1}}),
+              React.createElement("span",{style:{color:"#c9a96e",alignSelf:"center"}},"→"),
+              React.createElement("input",{type:"text",placeholder:"To (FCO)",value:f.to,onChange:e=>updateFlight(i,'to',e.target.value),style:{...inputStyle,marginTop:0,flex:1}})
+            ),
+            React.createElement("div",{style:{display:"flex",gap:"0.4rem"}},
+              React.createElement("input",{type:"date",value:f.date,onChange:e=>updateFlight(i,'date',e.target.value),style:{...inputStyle,marginTop:0,flex:2}}),
+              React.createElement("input",{type:"time",value:f.time,onChange:e=>updateFlight(i,'time',e.target.value),style:{...inputStyle,marginTop:0,flex:1}}),
+              React.createElement("input",{type:"text",placeholder:"AC870",value:f.flightNo,onChange:e=>updateFlight(i,'flightNo',e.target.value),style:{...inputStyle,marginTop:0,flex:1}}),
+              flights.length>1&&React.createElement("button",{onClick:()=>removeFlight(i),style:{background:"none",border:"none",color:"#8a5050",cursor:"pointer",fontSize:"0.8rem",alignSelf:"center"}},"🗑")
+            )
+          ))
+        ),
+
+        // Hotels
+        React.createElement("div",{style:{marginTop:"1rem"}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.4rem"}},
+            React.createElement("p",{style:{fontSize:"0.58rem",color:"#c9a96e",letterSpacing:"0.1em",textTransform:"uppercase"}},"🏨 Hotels"),
+            React.createElement("button",{onClick:addHotel,style:{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:5,padding:"0.2rem 0.5rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",fontFamily:"'DM Sans',sans-serif"}},"+Add")
+          ),
+          ...hotels.map((h,i)=>React.createElement("div",{key:i,style:{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,padding:"0.6rem",marginBottom:"0.4rem"}},
+            React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginBottom:"0.3rem"}},
+              React.createElement("input",{type:"text",placeholder:"Hotel name",value:h.name,onChange:e=>updateHotel(i,'name',e.target.value),style:{...inputStyle,marginTop:0,flex:2}}),
+              React.createElement("input",{type:"text",placeholder:"City",value:h.city,onChange:e=>updateHotel(i,'city',e.target.value),style:{...inputStyle,marginTop:0,flex:1}}),
+              hotels.length>1&&React.createElement("button",{onClick:()=>removeHotel(i),style:{background:"none",border:"none",color:"#8a5050",cursor:"pointer",fontSize:"0.8rem",alignSelf:"center"}},"🗑")
+            ),
+            React.createElement("div",{style:{display:"flex",gap:"0.4rem"}},
+              React.createElement("div",{style:{flex:1}},
+                React.createElement("label",{style:{...labelStyle,marginTop:0}},"Check-in"),
+                React.createElement("input",{type:"date",value:h.checkIn,onChange:e=>updateHotel(i,'checkIn',e.target.value),style:{...inputStyle,marginTop:"0.2rem"}})
+              ),
+              React.createElement("div",{style:{flex:1}},
+                React.createElement("label",{style:{...labelStyle,marginTop:0}},"Check-out"),
+                React.createElement("input",{type:"date",value:h.checkOut,onChange:e=>updateHotel(i,'checkOut',e.target.value),style:{...inputStyle,marginTop:"0.2rem"}})
+              )
+            )
+          ))
+        ),
+
+        // Notification toggle
+        React.createElement("div",{style:{marginTop:"1rem",display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,padding:"0.75rem"}},
+          React.createElement("div",null,
+            React.createElement("p",{style:{fontSize:"0.75rem",color:"#c9a96e"}},"🔔 Trip reminder"),
+            React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",marginTop:"0.1rem"}},"Add reminder 1 day before trip")
+          ),
+          React.createElement("button",{onClick:()=>setNotify(!notify),style:{width:36,height:20,borderRadius:10,background:notify?"rgba(201,169,110,0.4)":"rgba(100,90,70,0.2)",border:"none",cursor:"pointer",position:"relative",transition:"all 0.2s"}},
+            React.createElement("span",{style:{position:"absolute",top:2,left:notify?18:2,width:16,height:16,borderRadius:"50%",background:notify?"#c9a96e":"#6a5a3a",transition:"all 0.2s"}})
+          )
+        ),
+
+        // Add button
+        React.createElement("button",{onClick:()=>{
+  const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Atlas AI//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
+  const addEv=(title,start,end,desc)=>{lines.push("BEGIN:VEVENT",`DTSTART;VALUE=DATE:${start.replace(/-/g,'')}`,`DTEND;VALUE=DATE:${end.replace(/-/g,'')}`,`SUMMARY:${title}`,`DESCRIPTION:${(desc||'Atlas AI Travel Planner - getatlas.ca').replace(/\n/g,'\\n')}`,`UID:${Date.now()}-${Math.random().toString(36).slice(2)}@getatlas.ca`,"END:VEVENT");};
+  if(startDate&&endDate)addEv(`✈️ ${tripName}`,startDate,endDate,'Trip planned by Atlas AI\\ngetatlas.ca');
+  for(const f of flights){if(f.from&&f.to&&f.date)addEv(`✈️ Flight: ${f.from} → ${f.to}${f.flightNo?' ('+f.flightNo+')':''}`,f.date,f.date,'Flight - Atlas AI');}
+  for(const h of hotels){if(h.name&&h.checkIn&&h.checkOut)addEv(`🏨 ${h.name}${h.city?' - '+h.city:''}`,h.checkIn,h.checkOut,'Hotel stay - Atlas AI');}
+  if(notify&&startDate){const nd=new Date(startDate);nd.setDate(nd.getDate()-1);addEv(`⚠️ Trip tomorrow: ${tripName}`,nd.toISOString().split('T')[0],nd.toISOString().split('T')[0],'Your trip starts tomorrow!');}
+  lines.push("END:VCALENDAR");
+  const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('📅 Calendar file downloaded! Open it to add to your calendar.');
+  onClose();
+},style:{width:"100%",marginTop:"1.25rem",padding:"0.85rem",background:"linear-gradient(135deg,rgba(201,169,110,0.2),rgba(201,169,110,0.1))",border:"1px solid rgba(201,169,110,0.4)",borderRadius:10,color:"#c9a96e",cursor:"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500}},"📅 Download Calendar File")
+,React.createElement("button",{onClick:()=>{
+    const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Atlas AI//EN"];
+    const addEvent=(title,start,end,desc)=>{lines.push("BEGIN:VEVENT",`DTSTART;VALUE=DATE:${start.replace(/-/g,'')}`,`DTEND;VALUE=DATE:${end.replace(/-/g,'')}`,`SUMMARY:${title}`,`DESCRIPTION:${desc||'Atlas AI Travel Planner - getatlas.ca'}`,`UID:${Date.now()}@getatlas.ca`,"END:VEVENT");};
+    addEvent(`✈️ ${tripName}`,startDate,endDate,`Trip planned by Atlas AI\ngetatlas.ca`);
+    for(const f of flights){if(f.from&&f.to&&f.date)addEvent(`✈️ Flight: ${f.from} → ${f.to}`,f.date,f.date,`Flight planned by Atlas AI`);}
+    for(const h of hotels){if(h.name&&h.checkIn&&h.checkOut)addEvent(`🏨 ${h.name}${h.city?' - '+h.city:''}`,h.checkIn,h.checkOut,`Hotel stay - Atlas AI`);}
+    lines.push("END:VCALENDAR");
+    const blob=new Blob([lines.join('\r\n')],{type:'text/calendar'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 Calendar file downloaded!');
+  },
+  style:{width:"100%",marginTop:"0.6rem",padding:"0.85rem",background:"none",border:"1px solid rgba(201,169,110,0.25)",borderRadius:10,color:"#8a7a60",cursor:"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}
+},"📥 Download for Apple / Outlook")
+      )
+    )
+  );
+}
+
+ // ===================== HELP MODAL =====================
+function HelpModal({onClose}){
+  return React.createElement("div",{
+    className:"login-overlay",
+    style:{alignItems:"flex-start",paddingTop:"1.5rem",paddingBottom:"1.5rem",overflowY:"auto"},
+    onClick:e=>{if(e.target===e.currentTarget)onClose();}
+  },
+    React.createElement("div",{style:{width:"100%",maxWidth:420,background:"#1e1a14",border:"1px solid rgba(201,169,110,0.15)",borderRadius:16,overflow:"hidden",animation:"slideUp 0.3s ease"}},
+      React.createElement("div",{style:{padding:"1.1rem 1.5rem",borderBottom:"1px solid rgba(201,169,110,0.1)",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem"}},
+          React.createElement("svg",{width:"18",height:"18",viewBox:"0 0 400 400"},
+            React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"2.5"}),
+            React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1.5"}),
+            React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
+          ),
+          React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.1rem",color:"#d4aa6e",letterSpacing:"0.2em"}},"Help & Support")
+        ),
+        React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"1.2rem",lineHeight:1}},"✕")
+      ),
+      React.createElement("div",{style:{padding:"1.5rem"}},
+        React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem 1.25rem",marginBottom:"1.25rem"}},
+          React.createElement("p",{style:{fontSize:"0.65rem",color:"#c9a96e",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"0.5rem"}},"Contact Support"),
+          React.createElement("p",{style:{fontSize:"0.8rem",color:"#a8a090",lineHeight:1.8,marginBottom:"0.75rem"}},"Have a question or issue? Atlas support typically responds within 24 hours."),
+          React.createElement("a",{href:"mailto:support@getatlas.ca",style:{display:"inline-flex",alignItems:"center",gap:"0.4rem",padding:"0.5rem 1rem",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.3)",borderRadius:8,color:"#c9a96e",textDecoration:"none",fontSize:"0.72rem",letterSpacing:"0.08em",fontFamily:"'DM Sans',sans-serif"}},"✉ support@getatlas.ca")
+        ),
+        React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"0.75rem"}},"Frequently Asked Questions"),
+        ...[
+          ["How do I upgrade to Pro?","Click your avatar → Upgrade to Pro. Pro gives unlimited plans and priority AI."],
+          ["How do I save a trip?","Click 'Save trip' in the header. You must be signed in."],
+          ["Can I export my trip as PDF?","PDF export is coming soon in V2."],
+          ["Is my data private?","Yes. Trips and preferences are stored securely. See our Privacy Policy."],
+          ["How do I cancel my subscription?","Cancel anytime via Stripe. Access continues until end of billing period."],
+        ].map(([q,a],i)=>React.createElement("div",{key:i,style:{borderBottom:"1px solid rgba(201,169,110,0.08)",paddingBottom:"0.85rem",marginBottom:"0.85rem"}},
+          React.createElement("p",{style:{fontSize:"0.78rem",color:"#d4c8a8",fontWeight:500,marginBottom:"0.3rem"}},q),
+          React.createElement("p",{style:{fontSize:"0.75rem",color:"#7a7060",lineHeight:1.75}},a)
+        )),
+        React.createElement("div",{style:{display:"flex",gap:"0.75rem",marginTop:"0.5rem"}},
+          React.createElement("a",{href:"/privacy",target:"_blank",style:{fontSize:"0.62rem",color:"#6a5a3a",textDecoration:"none"}},"Privacy Policy"),
+          React.createElement("span",{style:{color:"#3a2a12"}},"·"),
+          React.createElement("a",{href:"/terms",target:"_blank",style:{fontSize:"0.62rem",color:"#6a5a3a",textDecoration:"none"}},"Terms of Service")
+        )
+      )
+    )
+  );
+}
+  
+// ===================== SETTINGS MODAL =====================
+function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
+  const [tab, setTab] = React.useState('personalization');
+  const [saving, setSaving] = React.useState(false);
+  const [saved, setSaved] = React.useState(false);
+  const [resetSent, setResetSent] = React.useState(false);
+  const [fontSize, setFontSize] = React.useState(()=>localStorage.getItem('atlas_fontsize')||'medium');
+  const [prefs, setPrefs] = React.useState(()=>{
+    try{return JSON.parse(localStorage.getItem('atlas_prefs')||'{}');}catch{return {};}
+  });
+
+  function updatePref(key,val){setPrefs(p=>({...p,[key]:val}));}
+
+  function save(){
+    setSaving(true);
+    localStorage.setItem('atlas_prefs',JSON.stringify(prefs));
+    localStorage.setItem('atlas_fontsize',fontSize);
+    document.documentElement.style.fontSize = fontSize==='small'?'13px':fontSize==='large'?'17px':'15px';
+    setTimeout(()=>{setSaving(false);setSaved(true);setTimeout(()=>setSaved(false),2000);},400);
+  }
+
+  function resetPrefs(){
+    if(!confirm('Reset all preferences?'))return;
+    localStorage.removeItem('atlas_prefs');
+    localStorage.removeItem('atlas_fontsize');
+    setPrefs({});
+    setFontSize('medium');
+    document.documentElement.style.fontSize='15px';
+  }
+
+  async function sendPasswordReset(){
+    if(!user?.email)return;
+    await sb.auth.resetPasswordForEmail(user.email,{redirectTo:'https://getatlas.ca'});
+    setResetSent(true);
+    setTimeout(()=>setResetSent(false),4000);
+  }
+
+  async function logoutAll(){
+    if(!confirm('Sign out of all devices?'))return;
+    await sb.auth.signOut({scope:'global'});
+    onLogout();
+    onClose();
+  }
+
+  const tabStyle=(t)=>({
+    padding:"0.5rem 0.75rem",
+    background:tab===t?"rgba(201,169,110,0.12)":"none",
+    border:"none",
+    borderRadius:7,
+    color:tab===t?"#c9a96e":"#6a5a3a",
+    cursor:"pointer",
+    fontSize:"0.68rem",
+    letterSpacing:"0.06em",
+    textTransform:"uppercase",
+    fontFamily:"'DM Sans',sans-serif",
+    width:"100%",
+    textAlign:"left",
+    marginBottom:"0.2rem",
+    transition:"all 0.15s",
+    display:"flex",
+    alignItems:"center",
+    gap:"0.5rem"
+  });
+
+  const inputStyle={
+    width:"100%",
+    background:"rgba(201,169,110,0.05)",
+    border:"1px solid rgba(201,169,110,0.2)",
+    borderRadius:8,
+    padding:"0.55rem 0.75rem",
+    color:"#e0d8c8",
+    fontSize:"0.8rem",
+    fontFamily:"'DM Sans',sans-serif",
+    outline:"none",
+    marginTop:"0.35rem"
+  };
+
+  const labelStyle={
+    fontSize:"0.6rem",
+    color:"#6a5a3a",
+    letterSpacing:"0.08em",
+    textTransform:"uppercase",
+    display:"block",
+    marginTop:"1rem"
+  };
+
+  const sectionTitle={
+    fontSize:"0.58rem",
+    color:"#4a3a22",
+    letterSpacing:"0.12em",
+    textTransform:"uppercase",
+    marginBottom:"0.75rem",
+    paddingBottom:"0.4rem",
+    borderBottom:"1px solid rgba(201,169,110,0.1)"
+  };
+
+  const isPro = userTier==='pro'||userTier==='explorer';
+
+  return React.createElement("div",{
+    className:"login-overlay",
+    style:{alignItems:"flex-start",paddingTop:"1.5rem",paddingBottom:"1.5rem",overflowY:"auto"},
+    onClick:e=>{if(e.target===e.currentTarget)onClose();}
+  },
+    React.createElement("div",{style:{width:"100%",maxWidth:560,background:"#1e1a14",border:"1px solid rgba(201,169,110,0.15)",borderRadius:16,overflow:"hidden",animation:"slideUp 0.3s ease"}},
+
+      // Header
+      React.createElement("div",{style:{padding:"1.1rem 1.5rem",borderBottom:"1px solid rgba(201,169,110,0.1)",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem"}},
+          React.createElement("svg",{width:"18",height:"18",viewBox:"0 0 400 400"},
+            React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"2.5"}),
+            React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1.5"}),
+            React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
+          ),
+          React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.1rem",color:"#d4aa6e",letterSpacing:"0.2em"}},"Settings")
+        ),
+        React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"1.2rem",lineHeight:1}},"✕")
+      ),
+
+      // Body
+      React.createElement("div",{style:{display:"flex",minHeight:420}},
+
+        // Left tabs
+        React.createElement("div",{style:{width:155,borderRight:"1px solid rgba(201,169,110,0.1)",padding:"0.75rem",flexShrink:0}},
+          React.createElement("button",{style:tabStyle('personalization'),onClick:()=>setTab('personalization')},"✦","Preferences"),
+          React.createElement("button",{style:tabStyle('appearance'),onClick:()=>setTab('appearance')},"◈","Appearance"),
+          React.createElement("button",{style:tabStyle('account'),onClick:()=>setTab('account')},"◎","Account"),
+          React.createElement("button",{style:tabStyle('security'),onClick:()=>setTab('security')},"🔒","Security")
+        ),
+
+        // Right content
+        React.createElement("div",{style:{flex:1,padding:"1.25rem 1.5rem",overflowY:"auto",maxHeight:520}},
+
+          // ---- PERSONALIZATION ----
+          tab==='personalization'&&React.createElement("div",null,
+            React.createElement("p",{style:sectionTitle},"Personalization"),
+
+            React.createElement("label",{style:labelStyle},"Full name"),
+            React.createElement("input",{
+              type:"text",
+              placeholder:"Your name",
+              value:prefs.fullName||"",
+              onChange:e=>updatePref('fullName',e.target.value),
+              style:inputStyle
+            }),
+
+            React.createElement("label",{style:labelStyle},"Passport / Travel document"),
+            React.createElement("select",{
+              value:prefs.passport||"",
+              onChange:e=>updatePref('passport',e.target.value),
+              style:{...inputStyle,cursor:"pointer"}
+            },
+              React.createElement("option",{value:""},"Select..."),
+              ["🇨🇦 Canadian Passport","🇺🇸 USA Passport","🇬🇧 UK Passport","🇪🇺 EU Passport","🇦🇺 Australian Passport","🇧🇩 Bangladeshi Passport","🇮🇳 Indian Passport","🇵🇰 Pakistani Passport","🇳🇬 Nigerian Passport","🇨🇦 Canada RTD","🇺🇸 USA RTD","🇬🇧 UK CTD","🌍 Other"].map(p=>
+                React.createElement("option",{key:p,value:p},p)
+              )
+            ),
+
+            React.createElement("label",{style:labelStyle},"Home city"),
+            React.createElement("input",{
+              type:"text",
+              placeholder:"e.g. Toronto, Canada",
+              value:prefs.homeCity||"",
+              onChange:e=>updatePref('homeCity',e.target.value),
+              style:inputStyle
+            }),
+
+            React.createElement("label",{style:labelStyle},"Travel style"),
+            React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.4rem",flexWrap:"wrap"}},
+              ["Relaxation","Sightseeing","Adventure","Luxury","Budget","Food & Culture"].map(s=>
+                React.createElement("button",{key:s,onClick:()=>updatePref('travelStyle',s),style:{
+                  padding:"0.3rem 0.65rem",borderRadius:20,
+                  border:`1px solid ${prefs.travelStyle===s?"rgba(201,169,110,0.6)":"rgba(201,169,110,0.15)"}`,
+                  background:prefs.travelStyle===s?"rgba(201,169,110,0.15)":"transparent",
+                  color:prefs.travelStyle===s?"#c9a96e":"#6a5a3a",
+                  cursor:"pointer",fontSize:"0.62rem",fontFamily:"'DM Sans',sans-serif",transition:"all 0.15s"
+                }},s)
+              )
+            ),
+
+            React.createElement("label",{style:{...labelStyle,marginTop:"1.25rem"}},"What personal preferences should Atlas consider?"),
+            React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",marginTop:"0.2rem",lineHeight:1.7}},"Your preferences apply to all conversations, within Atlas guidelines."),
+            React.createElement("textarea",{
+              placeholder:"e.g. I prefer window seats, vegetarian food, budget hotels under $100/night, avoid long layovers, I travel with my partner...",
+              value:prefs.customPrefs||"",
+              onChange:e=>updatePref('customPrefs',e.target.value),
+              rows:4,
+              style:{...inputStyle,resize:"vertical",lineHeight:1.7}
+            }),
+
+            React.createElement("div",{style:{display:"flex",gap:"0.5rem",marginTop:"1.25rem"}},
+              React.createElement("button",{onClick:save,style:{flex:1,padding:"0.6rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:8,color:saved?"#6abf6a":"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},saving?"Saving...":saved?"✓ Saved":"Save"),
+              React.createElement("button",{onClick:resetPrefs,style:{padding:"0.6rem 1rem",background:"none",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,color:"#4a3a22",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Reset")
+            )
+          ),
+
+          // ---- APPEARANCE ----
+          tab==='appearance'&&React.createElement("div",null,
+            React.createElement("p",{style:sectionTitle},"Appearance"),
+
+            React.createElement("label",{style:labelStyle},"Spoken language"),
+            React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",marginTop:"0.2rem",lineHeight:1.6}},"For best results, select the language you mainly speak. If not listed, it may still be supported via auto-detection."),
+            React.createElement("select",{
+              value:prefs.language||"auto",
+              onChange:e=>updatePref('language',e.target.value),
+              style:{...inputStyle,cursor:"pointer"}
+            },
+              React.createElement("option",{value:"auto"},"Auto-detect"),
+              React.createElement("option",{value:"English"},"English"),
+              React.createElement("option",{value:"Bengali"},"বাংলা (Bengali)"),
+              React.createElement("option",{value:"Hindi"},"हिंदी (Hindi)"),
+              React.createElement("option",{value:"Arabic"},"العربية (Arabic)"),
+              React.createElement("option",{value:"French"},"Français"),
+              React.createElement("option",{value:"Spanish"},"Español"),
+              React.createElement("option",{value:"Chinese"},"中文"),
+              React.createElement("option",{value:"Japanese"},"日本語"),
+              React.createElement("option",{value:"Korean"},"한국어"),
+              React.createElement("option",{value:"Turkish"},"Türkçe"),
+              React.createElement("option",{value:"Portuguese"},"Português")
+            ),
+
+            React.createElement("label",{style:{...labelStyle,marginTop:"1.25rem"}},"Text size"),
+            React.createElement("div",{style:{display:"flex",gap:"0.5rem",marginTop:"0.4rem"}},
+              ["small","medium","large"].map(s=>
+                React.createElement("button",{key:s,onClick:()=>setFontSize(s),style:{
+                  flex:1,padding:"0.4rem",borderRadius:8,
+                  border:`1px solid ${fontSize===s?"rgba(201,169,110,0.5)":"rgba(201,169,110,0.15)"}`,
+                  background:fontSize===s?"rgba(201,169,110,0.12)":"transparent",
+                  color:fontSize===s?"#c9a96e":"#6a5a3a",
+                  cursor:"pointer",fontSize:s==='small'?"0.65rem":s==='large'?"0.85rem":"0.75rem",
+                  fontFamily:"'DM Sans',sans-serif",transition:"all 0.15s",textTransform:"capitalize"
+                }},s)
+              )
+            ),
+
+            React.createElement("label",{style:{...labelStyle,marginTop:"1.25rem"}},"Voice"),
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"0.75rem",marginTop:"0.4rem",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+              React.createElement("div",null,
+                React.createElement("p",{style:{fontSize:"0.75rem",color:"#c9a96e"}},"Text to Speech"),
+                React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",marginTop:"0.1rem"}},"Listen to AI responses out loud")
+              ),
+              React.createElement("button",{
+                onClick:()=>{
+                  const msg=new SpeechSynthesisUtterance("Hello, I am Atlas, your AI travel companion.");
+                  window.speechSynthesis.speak(msg);
+                },
+                style:{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:7,padding:"0.35rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",fontFamily:"'DM Sans',sans-serif"}
+              },"▶ Play")
+            ),
+
+            React.createElement("div",{style:{display:"flex",gap:"0.5rem",marginTop:"1.25rem"}},
+              React.createElement("button",{onClick:save,style:{flex:1,padding:"0.6rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:8,color:saved?"#6abf6a":"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},saving?"Saving...":saved?"✓ Saved":"Save"),
+              React.createElement("button",{onClick:resetPrefs,style:{padding:"0.6rem 1rem",background:"none",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,color:"#4a3a22",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Reset")
+            )
+          ),
+
+          // ---- ACCOUNT ----
+tab==='account'&&React.createElement("div",null,
+  React.createElement("p",{style:sectionTitle},"Account"),
+
+  // User info
+  React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"1rem",display:"flex",alignItems:"center",gap:"0.75rem"}},
+    user?.user_metadata?.avatar_url
+      ?React.createElement("img",{src:user.user_metadata.avatar_url,style:{width:44,height:44,borderRadius:"50%",objectFit:"cover",border:"1px solid rgba(201,169,110,0.3)"}})
+      :React.createElement("div",{style:{width:44,height:44,borderRadius:"50%",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.1rem",color:"#c9a96e",fontWeight:600}},(user?.user_metadata?.full_name||user?.email||"U")[0]?.toUpperCase()),
+    React.createElement("div",null,
+      React.createElement("p",{style:{fontSize:"0.82rem",color:"#e0d8c8",fontWeight:500}},user?.user_metadata?.full_name||user?.email?.split("@")[0]||"User"),
+      React.createElement("p",{style:{fontSize:"0.65rem",color:"#6a5a3a",marginTop:"0.1rem"}},user?.email),
+      React.createElement("p",{style:{fontSize:"0.62rem",color:isPro?"#c9a96e":"#6a5a3a",marginTop:"0.2rem"}},
+        userTier==='explorer'?"💎 Explorer Plan":userTier==='pro'?"⭐ Pro Plan":"Free Plan"
+      )
+    )
+  ),
+
+  // Plan details box
+  React.createElement("div",{style:{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"1rem"}},
+    React.createElement("p",{style:{fontSize:"0.58rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:"0.75rem"}},"Your Plan"),
+    
+    // Plan badge
+    React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem"}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
+        React.createElement("span",{style:{fontSize:"1.1rem"}},userTier==='explorer'?"💎":userTier==='pro'?"⭐":"🌍"),
+        React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1rem",color:"#c9a96e"}},
+          userTier==='explorer'?"Explorer":userTier==='pro'?"Pro":"Free"
+        )
+      ),
+      userTier==='pro'||userTier==='explorer'
+        ?React.createElement("span",{style:{fontSize:"0.6rem",color:"#6abf6a",background:"rgba(106,191,106,0.1)",border:"1px solid rgba(106,191,106,0.2)",borderRadius:20,padding:"0.2rem 0.6rem"}},"Active ✓")
+        :React.createElement("span",{style:{fontSize:"0.6rem",color:"#6a5a3a",background:"rgba(106,90,58,0.1)",border:"1px solid rgba(106,90,58,0.2)",borderRadius:20,padding:"0.2rem 0.6rem"}},"Free")
+    ),
+
+    // Features list
+    React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"0.35rem",marginBottom:"0.75rem"}},
+      ...(userTier==='explorer'
+        ?["💎 Unlimited travel plans","🤖 Priority AI (Claude always)","📄 Premium PDF export","🗺️ Interactive maps","🌍 Multi-language support","⚡ Advanced customization","🎧 Priority support"]
+        :userTier==='pro'
+        ?["✅ Unlimited travel plans","🤖 Priority AI access","📄 PDF export","🗺️ Interactive maps","🌍 Multi-language support"]
+        :["✅ 3 plans per day","🗺️ Interactive maps","🌍 Multi-language support","❌ No PDF export","❌ No priority AI"]
+      ).map((f,i)=>React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
+        React.createElement("span",{style:{fontSize:"0.75rem",color:"#b8b0a0"}},f)
+      ))
+    )
+  ),
+
+
+  // Upgrade/Downgrade
+  !isPro&&React.createElement("div",{style:{background:"linear-gradient(135deg,rgba(201,169,110,0.08),rgba(201,169,110,0.04))",border:"1px solid rgba(201,169,110,0.25)",borderRadius:10,padding:"1rem",marginBottom:"1rem",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+    React.createElement("div",null,
+      React.createElement("p",{style:{fontSize:"0.75rem",color:"#c9a96e"}},"⭐ Upgrade to Pro"),
+      React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",marginTop:"0.1rem"}},"Unlimited plans · PDF export · $7.99/mo")
+    ),
+    React.createElement("button",{onClick:()=>{onClose();onUpgrade();},style:{background:"rgba(201,169,110,0.15)",border:"1px solid rgba(201,169,110,0.4)",borderRadius:8,padding:"0.4rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",fontFamily:"'DM Sans',sans-serif"}},"Upgrade")
+  ),
+
+  isPro&&React.createElement("div",{style:{background:"rgba(201,169,110,0.03)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:10,padding:"0.75rem",marginBottom:"1rem"}},
+    React.createElement("p",{style:{fontSize:"0.65rem",color:"#4a3a22",marginBottom:"0.5rem"}},"Need to make changes to your subscription?"),
+    React.createElement("a",{href:"https://billing.stripe.com/p/login/00w5kCfyA5ZPdfN8Vf0Fi00",target:"_blank",style:{fontSize:"0.65rem",color:"#c9a96e",textDecoration:"none"}},"Manage subscription via Stripe →")
+  ),
+
+  // Sign out
+  React.createElement("div",{style:{borderTop:"1px solid rgba(201,169,110,0.1)",paddingTop:"0.75rem",display:"flex",flexDirection:"column",gap:"0.4rem"}},
+    React.createElement("button",{onClick:()=>{onLogout();onClose();},style:{width:"100%",padding:"0.6rem 0.75rem",background:"none",border:"1px solid rgba(201,169,110,0.12)",borderRadius:8,color:"#8a7a60",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",textAlign:"left"}},"Sign out"),
+    React.createElement("button",{onClick:logoutAll,style:{width:"100%",padding:"0.6rem 0.75rem",background:"none",border:"1px solid rgba(180,60,60,0.2)",borderRadius:8,color:"#8a5050",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",textAlign:"left"}},"Sign out of all devices")
+  )
+),
+
+          // ---- SECURITY ----
+          tab==='security'&&React.createElement("div",null,
+            React.createElement("p",{style:sectionTitle},"Security"),
+
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"0.75rem"}},
+              React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},
+                React.createElement("div",null,
+                  React.createElement("p",{style:{fontSize:"0.75rem",color:"#e0d8c8"}},"Password"),
+                  React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",marginTop:"0.15rem"}},"Send a password reset link to your email")
+                ),
+                React.createElement("button",{
+                  onClick:sendPasswordReset,
+                  style:{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:7,padding:"0.35rem 0.75rem",color:resetSent?"#6abf6a":"#c9a96e",cursor:"pointer",fontSize:"0.65rem",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}
+                },resetSent?"✓ Email sent!":"Send reset email")
+              )
+            ),
+
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"0.75rem"}},
+              React.createElement("p",{style:{fontSize:"0.75rem",color:"#e0d8c8",marginBottom:"0.25rem"}},"Trusted devices"),
+              React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",lineHeight:1.7}},"When you sign in on another device, it will be added here. Sign out of all devices to remove access."),
+              React.createElement("button",{onClick:logoutAll,style:{marginTop:"0.6rem",background:"none",border:"1px solid rgba(180,60,60,0.2)",borderRadius:7,padding:"0.35rem 0.75rem",color:"#8a5050",cursor:"pointer",fontSize:"0.65rem",fontFamily:"'DM Sans',sans-serif"}},"Sign out all devices")
+            ),
+
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.03)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:10,padding:"1rem"}},
+              React.createElement("p",{style:{fontSize:"0.75rem",color:"#6a5a3a",marginBottom:"0.25rem"}},"🔒 MFA & Passkeys"),
+              React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",lineHeight:1.7}},"Multi-factor authentication and hardware security keys coming soon in V2.")
+            )
+          )
+        )
+      )
+    )
+  );
+}
+  
+// ===================== COOKIE BANNER =====================
+function CookieBanner(){
+  const [show,setShow]=React.useState(()=>!localStorage.getItem('atlas_cookie_ok'));
+  if(!show)return null;
+  return React.createElement("div",{style:{position:"fixed",bottom:0,left:0,right:0,background:"#252018",borderTop:"1px solid rgba(201,169,110,0.2)",padding:"0.75rem 1.25rem",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"1rem",zIndex:300,flexWrap:"wrap"}},
+    React.createElement("p",{style:{fontSize:"0.65rem",color:"#8a7a60",lineHeight:1.7,flex:1}},
+      "We use cookies to improve your experience. By using Atlas, you agree to our ",
+      React.createElement("a",{href:"/privacy",style:{color:"#c9a96e",textDecoration:"none"}},"Privacy Policy"),
+      "."
+    ),
+    React.createElement("button",{onClick:()=>{localStorage.setItem('atlas_cookie_ok','1');setShow(false);},style:{background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.3)",borderRadius:7,padding:"0.4rem 1rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",flexShrink:0}},"Accept")
+  );
+}
+  
+// ===================== PRICING MODAL =====================
+function PricingModal({user, onClose}) {
+  const [loading, setLoading] = useState(null);
+  const [billing, setBilling] = useState('monthly');
+
+  async function handleUpgrade(plan) {
+    if (!user) { alert("Please sign in first to upgrade."); return; }
+    setLoading(plan);
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          plan: `${plan}_${billing}`,
+          userId: user?.id || '',
+          userEmail: user?.email || '',
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Something went wrong. Please try again.');
+        setLoading(null);
+      }
+    } catch(e) {
+      alert('Error: ' + e.message);
+      setLoading(null);
+    }
+  }
+
+  const proPrice = billing === 'monthly' ? '$7.99' : '$79.99';
+  const explorerPrice = billing === 'monthly' ? '$14.99' : '$149.99';
+  const priceSub = billing === 'yearly' ? '/year · 2 months free' : '/month';
+
+  return React.createElement("div", {
+    className: "login-overlay",
+    style: {overflowY:"auto", alignItems:"flex-start", paddingTop:"1.5rem", paddingBottom:"1.5rem"},
+    onClick: e => { if(e.target === e.currentTarget) onClose(); }
+  },
+    React.createElement("div", {style: {width:"100%", maxWidth:400, animation:"slideUp 0.35s ease"}},
+      React.createElement("div", {style: {textAlign:"center", marginBottom:"1.5rem"}},
+        React.createElement("svg",{width:"36",height:"36",viewBox:"0 0 400 400",style:{margin:"0 auto 0.6rem",display:"block"}},
+          React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"2.2"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
+        ),
+        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:300,letterSpacing:"0.25em",color:"#d4aa6e",textTransform:"uppercase"}},"Upgrade Atlas"),
+        ),
+
+      // Billing toggle
+      React.createElement("div",{style:{display:"flex",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.12)",borderRadius:10,padding:"0.2rem",marginBottom:"1rem"}},
+        React.createElement("button",{onClick:()=>setBilling('monthly'),style:{flex:1,padding:"0.45rem",borderRadius:8,border:"none",background:billing==='monthly'?"rgba(201,169,110,0.18)":"transparent",color:billing==='monthly'?"#c9a96e":"#6a5a3a",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.06em",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},"Monthly"),
+        React.createElement("button",{onClick:()=>setBilling('yearly'),style:{flex:1,padding:"0.45rem",borderRadius:8,border:"none",background:billing==='yearly'?"rgba(201,169,110,0.18)":"transparent",color:billing==='yearly'?"#c9a96e":"#6a5a3a",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.06em",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},"Yearly  🎁 2 free")
+      ),
+
+      // Pro Card
+      React.createElement("div",{style:{background:"#252018",border:"1.5px solid rgba(201,169,110,0.35)",borderRadius:14,padding:"1.25rem",marginBottom:"0.75rem"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.9rem"}},
+          React.createElement("div",null,
+            React.createElement("p",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.15rem",color:"#c9a96e"}},"⭐ Pro"),
+            React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",marginTop:"0.1rem"}},"For serious travelers")
+          ),
+          React.createElement("div",{style:{textAlign:"right"}},
+            React.createElement("span",{style:{fontSize:"1.2rem",color:"#e8dcc8",fontWeight:600}},proPrice),
+            React.createElement("span",{style:{fontSize:"0.56rem",color:"#6a5a3a",marginLeft:"0.2rem"}},priceSub)
+          )
+        ),
+        ["Unlimited travel plans","Detailed day-by-day itineraries","Interactive maps","Multi-language support","Priority AI access"].map((f,i)=>
+          React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.3rem"}},
+            React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.5rem"}},"◆"),
+            React.createElement("span",{style:{fontSize:"0.73rem",color:"#b8b0a0"}},f)
+          )
+        ),
+        React.createElement("button",{
+          onClick:()=>handleUpgrade('pro'),
+          disabled:!!loading,
+          style:{width:"100%",marginTop:"1rem",padding:"0.72rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.4)",borderRadius:9,color:"#c9a96e",cursor:loading?"default":"pointer",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}
+        },loading==='pro'?"Redirecting...":`Get Pro · ${proPrice}`)
+      ),
+
+      // Explorer Card
+      React.createElement("div",{style:{background:"#252018",border:"1px solid rgba(201,169,110,0.15)",borderRadius:14,padding:"1.25rem",marginBottom:"1rem"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.9rem"}},
+          React.createElement("div",null,
+            React.createElement("p",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.15rem",color:"#c9a96e"}},"💎 Explorer"),
+            React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",marginTop:"0.1rem"}},"For power users")
+          ),
+          React.createElement("div",{style:{textAlign:"right"}},
+            React.createElement("span",{style:{fontSize:"1.2rem",color:"#e8dcc8",fontWeight:600}},explorerPrice),
+            React.createElement("span",{style:{fontSize:"0.56rem",color:"#6a5a3a",marginLeft:"0.2rem"}},priceSub)
+          )
+        ),
+        ["Everything in Pro","Advanced trip customization","Priority support"].map((f,i)=>
+          React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.3rem"}},
+            React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.5rem"}},"◆"),
+            React.createElement("span",{style:{fontSize:"0.73rem",color:"#b8b0a0"}},f)
+          )
+        ),
+        React.createElement("button",{
+          onClick:()=>handleUpgrade('explorer'),
+          disabled:!!loading,
+          style:{width:"100%",marginTop:"1rem",padding:"0.72rem",background:"transparent",border:"1px solid rgba(201,169,110,0.2)",borderRadius:9,color:"#8a7a50",cursor:loading?"default":"pointer",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}
+        },loading==='explorer'?"Redirecting...":`Get Explorer · ${explorerPrice}`)
+      ),
+
+      React.createElement("button",{onClick:onClose,style:{width:"100%",padding:"0.6rem",background:"none",border:"none",color:"#4a3a22",cursor:"pointer",fontSize:"0.62rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Maybe later")
+    )
+  );
+}
+
+// ===================== LOGIN MODAL =====================
+function LoginModal({onClose}){
+  const [loading,setLoading]=useState(null);
+  const [error,setError]=useState("");
+  async function loginWith(provider){
+    setLoading(provider);setError("");
+    try{const{error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin}});if(error)throw error;}
+    catch(e){setError(e.message||"Login failed");setLoading(null);}
+  }
+  return React.createElement("div",{className:"login-overlay",onClick:e=>{if(e.target===e.currentTarget)onClose();}},
+    React.createElement("div",{className:"login-card"},
+      React.createElement("div",{style:{textAlign:"center",marginBottom:"2rem"}},
+        React.createElement("svg",{width:"42",height:"42",viewBox:"0 0 400 400",style:{margin:"0 auto 0.75rem",display:"block"}},
+          React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"2.2"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
+        ),
+        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:300,letterSpacing:"0.3em",color:"#d4aa6e",textTransform:"uppercase"}},"Atlas"),
+        React.createElement("p",{style:{fontSize:"0.72rem",color:"#6a5a35",marginTop:"0.35rem"}},"Sign in to save your plans")
+      ),
+      React.createElement("button",{className:"login-btn",onClick:()=>loginWith("google"),disabled:!!loading},
+        loading==="google"?React.createElement("span",{style:{fontSize:"0.75rem",color:"#c9a96e",margin:"0 auto"}},"Connecting..."):React.createElement(React.Fragment,null,
+          React.createElement("svg",{width:"18",height:"18",viewBox:"0 0 24 24"},
+            React.createElement("path",{fill:"#4285F4",d:"M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"}),
+            React.createElement("path",{fill:"#34A853",d:"M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"}),
+            React.createElement("path",{fill:"#FBBC05",d:"M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"}),
+            React.createElement("path",{fill:"#EA4335",d:"M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"})
+          ),
+          React.createElement("span",null,"Continue with Google")
+        )
+      ),
+      React.createElement("button",{className:"login-btn",onClick:()=>loginWith("facebook"),disabled:!!loading},
+  loading==="facebook"
+    ?React.createElement("span",{style:{fontSize:"0.75rem",color:"#c9a96e",margin:"0 auto"}},"Connecting...")
+    :React.createElement(React.Fragment,null,
+      React.createElement("svg",{width:"18",height:"18",viewBox:"0 0 24 24"},
+        React.createElement("path",{fill:"#1877F2",d:"M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"})
+      ),
+      React.createElement("span",null,"Continue with Facebook")
+    )
+),
+      
+      error&&React.createElement("p",{style:{fontSize:"0.72rem",color:"#c9606e",textAlign:"center",marginTop:"0.5rem"}},error),
+      React.createElement("p",{style:{fontSize:"0.6rem",color:"#3a3020",textAlign:"center",marginTop:"1rem",lineHeight:1.7}},"By signing in, you agree to our Terms of Service."),
+      React.createElement("button",{onClick:onClose,style:{width:"100%",marginTop:"0.75rem",background:"none",border:"none",color:"#5a4a30",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase",padding:"0.5rem"}},"Continue as guest")
+    )
+  );
+}
+
+// ===================== USER AVATAR =====================
+function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier,onSettings,onHelp}){
+  const [open,setOpen]=useState(false);
+  const ref=useRef(null);
+  useEffect(()=>{function h(e){if(ref.current&&!ref.current.contains(e.target))setOpen(false);}document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
+  const avatar=user.user_metadata?.avatar_url;
+  const name=user.user_metadata?.full_name||user.email?.split("@")[0]||"User";
+  return React.createElement("div",{ref,style:{position:"relative"}},
+    React.createElement("button",{onClick:()=>setOpen(!open),style:{width:32,height:32,borderRadius:"50%",border:"1.5px solid rgba(201,169,110,0.5)",overflow:"hidden",cursor:"pointer",background:"rgba(201,169,110,0.1)",display:"flex",alignItems:"center",justifyContent:"center",padding:0}},
+      avatar?React.createElement("img",{src:avatar,style:{width:32,height:32,objectFit:"cover"}}):React.createElement("span",{style:{fontSize:"0.75rem",color:"#c9a96e",fontWeight:600}},name[0]?.toUpperCase())
+    ),
+    open&&React.createElement("div",{className:"user-menu"},
+      React.createElement("div",{style:{padding:"0.5rem 0.75rem",borderBottom:"1px solid rgba(201,169,110,0.1)",marginBottom:"0.35rem"}},
+        React.createElement("p",{style:{fontSize:"0.72rem",color:"#c9a96e",fontWeight:500}},name),
+        React.createElement("p",{style:{fontSize:"0.62rem",color:userTier==='pro'||userTier==='explorer'?"#c9a96e":"#6a5a3a",marginTop:"0.1rem"}},userTier==='explorer'?"💎 Explorer Plan":userTier==='pro'?"⭐ Pro Plan — Unlimited":"Free Plan · 3 plans/day")
+      ),
+      React.createElement("button",{onClick:()=>{setOpen(false);onSettings();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif",marginBottom:"0.1rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"⚙️ Settings"), React.createElement("button",{onClick:()=>{setOpen(false);onHelp();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif",marginBottom:"0.1rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"❓ Help & Support"),userTier!=='pro'&&userTier!=='explorer'&&React.createElement("button",{onClick:()=>{setOpen(false);onUpgrade();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",fontFamily:"'DM Sans',sans-serif",marginBottom:"0.35rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"⭐ Upgrade to Pro"),
+      React.createElement("button",{onClick:onLogout,style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#8a7a60",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif"}},"Sign out")
+    )
+  );
+}
+
+// ===================== SIDEBAR =====================
+function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject,onAssignProject}){
+  const [activeProject,setActiveProject]=React.useState(null);
+const [assigningPlan,setAssigningPlan]=React.useState(null);
+const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id):[];
+  
+  return React.createElement(React.Fragment,null,
+    React.createElement("div",{className:"sidebar-overlay",onClick:onClose}),
+    React.createElement("div",{className:"sidebar"},
+
+   assigningPlan&&React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(10,8,5,0.95)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem",animation:"fadeIn 0.2s ease"},onClick:()=>setAssigningPlan(null)},
+  React.createElement("div",{style:{width:"100%",maxWidth:300,background:"#1e1a14",border:"1px solid rgba(201,169,110,0.2)",borderRadius:14,overflow:"hidden",animation:"slideUp 0.25s ease"},onClick:e=>e.stopPropagation()},
+    React.createElement("div",{style:{padding:"1rem 1.25rem",borderBottom:"1px solid rgba(201,169,110,0.1)",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+      React.createElement("p",{style:{fontSize:"0.65rem",color:"#c9a96e",letterSpacing:"0.12em",textTransform:"uppercase"}},"Add to Project"),
+      React.createElement("button",{onClick:()=>setAssigningPlan(null),style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"1rem",lineHeight:1}},"✕")
+    ),
+    React.createElement("div",{style:{padding:"0.5rem"}},
+      projects.length===0
+        ?React.createElement("p",{style:{fontSize:"0.75rem",color:"#4a3a22",textAlign:"center",padding:"1.5rem"}},"No projects yet. Create one first.")
+        :projects.map(proj=>React.createElement("button",{key:proj.id,
+            onClick:()=>{
+              sb.from('saved_plans').update({project_id:proj.id}).eq('id',assigningPlan).then(()=>{
+                onAssignProject(assigningPlan,proj.id);
+                setAssigningPlan(null);
+              });
+            },
+            style:{width:"100%",padding:"0.7rem 0.85rem",background:"none",border:"none",borderRadius:8,cursor:"pointer",display:"flex",alignItems:"center",gap:"0.6rem",transition:"background 0.15s",textAlign:"left"},
+            onMouseEnter:e=>e.currentTarget.style.background="rgba(201,169,110,0.08)",
+            onMouseLeave:e=>e.currentTarget.style.background="none"
+          },
+          React.createElement("span",{style:{fontSize:"1rem"}},proj.emoji),
+          React.createElement("div",null,
+            React.createElement("p",{style:{fontSize:"0.78rem",color:"#c9a96e"}},proj.name),
+            React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22"}},plans.filter(p=>p.project_id===proj.id).length+" trips")
+          )
+        ))
+    )
+  )
+),
+                        
+      // HEADER
+      React.createElement("div",{style:{padding:"1rem 1rem 0.75rem",borderBottom:"1px solid rgba(201,169,110,0.1)"}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem"}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
+            activeProject&&React.createElement("button",{onClick:()=>setActiveProject(null),style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"0.9rem",lineHeight:1,marginRight:"0.2rem"}},"←"),
+            React.createElement("svg",{width:"18",height:"18",viewBox:"0 0 400 400"},
+              React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"3"}),
+              React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"2"}),
+              React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
+            ),
+            React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.9rem",letterSpacing:"0.2em",color:"#c9a96e"}},activeProject?activeProject.name:"ATLAS")
+          ),
+          React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"1.1rem",lineHeight:1}},"✕")
+        ),
+        React.createElement("button",{onClick:()=>{onNewJourney();onClose();},style:{width:"100%",padding:"0.6rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem"}},"✦ New journey")
+      ),
+
+      // BODY
+      React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"0.75rem"}},
+
+        // ---- PROJECT VIEW ----
+        activeProject?React.createElement("div",null,
+          React.createElement("div",{style:{padding:"0.4rem 0.5rem",marginBottom:"0.75rem",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:8}},
+            React.createElement("p",{style:{fontSize:"0.62rem",color:"#c9a96e"}}),activeProject.emoji+" "+activeProject.name,
+            React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",marginTop:"0.1rem"}},projectPlans.length+" trip"+(projectPlans.length!==1?"s":"")+" in this project")
+          ),
+          projectPlans.length===0
+            ?React.createElement("div",{style:{textAlign:"center",padding:"2rem 1rem",color:"#4a3a22",fontSize:"0.72rem",lineHeight:1.8}},"No trips in this project.\nAdd trips using the 📁 button.")
+            :projectPlans.map(plan=>React.createElement("div",{key:plan.id,className:`plan-item${activePlanId===plan.id?" active":""}`,onClick:()=>{onSelectPlan(plan);onClose();}},
+                React.createElement("div",{style:{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"0.5rem"}},
+                  React.createElement("div",{style:{flex:1,minWidth:0}},
+                    React.createElement("p",{style:{fontSize:"0.78rem",color:"#d4c8a8",fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},plan.title),
+                    React.createElement("p",{style:{fontSize:"0.62rem",color:"#5a4a2a",marginTop:"0.2rem"}},formatDate(plan.created_at))
+                  ),
+                  React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();onDeletePlan(plan.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem",padding:"0.1rem"}},"🗑")
+                )
+              ))
+        )
+
+        // ---- MAIN VIEW ----
+        :React.createElement("div",null,
+
+          // Projects
+          React.createElement("div",{style:{marginBottom:"1rem"}},
+            React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}},
+              React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",paddingLeft:"0.25rem"}},"Projects"),
+              React.createElement("button",{onClick:()=>{const name=prompt("Project name:");if(name?.trim())onCreateProject(name.trim());},style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"0.9rem",lineHeight:1}},"+")
+            ),
+            projects.length===0
+              ?React.createElement("p",{style:{fontSize:"0.62rem",color:"#3a2a12",paddingLeft:"0.25rem"}},"No projects yet")
+              :projects.map(proj=>React.createElement("div",{key:proj.id,
+                  onClick:()=>setActiveProject(proj),
+                  style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.5rem 0.6rem",borderRadius:7,marginBottom:"0.3rem",background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.1)",cursor:"pointer",transition:"all 0.15s"},
+                  onMouseEnter:e=>{e.currentTarget.style.background="rgba(201,169,110,0.1)";},
+                  onMouseLeave:e=>{e.currentTarget.style.background="rgba(201,169,110,0.05)";}
+                },
+                React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.4rem"}},
+                  React.createElement("span",{style:{fontSize:"0.85rem"}},proj.emoji),
+                  React.createElement("div",null,
+                    React.createElement("p",{style:{fontSize:"0.72rem",color:"#c9a96e"}},proj.name),
+                    React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22"}},plans.filter(p=>p.project_id===proj.id).length+" trips")
+                  )
+                ),
+                React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.3rem"}},
+                  React.createElement("span",{style:{fontSize:"0.6rem",color:"#4a3a22"}},"›"),
+                  React.createElement("button",{onClick:e=>{e.stopPropagation();onDeleteProject(proj.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.6rem",padding:"0.1rem",opacity:0.6}},"🗑")
+                )
+              ))
+          ),
+
+          // Recent Trips
+          React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}},
+            React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",paddingLeft:"0.25rem"}},"Recent Trips")
+          ),
+          loadingPlans
+            ?React.createElement("div",{style:{textAlign:"center",padding:"2rem",color:"#4a3a22",fontSize:"0.72rem"}},"Loading...")
+            :plans.length===0
+              ?React.createElement("div",{style:{textAlign:"center",padding:"2rem 1rem",color:"#4a3a22",fontSize:"0.72rem",lineHeight:1.8}},"No saved trips yet.")
+              :plans.map(plan=>React.createElement("div",{key:plan.id,className:`plan-item${activePlanId===plan.id?" active":""}`,onClick:()=>{onSelectPlan(plan);onClose();}},
+                  React.createElement("div",{style:{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"0.5rem"}},
+                    React.createElement("div",{style:{flex:1,minWidth:0}},
+                      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.35rem"}},
+                        React.createElement("p",{style:{fontSize:"0.78rem",color:"#d4c8a8",fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},plan.title),
+                        plan.is_draft&&React.createElement("span",{style:{fontSize:"0.48rem",color:"#6a5a3a",border:"1px solid rgba(106,90,58,0.4)",borderRadius:3,padding:"1px 4px",letterSpacing:"0.08em",flexShrink:0}},"DRAFT")
+                      ),
+                      React.createElement("p",{style:{fontSize:"0.62rem",color:"#5a4a2a",marginTop:"0.2rem"}},formatDate(plan.created_at))
+                    ),
+                    React.createElement("div",{style:{display:"flex",gap:"0.25rem",flexShrink:0}},
+                      React.createElement("button",{className:"plan-item-del",onClick:e=>{
+  e.stopPropagation();
+  setAssigningPlan(plan.id);
+},style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"📁"),
+                      React.createElement("button",{className:"plan-item-del",onClick:e=>{
+                        e.stopPropagation();
+                        const newName=prompt("Rename trip:",plan.title);
+                        if(newName&&newName.trim()&&newName.trim()!==plan.title){
+                          sb.from('saved_plans').update({title:newName.trim()}).eq('id',plan.id).then(()=>onRenamePlan(plan.id,newName.trim()));
+                        }
+                      },style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"✏️"),
+                      React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();onDeletePlan(plan.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem",padding:"0.1rem"}},"🗑")
+                    )
+                  )
+                ))
+        )
+      ),
+
+      // FOOTER
+      user&&React.createElement("div",{style:{padding:"0.75rem 1rem",borderTop:"1px solid rgba(201,169,110,0.1)"}},
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem"}},
+          user.user_metadata?.avatar_url
+            ?React.createElement("img",{src:user.user_metadata.avatar_url,style:{width:28,height:28,borderRadius:"50%",objectFit:"cover",border:"1px solid rgba(201,169,110,0.3)"}})
+            :React.createElement("div",{style:{width:28,height:28,borderRadius:"50%",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.3)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.65rem",color:"#c9a96e",fontWeight:600}},(user.user_metadata?.full_name||user.email||"U")[0]?.toUpperCase()),
+          React.createElement("div",null,
+            React.createElement("p",{style:{fontSize:"0.68rem",color:"#c9a96e"}},(user.user_metadata?.full_name||user.email?.split("@")[0]||"User")),
+            React.createElement("p",{style:{fontSize:"0.58rem",color:userTier==='pro'||userTier==='explorer'?"#c9a96e":"#4a3a22"}},userTier==='explorer'?"💎 Explorer Plan":userTier==='pro'?"⭐ Pro Plan":"Free Plan")
+          )
+        )
+      )
+    )
+  );
+}
+
+// ===================== MAP VIEW =====================
+function MapView({locations,msgId}){
+  const mapInstanceRef=useRef(null);
+  useEffect(()=>{
+    if(!locations||locations.length===0)return;
+    if(!window.L)return;
+    if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}
+    const cid=`atlas-map-${msgId}`;
+    const container=document.getElementById(cid);
+    if(!container)return;
+    const map=window.L.map(container,{zoomControl:true,scrollWheelZoom:false,attributionControl:true});
+    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
+    const bounds=[];const colors=['#c9a96e','#e8b84b','#d4a96e','#f0c070','#b89050'];
+    locations.forEach((place,i)=>{
+      if(!place.lat||!place.lon)return;
+      const color=colors[i%colors.length];
+      const icon=window.L.divIcon({className:'',html:`<div style="width:28px;height:28px;background:${color};border:2px solid #1c1914;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#1c1914;font-size:10px;font-weight:700;font-family:'DM Sans',sans-serif;line-height:1;">${i+1}</span></div>`,iconSize:[28,28],iconAnchor:[14,28],popupAnchor:[0,-30]});
+      window.L.marker([place.lat,place.lon],{icon}).addTo(map).bindPopup(`<b>${place.name}</b>${place.day>0?`<br><span style="color:#c9a96e;font-size:10px">Day ${place.day}</span>`:''}`);
+      bounds.push([place.lat,place.lon]);
+    });
+    if(bounds.length===1)map.setView(bounds[0],11);
+    else if(bounds.length>1)map.fitBounds(bounds,{padding:[30,30],maxZoom:10});
+    // Draw routes between consecutive locations
+if(bounds.length>1){
+  for(let i=0;i<locations.length-1;i++){
+    const from=locations[i];
+    const to=locations[i+1];
+    if(!from.lat||!from.lon||!to.lat||!to.lon)continue;
+    window.L.polyline([[from.lat,from.lon],[to.lat,to.lon]],{
+      color:'#c9a96e',weight:2,opacity:0.4,dashArray:'5,8'
+    }).addTo(map);
+  }
+}
+    mapInstanceRef.current=map;
+    return()=>{if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}};
+  },[locations,msgId]);
+  if(!locations||locations.length===0)return null;
+  return React.createElement("div",null,
+    React.createElement("div",{style:{fontSize:"0.6rem",color:"#6a5a3a",letterSpacing:"0.1em",textTransform:"uppercase",marginTop:"0.75rem",marginBottom:"0.35rem",display:"flex",alignItems:"center",gap:"0.4rem"}},
+      React.createElement("span",{style:{color:"#c9a96e"}},"◆"),`${locations.length} location${locations.length>1?'s':''} on map`
+    ),
+    React.createElement("div",{id:`atlas-map-${msgId}`,className:"atlas-map"})
+  );
+}
+
+// ===================== LIMIT MODAL =====================
+function Modal({hours,plansLeft,onClose,onLogin,onUpgrade}){
+  const isPlan=plansLeft!==undefined;
+  return React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(10,8,5,0.97)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,animation:"fadeIn 0.25s ease",padding:"1rem"}},
+    React.createElement("div",{style:{width:"100%",maxWidth:340,textAlign:"center",animation:"slideUp 0.3s ease"}},
+
+      // Icon
+      React.createElement("div",{style:{marginBottom:"1.5rem"}},
+        React.createElement("svg",{width:"52",height:"52",viewBox:"0 0 400 400",style:{margin:"0 auto",display:"block"}},
+          React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"rgba(201,169,110,0.3)",strokeWidth:"2.2"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"rgba(201,169,110,0.15)",strokeWidth:"1"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"rgba(201,169,110,0.4)"})
+        )
+      ),
+
+      // Title
+      React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.6rem",fontWeight:300,color:"#d4aa6e",letterSpacing:"0.15em",marginBottom:"0.75rem"}},
+        isPlan?"Daily Limit Reached":"Session Complete"
+      ),
+
+      // Message
+      React.createElement("p",{style:{fontSize:"0.82rem",color:"#8a7a60",lineHeight:1.9,marginBottom:"2rem",maxWidth:280,margin:"0 auto 2rem"}},
+        isPlan
+          ?"You've used today's free plans. Upgrade to Pro for unlimited travel planning with priority AI access."
+          :`Your free session has ended. Come back in ${hours} hour${hours>1?'s':''} — or sign in to continue planning.`
+      ),
+
+      // Buttons
+      React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"0.6rem",maxWidth:260,margin:"0 auto"}},
+        isPlan&&onUpgrade&&React.createElement("button",{onClick:onUpgrade,style:{width:"100%",padding:"0.85rem",background:"linear-gradient(135deg,rgba(201,169,110,0.2),rgba(201,169,110,0.1))",border:"1px solid rgba(201,169,110,0.5)",borderRadius:10,color:"#c9a96e",cursor:"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500}},
+          "⭐ Upgrade to Pro · $7.99/mo"
+        ),
+        isPlan&&onLogin&&React.createElement("button",{onClick:onLogin,style:{width:"100%",padding:"0.75rem",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:10,color:"#a89878",cursor:"pointer",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},
+          "Sign In / Sign Up"
+        ),
+        React.createElement("button",{onClick:onClose,style:{width:"100%",padding:"0.6rem",background:"none",border:"none",color:"#4a3a22",cursor:"pointer",fontSize:"0.62rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},
+          "Maybe later"
+        )
+      )
+    )
+  );
+}
+
+// ===================== PROSE =====================
+function Prose({text}){
+  const clean=stripMapData(text);
+  return React.createElement("div",null,clean.split("\n").map((line,i)=>{
+    if(!line.trim())return React.createElement("div",{key:i,style:{height:"0.35rem"}});
+    if(line.startsWith("## "))return React.createElement("div",{key:i,style:{fontSize:"0.68rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.2)"}},line.slice(3));
+    if(/^DAYS?\s+\d+/.test(line)||/^Day\s+\d+\s*\(/.test(line))return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.88rem",fontWeight:700,color:"#b8b0a0",margin:"0.75rem 0 0.1rem"}},line.replace(/\*\*/g,""));
+    if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line))return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.9rem",fontWeight:700,color:"#b8b0a0",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
+    if(line.startsWith("- ")||line.startsWith("* ")){
+      const bparts=[];let brem=line.slice(2),bk=0;
+      while(brem){const bl=brem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);const bb=brem.match(/\*\*(.+?)\*\*/);if(!bl&&!bb){bparts.push(React.createElement("span",{key:bk++},brem));break;}const bli=bl?brem.indexOf(bl[0]):Infinity;const bbi=bb?brem.indexOf(bb[0]):Infinity;if(bl&&bli<=bbi){if(bli>0)bparts.push(React.createElement("span",{key:bk++},brem.slice(0,bli)));bparts.push(React.createElement("a",{key:bk++,href:bl[2],target:"_blank",rel:"noopener noreferrer",style:{color:"#c9a96e",textDecoration:"underline",textDecorationColor:"rgba(201,169,110,0.4)"}},bl[1]));brem=brem.slice(bli+bl[0].length);}else{if(bbi>0)bparts.push(React.createElement("span",{key:bk++},brem.slice(0,bbi)));bparts.push(React.createElement("span",{key:bk++,style:{color:"#e8dcc8",fontWeight:600}},bb[1]));brem=brem.slice(bbi+bb[0].length);}}
+      return React.createElement("div",{key:i,style:{display:"flex",gap:"0.4rem",margin:"0.12rem 0",fontSize:"0.81rem",color:"#b8b0a0"}},React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.48rem",marginTop:"5px",flexShrink:0}},"◆"),React.createElement("span",null,...bparts));
+    }
+    const parts=[];let rem=line,k=0;
+    while(rem){const link=rem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);const bold=rem.match(/\*\*(.+?)\*\*/);if(!link&&!bold){parts.push(React.createElement("span",{key:k++},rem));break;}const li=link?rem.indexOf(link[0]):Infinity;const bi=bold?rem.indexOf(bold[0]):Infinity;if(link&&li<=bi){if(li>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,li)));parts.push(React.createElement("a",{key:k++,href:link[2],target:"_blank",rel:"noopener noreferrer",style:{color:"#c9a96e",textDecoration:"underline",textDecorationColor:"rgba(201,169,110,0.4)"}},link[1]));rem=rem.slice(li+link[0].length);}else{if(bi>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,bi)));parts.push(React.createElement("span",{key:k++,style:{color:"#e8dcc8",fontWeight:600}},bold[1]));rem=rem.slice(bi+bold[0].length);}}
+    return React.createElement("p",{key:i,style:{margin:"0.08rem 0",fontSize:"0.81rem",color:"#b8b0a0",lineHeight:1.85}},...parts);
+  }));
+}
+
+function Dots(){return React.createElement("div",{style:{display:"flex",gap:6}},[0,1,2].map(i=>React.createElement("span",{key:i,style:{width:5,height:5,borderRadius:"50%",background:"#c9a96e",display:"inline-block",animation:`pulse 1.4s ${i*0.2}s ease-in-out infinite`}})));}
+function MicButton({listening,onClick}){return React.createElement("button",{onClick,style:{flexShrink:0,width:42,height:42,borderRadius:"50%",border:`2px solid ${listening?"#c9a96e":"rgba(201,169,110,0.35)"}`,background:listening?"rgba(201,169,110,0.15)":"rgba(201,169,110,0.05)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.25s",position:"relative",animation:listening?"glow 1.5s ease-in-out infinite":"none"}},listening&&React.createElement("span",{style:{position:"absolute",inset:-4,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.3)",animation:"ripple 1.2s ease-out infinite"}}),React.createElement("svg",{width:"17",height:"17",viewBox:"0 0 24 24",fill:"none",stroke:listening?"#c9a96e":"#a08a60",strokeWidth:"1.8",strokeLinecap:"round",strokeLinejoin:"round"},React.createElement("rect",{x:"9",y:"2",width:"6",height:"12",rx:"3",fill:listening?"rgba(201,169,110,0.15)":"none"}),React.createElement("path",{d:"M5 10a7 7 0 0 0 14 0"}),React.createElement("line",{x1:"12",y1:"19",x2:"12",y2:"22"}),React.createElement("line",{x1:"8",y1:"22",x2:"16",y2:"22"})));}
+function PhotoButton({photo,onClick}){return React.createElement("button",{onClick,style:{flexShrink:0,width:42,height:42,borderRadius:"50%",border:`2px solid ${photo?"#c9a96e":"rgba(201,169,110,0.35)"}`,background:photo?"rgba(201,169,110,0.15)":"rgba(201,169,110,0.05)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.25s",overflow:"hidden",padding:0}},photo?React.createElement("img",{src:photo.preview,style:{width:42,height:42,objectFit:"cover",borderRadius:"50%"}}):React.createElement("svg",{width:"17",height:"17",viewBox:"0 0 24 24",fill:"none",stroke:"#a08a60",strokeWidth:"1.8",strokeLinecap:"round",strokeLinejoin:"round"},React.createElement("rect",{x:"3",y:"3",width:"18",height:"18",rx:"3"}),React.createElement("circle",{cx:"8.5",cy:"8.5",r:"1.5",fill:"#a08a60"}),React.createElement("polyline",{points:"21 15 16 10 5 21"})));}
+function EditIcon(){return React.createElement("svg",{width:"11",height:"11",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round"},React.createElement("path",{d:"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"}),React.createElement("path",{d:"M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"}));}
+
+// ===================== APP =====================
+function App(){
+  const saved=loadLocal();
+  const [msgs,setMsgs]=useState(saved?.msgs||[]);
+  const [draft,setDraft]=useState("");
+  const [editingId,setEditingId]=useState(null);
+  const [editText,setEditText]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [modal,setModal]=useState(null);
+  const [showLogin,setShowLogin]=useState(false);
+  const [showPricing,setShowPricing]=useState(false);
+  const [showSidebar,setShowSidebar]=useState(false);
+  const [user,setUser]=useState(null);
+  const [listening,setListening]=useState(false);
+  const [speaking,setSpeaking]=useState(false);
+  const [photo,setPhoto]=useState(null);
+  const [plans,setPlans]=useState([]);
+  const [loadingPlans,setLoadingPlans]=useState(false);
+  const [activePlanId,setActivePlanId]=useState(null);
+  const [savingPlan,setSavingPlan]=useState(false);
+  const [showSettings,setShowSettings]=useState(false); const [showHelp,setShowHelp]=useState(false);
+  const [userTier,setUserTier]=useState('free');
+  const [projects,setProjects]=useState([]);
+  const [showCalendar,setShowCalendar]=useState(false);
+  const [holdActive,setHoldActive]=useState(false);
+  const hist=useRef(saved?.hist||[...defaultHist]);
+  const endRef=useRef(null);
+  const taRef=useRef(null);
+  const editRef=useRef(null);
+  const recognitionRef=useRef(null);
+  const photoRef=useRef(null);
+  const holdTimerRef=useRef(null);
+
+  // Payment success/cancel detection
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    if(params.get('payment')==='success'){
+      showToast('🎉 Welcome to Pro! Enjoy unlimited plans.');
+      window.history.replaceState({},'','/');
+    } else if(params.get('payment')==='cancelled'){
+      window.history.replaceState({},'','/');
+    }
+  },[]);
+
+  useEffect(()=>{
+    sb.auth.getSession().then(({data:{session}})=>setUser(session?.user||null));
+    const{data:{subscription}}=sb.auth.onAuthStateChange((_,session)=>setUser(session?.user||null));
+    return()=>subscription.unsubscribe();
+  },[]);
+
+  useEffect(()=>{
+  if(user){
+    loadPlans();
+    loadProjects();
+    sb.from('allowed_users').select('email').eq('email',user.email).single().then(({data:allowed})=>{
+  if(allowed){setUserTier('pro');return;}
+  sb.from('subscriptions').select('plan,status,current_period_end').eq('user_id',user.id).eq('status','active').gte('current_period_end',new Date().toISOString()).single().then(({data})=>{
+    if(data)setUserTier(data.plan?.includes('explorer')?'explorer':'pro');
+    else setUserTier('free');
+  });
+});
+  } else {
+    setPlans([]);
+    setUserTier('free');
+  }
+},[user]);
+
+  async function loadProjects(){
+  try{const{data}=await sb.from('trip_projects').select('*').order('created_at',{ascending:false});if(data)setProjects(data||[]);}catch{}
+}
+
+async function createProject(name){
+  try{
+    const{data}=await sb.from('trip_projects').insert({user_id:user.id,name,emoji:'✈️'}).select().single();
+    if(data)setProjects(p=>[data,...p]);
+  }catch{}
+}
+
+async function deleteProject(id){
+  await sb.from('trip_projects').delete().eq('id',id);
+  setProjects(p=>p.filter(x=>x.id!==id));
+}
+  
+  async function loadPlans(){
+    setLoadingPlans(true);
+    try{const{data,error}=await sb.from('saved_plans').select('id,title,created_at,is_draft,project_id').order('created_at',{ascending:false});if(!error)setPlans(data||[]);}
+    catch{}setLoadingPlans(false);
+  }
+
+  async function savePlan(){
+    if(!user||msgs.length===0)return;
+    setSavingPlan(true);
+    try{
+      const title=extractTitle(hist.current);
+      const locs=msgs.filter(m=>m.locations).flatMap(m=>m.locations||[]);
+      if(activePlanId){
+        const{error}=await sb.from('saved_plans').update({is_draft:false,title,messages:hist.current,locations:locs.length>0?locs:null}).eq('id',activePlanId);
+        if(!error){await loadPlans();showToast('✓ Trip saved!');}
+      } else {
+        const{data,error}=await sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null,is_draft:false}).select('id,share_id').single();
+        if(!error){await loadPlans();showToast('✓ Trip saved!');if(data?.id)setActivePlanId(data.id);}
+      }
+    }catch{}setSavingPlan(false);
+  }
+
+  function showToast(msg){
+    const toast=document.createElement('div');
+    toast.textContent=msg;
+    toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.5rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:999;letter-spacing:0.08em;';
+    document.body.appendChild(toast);setTimeout(()=>toast.remove(),2500);
+  }
+  
+  function generatePDF(){
+  if(!msgs||msgs.length===0){showToast('No trip to export!');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const pageW=210;const pageH=297;const margin=18;const maxW=pageW-margin*2;
+  let y=margin;
+
+  // Header background
+  doc.setFillColor(28,25,20);
+  doc.rect(0,0,pageW,30,'F');
+
+  // Atlas logo circles
+  doc.setDrawColor(201,169,110);
+  doc.setLineWidth(0.4);
+  doc.circle(margin+6,15,8);
+  doc.circle(margin+6,15,6);
+  doc.setFillColor(201,169,110);
+  doc.circle(margin+6,15,1.5,'F');
+
+  // Atlas title
+  doc.setTextColor(212,170,110);
+  doc.setFontSize(18);
+  doc.setFont('helvetica','bold');
+  doc.text('ATLAS',margin+16,17);
+  doc.setFontSize(7);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(150,130,90);
+  doc.text('AI TRAVEL PLANNER',margin+16,22);
+
+  // Date top right
+  doc.setFontSize(7);
+  doc.setTextColor(100,90,60);
+  doc.text(new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}),pageW-margin,17,{align:'right'});
+
+  y=40;
+
+  // Trip title
+  const tripTitle=extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''})));
+  doc.setFontSize(16);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(201,169,110);
+  doc.text(tripTitle,margin,y);
+  y+=8;
+
+  // Divider
+  doc.setDrawColor(201,169,110);
+  doc.setLineWidth(0.3);
+  doc.line(margin,y,pageW-margin,y);
+  y+=8;
+
+  // Get last AI message
+  const aiMsgs=msgs.filter(m=>m.from==='ai'&&m.text);
+  if(aiMsgs.length===0){showToast('No plan to export!');return;}
+  const lastAI=stripMapData(aiMsgs[aiMsgs.length-1].text);
+
+  // Clean text
+  const cleanText=lastAI
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu,'')
+    .replace(/[\u{2600}-\u{26FF}]/gu,'')
+    .replace(/[\u{2700}-\u{27BF}]/gu,'')
+    .replace(/[^\x00-\x7F]/g,'')
+    .replace(/\*\*/g,'')
+    .replace(/#{1,3}\s/g,'')
+    .replace(/◆\s/g,'• ')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g,'$1')
+    .replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g,'');
+
+  const lines=cleanText.split('\n').filter(l=>l.trim());
+
+  doc.setFont('helvetica','normal');
+
+  for(const line of lines){
+    if(y>pageH-25){
+      // Footer before new page
+      doc.setFontSize(7);
+      doc.setTextColor(80,70,40);
+      doc.text('getatlas.ca · AI Travel Planner',pageW/2,pageH-8,{align:'center'});
+      doc.addPage();
+      doc.setFillColor(28,25,20);
+      doc.rect(0,0,pageW,8,'F');
+      y=18;
+    }
+
+    const trimmed=line.trim();
+    if(!trimmed)continue;
+
+    // Section headers (## )
+    if(trimmed.startsWith('##')||/^DAYS?\s+\d+/i.test(trimmed)||/^Day\s+\d+/i.test(trimmed)){
+      y+=3;
+      doc.setFontSize(9);
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(201,169,110);
+      const headerText=trimmed.replace(/^#+\s*/,'');
+      doc.text(headerText,margin,y);
+      y+=5;
+    }
+    // Bullet points
+    else if(trimmed.startsWith('•')||trimmed.startsWith('-')||trimmed.startsWith('◆')){
+      doc.setFontSize(8);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(160,150,130);
+      const bulletText=trimmed.replace(/^[•\-◆]\s*/,'');
+      const splitLines=doc.splitTextToSize('• '+bulletText,maxW-4);
+      doc.text(splitLines,margin+3,y);
+      y+=splitLines.length*4+1;
+    }
+    // Regular text
+    else{
+      doc.setFontSize(8);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(180,170,150);
+      const splitLines=doc.splitTextToSize(trimmed,maxW);
+      doc.text(splitLines,margin,y);
+      y+=splitLines.length*4+1;
+    }
+  }
+
+  // Footer last page
+  doc.setFontSize(7);
+  doc.setTextColor(80,70,40);
+  doc.text('getatlas.ca · AI Travel Planner',pageW/2,pageH-8,{align:'center'});
+  doc.setTextColor(60,50,30);
+  doc.text('Generated by Atlas AI · Please verify all travel information before booking',pageW/2,pageH-4,{align:'center'});
+
+  // Save
+  const filename=tripTitle.replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_atlas.pdf';
+  doc.save(filename);
+  showToast('📄 PDF downloaded!');
+}
+  
+  async function sharePlan(){
+    if(!activePlanId)return;
+    try{
+      const{data,error}=await sb.from('saved_plans').update({is_public:true}).eq('id',activePlanId).select('share_id').single();
+      if(!error&&data?.share_id){
+        const shareUrl=`${window.location.origin}/trip/${data.share_id}`;
+        await navigator.clipboard.writeText(shareUrl);
+        const toast=document.createElement('div');
+        toast.innerHTML='🔗 Link copied!<br><span style="font-size:0.6rem;color:#8a7a50">'+shareUrl+'</span>';
+        toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.6rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:999;letter-spacing:0.08em;text-align:center;max-width:280px;';
+        document.body.appendChild(toast);setTimeout(()=>toast.remove(),3000);
+      }
+    }catch{alert("Save the trip first, then share!");}
+  }
+  function assignProject(planId,projectId){
+  setPlans(p=>p.map(x=>x.id===planId?{...x,project_id:projectId}:x));
+}
+function renamePlan(id,newTitle){
+  setPlans(p=>p.map(x=>x.id===id?{...x,title:newTitle}:x));
+}
+  async function deletePlan(id){
+    await sb.from('saved_plans').delete().eq('id',id);
+    setPlans(p=>p.filter(x=>x.id!==id));
+    if(activePlanId===id)setActivePlanId(null);
+  }
+
+  async function selectPlan(plan){
+    setLoadingPlans(true);
+    try{
+      const{data,error}=await sb.from('saved_plans').select('messages').eq('id',plan.id).single();
+      if(!error&&data){
+        hist.current=data.messages;
+        const reconstructed=[];
+        const msgHistory=data.messages.slice(2);
+        for(const m of msgHistory){
+          if(m.role==="user"){
+            const text=typeof m.content==="string"
+              ?m.content.replace(/\s*\[Current date.*$/s,'').trim()
+              :Array.isArray(m.content)?(m.content.find(c=>c.type==="text")?.text||"").replace(/\s*\[Current date.*$/s,'').trim():"";
+            if(text)reconstructed.push({id:Date.now()+Math.random(),from:"user",text});
+          }else{
+            const text=typeof m.content==="string"?m.content:"";
+            if(text)reconstructed.push({id:Date.now()+Math.random(),from:"ai",text,locations:parseMapData(text)});
+          }
+        }
+        setMsgs(reconstructed);
+        setActivePlanId(plan.id);
+      }
+    }catch(e){console.error(e);}
+    setLoadingPlans(false);
+  }
+
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs,busy]);
+
+  useEffect(()=>{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR)return;
+    const r=new SR();r.continuous=false;r.interimResults=true;
+    r.onresult=e=>{const t=Array.from(e.results).map(r=>r[0].transcript).join('');setDraft(t);if(e.results[e.results.length-1].isFinal)setListening(false);};
+    r.onend=()=>setListening(false);r.onerror=()=>setListening(false);
+    recognitionRef.current=r;
+  },[]);
+
+  function toggleVoice(){if(!recognitionRef.current){alert("Voice not supported.");return;}if(listening){recognitionRef.current.stop();setListening(false);}else{if(window.speechSynthesis)window.speechSynthesis.cancel();recognitionRef.current.start();setListening(true);}}
+  function toggleSpeak(text){if(!window.speechSynthesis)return;if(speaking){window.speechSynthesis.cancel();setSpeaking(false);return;}setSpeaking(true);const clean=stripMapData(text).replace(/##.*?\n/g,'').replace(/\*\*/g,'').replace(/[◆•]/g,'').slice(0,1000);const u=new SpeechSynthesisUtterance(clean);u.rate=0.95;u.onend=()=>setSpeaking(false);u.onerror=()=>setSpeaking(false);window.speechSynthesis.speak(u);}
+  function handlePhotoSelect(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');const MAX=600;let w=img.width,h=img.height;if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);const compressed=canvas.toDataURL('image/jpeg',0.5);setPhoto({base64:compressed.split(",")[1],mediaType:'image/jpeg',preview:compressed});};img.src=ev.target.result;};reader.readAsDataURL(file);e.target.value="";}
+  function startEdit(msg){setEditingId(msg.id);setEditText(msg.text);setTimeout(()=>editRef.current?.focus(),50);}
+  async function submitEdit(msgId){const t=editText.trim();if(!t)return;setEditingId(null);const msgIndex=msgs.findIndex(m=>m.id===msgId);const newMsgs=msgs.slice(0,msgIndex);setMsgs(newMsgs);const baseHist=[...defaultHist];for(const m of newMsgs)baseHist.push({role:m.from==="user"?"user":"assistant",content:m.text});hist.current=baseHist;await send(t);}
+  async function handleLogout(){await sb.auth.signOut();setUser(null);}
+  function handleSendDown(){if((!draft.trim()&&!photo)||busy)return;holdTimerRef.current=setTimeout(()=>{setHoldActive(true);if(navigator.vibrate)navigator.vibrate(50);},450);}
+  function handleSendUp(){if(holdTimerRef.current)clearTimeout(holdTimerRef.current);if(!holdActive){send();}else{setHoldActive(false);setTimeout(()=>taRef.current?.focus(),50);}}
+  function handleSendLeave(){if(holdTimerRef.current)clearTimeout(holdTimerRef.current);if(holdActive)setHoldActive(false);}
+
+  async function send(txt){
+    const t=(txt??draft).trim();
+    if((!t&&!photo)||busy)return;
+    if(window.speechSynthesis)window.speechSynthesis.cancel();
+    setSpeaking(false);setHoldActive(false);setDraft("");
+    if(taRef.current)taRef.current.style.height="auto";
+    const dateTime=getDateTime();
+    const location=await getLocation();
+    const locationStr=location?`\nUser location: ${location}`:"";
+    const userInfo=user?`\nUser: ${user.user_metadata?.full_name||user.email} (logged in, ${userTier==='pro'?'Pro':'Free'} plan)`:"\nUser: Guest (not logged in)";
+    const msgText=t||"";
+    const msgWithTime=`${msgText}\n\n[Current date & time: ${dateTime}${locationStr}${userInfo}]`;
+    const msgWithTime2=t?msgWithTime:`[Current date & time: ${dateTime}${locationStr}${userInfo}]`; const userContent=photo   ?[{type:"image",source:{type:"base64",media_type:photo.mediaType,data:photo.base64}},{type:"text",text:msgWithTime2}]   :msgWithTime;
+    const displayText=msgText.replace(/\s*\[Current date.*$/s,'').trim();
+    const newMsgs=[...msgs,{id:Date.now(),from:"user",text:displayText,photoPreview:photo?.preview||null}];
+    setMsgs(newMsgs);setBusy(true);hist.current=[...hist.current,{role:"user",content:userContent}];setPhoto(null);
+    try{
+      const headers={"Content-Type":"application/json"}; try{const prefs=JSON.parse(localStorage.getItem('atlas_prefs')||'{}');if(Object.keys(prefs).length>0)headers['x-user-prefs']=btoa(unescape(encodeURIComponent(JSON.stringify(prefs))));}catch{}
+      if(user){const{data:{session}}=await sb.auth.getSession();if(session?.access_token)headers["Authorization"]=`Bearer ${session.access_token}`;}
+      const res=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-14)]})});
+      if(res.status===429){
+        const data=await res.json();const msg=data.error?.message||"";
+        if(msg.startsWith("LIMIT_REACHED|"))setModal({type:"limit",hours:parseInt(msg.split("|")[1])||6});
+        else if(msg.startsWith("PLAN_LIMIT|")){const p=msg.split("|");setModal({type:"plan",hours:parseInt(p[1])||6,left:parseInt(p[2])||0});}
+        setBusy(false);return;
+      }
+      if(!res.ok)throw new Error(`Error ${res.status}`);
+      const data=await res.json();if(data.error)throw new Error(data.error.message||"Error");
+      const reply=data.content?.[0]?.text;if(!reply)throw new Error("No response");
+      const locations=parseMapData(reply);
+      hist.current=[...hist.current,{role:"assistant",content:reply}];
+      const aiId=Date.now()+1;setMsgs([...newMsgs,{id:aiId,from:"ai",text:"",locations:null}]);
+      let i=0;const interval=setInterval(()=>{
+        i+=3;setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply.slice(0,i)}:msg));
+        if(i>=reply.length){
+          clearInterval(interval);
+          setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:reply,locations}:msg));
+          saveLocal([...newMsgs,{id:aiId,from:"ai",text:reply,locations}],hist.current);
+          setBusy(false);
+          if(user){
+            const title=extractTitle(hist.current);
+            const locs=[...newMsgs,{id:aiId,from:"ai",text:reply,locations}].filter(m=>m.locations).flatMap(m=>m.locations||[]);
+            if(activePlanId){
+              sb.from('saved_plans').update({messages:hist.current,locations:locs.length>0?locs:null,title}).eq('id',activePlanId).then(()=>{});
+            } else {
+              sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null,is_draft:true}).select('id,share_id').single().then(({data})=>{
+                if(data?.id){setActivePlanId(data.id);loadPlans();}
+              });
+            }
+          }
+        }
+      },10);
+    }catch(e){setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:`Something went wrong: ${e.message}`}]);setBusy(false);}
+  }
+
+  function reset(){if(!confirm("Start a new journey?"))return;setMsgs([]);setDraft("");setEditingId(null);setPhoto(null);setActivePlanId(null);setHoldActive(false);if(window.speechSynthesis)window.speechSynthesis.cancel();hist.current=[...defaultHist];localStorage.removeItem(STORAGE_KEY);}
+
+  const hasSpeech=!!window.speechSynthesis;
+  const hasVoice=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+  const isPro=userTier==='pro'||userTier==='explorer';
+  const canSend=(draft.trim()||photo)&&!busy;
+
+  return React.createElement("div",{style:{height:"100vh",display:"flex",flexDirection:"column",background:"#1c1914",overflow:"hidden"}},
+    React.createElement(CookieBanner,null),showSettings&&React.createElement(SettingsModal,{user,userTier,onClose:()=>setShowSettings(false),onLogout:handleLogout,onUpgrade:()=>setShowPricing(true)}), showHelp&&React.createElement(HelpModal,{onClose:()=>setShowHelp(false)}),showLogin&&React.createElement(LoginModal,{onClose:()=>setShowLogin(false)}),
+    showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false)}),
+    modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
+    showCalendar&&React.createElement(CalendarModal,{msgs,onClose:()=>setShowCalendar(false)}),
+  showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject}),
+
+    // Header
+    React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.12)"}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem"}},
+        user&&React.createElement("button",{onClick:()=>setShowSidebar(true),style:{background:"none",border:"none",cursor:"pointer",padding:"0.2rem",display:"flex",flexDirection:"column",gap:"3.5px",marginRight:"0.1rem"}},
+          [0,1,2].map(i=>React.createElement("span",{key:i,style:{width:16,height:1.5,background:"#6a5a3a",borderRadius:1,display:"block"}}))
+        ),
+        React.createElement("svg",{width:"28",height:"28",viewBox:"0 0 400 400"},
+          React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"2.2"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1"}),
+          React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
+        ),
+        React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem",fontWeight:300,letterSpacing:"0.3em",color:"#d4aa6e",textTransform:"uppercase"}},"Atlas")
+      ),
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.75rem"}},
+        msgs.length>0&&user&&React.createElement("button",{onClick:savePlan,disabled:savingPlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},savingPlan?"Saving...":"Save trip"),
+        msgs.length>0&&user&&activePlanId&&React.createElement("button",{onClick:sharePlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"🔗 Share"),
+        msgs.length>0&&React.createElement("button",{onClick:reset,style:{background:"none",border:"none",color:"#7a6a40",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"New"),
+        user
+          ?React.createElement(UserAvatar,{user,onLogout:handleLogout,onOpenSidebar:()=>setShowSidebar(true),onUpgrade:()=>setShowPricing(true),userTier,onSettings:()=>setShowSettings(true),onHelp:()=>setShowHelp(true)})
+          :React.createElement(React.Fragment,null,
+              userTier!=='pro'&&userTier!=='explorer'&&React.createElement("button",{onClick:()=>setShowPricing(true),style:{background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,padding:"0.35rem 0.7rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"⭐ Pro"),
+              React.createElement("button",{onClick:()=>setShowLogin(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.3)",borderRadius:8,padding:"0.35rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Sign in")
+            )
+      )
+    ),
+
+    // Messages
+    React.createElement("div",{style:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",display:"flex",flexDirection:"column"}},
+      msgs.length===0&&React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center"}},
+        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.4rem",fontWeight:300,color:"rgba(201,169,110,0.15)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"1.5rem"}},"ATLAS"),
+      ),
+      msgs.length>0&&React.createElement("div",{style:{padding:"1.25rem 1.5rem",display:"flex",flexDirection:"column",gap:"1.35rem"}},
+        ...msgs.map(msg=>React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:"0.75rem",alignItems:"flex-start"}},
+          React.createElement("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:2}},
+            React.createElement("span",{style:{fontSize:"0.46rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
+          ),
+          React.createElement("div",{style:{maxWidth:"88%",width:"100%"}},
+            msg.from==="user"
+              ?editingId===msg.id
+                ?React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"0.5rem"}},
+                    React.createElement("textarea",{ref:editRef,value:editText,onChange:e=>setEditText(e.target.value),onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();submitEdit(msg.id);}if(e.key==="Escape")setEditingId(null);},rows:2,style:{width:"100%",background:"rgba(201,169,110,0.07)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:8,padding:"0.5rem 0.75rem",color:"#e0d8c8",fontSize:"0.84rem",resize:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",lineHeight:1.6}}),
+                    React.createElement("div",{style:{display:"flex",gap:"0.5rem",justifyContent:"flex-end"}},
+                      React.createElement("button",{onClick:()=>setEditingId(null),style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:5,padding:"0.2rem 0.6rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.08em",textTransform:"uppercase"}},"Cancel"),
+                      React.createElement("button",{onClick:()=>submitEdit(msg.id),style:{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:5,padding:"0.2rem 0.6rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.08em",textTransform:"uppercase"}},"Resend")
+                    )
+                  )
+                :React.createElement("div",{style:{position:"relative"}},
+                    msg.photoPreview&&React.createElement("img",{src:msg.photoPreview,style:{width:"100%",maxWidth:200,borderRadius:8,marginBottom:"0.4rem",display:"block",border:"1px solid rgba(201,169,110,0.2)"}}),
+                    msg.text&&React.createElement("p",{style:{fontSize:"0.84rem",color:"#e0d8c8",lineHeight:1.75,padding:"0.6rem 0.9rem",background:"rgba(201,169,110,0.07)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10}},msg.text),
+                    !busy&&React.createElement("button",{className:"edit-btn",onClick:()=>startEdit(msg),style:{position:"absolute",top:-8,left:-8,background:"#252018",border:"1px solid rgba(201,169,110,0.2)",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#8a7a50"}},React.createElement(EditIcon))
+                  )
+              :React.createElement("div",null,
+                  React.createElement(Prose,{text:msg.text}),
+                  msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
+                  React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.5rem",flexWrap:"wrap"}},
+                  hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen"),
+                  React.createElement("button",{onClick:()=>setShowCalendar(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📅 Calendar"),
+                  isPro&&React.createElement("button",{onClick:()=>generatePDF(),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📄 PDF")
+                 )
+                )
+              )
+            )),
+        busy&&React.createElement("div",{className:"msg",style:{display:"flex",gap:"0.75rem",alignItems:"center"}},
+          React.createElement("div",{style:{width:24,height:24,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.5)",background:"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:"0.46rem",color:"#c9a96e"}},"A")),
+          React.createElement(Dots)
+        ),
+        React.createElement("div",{ref:endRef,style:{height:"0.5rem"}})
+      )
+    ),
+
+    holdActive&&React.createElement("div",{style:{textAlign:"center",padding:"0.35rem",fontSize:"0.62rem",color:"#c9a96e",letterSpacing:"0.1em",background:"rgba(201,169,110,0.06)",borderTop:"1px solid rgba(201,169,110,0.1)",animation:"fadeIn 0.2s ease"}},
+      "✋ Paused — add more text, then tap send"
+    ),
+
+    // Input
+    React.createElement("div",{style:{padding:"0.75rem 1.25rem 1.25rem",flexShrink:0}},
+      photo&&React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"0.5rem",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.07)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:10}},
+        React.createElement("img",{src:photo.preview,style:{width:40,height:40,objectFit:"cover",borderRadius:6,border:"1px solid rgba(201,169,110,0.3)"}}),
+        React.createElement("span",{style:{fontSize:"0.72rem",color:"#c9a96e",flex:1}},"Photo ready — add a message or just send"),
+        React.createElement("button",{onClick:()=>setPhoto(null),style:{background:"none",border:"none",color:"#6a5a40",cursor:"pointer",fontSize:"1rem",lineHeight:1}},"✕")
+      ),
+      React.createElement("div",{style:{background:"#252018",border:`1.5px solid ${holdActive?"rgba(201,169,110,0.5)":"rgba(201,169,110,0.3)"}`,borderRadius:14,padding:"0.6rem 0.75rem",display:"flex",gap:"0.6rem",alignItems:"flex-end",boxShadow:"0 2px 20px rgba(0,0,0,0.3)",transition:"border-color 0.2s"}},
+        React.createElement("input",{type:"file",accept:"image/*",ref:photoRef,style:{display:"none"},onChange:handlePhotoSelect}),
+        React.createElement(PhotoButton,{photo,onClick:()=>photoRef.current?.click()}),
+        hasVoice&&React.createElement(MicButton,{listening,onClick:toggleVoice}),
+        React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{   const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);   if(e.key==="Enter"&&!e.shiftKey&&!holdActive&&!isMobile){e.preventDefault();send();} },onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";},placeholder:listening?"Listening...":holdActive?"Add more to your message...":photo?"Add a message or just send the photo...":"Where would you like to go?",disabled:busy||listening,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:holdActive?"#e8d890":"#e0d8c8",fontSize:"0.9rem",resize:"none",lineHeight:1.7,maxHeight:100,overflowY:"auto",paddingTop:"0.2rem"}}),
+        React.createElement("button",{onClick:()=>{if(holdActive){setHoldActive(false);}else{setHoldActive(true);setTimeout(()=>taRef.current?.focus(),50);}},disabled:busy,style:{flexShrink:0,width:32,height:32,borderRadius:"50%",border:`1.5px solid ${holdActive?"#c9a96e":"rgba(201,169,110,0.2)"}`,background:holdActive?"rgba(201,169,110,0.15)":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}},
+          holdActive
+            ?React.createElement("svg",{width:"12",height:"12",viewBox:"0 0 24 24",fill:"none",stroke:"#c9a96e",strokeWidth:"2.5",strokeLinecap:"round"},React.createElement("line",{x1:"8",y1:"5",x2:"8",y2:"19"}),React.createElement("line",{x1:"16",y1:"5",x2:"16",y2:"19"}))
+            :React.createElement("svg",{width:"12",height:"12",viewBox:"0 0 24 24",fill:"none",stroke:"rgba(201,169,110,0.4)",strokeWidth:"2.5",strokeLinecap:"round"},React.createElement("line",{x1:"8",y1:"5",x2:"8",y2:"19"}),React.createElement("line",{x1:"16",y1:"5",x2:"16",y2:"19"}))
+        ),
+        React.createElement("div",{style:{position:"relative",flexShrink:0}},
+          holdActive&&React.createElement("div",{style:{position:"absolute",inset:-4,borderRadius:"50%",border:"2px solid rgba(201,169,110,0.6)",animation:"glow 1s ease-in-out infinite",pointerEvents:"none"}}),
+          React.createElement("button",{disabled:(!draft.trim()&&!photo)||busy,onClick:()=>{if(!holdActive)send();},style:{width:42,height:42,borderRadius:"50%",border:`2px solid ${canSend?"#c9a96e":"rgba(201,169,110,0.35)"}`,background:holdActive?"rgba(201,169,110,0.2)":canSend?"rgba(201,169,110,0.15)":"rgba(201,169,110,0.05)",cursor:canSend&&!holdActive?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}},
+            busy
+              ?React.createElement("svg",{width:"16",height:"16",viewBox:"0 0 24 24",fill:"none"},React.createElement("circle",{cx:"12",cy:"12",r:"4",fill:"#c9a96e"}))
+              :holdActive
+                ?React.createElement("svg",{width:"14",height:"14",viewBox:"0 0 24 24",fill:"none",stroke:"rgba(201,169,110,0.3)",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round"},React.createElement("path",{d:"M12 19V5M5 12l7-7 7 7"}))
+                :React.createElement("svg",{width:"16",height:"16",viewBox:"0 0 24 24",fill:"none",stroke:canSend?"#c9a96e":"#6a5a3a",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round"},React.createElement("path",{d:"M12 19V5M5 12l7-7 7 7"}))
+          )
+        )
+      ),
+      React.createElement("div",{style:{marginTop:"0.45rem",textAlign:"center",fontSize:"0.52rem",color:"#3a3020",letterSpacing:"0.09em",textTransform:"uppercase"}},
+  "AI may make mistakes · please double-check · ",
+  React.createElement("a",{href:"/privacy",target:"_blank",style:{color:"#5a4a28",textDecoration:"none"}},"Privacy"),
+  " · ",
+  React.createElement("a",{href:"/terms",target:"_blank",style:{color:"#5a4a28",textDecoration:"none"}},"Terms")
+)
+    )
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/service-worker.js');});}
+(function warmup(){fetch('/api/warmup').catch(()=>{});setInterval(()=>fetch('/api/warmup').catch(()=>{}),4*60*1000);})();
+</script>
+</body>
+</html>
