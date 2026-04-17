@@ -125,6 +125,14 @@ const SUPABASE_KEY = 'sb_publishable_gDzH6bF1tOYuKmx4uIGaLw_On9AG90E';
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const GOOGLE_CLIENT_ID='614751798837-443ekthg12sqi7ijb48rhdfso77hrq0r.apps.googleusercontent.com';
 const GOOGLE_CALENDAR_SCOPE='https://www.googleapis.com/auth/calendar.events';
+const PROD_ORIGIN='https://getatlas.ca';
+
+function getAuthRedirectUrl(){
+  const origin=window.location.origin;
+  const host=window.location.hostname;
+  if(host==="getatlas.ca"||host==="www.getatlas.ca")return `${PROD_ORIGIN}/`;
+  return `${origin}/`;
+}
   
 function getLocation(){return new Promise(resolve=>{if(!navigator.geolocation){resolve("");return;}const t=setTimeout(()=>resolve(""),4000);navigator.geolocation.getCurrentPosition(async pos=>{clearTimeout(t);try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);const d=await r.json();const city=d.address?.city||d.address?.town||d.address?.village||"";const country=d.address?.country||"";resolve(city&&country?`${city}, ${country}`:country||"");}catch{resolve("");}},()=>{clearTimeout(t);resolve("");},{timeout:4000});});}
 function getDateTime(){const now=new Date();const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];const months=['January','February','March','April','May','June','July','August','September','October','November','December'];const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;const h=now.getHours();return `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} — ${h%12||12}:${now.getMinutes().toString().padStart(2,'0')} ${h>=12?'PM':'AM'} (${tz})`;}
@@ -937,7 +945,13 @@ function LoginModal({onClose}){
   const [error,setError]=useState("");
   async function loginWith(provider){
     setLoading(provider);setError("");
-    try{const{error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin}});if(error)throw error;}
+    try{
+      const{error}=await sb.auth.signInWithOAuth({
+        provider,
+        options:{redirectTo:getAuthRedirectUrl()}
+      });
+      if(error)throw error;
+    }
     catch(e){setError(e.message||"Login failed");setLoading(null);}
   }
   return React.createElement("div",{className:"login-overlay",onClick:e=>{if(e.target===e.currentTarget)onClose();}},
@@ -1325,6 +1339,10 @@ function App(){
     const{data:{subscription}}=sb.auth.onAuthStateChange((_,session)=>setUser(session?.user||null));
     return()=>subscription.unsubscribe();
   },[]);
+
+  useEffect(()=>{
+    if(user)setShowLogin(false);
+  },[user]);
 
   useEffect(()=>{
   if(user){
