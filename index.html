@@ -69,6 +69,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.fbAsyncInit=function(){FB.init({appId:'4386286641618045',cookie:true,xfbml:false,version:'v19.0'});};
+  (function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(d.getElementById(id))return;js=d.createElement(s);js.id=id;js.src="https://connect.facebook.net/en_US/sdk.js";fjs.parentNode.insertBefore(js,fjs);}(document,'script','facebook-jssdk'));
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -943,7 +947,22 @@ function LoginModal({onClose}){
   const [error,setError]=useState("");
   async function loginWith(provider){
     setLoading(provider);setError("");
-    try{const{error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin}});if(error)throw error;}
+    try{
+      if(provider==='facebook'){
+        const accessToken=await new Promise((resolve,reject)=>{
+          if(typeof FB==='undefined'){reject(new Error('Facebook SDK not loaded, please try again'));return;}
+          FB.login(function(res){
+            if(res.authResponse&&res.authResponse.accessToken){resolve(res.authResponse.accessToken);}
+            else{reject(new Error('Facebook login was cancelled'));}
+          },{scope:'email,public_profile'});
+        });
+        const{error}=await sb.auth.signInWithIdToken({provider:'facebook',token:accessToken});
+        if(error)throw error;
+      }else{
+        const{error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin}});
+        if(error)throw error;
+      }
+    }
     catch(e){setError(e.message||"Login failed");setLoading(null);}
   }
   return React.createElement("div",{className:"login-overlay",onClick:e=>{if(e.target===e.currentTarget)onClose();}},
