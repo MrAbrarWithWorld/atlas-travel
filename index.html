@@ -122,7 +122,13 @@ button{-webkit-tap-highlight-color:transparent;}
 const {createClient} = supabase;
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gDzH6bF1tOYuKmx4uIGaLw_On9AG90E';
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    flowType: 'implicit',
+    detectSessionInUrl: true,
+    persistSession: true
+  }
+});
 const GOOGLE_CLIENT_ID='614751798837-443ekthg12sqi7ijb48rhdfso77hrq0r.apps.googleusercontent.com';
 const GOOGLE_CALENDAR_SCOPE='https://www.googleapis.com/auth/calendar.events';
   
@@ -1309,13 +1315,19 @@ function App(){
   const photoRef=useRef(null);
   const holdTimerRef=useRef(null);
 
-  // Payment success/cancel detection
+  // Payment success/cancel & auth error detection
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     if(params.get('payment')==='success'){
       showToast('🎉 Welcome to Pro! Enjoy unlimited plans.');
       window.history.replaceState({},'','/');
     } else if(params.get('payment')==='cancelled'){
+      window.history.replaceState({},'','/');
+    }
+    const authError=params.get('error');
+    if(authError){
+      const desc=params.get('error_description')||authError;
+      showToast('Login failed: '+desc.replace(/\+/g,' '));
       window.history.replaceState({},'','/');
     }
   },[]);
