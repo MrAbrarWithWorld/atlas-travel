@@ -127,6 +127,9 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY,{
 });
 const GOOGLE_CLIENT_ID='614751798837-443ekthg12sqi7ijb48rhdfso77hrq0r.apps.googleusercontent.com';
 const GOOGLE_CALENDAR_SCOPE='https://www.googleapis.com/auth/calendar.events';
+
+function getAuthRedirectUrl(){
+  return `${window.location.origin}/`;
 const PROD_ORIGIN='https://getatlas.ca';
 
 function getAuthRedirectUrl(){
