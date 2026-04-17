@@ -122,7 +122,9 @@ button{-webkit-tap-highlight-color:transparent;}
 const {createClient} = supabase;
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gDzH6bF1tOYuKmx4uIGaLw_On9AG90E';
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY,{
+  auth:{detectSessionInUrl:false}
+});
 const GOOGLE_CLIENT_ID='614751798837-443ekthg12sqi7ijb48rhdfso77hrq0r.apps.googleusercontent.com';
 const GOOGLE_CALENDAR_SCOPE='https://www.googleapis.com/auth/calendar.events';
 const PROD_ORIGIN='https://getatlas.ca';
