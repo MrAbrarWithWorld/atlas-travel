@@ -936,6 +936,23 @@ function LoginModal({onClose}){
   const [loading,setLoading]=useState(null);
   const [error,setError]=useState("");
   async function loginWith(provider){
+  setLoading(provider);
+  setError("");
+
+  try{
+    const redirectTo = "https://getatlas.ca";
+
+    const { error } = await sb.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo }
+    });
+
+    if(error) throw error;
+  }catch(e){
+    setError(e.message || "Login failed");
+    setLoading("");
+  }
+}
     setLoading(provider);setError("");
     try{const{error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin}});if(error)throw error;}
     catch(e){setError(e.message||"Login failed");setLoading(null);}
