@@ -1,4 +1,4 @@
-const CACHE_NAME = 'atlas-v1';
+const CACHE_NAME = 'atlas-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html'
