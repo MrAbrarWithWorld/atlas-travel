@@ -505,8 +505,11 @@ const travelContext = await getTravelContext(messages);
     if (requestingNewPlan) user.plansUsed += 1;
     res.setHeader('X-Plans-Left', Math.max(0, limits.plans - user.plansUsed));
     // Log usage to Supabase (fire and forget)
-    const costUsd = (inputTok / 1_000_000) * 3 + (outputTok / 1_000_000) * 15;
-    sb.from('api_usage_log').insert({ user_id: userId || null, model: 'claude-sonnet-4', input_tokens: inputTok, output_tokens: outputTok, cost_usd: costUsd }).then(() => {}).catch(() => {});
+    if (SUPABASE_SERVICE_KEY) {
+      const costUsd = (inputTok / 1_000_000) * 3 + (outputTok / 1_000_000) * 15;
+      const sbLog = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+      sbLog.from('api_usage_log').insert({ user_id: userId || null, model: 'claude-sonnet-4', input_tokens: inputTok, output_tokens: outputTok, cost_usd: costUsd }).then(() => {}).catch(() => {});
+    }
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ error: { message: error.message } });
