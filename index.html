@@ -1689,6 +1689,7 @@ function App(){
   const [showCalendar,setShowCalendar]=useState(false);
   const [holdActive,setHoldActive]=useState(false);
   const [plansLeft,setPlansLeft]=useState(null);
+  const [showReviewPrompt,setShowReviewPrompt]=useState(false);
   const [showOnboarding,setShowOnboarding]=useState(()=>!localStorage.getItem('atlas_onboarded')&&!loadLocal());
   const hist=useRef(saved?.hist||[...defaultHist]);
   const endRef=useRef(null);
@@ -2053,7 +2054,14 @@ function renamePlan(id,newTitle){
               sb.from('saved_plans').update({messages:hist.current,locations:locs.length>0?locs:null,title}).eq('id',activePlanId).then(()=>{});
             } else {
               sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null,is_draft:true}).select('id,share_id').single().then(({data})=>{
-                if(data?.id){setActivePlanId(data.id);loadPlans();}
+                if(data?.id){
+                  setActivePlanId(data.id);
+                  loadPlans();
+                  // Show review prompt after 3rd plan (once per device)
+                  if(!localStorage.getItem('atlas_review_shown')&&plans.length+1>=3){
+                    setTimeout(()=>setShowReviewPrompt(true),2500);
+                  }
+                }
               });
             }
           }
@@ -2169,6 +2177,13 @@ function renamePlan(id,newTitle){
             plansLeft!==null?(plansLeft+" plan"+(plansLeft!==1?"s":"")+" left today"):"7 plans/day · Free plan",
             (plansLeft!==null&&plansLeft<=2)&&React.createElement("button",{onClick:()=>setShowPricing(true),style:{background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.58rem",textDecoration:"underline",fontFamily:"'DM Sans',sans-serif",padding:0}},"Upgrade →")
           )
+    ),
+
+    // Review prompt banner
+    showReviewPrompt&&React.createElement("div",{style:{padding:"0.55rem 1.25rem",background:"rgba(201,169,110,0.05)",borderTop:"1px solid rgba(201,169,110,0.12)",display:"flex",alignItems:"center",gap:"0.75rem",animation:"slideUp 0.35s ease",flexShrink:0}},
+      React.createElement("span",{style:{fontSize:"0.68rem",color:"#8a7a50",flex:1,lineHeight:1.5}},"✨ Loving Atlas? A quick rating helps us reach more travelers."),
+      React.createElement("a",{href:"https://play.google.com/store/apps/details?id=ca.getatlas",target:"_blank",rel:"noopener noreferrer",onClick:()=>{localStorage.setItem('atlas_review_shown','1');setShowReviewPrompt(false);},style:{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.3)",borderRadius:6,padding:"0.3rem 0.7rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.08em",textTransform:"uppercase",textDecoration:"none",fontFamily:"'DM Sans',sans-serif",whiteSpace:"nowrap"}},"⭐ Rate us"),
+      React.createElement("button",{onClick:()=>{localStorage.setItem('atlas_review_shown','1');setShowReviewPrompt(false);},style:{background:"none",border:"none",color:"#5a4a30",cursor:"pointer",fontSize:"0.9rem",lineHeight:1,padding:"0 0.1rem",flexShrink:0}},"✕")
     ),
 
     // Input
