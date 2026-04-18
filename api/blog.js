@@ -48,21 +48,33 @@ a:hover{color:#e8dcc8;}
 .cta p{margin-bottom:0.75rem;color:#c4b89a;font-size:0.85rem;}
 .cta-btn{display:inline-block;background:#c9a96e;color:#1c1914;font-size:0.75rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:0.65rem 1.5rem;border-radius:8px;text-decoration:none;transition:background 0.2s;}
 .cta-btn:hover{background:#e0c080;color:#1c1914;}
-.hero-img{width:100%;height:340px;object-fit:cover;border-radius:12px;margin-bottom:2rem;display:block;}
-.card-img{width:100%;height:160px;object-fit:cover;border-radius:8px 8px 0 0;margin-bottom:0;display:block;}
+.hero-img{width:100%;height:380px;object-fit:cover;border-radius:14px;margin-bottom:2rem;display:block;}
+.inline-img{width:100%;height:260px;object-fit:cover;border-radius:10px;margin:1.5rem 0;display:block;}
+.inline-img-caption{font-size:0.7rem;color:#5a4a2a;text-align:center;margin-top:-1rem;margin-bottom:1.5rem;letter-spacing:0.06em;}
+.card-img{width:100%;height:170px;object-fit:cover;border-radius:8px 8px 0 0;margin-bottom:0;display:block;}
 .related{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid rgba(201,169,110,0.15);}
 .related h3{margin-bottom:0.75rem;}
 .related-links{display:flex;flex-wrap:wrap;gap:0.5rem;}
 .related-links a{font-size:0.72rem;padding:0.3rem 0.75rem;border:1px solid rgba(201,169,110,0.2);border-radius:4px;color:#c9a96e;text-decoration:none;letter-spacing:0.06em;transition:background 0.2s,border-color 0.2s;}
 .related-links a:hover{background:rgba(201,169,110,0.1);border-color:rgba(201,169,110,0.4);}
-.articles-grid{display:flex;flex-direction:column;gap:1.25rem;margin-top:1.5rem;}
-.article-card{border:1px solid rgba(201,169,110,0.15);border-radius:10px;padding:1.25rem 1.5rem;text-decoration:none;transition:border-color 0.2s,background 0.2s;display:block;}
+.articles-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-top:1.5rem;}
+@media(max-width:580px){.articles-grid{grid-template-columns:1fr;}}
+.article-card{border:1px solid rgba(201,169,110,0.15);border-radius:10px;text-decoration:none;transition:border-color 0.2s,background 0.2s;display:block;overflow:hidden;}
 .article-card:hover{border-color:rgba(201,169,110,0.35);background:rgba(201,169,110,0.04);}
-.card-top{display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:0.5rem;}
-.card-emoji{font-size:1.5rem;flex-shrink:0;}
-.card-title{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:400;color:#e8dcc8;line-height:1.25;}
-.card-desc{font-size:0.82rem;color:#7a7060;line-height:1.7;margin-bottom:0.6rem;}
-.card-meta{display:flex;gap:0.75rem;font-size:0.65rem;color:#5a4a2a;letter-spacing:0.08em;text-transform:uppercase;flex-wrap:wrap;align-items:center;}
+.card-top{display:flex;align-items:flex-start;gap:0.6rem;margin-bottom:0.4rem;}
+.card-emoji{font-size:1.3rem;flex-shrink:0;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:400;color:#e8dcc8;line-height:1.25;}
+.card-desc{font-size:0.8rem;color:#7a7060;line-height:1.65;margin-bottom:0.6rem;}
+.card-meta{display:flex;gap:0.6rem;font-size:0.62rem;color:#5a4a2a;letter-spacing:0.08em;text-transform:uppercase;flex-wrap:wrap;align-items:center;}
+.key-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.75rem;margin:1.5rem 0 2rem;background:rgba(201,169,110,0.04);border:1px solid rgba(201,169,110,0.15);border-radius:12px;padding:1.1rem 1.25rem;}
+.fact-item{display:flex;flex-direction:column;gap:0.2rem;}
+.fact-label{font-size:0.6rem;color:#6a5a3a;letter-spacing:0.12em;text-transform:uppercase;}
+.fact-value{font-size:0.82rem;color:#d4c8b0;font-weight:500;}
+.lang-toggle{display:flex;gap:0;margin-bottom:1.5rem;border:1px solid rgba(201,169,110,0.2);border-radius:6px;overflow:hidden;width:fit-content;}
+.lang-btn{font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.35rem 0.85rem;cursor:pointer;border:none;background:transparent;color:#6a5a3a;transition:background 0.15s,color 0.15s;}
+.lang-btn.active{background:rgba(201,169,110,0.15);color:#c9a96e;}
+.highlights{display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.75rem 0 1.5rem;}
+.highlight-tag{background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.2);border-radius:20px;padding:0.3rem 0.85rem;font-size:0.75rem;color:#c9a96e;}
 </style>
 </head>`;
 }
@@ -149,6 +161,39 @@ function buildArticlePage(slug, article) {
     ]
   });
 
+  // Parse key facts and highlights from article metadata
+  const keyFacts = article.key_facts || null;
+  const highlights = article.highlights || [];
+  const contentBn = article.content_bn || null;
+
+  const keyFactsHtml = keyFacts ? `
+  <div class="key-facts">
+    ${Object.entries(keyFacts).map(([k,v]) => `<div class="fact-item"><span class="fact-label">${k}</span><span class="fact-value">${v}</span></div>`).join('')}
+  </div>` : '';
+
+  const highlightsHtml = highlights.length ? `
+  <div class="highlights">
+    ${highlights.map(h => `<span class="highlight-tag">${h}</span>`).join('')}
+  </div>` : '';
+
+  const langToggle = contentBn ? `
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="switchLang('en')">English</button>
+    <button class="lang-btn" onclick="switchLang('bn')">বাংলা</button>
+  </div>
+  <script>
+    function switchLang(lang) {
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === (lang==='en'?'English':'বাংলা')));
+      document.getElementById('content-en').style.display = lang==='en' ? '' : 'none';
+      document.getElementById('content-bn').style.display = lang==='bn' ? '' : 'none';
+    }
+  </script>` : '';
+
+  const contentHtml = contentBn ? `
+  <div id="content-en" class="article-body">${article.content}</div>
+  <div id="content-bn" class="article-body" style="display:none">${contentBn}</div>` :
+  `<div class="article-body">${article.content}</div>`;
+
   return buildHead(article.title, article.description, `/blog/${slug}`, article.cover_image_url) + `
 <body>
 <div class="container">
@@ -160,7 +205,10 @@ function buildArticlePage(slug, article) {
     <span>${dateFormatted}</span>
     <span>${article.read_time}</span>
   </div>
-  <div class="article-body">${article.content}</div>
+  ${highlightsHtml}
+  ${keyFactsHtml}
+  ${langToggle}
+  ${contentHtml}
   <div class="cta">
     <p>Ready to plan your trip? Let ATLAS build a personalized itinerary in seconds.</p>
     <a href="/" class="cta-btn">Plan with ATLAS →</a>
@@ -183,7 +231,7 @@ export default async function handler(req, res) {
   if (!slug || slug === 'index') {
     const { data, error } = await sb
       .from('blog_posts')
-      .select('slug, title, description, category, date_published, read_time, hero_emoji')
+      .select('slug, title, description, category, date_published, read_time, hero_emoji, cover_image_url')
       .eq('is_published', true)
       .order('date_published', { ascending: false });
 
@@ -193,7 +241,7 @@ export default async function handler(req, res) {
 
   const { data, error } = await sb
     .from('blog_posts')
-    .select('*')
+    .select('slug,title,description,category,date_published,read_time,hero_emoji,content,content_bn,cover_image_url,key_facts,highlights,related_destinations,updated_at')
     .eq('slug', slug)
     .eq('is_published', true)
     .single();
