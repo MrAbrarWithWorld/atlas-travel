@@ -2160,7 +2160,8 @@ function renamePlan(id,newTitle){
       const customPrompt=localStorage.getItem('atlas_custom_prompt');
       if(customPrompt&&customPrompt.trim())headers['x-custom-prompt']=encodeURIComponent(customPrompt.trim());
       if(user){const{data:{session}}=await sb.auth.getSession();if(session?.access_token)headers["Authorization"]=`Bearer ${session.access_token}`;}
-      const res=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-14)]})});
+      const controller=new AbortController();const fetchTimeout=setTimeout(()=>controller.abort(),55000);
+      let res;try{res=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-14)]}),signal:controller.signal});}finally{clearTimeout(fetchTimeout);}
       if(res.status===429){
         const data=await res.json();const msg=data.error?.message||"";
         if(msg.startsWith("LIMIT_REACHED|"))setModal({type:"limit",hours:parseInt(msg.split("|")[1])||6});
@@ -2202,7 +2203,15 @@ function renamePlan(id,newTitle){
           }
         }
       },10);
-    }catch(e){setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:`Something went wrong: ${e.message}`}]);setBusy(false);}
+    }catch(e){
+      const msg=e.message?.toLowerCase()||"";
+      const friendly=msg.includes("load failed")||msg.includes("network")||msg.includes("fetch")
+        ?"Connection issue — please try again 🔄"
+        :msg.includes("timeout")
+        ?"Request timed out — please try again 🔄"
+        :`Something went wrong — please try again`;
+      setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:friendly}]);setBusy(false);
+    }
   }
 
   function reset(){if(!confirm("Start a new journey?"))return;setMsgs([]);setDraft("");setEditingId(null);setPhoto(null);setActivePlanId(null);setHoldActive(false);if(window.speechSynthesis)window.speechSynthesis.cancel();hist.current=[...defaultHist];localStorage.removeItem(STORAGE_KEY);}
