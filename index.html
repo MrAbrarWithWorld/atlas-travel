@@ -96,7 +96,7 @@ textarea{font-family:'DM Sans',sans-serif;-webkit-appearance:none;}
 textarea::placeholder{color:#6a5a3a;}
 textarea:focus{outline:none;}
 button{-webkit-tap-highlight-color:transparent;}
-.atlas-map{height:220px;width:100%;border-radius:8px;margin-top:0.75rem;border:1px solid rgba(201,169,110,0.2);overflow:hidden;}
+.atlas-map{height:220px;width:100%;border-radius:8px;margin-top:0.75rem;border:1px solid rgba(201,169,110,0.2);overflow:hidden;position:relative;isolation:isolate;}
 .leaflet-popup-content-wrapper{background:#252018;border:1px solid rgba(201,169,110,0.3);border-radius:8px;color:#ede5d5;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
 .leaflet-popup-tip{background:#252018;}
 .leaflet-popup-content{font-family:'DM Sans',sans-serif;font-size:12px;color:#ede5d5;margin:6px 10px;}
@@ -990,16 +990,6 @@ function LoginModal({onClose}){
           React.createElement("span",null,"Continue with Google")
         )
       ),
-      React.createElement("button",{className:"login-btn",onClick:()=>loginWith("facebook"),disabled:!!loading},
-  loading==="facebook"
-    ?React.createElement("span",{style:{fontSize:"0.75rem",color:"#c9a96e",margin:"0 auto"}},"Connecting...")
-    :React.createElement(React.Fragment,null,
-      React.createElement("svg",{width:"18",height:"18",viewBox:"0 0 24 24"},
-        React.createElement("path",{fill:"#1877F2",d:"M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"})
-      ),
-      React.createElement("span",null,"Continue with Facebook")
-    )
-),
       
       error&&React.createElement("p",{style:{fontSize:"0.72rem",color:"#c9606e",textAlign:"center",marginTop:"0.5rem"}},error),
       React.createElement("p",{style:{fontSize:"0.6rem",color:"#3a3020",textAlign:"center",marginTop:"1rem",lineHeight:1.7}},"By signing in, you agree to our Terms of Service."),
