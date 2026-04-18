@@ -168,6 +168,46 @@ function saveLocal(msgs,hist){try{localStorage.setItem(STORAGE_KEY,JSON.stringif
 function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!d||Date.now()-d.t>24*60*60*1000)return null;return d;}catch{return null;}}
 const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}];
 
+  // ===================== GOOGLE CALENDAR SYNC =====================
+async function addToGoogleCalendar(events){
+  // Load Google Identity Services
+  await new Promise((resolve,reject)=>{
+    if(window.google?.accounts?.oauth2){resolve();return;}
+    const s=document.createElement('script');
+    s.src='https://accounts.google.com/gsi/client';
+    s.onload=resolve;s.onerror=reject;
+    document.head.appendChild(s);
+  });
+  // Request Calendar access token
+  const token=await new Promise((resolve,reject)=>{
+    const client=google.accounts.oauth2.initTokenClient({
+      client_id:GOOGLE_CLIENT_ID,
+      scope:GOOGLE_CALENDAR_SCOPE,
+      callback:(resp)=>{if(resp.error)reject(new Error('Calendar access denied'));else resolve(resp.access_token);}
+    });
+    client.requestAccessToken({prompt:'consent'});
+  });
+  // Add events to Google Calendar
+  let added=0;
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  for(const ev of events){
+    const body={
+      summary:ev.title,
+      description:ev.description||'',
+      colorId:ev.colorId||'1',
+      start:ev.allDay?{date:ev.start}:{dateTime:`${ev.start}T${ev.time||'09:00'}:00`,timeZone:tz},
+      end:ev.allDay?{date:ev.end||ev.start}:{dateTime:`${ev.end||ev.start}T${ev.time||'10:00'}:00`,timeZone:tz},
+    };
+    const r=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events',{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(r.ok)added++;
+  }
+  return added;
+}
+
   // ===================== CALENDAR MODAL =====================
 function CalendarModal({msgs,onClose}){
   const [tripName,setTripName]=React.useState(()=>extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''}))));
@@ -1327,12 +1367,34 @@ function App(){
   const photoRef=useRef(null);
   const holdTimerRef=useRef(null);
 
+  // Tier check helper — polls subscriptions table and updates userTier state
+  async function checkTier(uid,email){
+    try{
+      const{data:allowed}=await sb.from('allowed_users').select('email').eq('email',email).single();
+      if(allowed){setUserTier('pro');return 'pro';}
+      const{data}=await sb.from('subscriptions').select('plan,status,current_period_end').eq('user_id',uid).eq('status','active').gte('current_period_end',new Date().toISOString()).single();
+      if(data){const t=data.plan?.includes('explorer')?'explorer':'pro';setUserTier(t);return t;}
+      setUserTier('free');return 'free';
+    }catch{setUserTier('free');return 'free';}
+  }
+
   // Payment success/cancel & auth error detection
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     if(params.get('payment')==='success'){
       showToast('🎉 Welcome to Pro! Enjoy unlimited plans.');
       window.history.replaceState({},'','/');
+      // Poll for updated subscription after Stripe webhook fires (2s, 6s, 14s)
+      sb.auth.getSession().then(({data:{session}})=>{
+        if(!session?.user)return;
+        const uid=session.user.id,email=session.user.email;
+        [2000,6000,14000].forEach(delay=>{
+          setTimeout(async()=>{
+            const t=await checkTier(uid,email);
+            if(t!=='free')showToast('✅ '+( t==='explorer'?'Explorer':'Pro')+' plan activated!');
+          },delay);
+        });
+      });
     } else if(params.get('payment')==='cancelled'){
       window.history.replaceState({},'','/');
     }
@@ -1354,13 +1416,7 @@ function App(){
   if(user){
     loadPlans();
     loadProjects();
-    sb.from('allowed_users').select('email').eq('email',user.email).single().then(({data:allowed})=>{
-  if(allowed){setUserTier('pro');return;}
-  sb.from('subscriptions').select('plan,status,current_period_end').eq('user_id',user.id).eq('status','active').gte('current_period_end',new Date().toISOString()).single().then(({data})=>{
-    if(data)setUserTier(data.plan?.includes('explorer')?'explorer':'pro');
-    else setUserTier('free');
-  });
-});
+    checkTier(user.id,user.email);
   } else {
     setPlans([]);
     setUserTier('free');
