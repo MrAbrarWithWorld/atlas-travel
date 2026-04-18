@@ -180,8 +180,7 @@
   (function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(d.getElementById(id))return;js=d.createElement(s);js.id=id;js.src="https://connect.facebook.net/en_US/sdk.js";fjs.parentNode.insertBefore(js,fjs);}(document,'script','facebook-jssdk'));
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<!-- Google Maps loaded dynamically after fetching key from /api/map-config -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -203,13 +202,11 @@ textarea::placeholder{color:#6a5a3a;}
 textarea:focus{outline:none;}
 button{-webkit-tap-highlight-color:transparent;}
 .atlas-map{height:220px;width:100%;border-radius:8px;margin-top:0.75rem;border:1px solid rgba(201,169,110,0.2);overflow:hidden;position:relative;isolation:isolate;}
-.leaflet-popup-content-wrapper{background:#252018;border:1px solid rgba(201,169,110,0.3);border-radius:8px;color:#ede5d5;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
-.leaflet-popup-tip{background:#252018;}
-.leaflet-popup-content{font-family:'DM Sans',sans-serif;font-size:12px;color:#ede5d5;margin:6px 10px;}
-.leaflet-popup-content b{color:#c9a96e;}
-.leaflet-control-zoom a{background:#252018!important;color:#c9a96e!important;border-color:rgba(201,169,110,0.3)!important;}
-.leaflet-control-attribution{background:rgba(28,25,20,0.8)!important;color:#6a5a3a!important;font-size:9px!important;}
-.leaflet-control-attribution a{color:#8a7a50!important;}
+/* Google Maps custom controls */
+.atlas-map .gm-style .gm-style-iw-c{background:#252018!important;border:1px solid rgba(201,169,110,0.3)!important;border-radius:8px!important;box-shadow:0 4px 16px rgba(0,0,0,0.5)!important;}
+.atlas-map .gm-style .gm-style-iw-d{color:#ede5d5!important;font-family:'DM Sans',sans-serif!important;font-size:12px!important;}
+.atlas-map .gm-style .gm-style-iw-tc::after{background:#252018!important;}
+.atlas-map .gm-ui-hover-effect{filter:invert(1) sepia(1) saturate(2) hue-rotate(5deg)!important;}
 .login-overlay{position:fixed;inset:0;background:rgba(10,8,5,0.97);display:flex;align-items:center;justify-content:center;z-index:200;animation:fadeIn 0.3s ease;padding:1rem;}
 .login-card{width:100%;max-width:340px;animation:slideUp 0.35s ease;}
 .login-btn{width:100%;padding:0.8rem 1rem;border-radius:10px;border:1px solid rgba(201,169,110,0.2);background:rgba(201,169,110,0.06);color:#e0d8c8;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.82rem;display:flex;align-items:center;gap:0.75rem;transition:all 0.2s;margin-bottom:0.65rem;}
@@ -1497,40 +1494,110 @@ const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id
 }
 
 // ===================== MAP VIEW =====================
+// ===================== GOOGLE MAPS LOADER =====================
+const ATLAS_MAP_STYLES=[
+  {elementType:'geometry',stylers:[{color:'#1c1914'}]},
+  {elementType:'labels.text.stroke',stylers:[{color:'#1c1914'}]},
+  {elementType:'labels.text.fill',stylers:[{color:'#746855'}]},
+  {featureType:'administrative.locality',elementType:'labels.text.fill',stylers:[{color:'#c9a96e'}]},
+  {featureType:'administrative.country',elementType:'labels.text.fill',stylers:[{color:'#a08060'}]},
+  {featureType:'poi',elementType:'labels.text.fill',stylers:[{color:'#d59563'}]},
+  {featureType:'poi.park',elementType:'geometry',stylers:[{color:'#1e2a1e'}]},
+  {featureType:'poi.park',elementType:'labels.text.fill',stylers:[{color:'#6b9a76'}]},
+  {featureType:'road',elementType:'geometry',stylers:[{color:'#38302a'}]},
+  {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#1c1914'}]},
+  {featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#8a7a55'}]},
+  {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#4a3a20'}]},
+  {featureType:'road.highway',elementType:'geometry.stroke',stylers:[{color:'#1c1914'}]},
+  {featureType:'road.highway',elementType:'labels.text.fill',stylers:[{color:'#c9a96e'}]},
+  {featureType:'transit',elementType:'geometry',stylers:[{color:'#2a2218'}]},
+  {featureType:'transit.station',elementType:'labels.text.fill',stylers:[{color:'#d59563'}]},
+  {featureType:'water',elementType:'geometry',stylers:[{color:'#0e1a2e'}]},
+  {featureType:'water',elementType:'labels.text.fill',stylers:[{color:'#3a4a60'}]},
+];
+let _gmapsPromise=null;
+function loadGoogleMaps(){
+  if(window.google?.maps)return Promise.resolve();
+  if(_gmapsPromise)return _gmapsPromise;
+  _gmapsPromise=fetch('/api/map-config').then(r=>r.json()).then(({key})=>{
+    if(!key)return;
+    return new Promise((resolve,reject)=>{
+      window.__atlasGmapsReady=resolve;
+      const s=document.createElement('script');
+      s.src=`https://maps.googleapis.com/maps/api/js?key=${key}&callback=__atlasGmapsReady`;
+      s.onerror=reject;
+      document.head.appendChild(s);
+    });
+  }).catch(()=>{});
+  return _gmapsPromise;
+}
+
 function MapView({locations,msgId}){
   const mapInstanceRef=useRef(null);
+  const markersRef=useRef([]);
+  const polylinesRef=useRef([]);
   useEffect(()=>{
     if(!locations||locations.length===0)return;
-    if(!window.L)return;
-    if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}
     const cid=`atlas-map-${msgId}`;
-    const container=document.getElementById(cid);
-    if(!container)return;
-    const map=window.L.map(container,{zoomControl:true,scrollWheelZoom:false,attributionControl:true});
-    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
-    const bounds=[];const colors=['#c9a96e','#e8b84b','#d4a96e','#f0c070','#b89050'];
-    locations.forEach((place,i)=>{
-      if(!place.lat||!place.lon)return;
-      const color=colors[i%colors.length];
-      const icon=window.L.divIcon({className:'',html:`<div style="width:28px;height:28px;background:${color};border:2px solid #1c1914;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);color:#1c1914;font-size:10px;font-weight:700;font-family:'DM Sans',sans-serif;line-height:1;">${i+1}</span></div>`,iconSize:[28,28],iconAnchor:[14,28],popupAnchor:[0,-30]});
-      window.L.marker([place.lat,place.lon],{icon}).addTo(map).bindPopup(`<b>${place.name}</b>${place.day>0?`<br><span style="color:#c9a96e;font-size:10px">Day ${place.day}</span>`:''}`);
-      bounds.push([place.lat,place.lon]);
+    loadGoogleMaps().then(()=>{
+      if(!window.google?.maps)return;
+      // Clean up previous instance
+      markersRef.current.forEach(m=>m.setMap(null));
+      polylinesRef.current.forEach(p=>p.setMap(null));
+      markersRef.current=[];polylinesRef.current=[];
+      const container=document.getElementById(cid);
+      if(!container)return;
+      const map=new window.google.maps.Map(container,{
+        zoom:5,
+        center:{lat:locations[0].lat,lng:locations[0].lon},
+        styles:ATLAS_MAP_STYLES,
+        mapTypeControl:false,
+        streetViewControl:false,
+        fullscreenControl:false,
+        zoomControl:true,
+        scrollwheel:false,
+        gestureHandling:'cooperative',
+      });
+      const bounds=new window.google.maps.LatLngBounds();
+      locations.forEach((place,i)=>{
+        if(!place.lat||!place.lon)return;
+        const pos={lat:place.lat,lng:place.lon};
+        const marker=new window.google.maps.Marker({
+          position:pos,map,
+          label:{text:String(i+1),color:'#1c1914',fontSize:'10px',fontWeight:'700',fontFamily:"'DM Sans',sans-serif"},
+          icon:{path:window.google.maps.SymbolPath.CIRCLE,scale:13,fillColor:'#c9a96e',fillOpacity:1,strokeColor:'#1c1914',strokeWeight:2},
+          title:place.name,
+        });
+        const iw=new window.google.maps.InfoWindow({
+          content:`<div style="font-family:'DM Sans',sans-serif;font-size:12px;color:#1c1914"><b>${place.name}</b>${place.day>0?`<br><span style="color:#7a5a20;font-size:10px">Day ${place.day}</span>`:''}</div>`
+        });
+        marker.addListener('click',()=>iw.open(map,marker));
+        markersRef.current.push(marker);
+        bounds.extend(pos);
+      });
+      if(locations.length===1){map.setCenter({lat:locations[0].lat,lng:locations[0].lon});map.setZoom(11);}
+      else{map.fitBounds(bounds,{padding:{top:30,right:30,bottom:30,left:30}});window.google.maps.event.addListenerOnce(map,'bounds_changed',()=>{if(map.getZoom()>12)map.setZoom(12);});}
+      // Draw dashed polylines between stops
+      if(locations.length>1){
+        for(let i=0;i<locations.length-1;i++){
+          const from=locations[i];const to=locations[i+1];
+          if(!from.lat||!from.lon||!to.lat||!to.lon)continue;
+          const poly=new window.google.maps.Polyline({
+            path:[{lat:from.lat,lng:from.lon},{lat:to.lat,lng:to.lon}],
+            geodesic:true,strokeColor:'#c9a96e',strokeOpacity:0,strokeWeight:0,
+            icons:[{icon:{path:'M 0,-1 0,1',strokeOpacity:0.5,scale:3,strokeColor:'#c9a96e'},offset:'0',repeat:'12px'}],
+            map,
+          });
+          polylinesRef.current.push(poly);
+        }
+      }
+      mapInstanceRef.current=map;
     });
-    if(bounds.length===1)map.setView(bounds[0],11);
-    else if(bounds.length>1)map.fitBounds(bounds,{padding:[30,30],maxZoom:10});
-    // Draw routes between consecutive locations
-if(bounds.length>1){
-  for(let i=0;i<locations.length-1;i++){
-    const from=locations[i];
-    const to=locations[i+1];
-    if(!from.lat||!from.lon||!to.lat||!to.lon)continue;
-    window.L.polyline([[from.lat,from.lon],[to.lat,to.lon]],{
-      color:'#c9a96e',weight:2,opacity:0.4,dashArray:'5,8'
-    }).addTo(map);
-  }
-}
-    mapInstanceRef.current=map;
-    return()=>{if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}};
+    return()=>{
+      markersRef.current.forEach(m=>m.setMap(null));
+      polylinesRef.current.forEach(p=>p.setMap(null));
+      markersRef.current=[];polylinesRef.current=[];
+    };
   },[locations,msgId]);
   if(!locations||locations.length===0)return null;
   return React.createElement("div",null,

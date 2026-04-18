@@ -74,21 +74,23 @@ async function searchWeb(query) {
 }
 
 async function getYouTubeVideos(destination) {
+  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(destination + ' travel guide')}`;
+  const fallback = `[📺 Watch ${destination} travel videos on YouTube →](${searchUrl})`;
   try {
-    if (!process.env.YOUTUBE_API_KEY) return '';
+    if (!process.env.YOUTUBE_API_KEY) return fallback;
     const query = encodeURIComponent(`${destination} travel guide`);
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=2&key=${process.env.YOUTUBE_API_KEY}`;
     const res = await fetch(url);
     const data = await res.json();
     if (data.error) {
       console.error('YouTube API error:', data.error.message);
-      return '';
+      return fallback;
     }
-    if (!data.items?.length) return '';
+    if (!data.items?.length) return fallback;
     return data.items.map(v => `[📺 ${v.snippet.title}](https://youtube.com/watch?v=${v.id.videoId})`).join('\n');
   } catch(e) {
     console.error('YouTube fetch error:', e.message);
-    return '';
+    return fallback;
   }
 }
 
