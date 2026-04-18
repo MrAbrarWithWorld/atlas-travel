@@ -226,6 +226,17 @@ button{-webkit-tap-highlight-color:transparent;}
 .plan-item-del{opacity:0;transition:opacity 0.15s;}
 .plan-item:hover .plan-item-del{opacity:1;}
 </style>
+<!-- Google Analytics GA4 — replace G-XXXXXXXXXX with your Measurement ID -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX', {
+    page_path: window.location.pathname,
+    cookie_flags: 'SameSite=None;Secure'
+  });
+</script>
 </head>
 <body>
 <div id="root">
@@ -679,7 +690,9 @@ function HelpModal({onClose}){
         React.createElement("div",{style:{display:"flex",gap:"0.75rem",marginTop:"0.5rem"}},
           React.createElement("a",{href:"/privacy",target:"_blank",style:{fontSize:"0.62rem",color:"#6a5a3a",textDecoration:"none"}},"Privacy Policy"),
           React.createElement("span",{style:{color:"#3a2a12"}},"·"),
-          React.createElement("a",{href:"/terms",target:"_blank",style:{fontSize:"0.62rem",color:"#6a5a3a",textDecoration:"none"}},"Terms of Service")
+          React.createElement("a",{href:"/terms",target:"_blank",style:{fontSize:"0.62rem",color:"#6a5a3a",textDecoration:"none"}},"Terms of Service"),
+          React.createElement("span",{style:{color:"#3a2a12"}},"·"),
+          React.createElement("a",{href:"/blog",target:"_blank",style:{fontSize:"0.62rem",color:"#6a5a3a",textDecoration:"none"}},"Travel Blog")
         )
       )
     )

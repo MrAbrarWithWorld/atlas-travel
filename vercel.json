@@ -56,6 +56,10 @@
       "destination": "/api/blog?slug=:slug"
     },
     {
+      "source": "/admin",
+      "destination": "/api/admin"
+    },
+    {
       "source": "/((?!_vercel).*)",
       "destination": "/index.html"
     }
