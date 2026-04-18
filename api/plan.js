@@ -298,7 +298,127 @@ const DESTINATIONS = {
       { q: "How many days should I spend in Sydney?", a: "4–5 days covers the city highlights. 7–10 days lets you add the Blue Mountains, Hunter Valley wine region, and the NSW South Coast." },
       { q: "Is Sydney expensive?", a: "Sydney is one of the world's pricier cities — accommodation and dining costs are high. Budget travellers spend $110–150/day staying in hostels and cooking some meals." },
     ]
-  }
+  },
+  dhaka: {
+    name: "Dhaka", country: "Bangladesh", emoji: "🕌",
+    title: "Dhaka Travel Guide 2026 — AI Trip Planner | Atlas",
+    description: "Plan your Dhaka trip with Atlas AI. Old Dhaka food tours, rickshaw rides, Mughal mosques, visa info, and a full itinerary for Bangladesh's vibrant capital.",
+    hero: "Dhaka is one of the world's most densely packed and endlessly fascinating cities. Old Dhaka's labyrinthine lanes hide 400-year-old Mughal mosques, the country's best street food, and a riverfront life on the Buriganga that has barely changed in centuries. It's chaotic, alive, and completely unlike anywhere else.",
+    highlights: ["Ahsan Manzil (Pink Palace) on the Buriganga", "Lalbagh Fort — 17th century Mughal citadel", "Old Dhaka food tour — biryani, bakarkhani, borhani", "Sadarghat river terminal — launch boats to Sundarbans", "Star Mosque (Tara Masjid) in Armanitola", "Dhaka University area and Shaheed Minar"],
+    bestTime: "November–February (cool, dry season, 15–25°C). March–May is very hot. June–October is monsoon — beautiful but flooding is common.",
+    visa: "Bangladeshi citizens — home country. Foreign nationals: most get visa-on-arrival at Dhaka airport (30 days). Check bangladeshivisa.gov.bd for your nationality.",
+    budget: "Budget: BDT 2,000–4,000/day (~$20–40 USD). Mid-range: BDT 5,000–10,000/day. Luxury: BDT 15,000+/day.",
+    faqs: [
+      { q: "Is Dhaka safe for tourists?", a: "Dhaka is generally safe for tourists. The main challenges are traffic congestion and air pollution rather than crime. Rickshaws and CNG auto-rickshaws are safe and fun to use." },
+      { q: "What is the best food to try in Dhaka?", a: "Old Dhaka biryani (especially Haji Biriyani), bakarkhani bread, halim, kacchi biryani, and street-side fuchka. Dhaka's food scene is one of South Asia's best-kept secrets." },
+      { q: "How many days should I spend in Dhaka?", a: "2–3 days covers Old Dhaka, key monuments, and the food scene. 4–5 days to include Sonargaon, Savar, or a river trip to the Sundarbans." },
+    ]
+  },
+  "coxs-bazar": {
+    name: "Cox's Bazar", country: "Bangladesh", emoji: "🏖",
+    title: "Cox's Bazar Travel Guide 2026 — AI Trip Planner | Atlas",
+    description: "Plan your Cox's Bazar trip with Atlas AI. World's longest natural sea beach, Inani, Saint Martin's Island, and full itineraries for Bangladesh's favourite beach.",
+    hero: "Cox's Bazar is home to the world's longest natural sea beach — 120 km of unbroken golden sand on the Bay of Bengal. It's Bangladesh's most visited destination and for good reason: the sunsets are extraordinary, the seafood is exceptional, and the nearby Saint Martin's Island is one of Bangladesh's most beautiful spots.",
+    highlights: ["Cox's Bazar main beach at sunrise or sunset", "Inani Beach — rocky coral formations", "Saint Martin's Island (Narikel Jinjira) — overnight trip", "Himchhari Waterfall and National Park", "Rakhain tribal village at Teknaf", "Fresh seafood at Kolatali beach stalls"],
+    bestTime: "November–February (best weather, calm sea). March–April is fine. May–October is monsoon — swimming is dangerous.",
+    visa: "Same as Bangladesh — visa-on-arrival for most nationalities at Dhaka airport. Domestic flights to Cox's Bazar take 1 hour.",
+    budget: "Budget: BDT 2,500–5,000/day. Mid-range: BDT 6,000–12,000/day. Beach resort: BDT 15,000+/day.",
+    faqs: [
+      { q: "How do I get to Cox's Bazar from Dhaka?", a: "Fly from Dhaka to Cox's Bazar — 1 hour, flights from BDT 3,000–8,000. Bus takes 10–12 hours but is much cheaper (BDT 700–1,500)." },
+      { q: "Can I visit Saint Martin's Island from Cox's Bazar?", a: "Yes — launch boats depart from Teknaf (1.5 hours south of Cox's Bazar). The journey takes 2.5–3 hours. Best October–March; boats stop in monsoon season." },
+      { q: "Is Cox's Bazar suitable for foreign tourists?", a: "Yes, Cox's Bazar is Bangladesh's most tourist-friendly destination. English is spoken at most hotels and the area is very safe for international visitors." },
+    ]
+  },
+  kathmandu: {
+    name: "Kathmandu", country: "Nepal", emoji: "🏔",
+    title: "Kathmandu Travel Guide 2026 — AI Trip Planner | Atlas",
+    description: "Plan your Kathmandu trip with Atlas AI. Himalayan trekking base, ancient temples, visa-on-arrival info, and itineraries for Everest Base Camp and beyond.",
+    hero: "Kathmandu is the gateway to the Himalayas and one of Asia's most spiritually charged cities. Ancient stupas, living goddess shrines, and medieval palace squares exist alongside tea houses packed with trekkers preparing for Everest Base Camp. The air is thin, the culture is deep, and the mountains are always on the horizon.",
+    highlights: ["Pashupatinath Temple & cremation ghats on the Bagmati", "Boudhanath Stupa — one of the world's largest", "Swayambhunath (Monkey Temple) hilltop views", "Durbar Squares — Kathmandu, Bhaktapur, Patan", "Thamel district for trekking gear and food", "Pokhara day trip or Everest Base Camp flight"],
+    bestTime: "March–May and September–November. Winter (December–February) is cold but clear. Monsoon June–August brings leeches on trails but lush greenery.",
+    visa: "Visa-on-arrival at Tribhuvan Airport for most nationalities including Canada, US, UK, EU, Australia, Bangladesh, India. $30 USD (15 days), $50 (30 days), $125 (90 days).",
+    budget: "Budget: $25–45/day. Mid-range: $60–100/day. Luxury lodge: $200+/day.",
+    faqs: [
+      { q: "Do I need a visa for Nepal?", a: "Most nationalities including Bangladesh get visa-on-arrival at Kathmandu airport. Bring USD cash — $30 for 15 days, $50 for 30 days. Indian citizens enter free." },
+      { q: "Can I do Everest Base Camp from Kathmandu?", a: "Yes — EBC trek takes 12–14 days from Lukla (fly from Kathmandu, 35 min). Best seasons: March–May and September–November." },
+      { q: "How many days do I need in Kathmandu?", a: "2–3 days for the city's temples and squares. 4–5 days to add Chitwan jungle safari or Pokhara. 14–21 days for a full trekking expedition." },
+    ]
+  },
+  "kuala-lumpur": {
+    name: "Kuala Lumpur", country: "Malaysia", emoji: "🏙",
+    title: "Kuala Lumpur Travel Guide 2026 — AI Trip Planner | Atlas",
+    description: "Plan your Kuala Lumpur trip with Atlas AI. Petronas Towers, Batu Caves, halal food, visa-free entry for Bangladeshi passports, and day-by-day itineraries.",
+    hero: "Kuala Lumpur is Southeast Asia's most underrated city — the Petronas Twin Towers pierce the clouds, the street food rivals anywhere in Asia, and the diversity of Malay, Chinese, Indian, and Western cultures creates a city of extraordinary energy. For Muslim travellers, it's one of the world's most comfortable destinations.",
+    highlights: ["Petronas Twin Towers sky bridge & Observation Deck", "Batu Caves Hindu temple complex", "Bukit Bintang for food, shopping, and nightlife", "Central Market & Chinatown Petaling Street", "Masjid Jamek — KL's oldest mosque", "Jalan Alor street food at night"],
+    bestTime: "Year-round — KL is hot and humid (27–33°C) every month. May–July and November–December see more rain.",
+    visa: "Visa-free 30–90 days for Canadian, US, UK, EU, Australian, Bangladeshi, Indian passports. Malaysia has one of the most open visa policies in Southeast Asia.",
+    budget: "Budget: $35–55/day. Mid-range: $80–150/day. Luxury: $250+/day.",
+    faqs: [
+      { q: "Do Bangladeshi citizens need a visa for Malaysia?", a: "No. Bangladeshi passport holders get visa-free entry to Malaysia for 30 days. No advance application needed — just show your passport on arrival." },
+      { q: "Is Malaysia halal-friendly?", a: "Malaysia is one of the world's best destinations for Muslim travellers. Halal food is everywhere, mosques are abundant, and prayer times are publicly observed." },
+      { q: "How many days do I need in Kuala Lumpur?", a: "3–4 days covers KL highlights. Use it as a base for Penang (1 hour flight), Langkawi (1 hour flight), or Cameron Highlands (3 hour drive)." },
+    ]
+  },
+  "ho-chi-minh": {
+    name: "Ho Chi Minh City", country: "Vietnam", emoji: "🛵",
+    title: "Ho Chi Minh City Travel Guide 2026 — AI Trip Planner | Atlas",
+    description: "Plan your Ho Chi Minh City trip with Atlas AI. War Remnants Museum, Mekong Delta, street food, e-visa info, and budget-friendly itineraries.",
+    hero: "Ho Chi Minh City (Saigon) is Vietnam at its most intense — 10 million people, 8 million motorbikes, and some of the world's best street food all compressed into a city that never stops moving. The War Remnants Museum is one of the most powerful in Southeast Asia, and the Mekong Delta is an hour away.",
+    highlights: ["War Remnants Museum — powerful and essential", "Cu Chi Tunnels day trip", "Ben Thanh Market for street food", "Bui Vien Walking Street — backpacker nightlife", "Mekong Delta day trip by boat", "Reunification Palace — 1975 history preserved"],
+    bestTime: "December–April (dry season). May–November is rainy season — cheaper and green.",
+    visa: "E-visa online for most nationalities including Bangladesh (~$25 USD, 90 days). Apply at evisa.xuatnhapcanh.gov.vn at least 3 days before travel.",
+    budget: "Budget: $30–50/day. Mid-range: $70–130/day. Luxury: $250+/day.",
+    faqs: [
+      { q: "Do Bangladeshi citizens need a visa for Vietnam?", a: "Yes. Apply for a Vietnam e-visa online at evisa.xuatnhapcanh.gov.vn — costs about $25 USD and takes 3 business days. Valid for 90 days." },
+      { q: "Is Ho Chi Minh City safe for tourists?", a: "Generally safe, but watch for bag snatchers on motorbikes. Keep bags on the inside, away from the road." },
+      { q: "How many days should I spend in Ho Chi Minh City?", a: "3–4 days for the city and a Mekong Delta day trip. Add 4–5 days to travel north to Hoi An, Da Nang, or Hanoi." },
+    ]
+  },
+  phuket: {
+    name: "Phuket", country: "Thailand", emoji: "🌊",
+    title: "Phuket Travel Guide 2026 — AI Trip Planner | Atlas",
+    description: "Plan your Phuket trip with Atlas AI. Phi Phi Islands, Patong Beach, visa exemption info, and personalised itineraries for Thailand's most famous island.",
+    hero: "Phuket is Thailand's largest island and its most famous beach destination — limestone karsts rise from turquoise water, long-tail boats ferry travellers to impossibly blue bays, and the night market scene in Old Town rivals anywhere in Southeast Asia.",
+    highlights: ["Phi Phi Islands day trip by speedboat", "Phang Nga Bay (James Bond Island)", "Old Phuket Town walking tour", "Patong Beach and Bangla Road night market", "Big Buddha viewpoint at sunset", "Kata and Karon beaches — quieter than Patong"],
+    bestTime: "November–April (dry season, calm Andaman Sea). May–October is wet season — cheaper but some boat trips cancel.",
+    visa: "30-day visa exemption for most passports. Bangladeshi passport: visa-on-arrival at Phuket airport ($35, 15 days).",
+    budget: "Budget: $40–65/day. Mid-range: $100–200/day. Luxury resort: $400+/day.",
+    faqs: [
+      { q: "Do I need a visa for Phuket?", a: "Most Western passports get 30-day visa exemption. Bangladeshi passports can get visa-on-arrival at Phuket International Airport — $35 USD for 15 days." },
+      { q: "How do I get to Phi Phi Islands from Phuket?", a: "Speedboat from Rassada Pier takes 45 minutes (~$25–40 USD return). Ferry takes 1.5–2 hours. Most visitors do a guided day tour." },
+      { q: "Is Phuket better than Bali?", a: "Different experiences — Phuket has better beaches and island-hopping. Bali has more culture and spiritual atmosphere. Both are excellent." },
+    ]
+  },
+  "sri-lanka": {
+    name: "Sri Lanka", country: "Sri Lanka", emoji: "🐘",
+    title: "Sri Lanka Travel Guide 2026 — AI Trip Planner | Atlas",
+    description: "Plan your Sri Lanka trip with Atlas AI. Sigiriya Rock, Ella train ride, temple elephants, ETA visa info, and full itineraries for this island gem.",
+    hero: "Sri Lanka packs extraordinary diversity into a country the size of Ireland — ancient rock fortresses, colonial hill stations in tea plantation mist, whale watching off the southern coast, and Buddhist temples where elephants are part of daily ceremonial life.",
+    highlights: ["Sigiriya Lion Rock ancient fortress (UNESCO)", "Ella — nine arch bridge and Little Adam's Peak", "Kandy Temple of the Tooth", "Galle Fort colonial Dutch architecture", "Yala National Park safari", "Colombo street food and Pettah market"],
+    bestTime: "West coast: November–April. East coast: May–September. Hill country: year-round.",
+    visa: "ETA required for all nationalities — apply at eta.gov.lk. Cost: $20 USD, 30 days, approved in minutes. Bangladesh, India, Canada, UK, USA all eligible.",
+    budget: "Budget: $35–55/day. Mid-range: $80–150/day. Luxury: $300+/day.",
+    faqs: [
+      { q: "Do Bangladeshi citizens need a visa for Sri Lanka?", a: "Yes. Apply for a Sri Lanka ETA online at eta.gov.lk — costs $20 USD, usually approved within minutes. Valid for 30 days." },
+      { q: "What is the famous train ride in Sri Lanka?", a: "The Kandy to Ella train is one of the world's most scenic rail journeys — 6 hours through tea plantations and misty hills. Book observation car seats in advance." },
+      { q: "How many days do I need for Sri Lanka?", a: "10–14 days to cover the cultural triangle, hill country, and southern coast. 7 days is possible but rushed." },
+    ]
+  },
+  "chiang-mai": {
+    name: "Chiang Mai", country: "Thailand", emoji: "⛪",
+    title: "Chiang Mai Travel Guide 2026 — AI Trip Planner | Atlas",
+    description: "Plan your Chiang Mai trip with Atlas AI. Ancient temples, ethical elephant sanctuaries, night markets — visa info and day-by-day itineraries for northern Thailand.",
+    hero: "Chiang Mai is the cultural capital of northern Thailand — a walled city of 300 temples surrounded by jungle mountains, with a food scene that tops best-in-Thailand lists and an elephant sanctuary culture that has shifted toward ethical practices. It's calmer than Bangkok and, many would argue, more interesting.",
+    highlights: ["Doi Inthanon National Park — Thailand's highest peak", "Elephant Nature Park — ethical elephant sanctuary", "Sunday Walking Street night market", "Doi Suthep temple panoramic views over the city", "Thai cooking class with morning market visit", "Old City moat — temple hop all day"],
+    bestTime: "November–February (cool season, 15–25°C at night). March–April is smoke season — avoid. May–October is rainy but green.",
+    visa: "30-day visa exemption for most passports. Bangladeshi passport: visa-on-arrival at Chiang Mai airport.",
+    budget: "Budget: $30–50/day. Mid-range: $70–130/day. Luxury boutique hotel: $200+/day.",
+    faqs: [
+      { q: "How do I get from Bangkok to Chiang Mai?", a: "Fly (1 hour, $20–60 USD), overnight train (12 hours, $15–40 USD sleeper — one of Asia's great train journeys), or overnight bus (10 hours, $10–20 USD)." },
+      { q: "Which elephant sanctuary is ethical in Chiang Mai?", a: "Elephant Nature Park (elephantnaturepark.org) is most reputable — no riding, natural behaviour, rescue focus. Book weeks ahead as it's very popular." },
+      { q: "How many days should I spend in Chiang Mai?", a: "4–5 days covers city temples, a cooking class, and Doi Suthep. Add 2–3 days for Doi Inthanon and the elephant sanctuary." },
+    ]
+  },
 };
 
 function buildPage(dest, data) {

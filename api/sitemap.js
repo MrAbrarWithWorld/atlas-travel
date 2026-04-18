@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     <priority>0.6</priority>
   </url>`).join('');
 
-  const destinations = ['tokyo','paris','bali','dubai','new-york','london','rome','bangkok','singapore','maldives','barcelona','istanbul','seoul','kyoto','amsterdam','prague','santorini','lisbon','cape-town','sydney'];
+  const destinations = ['tokyo','paris','bali','dubai','new-york','london','rome','bangkok','singapore','maldives','barcelona','istanbul','seoul','kyoto','amsterdam','prague','santorini','lisbon','cape-town','sydney','dhaka','coxs-bazar','kathmandu','kuala-lumpur','ho-chi-minh','phuket','sri-lanka','chiang-mai','petra'];
   const destUrls = destinations.map(d => `
   <url>
     <loc>https://getatlas.ca/plan/${d}</loc>
