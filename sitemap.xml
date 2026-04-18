@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://getatlas.ca/</loc>
-    <lastmod>2026-04-03</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://getatlas.ca/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://getatlas.ca/"/>
   </url>
   <url>
     <loc>https://getatlas.ca/privacy</loc>
-    <lastmod>2026-04-03</lastmod>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
   </url>
   <url>
     <loc>https://getatlas.ca/terms</loc>
-    <lastmod>2026-04-03</lastmod>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
   </url>
 </urlset>
