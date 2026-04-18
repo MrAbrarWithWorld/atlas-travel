@@ -528,7 +528,7 @@ function HelpModal({onClose}){
         ...[
           ["How do I upgrade to Pro?","Click your avatar → Upgrade to Pro. Pro gives unlimited plans and priority AI."],
           ["How do I save a trip?","Click 'Save trip' in the header. You must be signed in."],
-          ["Can I export my trip as PDF?","PDF export is coming soon in V2."],
+          ["Can I export my trip as PDF?","Yes — PDF export is available on Pro and Explorer plans. Tap the 📄 PDF button below any itinerary."],
           ["Is my data private?","Yes. Trips and preferences are stored securely. See our Privacy Policy."],
           ["How do I cancel my subscription?","Cancel anytime via Stripe. Access continues until end of billing period."],
         ].map(([q,a],i)=>React.createElement("div",{key:i,style:{borderBottom:"1px solid rgba(201,169,110,0.08)",paddingBottom:"0.85rem",marginBottom:"0.85rem"}},
@@ -882,7 +882,7 @@ tab==='account'&&React.createElement("div",null,
     // Features list
     React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"0.35rem",marginBottom:"0.75rem"}},
       ...(userTier==='explorer'
-        ?["💎 Unlimited travel plans","🤖 Priority AI (Claude always)","📄 Premium PDF export","🗺️ Interactive maps","🌍 Multi-language support","⚡ Advanced customization","🎧 Priority support"]
+        ?["💎 Unlimited travel plans","🤖 Always premium AI quality","📄 Premium PDF export","🗺️ Interactive maps","🌍 Multi-language support","⚡ Custom AI instruction","🎧 Priority support"]
         :userTier==='pro'
         ?["✅ Unlimited travel plans","🤖 Priority AI access","📄 PDF export","🗺️ Interactive maps","🌍 Multi-language support"]
         :["✅ 7 plans per day","🗺️ Interactive maps","🌍 Multi-language support","❌ No PDF export","❌ No priority AI"]
@@ -1051,7 +1051,7 @@ function PricingModal({user, onClose}) {
           )
         ),
 
-        feat("🤖","Always Claude AI — every single response","No Groq fallbacks. The best AI, always."),
+        feat("🤖","Always premium AI — every single response","Maximum quality on every message, no compromises."),
         feat("📋","Custom AI instruction","Train Atlas to match your style: language, budget, preferences — saved forever."),
         feat("✈️","Multi-destination planning","Plan Tokyo + Bali back-to-back in one conversation."),
         feat("📊","Destination comparison cards","Side-by-side visual breakdowns of any two destinations."),
@@ -1187,7 +1187,7 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier,onSettings,o
     open&&React.createElement("div",{className:"user-menu"},
       React.createElement("div",{style:{padding:"0.5rem 0.75rem",borderBottom:"1px solid rgba(201,169,110,0.1)",marginBottom:"0.35rem"}},
         React.createElement("p",{style:{fontSize:"0.72rem",color:"#c9a96e",fontWeight:500}},name),
-        React.createElement("p",{style:{fontSize:"0.62rem",color:userTier==='pro'||userTier==='explorer'?"#c9a96e":"#6a5a3a",marginTop:"0.1rem"}},userTier==='explorer'?"💎 Explorer Plan":userTier==='pro'?"⭐ Pro Plan — Unlimited":"Free Plan · 3 plans/day")
+        React.createElement("p",{style:{fontSize:"0.62rem",color:userTier==='pro'||userTier==='explorer'?"#c9a96e":"#6a5a3a",marginTop:"0.1rem"}},userTier==='explorer'?"💎 Explorer Plan":userTier==='pro'?"⭐ Pro Plan — Unlimited":"Free Plan · 7 plans/day")
       ),
       React.createElement("button",{onClick:()=>{setOpen(false);onSettings();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif",marginBottom:"0.1rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"⚙️ Settings"), React.createElement("button",{onClick:()=>{setOpen(false);onHelp();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif",marginBottom:"0.1rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"❓ Help & Support"),userTier!=='pro'&&userTier!=='explorer'&&React.createElement("button",{onClick:()=>{setOpen(false);onUpgrade();},style:{width:"100%",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",fontFamily:"'DM Sans',sans-serif",marginBottom:"0.35rem",display:"flex",alignItems:"center",gap:"0.4rem"}},"⭐ Upgrade to Pro"),
       React.createElement("button",{onClick:onLogout,style:{width:"100%",padding:"0.5rem 0.75rem",background:"none",border:"none",color:"#8a7a60",cursor:"pointer",fontSize:"0.7rem",textAlign:"left",borderRadius:6,fontFamily:"'DM Sans',sans-serif"}},"Sign out")
@@ -2157,13 +2157,13 @@ function renamePlan(id,newTitle){
     holdActive&&React.createElement("div",{style:{textAlign:"center",padding:"0.35rem",fontSize:"0.62rem",color:"#c9a96e",letterSpacing:"0.1em",background:"rgba(201,169,110,0.06)",borderTop:"1px solid rgba(201,169,110,0.1)",animation:"fadeIn 0.2s ease"}},
       "✋ Paused — add more text, then tap send"
     ),
-    !holdActive&&userTier==='free'&&user&&plansLeft!==null&&React.createElement("div",{style:{textAlign:"center",padding:"0.28rem",fontSize:"0.58rem",letterSpacing:"0.08em",background:plansLeft<=2?"rgba(180,80,80,0.07)":"rgba(201,169,110,0.04)",borderTop:"1px solid rgba(201,169,110,0.08)",color:plansLeft<=2?"#c47a5a":"#5a4a2a",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.4rem"}},
-      plansLeft<=0
+    !holdActive&&userTier==='free'&&user&&React.createElement("div",{style:{textAlign:"center",padding:"0.28rem",fontSize:"0.58rem",letterSpacing:"0.08em",background:(plansLeft!==null&&plansLeft<=2)?"rgba(180,80,80,0.07)":"rgba(201,169,110,0.04)",borderTop:"1px solid rgba(201,169,110,0.08)",color:(plansLeft!==null&&plansLeft<=2)?"#c47a5a":"#5a4a2a",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.4rem"}},
+      plansLeft===0
         ?"No plans left today · Resets in 24h"
         :React.createElement(React.Fragment,null,
-            React.createElement("span",{style:{color:plansLeft<=2?"#c47a5a":"rgba(201,169,110,0.4)"}},plansLeft<=2?"⚠":"✦"),
-            plansLeft+" plan"+(plansLeft!==1?"s":"")+" left today",
-            plansLeft<=2&&React.createElement("button",{onClick:()=>setShowPricing(true),style:{background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.58rem",textDecoration:"underline",fontFamily:"'DM Sans',sans-serif",padding:0}},"Upgrade →")
+            React.createElement("span",{style:{color:(plansLeft!==null&&plansLeft<=2)?"#c47a5a":"rgba(201,169,110,0.4)"}},(plansLeft!==null&&plansLeft<=2)?"⚠":"✦"),
+            plansLeft!==null?(plansLeft+" plan"+(plansLeft!==1?"s":"")+" left today"):"7 plans/day · Free plan",
+            (plansLeft!==null&&plansLeft<=2)&&React.createElement("button",{onClick:()=>setShowPricing(true),style:{background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.58rem",textDecoration:"underline",fontFamily:"'DM Sans',sans-serif",padding:0}},"Upgrade →")
           )
     ),
 
