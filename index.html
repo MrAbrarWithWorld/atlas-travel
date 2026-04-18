@@ -246,6 +246,23 @@ const [hotels,setHotels]=React.useState(()=>{
 });
   const [notify,setNotify]=React.useState(true);
   const [loading,setLoading]=React.useState(false);
+  const [addDays,setAddDays]=React.useState(true);
+  // Parse day-by-day itinerary from AI messages
+  const _dayItems=React.useMemo(()=>{
+    const aiText=msgs.filter(m=>m.from==='ai').map(m=>m.text||'').join('\n');
+    const days=[];
+    const seen=new Set();
+    // Match "Day 1:", "**Day 1**", "Day 1 —", "DAY 1:" etc.
+    const matches=[...aiText.matchAll(/\*{0,2}Day\s+(\d+)[:\*\—\–\s]+([^\n]{3,80})/gi)];
+    for(const d of matches){
+      const num=parseInt(d[1]);
+      if(seen.has(num))continue;
+      seen.add(num);
+      const title=d[2].replace(/\*+/g,'').replace(/^[\-–—:\s]+/,'').trim();
+      if(title)days.push({day:num,title});
+    }
+    return days.sort((a,b)=>a.day-b.day);
+  },[msgs]);
 
   function addFlight(){setFlights(f=>[...f,{from:'',to:'',date:'',time:'',flightNo:''}]);}
   function removeFlight(i){setFlights(f=>f.filter((_,idx)=>idx!==i));}
@@ -296,6 +313,15 @@ const [hotels,setHotels]=React.useState(()=>{
             allDay:true,
             colorId:'2'
           });
+        }
+      }
+
+      // Day-by-day itinerary events
+      if(addDays&&startDate&&_dayItems.length>0){
+        for(let i=0;i<_dayItems.length;i++){
+          const d=new Date(startDate);d.setDate(d.getDate()+i);
+          const ds=d.toISOString().split('T')[0];
+          events.push({title:`📍 Day ${_dayItems[i].day}: ${_dayItems[i].title}`,description:`Planned by Atlas AI\ngetatlas.ca`,start:ds,end:ds,allDay:true,colorId:'7'});
         }
       }
 
@@ -404,6 +430,27 @@ const [hotels,setHotels]=React.useState(()=>{
           ))
         ),
 
+        // Day-by-day itinerary section
+        _dayItems.length>0&&React.createElement("div",{style:{marginTop:"1rem"}},
+          React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.4rem"}},
+            React.createElement("p",{style:{fontSize:"0.58rem",color:"#c9a96e",letterSpacing:"0.1em",textTransform:"uppercase"}},"📋 Day-by-day itinerary"),
+            React.createElement("button",{onClick:()=>setAddDays(!addDays),style:{width:36,height:20,borderRadius:10,background:addDays?"rgba(201,169,110,0.4)":"rgba(100,90,70,0.2)",border:"none",cursor:"pointer",position:"relative",transition:"all 0.2s"}},
+              React.createElement("span",{style:{position:"absolute",top:2,left:addDays?18:2,width:16,height:16,borderRadius:"50%",background:addDays?"#c9a96e":"#6a5a3a",transition:"all 0.2s"}})
+            )
+          ),
+          addDays&&React.createElement("div",{style:{background:"rgba(201,169,110,0.03)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,padding:"0.6rem",maxHeight:160,overflowY:"auto"}},
+            !startDate&&React.createElement("p",{style:{fontSize:"0.68rem",color:"#6a5a35",textAlign:"center",padding:"0.5rem"}},"Set a start date above to place these on your calendar"),
+            startDate&&_dayItems.map((item,i)=>{
+              const d=new Date(startDate);d.setDate(d.getDate()+i);
+              const label=d.toLocaleDateString('en',{month:'short',day:'numeric'});
+              return React.createElement("div",{key:item.day,style:{display:"flex",gap:"0.5rem",padding:"0.25rem 0",borderBottom:i<_dayItems.length-1?"1px solid rgba(201,169,110,0.07)":"none",alignItems:"flex-start"}},
+                React.createElement("span",{style:{fontSize:"0.6rem",color:"#c9a96e",minWidth:52,paddingTop:2}},"Day "+item.day+" · "+label),
+                React.createElement("span",{style:{fontSize:"0.68rem",color:"#a08860",lineHeight:1.4}},item.title)
+              );
+            })
+          )
+        ),
+
         // Notification toggle
         React.createElement("div",{style:{marginTop:"1rem",display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:8,padding:"0.75rem"}},
           React.createElement("div",null,
@@ -422,6 +469,7 @@ const [hotels,setHotels]=React.useState(()=>{
   if(startDate&&endDate)addEv(`✈️ ${tripName}`,startDate,endDate,'Trip planned by Atlas AI\\ngetatlas.ca');
   for(const f of flights){if(f.from&&f.to&&f.date)addEv(`✈️ Flight: ${f.from} → ${f.to}${f.flightNo?' ('+f.flightNo+')':''}`,f.date,f.date,'Flight - Atlas AI');}
   for(const h of hotels){if(h.name&&h.checkIn&&h.checkOut)addEv(`🏨 ${h.name}${h.city?' - '+h.city:''}`,h.checkIn,h.checkOut,'Hotel stay - Atlas AI');}
+  if(addDays&&startDate&&_dayItems.length>0){for(let i=0;i<_dayItems.length;i++){const dd=new Date(startDate);dd.setDate(dd.getDate()+i);addEv(`📍 Day ${_dayItems[i].day}: ${_dayItems[i].title}`,dd.toISOString().split('T')[0],dd.toISOString().split('T')[0],'Atlas AI Travel Planner');}}
   if(notify&&startDate){const nd=new Date(startDate);nd.setDate(nd.getDate()-1);addEv(`⚠️ Trip tomorrow: ${tripName}`,nd.toISOString().split('T')[0],nd.toISOString().split('T')[0],'Your trip starts tomorrow!');}
   lines.push("END:VCALENDAR");
   const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
