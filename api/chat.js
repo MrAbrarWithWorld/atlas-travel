@@ -498,10 +498,15 @@ const travelContext = await getTravelContext(messages);
     });
     const data = await response.json();
     if (data.error) return res.status(500).json({ error: data.error });
-    const used = (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0);
+    const inputTok = data.usage?.input_tokens || 0;
+    const outputTok = data.usage?.output_tokens || 0;
+    const used = inputTok + outputTok;
     user.tokensUsed += used;
     if (requestingNewPlan) user.plansUsed += 1;
     res.setHeader('X-Plans-Left', Math.max(0, limits.plans - user.plansUsed));
+    // Log usage to Supabase (fire and forget)
+    const costUsd = (inputTok / 1_000_000) * 3 + (outputTok / 1_000_000) * 15;
+    sb.from('api_usage_log').insert({ user_id: userId || null, model: 'claude-sonnet-4', input_tokens: inputTok, output_tokens: outputTok, cost_usd: costUsd }).then(() => {}).catch(() => {});
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ error: { message: error.message } });

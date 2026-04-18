@@ -53,6 +53,15 @@ export default async function handler(req, res) {
       .from("saved_plans")
       .select("*", { count: "exact", head: true });
 
+    // API cost last 24h
+    const { data: usageData } = await sb
+      .from("api_usage_log")
+      .select("input_tokens, output_tokens, cost_usd")
+      .gte("created_at", yesterday);
+    const totalInputTok = (usageData || []).reduce((s, r) => s + (r.input_tokens || 0), 0);
+    const totalOutputTok = (usageData || []).reduce((s, r) => s + (r.output_tokens || 0), 0);
+    const totalCost = (usageData || []).reduce((s, r) => s + parseFloat(r.cost_usd || 0), 0);
+
     // Build email HTML
     const dateStr = now.toLocaleDateString("en-CA", {
       weekday: "long", year: "numeric", month: "long", day: "numeric",
@@ -111,6 +120,28 @@ export default async function handler(req, res) {
         <td style="padding:12px 16px;">
           <span style="font-size:13px;color:#a8a090;font-weight:500;">Total Paid</span>
           <span style="float:right;font-size:13px;color:#e8dcc8;font-weight:600;">${totalPaid}</span>
+        </td>
+      </tr>
+    </table>
+
+    <div style="font-size:11px;letter-spacing:2px;color:#6a5a3a;text-transform:uppercase;margin:20px 0 12px;">AI Cost (Last 24h)</div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(201,169,110,0.04);border:1px solid rgba(201,169,110,0.12);border-radius:8px;">
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid rgba(201,169,110,0.08);">
+          <span style="font-size:13px;color:#a8a090;">Input tokens</span>
+          <span style="float:right;font-size:13px;color:#c9a96e;">${totalInputTok.toLocaleString()}</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;border-bottom:1px solid rgba(201,169,110,0.08);">
+          <span style="font-size:13px;color:#a8a090;">Output tokens</span>
+          <span style="float:right;font-size:13px;color:#c9a96e;">${totalOutputTok.toLocaleString()}</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;">
+          <span style="font-size:13px;color:#a8a090;font-weight:500;">Estimated cost</span>
+          <span style="float:right;font-size:13px;color:#e8dcc8;font-weight:600;">$${totalCost.toFixed(4)}</span>
         </td>
       </tr>
     </table>
