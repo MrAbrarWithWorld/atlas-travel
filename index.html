@@ -557,6 +557,7 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
   });
   const [voices, setVoices] = React.useState([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = React.useState(()=>localStorage.getItem('atlas_voice_uri')||'');
+  const [customPrompt, setCustomPrompt] = React.useState(()=>localStorage.getItem('atlas_custom_prompt')||'');
   React.useEffect(()=>{
     function loadVoices(){const v=window.speechSynthesis?.getVoices()||[];if(v.length>0)setVoices(v);}
     loadVoices();
@@ -572,6 +573,7 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
     localStorage.setItem('atlas_prefs',JSON.stringify(prefs));
     localStorage.setItem('atlas_fontsize',fontSize);
     localStorage.setItem('atlas_voice_uri',selectedVoiceURI);
+    if(userTier==='explorer')localStorage.setItem('atlas_custom_prompt',customPrompt);
     document.documentElement.style.fontSize = fontSize==='small'?'13px':fontSize==='large'?'17px':'15px';
     setTimeout(()=>{setSaving(false);setSaved(true);setTimeout(()=>setSaved(false),2000);},400);
   }
@@ -680,6 +682,7 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
         React.createElement("div",{style:{width:155,borderRight:"1px solid rgba(201,169,110,0.1)",padding:"0.75rem",flexShrink:0}},
           React.createElement("button",{style:tabStyle('personalization'),onClick:()=>setTab('personalization')},"✦","Preferences"),
           React.createElement("button",{style:tabStyle('appearance'),onClick:()=>setTab('appearance')},"◈","Appearance"),
+          userTier==='explorer'&&React.createElement("button",{style:tabStyle('ai'),onClick:()=>setTab('ai')},"💎","AI Prompt"),
           React.createElement("button",{style:tabStyle('account'),onClick:()=>setTab('account')},"◎","Account"),
           React.createElement("button",{style:tabStyle('security'),onClick:()=>setTab('security')},"🔒","Security")
         ),
@@ -812,6 +815,35 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
             )
           ),
 
+          // ---- AI PROMPT (Explorer only) ----
+          tab==='ai'&&React.createElement("div",null,
+            React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.75rem"}},
+              React.createElement("p",{style:{...sectionTitle,marginBottom:0}},"Custom AI Instruction"),
+              React.createElement("span",{style:{fontSize:"0.55rem",color:"#c9a96e",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:10,padding:"0.15rem 0.5rem",letterSpacing:"0.08em"}},"💎 Explorer")
+            ),
+            React.createElement("p",{style:{fontSize:"0.72rem",color:"#6a5a3a",lineHeight:1.75,marginBottom:"1rem"}},"Tell Atlas how to behave in every conversation. This instruction is secretly added to the AI's system prompt — the AI always follows it, but it stays invisible to users."),
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.12)",borderRadius:8,padding:"0.65rem",marginBottom:"1rem"}},
+              React.createElement("p",{style:{fontSize:"0.6rem",color:"#c9a96e",letterSpacing:"0.08em",marginBottom:"0.4rem"}},"💡 Examples"),
+              ["Always respond in French","I'm a budget traveler — always suggest cheap options under $50/day","I travel with 2 kids under 10, always include family-friendly activities","Always include specific restaurant recommendations with prices"].map((ex,i)=>
+                React.createElement("div",{key:i,onClick:()=>setCustomPrompt(ex),style:{fontSize:"0.68rem",color:"#6a5a3a",padding:"0.25rem 0",cursor:"pointer",borderBottom:i<3?"1px solid rgba(201,169,110,0.07)":"none",transition:"color 0.15s"},onMouseEnter:e=>e.currentTarget.style.color="#c9a96e",onMouseLeave:e=>e.currentTarget.style.color="#6a5a3a"},
+                  `"${ex}"`
+                )
+              )
+            ),
+            React.createElement("textarea",{
+              placeholder:"Write your custom instruction here...",
+              value:customPrompt,
+              onChange:e=>setCustomPrompt(e.target.value.slice(0,500)),
+              rows:5,
+              style:{...inputStyle,resize:"vertical",lineHeight:1.7,marginTop:0}
+            }),
+            React.createElement("p",{style:{fontSize:"0.58rem",color:"#4a3a22",marginTop:"0.3rem",textAlign:"right"}},customPrompt.length+"/500"),
+            customPrompt&&React.createElement("button",{onClick:()=>setCustomPrompt(''),style:{background:"none",border:"none",color:"#4a3a22",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.08em",padding:"0.25rem 0",textDecoration:"underline"}},"Clear instruction"),
+            React.createElement("div",{style:{display:"flex",gap:"0.5rem",marginTop:"1rem"}},
+              React.createElement("button",{onClick:save,style:{flex:1,padding:"0.6rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:8,color:saved?"#6abf6a":"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},saving?"Saving...":saved?"✓ Saved":"Save Instruction")
+            )
+          ),
+
           // ---- ACCOUNT ----
 tab==='account'&&React.createElement("div",null,
   React.createElement("p",{style:sectionTitle},"Account"),
@@ -853,7 +885,7 @@ tab==='account'&&React.createElement("div",null,
         ?["💎 Unlimited travel plans","🤖 Priority AI (Claude always)","📄 Premium PDF export","🗺️ Interactive maps","🌍 Multi-language support","⚡ Advanced customization","🎧 Priority support"]
         :userTier==='pro'
         ?["✅ Unlimited travel plans","🤖 Priority AI access","📄 PDF export","🗺️ Interactive maps","🌍 Multi-language support"]
-        :["✅ 3 plans per day","🗺️ Interactive maps","🌍 Multi-language support","❌ No PDF export","❌ No priority AI"]
+        :["✅ 7 plans per day","🗺️ Interactive maps","🌍 Multi-language support","❌ No PDF export","❌ No priority AI"]
       ).map((f,i)=>React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
         React.createElement("span",{style:{fontSize:"0.75rem",color:"#b8b0a0"}},f)
       ))
@@ -1623,6 +1655,7 @@ function App(){
   const [projects,setProjects]=useState([]);
   const [showCalendar,setShowCalendar]=useState(false);
   const [holdActive,setHoldActive]=useState(false);
+  const [plansLeft,setPlansLeft]=useState(null);
   const [showOnboarding,setShowOnboarding]=useState(()=>!localStorage.getItem('atlas_onboarded')&&!loadLocal());
   const hist=useRef(saved?.hist||[...defaultHist]);
   const endRef=useRef(null);
@@ -1954,6 +1987,9 @@ function renamePlan(id,newTitle){
     setMsgs(newMsgs);setBusy(true);hist.current=[...hist.current,{role:"user",content:userContent}];setPhoto(null);
     try{
       const headers={"Content-Type":"application/json"}; try{const prefs=JSON.parse(localStorage.getItem('atlas_prefs')||'{}');if(Object.keys(prefs).length>0)headers['x-user-prefs']=btoa(unescape(encodeURIComponent(JSON.stringify(prefs))));}catch{}
+      // Send Explorer custom instruction if set
+      const customPrompt=localStorage.getItem('atlas_custom_prompt');
+      if(customPrompt&&customPrompt.trim())headers['x-custom-prompt']=encodeURIComponent(customPrompt.trim());
       if(user){const{data:{session}}=await sb.auth.getSession();if(session?.access_token)headers["Authorization"]=`Bearer ${session.access_token}`;}
       const res=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-14)]})});
       if(res.status===429){
@@ -1963,6 +1999,8 @@ function renamePlan(id,newTitle){
         setBusy(false);return;
       }
       if(!res.ok)throw new Error(`Error ${res.status}`);
+      const plansLeftHdr=res.headers.get('X-Plans-Left');
+      if(plansLeftHdr!==null)setPlansLeft(parseInt(plansLeftHdr));
       const data=await res.json();if(data.error)throw new Error(data.error.message||"Error");
       const reply=data.content?.[0]?.text;if(!reply)throw new Error("No response");
       const locations=parseMapData(reply);
@@ -2039,9 +2077,11 @@ function renamePlan(id,newTitle){
         React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.2rem",fontWeight:300,color:"rgba(201,169,110,0.18)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"0.4rem"}},"ATLAS"),
         React.createElement("p",{style:{fontSize:"0.62rem",color:"rgba(201,169,110,0.3)",letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:"2rem"}},"AI Travel Planner"),
         React.createElement("p",{style:{fontSize:"0.8rem",color:"#5a4a2a",marginBottom:"1.25rem",lineHeight:1.6}},"Where would you like to go?"),
-        React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:"0.5rem",justifyContent:"center",maxWidth:320}},
-          [["🗼 Tokyo","Plan a 7-day trip to Tokyo, Japan"],["🗺 Paris","Plan a 5-day trip to Paris, France"],["🌴 Bali","Plan a 7-day trip to Bali, Indonesia"],["🗽 New York","Plan a 5-day trip to New York City"],["🦁 Kenya Safari","Plan a 10-day safari in Kenya"],["🏛 Rome","Plan a 5-day trip to Rome, Italy"],["🌸 Seoul","Plan a 6-day trip to Seoul, South Korea"],["🏔 Iceland","Plan a 7-day trip to Iceland"]].map(([label,prompt])=>
-            React.createElement("button",{key:label,onClick:()=>send(prompt),style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.18)",borderRadius:20,padding:"0.4rem 0.85rem",color:"#7a6a45",cursor:"pointer",fontSize:"0.7rem",fontFamily:"'DM Sans',sans-serif",transition:"all 0.15s"},onMouseEnter:e=>{e.currentTarget.style.background="rgba(201,169,110,0.12)";e.currentTarget.style.color="#c9a96e";},onMouseLeave:e=>{e.currentTarget.style.background="rgba(201,169,110,0.06)";e.currentTarget.style.color="#7a6a45";}},label)
+        React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:"0.5rem",justifyContent:"center",maxWidth:340}},
+          [...[["🗼 Tokyo","Plan a 7-day trip to Tokyo, Japan"],["🗺 Paris","Plan a 5-day trip to Paris, France"],["🌴 Bali","Plan a 7-day trip to Bali, Indonesia"],["🗽 New York","Plan a 5-day trip to New York City"],["🦁 Kenya Safari","Plan a 10-day safari in Kenya"],["🏛 Rome","Plan a 5-day trip to Rome, Italy"],["🌸 Seoul","Plan a 6-day trip to Seoul, South Korea"],["🏔 Iceland","Plan a 7-day trip to Iceland"]],
+            ...(userTier==='explorer'?[["💎 Tokyo + Bali","Plan a 14-day multi-country trip: 7 days Tokyo Japan then 7 days Bali Indonesia back-to-back. Full itinerary for both destinations."],["💎 Compare destinations","Compare Tokyo vs Bali — which is better for a solo traveler on a $2000 budget?"]]:[])
+          ].map(([label,prompt])=>
+            React.createElement("button",{key:label,onClick:()=>send(prompt),style:{background:label.startsWith("💎")?"rgba(201,169,110,0.1)":"rgba(201,169,110,0.06)",border:`1px solid ${label.startsWith("💎")?"rgba(201,169,110,0.3)":"rgba(201,169,110,0.18)"}`,borderRadius:20,padding:"0.4rem 0.85rem",color:label.startsWith("💎")?"#c9a96e":"#7a6a45",cursor:"pointer",fontSize:"0.7rem",fontFamily:"'DM Sans',sans-serif",transition:"all 0.15s"},onMouseEnter:e=>{e.currentTarget.style.background="rgba(201,169,110,0.12)";e.currentTarget.style.color="#c9a96e";},onMouseLeave:e=>{e.currentTarget.style.background=label.startsWith("💎")?"rgba(201,169,110,0.1)":"rgba(201,169,110,0.06)";e.currentTarget.style.color=label.startsWith("💎")?"#c9a96e":"#7a6a45";}},label)
           )
         )
       ),
@@ -2087,6 +2127,15 @@ function renamePlan(id,newTitle){
 
     holdActive&&React.createElement("div",{style:{textAlign:"center",padding:"0.35rem",fontSize:"0.62rem",color:"#c9a96e",letterSpacing:"0.1em",background:"rgba(201,169,110,0.06)",borderTop:"1px solid rgba(201,169,110,0.1)",animation:"fadeIn 0.2s ease"}},
       "✋ Paused — add more text, then tap send"
+    ),
+    !holdActive&&userTier==='free'&&user&&plansLeft!==null&&React.createElement("div",{style:{textAlign:"center",padding:"0.28rem",fontSize:"0.58rem",letterSpacing:"0.08em",background:plansLeft<=2?"rgba(180,80,80,0.07)":"rgba(201,169,110,0.04)",borderTop:"1px solid rgba(201,169,110,0.08)",color:plansLeft<=2?"#c47a5a":"#5a4a2a",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.4rem"}},
+      plansLeft<=0
+        ?"No plans left today · Resets in 24h"
+        :React.createElement(React.Fragment,null,
+            React.createElement("span",{style:{color:plansLeft<=2?"#c47a5a":"rgba(201,169,110,0.4)"}},plansLeft<=2?"⚠":"✦"),
+            plansLeft+" plan"+(plansLeft!==1?"s":"")+" left today",
+            plansLeft<=2&&React.createElement("button",{onClick:()=>setShowPricing(true),style:{background:"none",border:"none",color:"#c9a96e",cursor:"pointer",fontSize:"0.58rem",textDecoration:"underline",fontFamily:"'DM Sans',sans-serif",padding:0}},"Upgrade →")
+          )
     ),
 
     // Input

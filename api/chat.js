@@ -390,7 +390,8 @@ const travelContext = await getTravelContext(messages);
 
   const tokensLeft = limits.tokens - user.tokensUsed;
   const imageInMessages = hasImage(messages);
-  const useClaudeNow = needsClaudeQuality(messages) || imageInMessages || userTier === 'pro';
+  const useClaudeNow = needsClaudeQuality(messages) || imageInMessages || userTier === 'pro' || userTier === 'explorer';
+  const plansLeft = Math.max(0, limits.plans - user.plansUsed);
 
   if (!useClaudeNow && process.env.GROQ_API_KEY) {
     try {
@@ -423,6 +424,7 @@ const travelContext = await getTravelContext(messages);
         const used = (groqData.usage?.prompt_tokens || 0) + (groqData.usage?.completion_tokens || 0);
         user.tokensUsed += used;
         if (requestingNewPlan) user.plansUsed += 1;
+        res.setHeader('X-Plans-Left', Math.max(0, limits.plans - user.plansUsed));
         return res.status(200).json({
           content: [{ type: "text", text: reply }],
           usage: { input_tokens: groqData.usage?.prompt_tokens || 0, output_tokens: groqData.usage?.completion_tokens || 0 }
@@ -455,6 +457,7 @@ const travelContext = await getTravelContext(messages);
       if (geminiReply) {
         user.tokensUsed += 2000;
         if (requestingNewPlan) user.plansUsed += 1;
+        res.setHeader('X-Plans-Left', Math.max(0, limits.plans - user.plansUsed));
         return res.status(200).json({
           content: [{ type: "text", text: geminiReply }],
           usage: { input_tokens: 1000, output_tokens: 1000 }
@@ -471,9 +474,14 @@ const travelContext = await getTravelContext(messages);
       userPrefs.travelStyle?`User travel style: ${userPrefs.travelStyle}`:'',
       userPrefs.customPrefs?`User preferences: ${userPrefs.customPrefs}`:'',
     ].filter(Boolean).join('\n');
-    const systemWithPrefs = SYSTEM_MSG + 
+    // Explorer custom system prompt
+    const customInstruction = userTier==='explorer' && req.headers['x-custom-prompt']
+      ? decodeURIComponent(req.headers['x-custom-prompt'].replace(/\+/g,' ')).slice(0,500)
+      : '';
+    const systemWithPrefs = SYSTEM_MSG +
   (travelContext ? travelContext : '') +
-  (prefStr ? `\n\nUSER PROFILE:\n${prefStr}` : '');
+  (prefStr ? `\n\nUSER PROFILE:\n${prefStr}` : '') +
+  (customInstruction ? `\n\nEXPLORER CUSTOM INSTRUCTION (follow this for every response):\n${customInstruction}` : '');
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -493,6 +501,7 @@ const travelContext = await getTravelContext(messages);
     const used = (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0);
     user.tokensUsed += used;
     if (requestingNewPlan) user.plansUsed += 1;
+    res.setHeader('X-Plans-Left', Math.max(0, limits.plans - user.plansUsed));
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ error: { message: error.message } });
