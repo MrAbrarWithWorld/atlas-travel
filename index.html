@@ -1373,6 +1373,59 @@ function Modal({hours,plansLeft,onClose,onLogin,onUpgrade}){
 }
 
 // ===================== PROSE =====================
+function isItinerary(text){if(!text)return false;const m=text.match(/\bDay\s+\d+/gi);return m&&m.length>=2;}
+
+function TripDocument({text,msgs}){
+  const destination=extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''})));
+  const clean=stripMapData(text);
+  const lines=clean.split('\n');
+  // Parse into pre-content + day sections
+  const sections=[];let curDay=null;const prelines=[];
+  for(const line of lines){
+    const t=line.trim();if(!t)continue;
+    const dm=t.match(/^\*{0,2}(Day\s+\d+)[:\*\s\—\–]+([^\n]*)/i);
+    if(dm){
+      if(curDay)sections.push(curDay);
+      else if(prelines.length){sections.push({type:'pre',content:prelines.join('\n')});prelines.length=0;}
+      curDay={type:'day',label:dm[1],title:dm[2].replace(/\*+/g,'').trim(),items:[]};
+    }else if(curDay){
+      if(t.startsWith('- ')||t.startsWith('* '))curDay.items.push(t.slice(2).replace(/\*\*/g,''));
+      else if(!t.startsWith('##')&&!t.startsWith('**Day'))curDay.items.push(t.replace(/\*\*/g,''));
+    }else{prelines.push(line);}
+  }
+  if(curDay)sections.push(curDay);
+  const dayCount=sections.filter(s=>s.type==='day').length;
+  return React.createElement('div',{style:{width:'100%'}},
+    // Trip header card
+    React.createElement('div',{style:{background:'linear-gradient(135deg,rgba(201,169,110,0.1),rgba(201,169,110,0.04))',border:'1px solid rgba(201,169,110,0.22)',borderRadius:12,padding:'0.75rem 1rem',marginBottom:'0.75rem',display:'flex',alignItems:'center',gap:'0.65rem'}},
+      React.createElement('span',{style:{fontSize:'1.4rem'}},'✈️'),
+      React.createElement('div',null,
+        React.createElement('p',{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:'1.05rem',fontWeight:400,color:'#d4aa6e',letterSpacing:'0.05em'}},destination||'Your Trip'),
+        React.createElement('p',{style:{fontSize:'0.58rem',color:'rgba(201,169,110,0.5)',letterSpacing:'0.12em',textTransform:'uppercase',marginTop:'0.15rem'}},dayCount+'-day itinerary · Atlas AI Travel Planner')
+      )
+    ),
+    // Pre-content (overview paragraph)
+    prelines.length>0&&React.createElement('div',{style:{fontSize:'0.8rem',color:'#8a7a55',lineHeight:1.8,marginBottom:'0.75rem',padding:'0 0.25rem'}},React.createElement(Prose,{text:prelines.join('\n')})),
+    // Day cards
+    ...sections.filter(s=>s.type==='day').map((day,i)=>
+      React.createElement('div',{key:i,style:{background:'rgba(201,169,110,0.025)',border:'1px solid rgba(201,169,110,0.1)',borderLeft:'3px solid rgba(201,169,110,0.45)',borderRadius:'0 10px 10px 0',padding:'0.65rem 0.85rem',marginBottom:'0.45rem'}},
+        React.createElement('div',{style:{display:'flex',alignItems:'baseline',gap:'0.5rem',marginBottom:day.items.length?'0.35rem':0}},
+          React.createElement('span',{style:{fontSize:'0.55rem',color:'#c9a96e',letterSpacing:'0.14em',textTransform:'uppercase',fontWeight:600,flexShrink:0}},day.label),
+          day.title&&React.createElement('span',{style:{fontSize:'0.88rem',color:'#d4c8a8',fontFamily:"'Cormorant Garamond',serif",lineHeight:1.3}},day.title)
+        ),
+        day.items.length>0&&React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.18rem'}},
+          ...day.items.filter(Boolean).map((item,j)=>
+            React.createElement('div',{key:j,style:{display:'flex',gap:'0.4rem',fontSize:'0.75rem',color:'#7a6a45',lineHeight:1.55}},
+              React.createElement('span',{style:{color:'rgba(201,169,110,0.4)',fontSize:'0.4rem',marginTop:'5px',flexShrink:0}},'◆'),
+              React.createElement('span',null,item)
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
 function Prose({text}){
   const clean=stripMapData(text);
   return React.createElement("div",null,clean.split("\n").map((line,i)=>{
@@ -1841,11 +1894,11 @@ function renamePlan(id,newTitle){
         )
       ),
       msgs.length>0&&React.createElement("div",{style:{padding:"1.25rem 1.5rem",display:"flex",flexDirection:"column",gap:"1.35rem"}},
-        ...msgs.map(msg=>React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:"0.75rem",alignItems:"flex-start"}},
-          React.createElement("div",{style:{flexShrink:0,width:24,height:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:2}},
-            React.createElement("span",{style:{fontSize:"0.46rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
+        ...msgs.map(msg=>{const _isItin=msg.from==="ai"&&isItinerary(msg.text);return React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:_isItin?"0.4rem":"0.75rem",alignItems:"flex-start"}},
+          React.createElement("div",{style:{flexShrink:0,width:_isItin?18:24,height:_isItin?18:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:_isItin?4:2}},
+            React.createElement("span",{style:{fontSize:"0.42rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
           ),
-          React.createElement("div",{style:{maxWidth:"88%",width:"100%"}},
+          React.createElement("div",{style:{maxWidth:_isItin?"100%":"88%",width:"100%"}},
             msg.from==="user"
               ?editingId===msg.id
                 ?React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"0.5rem"}},
@@ -1861,7 +1914,7 @@ function renamePlan(id,newTitle){
                     !busy&&React.createElement("button",{className:"edit-btn",onClick:()=>startEdit(msg),style:{position:"absolute",top:-8,left:-8,background:"#252018",border:"1px solid rgba(201,169,110,0.2)",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#8a7a50"}},React.createElement(EditIcon))
                   )
               :React.createElement("div",null,
-                  React.createElement(Prose,{text:msg.text}),
+                  _isItin?React.createElement(TripDocument,{text:msg.text,msgs}):React.createElement(Prose,{text:msg.text}),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
                   React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.5rem",flexWrap:"wrap"}},
                   hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen"),
@@ -1870,7 +1923,7 @@ function renamePlan(id,newTitle){
                  )
                 )
               )
-            )),
+            )}),
         busy&&React.createElement("div",{className:"msg",style:{display:"flex",gap:"0.75rem",alignItems:"center"}},
           React.createElement("div",{style:{width:24,height:24,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.5)",background:"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:"0.46rem",color:"#c9a96e"}},"A")),
           React.createElement(Dots)
