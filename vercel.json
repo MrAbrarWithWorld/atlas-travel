@@ -11,8 +11,17 @@
     },
     "api/webhook.js": {
       "maxDuration": 30
+    },
+    "api/cron-report.js": {
+      "maxDuration": 30
     }
   },
+  "crons": [
+    {
+      "path": "/api/cron-report",
+      "schedule": "0 9 * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
