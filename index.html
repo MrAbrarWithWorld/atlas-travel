@@ -142,14 +142,18 @@ function parseMapData(text){const m=text.match(/\[MAPDATA\]([\s\S]*?)\[\/MAPDATA
 function stripMapData(text){return text.replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g,'').trim();}
 function formatDate(iso){const d=new Date(iso);const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;}
 function extractTitle(messages){
+  const cleanMsg=raw=>{
+    const t=typeof raw==="string"?raw:Array.isArray(raw)?(raw.find(c=>c.type==="text")?.text||""):"";
+    return t.replace(/\s*\[Current date[\s\S]*$/i,'').replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g,'').trim();
+  };
   const userMsgs=messages.filter(m=>m.role==="user");
   for(const m of userMsgs){
-    const text=typeof m.content==="string"?m.content:Array.isArray(m.content)?(m.content.find(c=>c.type==="text")?.text||""):"";
-    const match=text.match(/\b(italy|japan|thailand|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|nepal|india|vietnam|egypt|brazil|mexico|korea|australia|bangladesh|pakistan|morocco|portugal|indonesia|malaysia|philippines|turkey|maldives|kenya|tanzania|south africa|argentina|chile|colombia|peru|cuba|jordan|georgia|armenia|iceland|norway|sweden|finland|denmark|ireland|scotland|croatia|czech|hungary|romania|poland|ukraine|new zealand|hong kong|taiwan|vietnam|cambodia|myanmar|laos|uzbekistan|qatar|bahrain|kuwait|oman|saudi|lebanon)\b/i);
-    if(match)return match[0].charAt(0).toUpperCase()+match[0].slice(1).toLowerCase()+" Trip";
+    const text=cleanMsg(m.content);
+    const match=text.match(/\b(tokyo|seoul|osaka|kyoto|bali|phuket|bangkok|singapore|dubai|paris|london|rome|barcelona|amsterdam|berlin|prague|budapest|lisbon|vienna|istanbul|athens|cairo|marrakech|nairobi|kenya|tanzania|capetown|sydney|melbourne|new york|new zealand|hawaii|toronto|montreal|mexico|cancun|havana|lima|rio|buenos aires|italy|japan|thailand|france|germany|spain|portugal|greece|turkey|india|nepal|vietnam|cambodia|indonesia|malaysia|philippines|australia|south korea|hong kong|taiwan|canada|switzerland|norway|iceland|sweden|finland|denmark|ireland|scotland|croatia|poland|ukraine|georgia|armenia|jordan|qatar|maldives|mauritius|seychelles|sri lanka|bangladesh|pakistan|morocco|egypt|brazil|colombia|peru|chile|argentina|cuba|uzbekistan|oman|kuwait|bahrain|saudi)\b/i);
+    if(match){const w=match[0];return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()+" Trip";}
   }
   const first=userMsgs[1]||userMsgs[0];
-  if(first){const text=typeof first.content==="string"?first.content:(first.content.find&&first.content.find(c=>c.type==="text")?.text)||"";return text.slice(0,28)+(text.length>28?"...":"");}
+  if(first){const text=cleanMsg(first.content);if(text.length>2)return text.slice(0,30)+(text.length>30?"...":"");}
   return "Trip Plan";
 }
 
