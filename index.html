@@ -1669,7 +1669,7 @@ function App(){
   async function checkTier(uid,email){
     try{
       const{data:allowed}=await sb.from('allowed_users').select('email').eq('email',email).single();
-      if(allowed){setUserTier('pro');return 'pro';}
+      if(allowed){setUserTier('explorer');return 'explorer';}
       const{data}=await sb.from('subscriptions').select('plan,status,current_period_end').eq('user_id',uid).eq('status','active').gte('current_period_end',new Date().toISOString()).single();
       if(data){const t=data.plan?.includes('explorer')?'explorer':'pro';setUserTier(t);return t;}
       setUserTier('free');return 'free';

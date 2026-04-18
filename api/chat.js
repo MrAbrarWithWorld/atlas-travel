@@ -331,7 +331,7 @@ export default async function handler(req, res) {
         userId = user.id;
         const { data: allowed } = await sb.from('allowed_users').select('email').eq('email', user.email).single();
         if (allowed) {
-          userTier = 'pro';
+          userTier = 'explorer';
         } else {
           const { data: sub } = await sb.from('subscriptions')
             .select('plan, status, current_period_end')
