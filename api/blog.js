@@ -5,7 +5,7 @@ const sb = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-function buildHead(title, description, path) {
+function buildHead(title, description, path, imageUrl) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +18,9 @@ function buildHead(title, description, path) {
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://getatlas.ca${path}"/>
 <meta property="og:site_name" content="ATLAS — AI Travel Planner"/>
+${imageUrl ? `<meta property="og:image" content="${imageUrl}"/>` : ''}
 <meta name="twitter:card" content="summary_large_image"/>
+${imageUrl ? `<meta name="twitter:image" content="${imageUrl}"/>` : ''}
 <link rel="canonical" href="https://getatlas.ca${path}"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -46,6 +48,8 @@ a:hover{color:#e8dcc8;}
 .cta p{margin-bottom:0.75rem;color:#c4b89a;font-size:0.85rem;}
 .cta-btn{display:inline-block;background:#c9a96e;color:#1c1914;font-size:0.75rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:0.65rem 1.5rem;border-radius:8px;text-decoration:none;transition:background 0.2s;}
 .cta-btn:hover{background:#e0c080;color:#1c1914;}
+.hero-img{width:100%;height:340px;object-fit:cover;border-radius:12px;margin-bottom:2rem;display:block;}
+.card-img{width:100%;height:160px;object-fit:cover;border-radius:8px 8px 0 0;margin-bottom:0;display:block;}
 .related{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid rgba(201,169,110,0.15);}
 .related h3{margin-bottom:0.75rem;}
 .related-links{display:flex;flex-wrap:wrap;gap:0.5rem;}
@@ -71,16 +75,19 @@ function buildListingPage(articles) {
   const cards = articles.map(a => {
     const dateStr = new Date(a.date_published).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     return `
-  <a href="/blog/${a.slug}" class="article-card">
-    <div class="card-top">
-      <span class="card-emoji">${a.hero_emoji}</span>
-      <div class="card-title">${a.title}</div>
-    </div>
-    <p class="card-desc">${a.description}</p>
-    <div class="card-meta">
-      <span class="badge">${a.category}</span>
-      <span>${dateStr}</span>
-      <span>${a.read_time}</span>
+  <a href="/blog/${a.slug}" class="article-card" style="padding:0;overflow:hidden;">
+    ${a.cover_image_url ? `<img src="${a.cover_image_url}" alt="${a.title}" class="card-img" loading="lazy"/>` : ''}
+    <div style="padding:1.1rem 1.35rem 1.25rem;">
+      <div class="card-top" style="margin-bottom:0.4rem;">
+        <span class="card-emoji">${a.hero_emoji}</span>
+        <div class="card-title">${a.title}</div>
+      </div>
+      <p class="card-desc">${a.description}</p>
+      <div class="card-meta">
+        <span class="badge">${a.category}</span>
+        <span>${dateStr}</span>
+        <span>${a.read_time}</span>
+      </div>
     </div>
   </a>`;
   }).join('');
@@ -97,7 +104,8 @@ function buildListingPage(articles) {
   return buildHead(
     'Travel Blog — Guides, Visa Tips & Destination Deep-Dives | ATLAS',
     'Expert travel guides, visa information, budget breakdowns, and destination deep-dives. Plan your next trip smarter with ATLAS.',
-    '/blog'
+    '/blog',
+    null
   ) + `
 <body>
 <div class="container">
@@ -141,10 +149,11 @@ function buildArticlePage(slug, article) {
     ]
   });
 
-  return buildHead(article.title, article.description, `/blog/${slug}`) + `
+  return buildHead(article.title, article.description, `/blog/${slug}`, article.cover_image_url) + `
 <body>
 <div class="container">
   <header><a href="/">${logoSvg()}<span>Atlas</span></a></header>
+  ${article.cover_image_url ? `<img src="${article.cover_image_url}" alt="${article.title}" class="hero-img"/>` : ''}
   <span class="badge">${article.category}</span>
   <h1 style="margin-top:0.75rem;">${article.hero_emoji} ${article.title}</h1>
   <div class="meta">
