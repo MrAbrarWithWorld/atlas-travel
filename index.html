@@ -1386,6 +1386,68 @@ function Modal({hours,plansLeft,onClose,onLogin,onUpgrade}){
 
 // ===================== PROSE =====================
 function isItinerary(text){if(!text)return false;const m=text.match(/\bDay\s+\d+/gi);return m&&m.length>=2;}
+function isComparison(text){
+  if(!text)return null;
+  const clean=stripMapData(text);
+  // Two ## headings → structured comparison
+  const hh=clean.match(/^##\s+(.+)$/gm);
+  if(hh&&hh.length===2)return[hh[0].replace(/^##\s+/,'').trim(),hh[1].replace(/^##\s+/,'').trim()];
+  // "X vs Y" in first 300 chars → comparison header
+  const head=clean.slice(0,300);
+  const vm=head.match(/\b([A-Z][a-zA-ZÀ-ÿ\s&\-]{1,22}?)\s+(?:vs\.?|versus)\s+([A-Z][a-zA-ZÀ-ÿ\s&\-]{1,22}?)\b(?=[^a-z]|$)/);
+  if(vm)return[vm[1].trim(),vm[2].trim()];
+  return null;
+}
+
+function ComparisonCard({text}){
+  const clean=stripMapData(text);
+  const hh=clean.match(/^##\s+(.+)$/gm);
+  let dest1=hh?hh[0].replace(/^##\s+/,'').trim():'';
+  let dest2=hh?hh[1].replace(/^##\s+/,'').trim():'';
+  if(!dest1||!dest2){
+    const vm=clean.match(/\b([A-Z][a-zA-ZÀ-ÿ\s&\-]{1,22}?)\s+(?:vs\.?|versus)\s+([A-Z][a-zA-ZÀ-ÿ\s&\-]{1,22}?)\b(?=[^a-z]|$)/);
+    if(vm){dest1=vm[1].trim();dest2=vm[2].trim();}
+  }
+  const em={'tokyo':'🗼','paris':'🗺️','bali':'🌴','new york':'🗽','rome':'🏛️','seoul':'🌸','london':'🎡','dubai':'🏙️','iceland':'🏔️','kenya':'🦁','thailand':'🏝️','barcelona':'⛪','amsterdam':'🌷','sydney':'🦘','singapore':'🦁','mexico':'🌮','vietnam':'🌿','japan':'🗼','india':'🕌','maldives':'🏖️','morocco':'🕌','greece':'🏛️','turkey':'🕌','portugal':'🏰','costa rica':'🌿','peru':'🏔️','hawaii':'🌺','miami':'🌴','berlin':'🏛️','prague':'⛪','budapest':'🏰','florence':'🎨'};
+  const ge=d=>{const k=d.toLowerCase();for(const[n,e]of Object.entries(em))if(k.includes(n))return e;return'📍';};
+  // Parse content by ## sections
+  let intro='',s1='',s2='';
+  if(hh&&hh.length>=2){
+    const lines=clean.split('\n');let cur='intro';
+    const ia=[],c1=[],c2=[];
+    const d1k=dest1.toLowerCase().slice(0,5);
+    const d2k=dest2.toLowerCase().slice(0,5);
+    for(const ln of lines){
+      const hm=ln.match(/^##\s+(.+)$/);
+      if(hm){const t=hm[1].toLowerCase();cur=t.includes(d1k)?'1':t.includes(d2k)?'2':'intro';continue;}
+      if(cur==='intro')ia.push(ln);else if(cur==='1')c1.push(ln);else c2.push(ln);
+    }
+    intro=ia.join('\n').trim();s1=c1.join('\n').trim();s2=c2.join('\n').trim();
+  }
+  const hasCols=!!(s1||s2);
+  return React.createElement('div',{style:{width:'100%'}},
+    React.createElement('div',{style:{background:'linear-gradient(135deg,rgba(201,169,110,0.08),rgba(201,169,110,0.03))',border:'1px solid rgba(201,169,110,0.2)',borderRadius:12,padding:'0.8rem 1rem',marginBottom:'0.65rem',textAlign:'center'}},
+      React.createElement('p',{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:'1.08rem',fontWeight:400,color:'#d4aa6e',letterSpacing:'0.04em'}},
+        ge(dest1)+' '+dest1+' ',
+        React.createElement('span',{style:{fontSize:'0.6rem',color:'rgba(201,169,110,0.4)',letterSpacing:'0.2em',margin:'0 0.5rem',verticalAlign:'middle'}},'VS'),
+        dest2+' '+ge(dest2)
+      ),
+      React.createElement('p',{style:{fontSize:'0.56rem',color:'rgba(201,169,110,0.38)',letterSpacing:'0.12em',textTransform:'uppercase',marginTop:'0.18rem'}},'Destination comparison · Atlas AI')
+    ),
+    intro&&React.createElement('div',{style:{fontSize:'0.78rem',color:'#8a7a55',lineHeight:1.8,marginBottom:'0.65rem'}},React.createElement(Prose,{text:intro})),
+    hasCols&&React.createElement('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0.45rem'}},
+      React.createElement('div',{style:{background:'rgba(201,169,110,0.04)',border:'1px solid rgba(201,169,110,0.15)',borderTop:'3px solid rgba(201,169,110,0.55)',borderRadius:'0 0 9px 9px',padding:'0.65rem 0.7rem',minWidth:0,overflow:'hidden'}},
+        React.createElement('p',{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:'0.82rem',fontWeight:600,color:'#c9a96e',marginBottom:'0.45rem',textAlign:'center'}},ge(dest1)+' '+dest1),
+        React.createElement(Prose,{text:s1})
+      ),
+      React.createElement('div',{style:{background:'rgba(201,169,110,0.03)',border:'1px solid rgba(201,169,110,0.12)',borderTop:'3px solid rgba(201,169,110,0.3)',borderRadius:'0 0 9px 9px',padding:'0.65rem 0.7rem',minWidth:0,overflow:'hidden'}},
+        React.createElement('p',{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:'0.82rem',fontWeight:600,color:'#c9a96e',marginBottom:'0.45rem',textAlign:'center'}},ge(dest2)+' '+dest2),
+        React.createElement(Prose,{text:s2})
+      )
+    ),
+    !hasCols&&React.createElement(Prose,{text:clean})
+  );
+}
 
 function TripDocument({text,msgs}){
   const destination=extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''})));
@@ -1984,11 +2046,11 @@ function renamePlan(id,newTitle){
         )
       ),
       msgs.length>0&&React.createElement("div",{style:{padding:"1.25rem 1.5rem",display:"flex",flexDirection:"column",gap:"1.35rem"}},
-        ...msgs.map(msg=>{const _isItin=msg.from==="ai"&&isItinerary(msg.text);return React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:_isItin?"0.4rem":"0.75rem",alignItems:"flex-start"}},
-          React.createElement("div",{style:{flexShrink:0,width:_isItin?18:24,height:_isItin?18:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:_isItin?4:2}},
+        ...msgs.map(msg=>{const _isItin=msg.from==="ai"&&isItinerary(msg.text);const _cmpDests=!_isItin&&msg.from==="ai"?isComparison(msg.text):null;const _isCmp=!!_cmpDests;return React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:(_isItin||_isCmp)?"0.4rem":"0.75rem",alignItems:"flex-start"}},
+          React.createElement("div",{style:{flexShrink:0,width:(_isItin||_isCmp)?18:24,height:(_isItin||_isCmp)?18:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:(_isItin||_isCmp)?4:2}},
             React.createElement("span",{style:{fontSize:"0.42rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
           ),
-          React.createElement("div",{style:{maxWidth:_isItin?"100%":"88%",width:"100%"}},
+          React.createElement("div",{style:{maxWidth:(_isItin||_isCmp)?"100%":"88%",width:"100%"}},
             msg.from==="user"
               ?editingId===msg.id
                 ?React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"0.5rem"}},
@@ -2004,7 +2066,7 @@ function renamePlan(id,newTitle){
                     !busy&&React.createElement("button",{className:"edit-btn",onClick:()=>startEdit(msg),style:{position:"absolute",top:-8,left:-8,background:"#252018",border:"1px solid rgba(201,169,110,0.2)",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#8a7a50"}},React.createElement(EditIcon))
                   )
               :React.createElement("div",null,
-                  _isItin?React.createElement(TripDocument,{text:msg.text,msgs}):React.createElement(Prose,{text:msg.text}),
+                  _isItin?React.createElement(TripDocument,{text:msg.text,msgs}):_isCmp?React.createElement(ComparisonCard,{text:msg.text,destinations:_cmpDests}):React.createElement(Prose,{text:msg.text}),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
                   React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.5rem",flexWrap:"wrap"}},
                   hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen"),
