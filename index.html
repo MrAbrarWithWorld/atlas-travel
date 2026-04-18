@@ -993,82 +993,111 @@ function PricingModal({user, onClose}) {
     }
   }
 
-  const proPrice = billing === 'monthly' ? '$7.99' : '$79.99';
-  const explorerPrice = billing === 'monthly' ? '$14.99' : '$149.99';
-  const priceSub = billing === 'yearly' ? '/year · 2 months free' : '/month';
+  const proPrice = billing === 'monthly' ? '$7.99' : '$5.99';
+  const explorerPrice = billing === 'monthly' ? '$14.99' : '$11.99';
+  const proTotal = billing === 'yearly' ? '$71.88/yr' : null;
+  const expTotal = billing === 'yearly' ? '$143.88/yr' : null;
+
+  const feat=(icon,text,sub)=>React.createElement("div",{style:{display:"flex",gap:"0.6rem",marginBottom:"0.45rem",alignItems:"flex-start"}},
+    React.createElement("span",{style:{fontSize:"0.85rem",flexShrink:0,marginTop:"0.05rem"}},icon),
+    React.createElement("div",null,
+      React.createElement("span",{style:{fontSize:"0.73rem",color:"#c8bfa8",lineHeight:1.4}},text),
+      sub&&React.createElement("p",{style:{fontSize:"0.58rem",color:"#5a4a2a",marginTop:"0.05rem"}},sub)
+    )
+  );
 
   return React.createElement("div", {
     className: "login-overlay",
-    style: {overflowY:"auto", alignItems:"flex-start", paddingTop:"1.5rem", paddingBottom:"1.5rem"},
+    style: {overflowY:"auto", alignItems:"flex-start", paddingTop:"1.25rem", paddingBottom:"2rem"},
     onClick: e => { if(e.target === e.currentTarget) onClose(); }
   },
-    React.createElement("div", {style: {width:"100%", maxWidth:400, animation:"slideUp 0.35s ease"}},
-      React.createElement("div", {style: {textAlign:"center", marginBottom:"1.5rem"}},
-        React.createElement("svg",{width:"36",height:"36",viewBox:"0 0 400 400",style:{margin:"0 auto 0.6rem",display:"block"}},
+    React.createElement("div", {style: {width:"100%", maxWidth:420, animation:"slideUp 0.35s ease", padding:"0 0.5rem"}},
+
+      // Header
+      React.createElement("div", {style: {textAlign:"center", marginBottom:"1.25rem"}},
+        React.createElement("svg",{width:"32",height:"32",viewBox:"0 0 400 400",style:{margin:"0 auto 0.5rem",display:"block"}},
           React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"2.2"}),
           React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1"}),
           React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
         ),
-        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.4rem",fontWeight:300,letterSpacing:"0.25em",color:"#d4aa6e",textTransform:"uppercase"}},"Upgrade Atlas"),
-        ),
+        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.35rem",fontWeight:300,letterSpacing:"0.22em",color:"#d4aa6e",textTransform:"uppercase"}},"Upgrade Atlas"),
+        React.createElement("p",{style:{fontSize:"0.62rem",color:"#4a3a22",letterSpacing:"0.08em",marginTop:"0.25rem"}},"Plan smarter. Travel better.")
+      ),
 
       // Billing toggle
-      React.createElement("div",{style:{display:"flex",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.12)",borderRadius:10,padding:"0.2rem",marginBottom:"1rem"}},
-        React.createElement("button",{onClick:()=>setBilling('monthly'),style:{flex:1,padding:"0.45rem",borderRadius:8,border:"none",background:billing==='monthly'?"rgba(201,169,110,0.18)":"transparent",color:billing==='monthly'?"#c9a96e":"#6a5a3a",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.06em",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},"Monthly"),
-        React.createElement("button",{onClick:()=>setBilling('yearly'),style:{flex:1,padding:"0.45rem",borderRadius:8,border:"none",background:billing==='yearly'?"rgba(201,169,110,0.18)":"transparent",color:billing==='yearly'?"#c9a96e":"#6a5a3a",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.06em",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},"Yearly  🎁 2 free")
+      React.createElement("div",{style:{display:"flex",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.12)",borderRadius:10,padding:"0.2rem",marginBottom:"1.1rem"}},
+        React.createElement("button",{onClick:()=>setBilling('monthly'),style:{flex:1,padding:"0.45rem",borderRadius:8,border:"none",background:billing==='monthly'?"rgba(201,169,110,0.18)":"transparent",color:billing==='monthly'?"#c9a96e":"#5a4a2a",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.06em",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},"Monthly"),
+        React.createElement("button",{onClick:()=>setBilling('yearly'),style:{flex:1,padding:"0.45rem",borderRadius:8,border:"none",background:billing==='yearly'?"rgba(201,169,110,0.18)":"transparent",color:billing==='yearly'?"#c9a96e":"#5a4a2a",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.06em",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},
+          "Yearly ",React.createElement("span",{style:{fontSize:"0.58rem",color:"#6abf6a",fontWeight:500}},"· Save 25%")
+        )
       ),
 
-      // Pro Card
-      React.createElement("div",{style:{background:"#252018",border:"1.5px solid rgba(201,169,110,0.35)",borderRadius:14,padding:"1.25rem",marginBottom:"0.75rem"}},
-        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.9rem"}},
-          React.createElement("div",null,
-            React.createElement("p",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.15rem",color:"#c9a96e"}},"⭐ Pro"),
-            React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",marginTop:"0.1rem"}},"For serious travelers")
-          ),
-          React.createElement("div",{style:{textAlign:"right"}},
-            React.createElement("span",{style:{fontSize:"1.2rem",color:"#e8dcc8",fontWeight:600}},proPrice),
-            React.createElement("span",{style:{fontSize:"0.56rem",color:"#6a5a3a",marginLeft:"0.2rem"}},priceSub)
-          )
-        ),
-        ["Unlimited travel plans","Detailed day-by-day itineraries","Interactive maps","Multi-language support","Priority AI access"].map((f,i)=>
-          React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.3rem"}},
-            React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.5rem"}},"◆"),
-            React.createElement("span",{style:{fontSize:"0.73rem",color:"#b8b0a0"}},f)
-          )
-        ),
-        React.createElement("button",{
-          onClick:()=>handleUpgrade('pro'),
-          disabled:!!loading,
-          style:{width:"100%",marginTop:"1rem",padding:"0.72rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.4)",borderRadius:9,color:"#c9a96e",cursor:loading?"default":"pointer",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}
-        },loading==='pro'?"Redirecting...":`Get Pro · ${proPrice}`)
-      ),
+      // ── EXPLORER CARD (featured, on top) ──
+      React.createElement("div",{style:{position:"relative",background:"linear-gradient(160deg,#1e1a0e,#252018)",border:"1.5px solid rgba(201,169,110,0.55)",borderRadius:16,padding:"1.3rem",marginBottom:"0.65rem",boxShadow:"0 4px 32px rgba(201,169,110,0.08)"}},
+        // "Best value" badge
+        React.createElement("div",{style:{position:"absolute",top:-11,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(90deg,#b8902a,#d4aa6e,#b8902a)",borderRadius:20,padding:"0.2rem 0.85rem",fontSize:"0.58rem",letterSpacing:"0.12em",textTransform:"uppercase",color:"#1c1914",fontWeight:700,whiteSpace:"nowrap"}},"✦ Best Value"),
 
-      // Explorer Card
-      React.createElement("div",{style:{background:"#252018",border:"1px solid rgba(201,169,110,0.15)",borderRadius:14,padding:"1.25rem",marginBottom:"1rem"}},
-        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.9rem"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"1rem"}},
           React.createElement("div",null,
-            React.createElement("p",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.15rem",color:"#c9a96e"}},"💎 Explorer"),
-            React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",marginTop:"0.1rem"}},"For power users")
+            React.createElement("p",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.35rem",color:"#d4aa6e",letterSpacing:"0.04em"}},"💎 Explorer"),
+            React.createElement("p",{style:{fontSize:"0.58rem",color:"#6a5a3a",marginTop:"0.1rem"}},"For power travelers")
           ),
           React.createElement("div",{style:{textAlign:"right"}},
-            React.createElement("span",{style:{fontSize:"1.2rem",color:"#e8dcc8",fontWeight:600}},explorerPrice),
-            React.createElement("span",{style:{fontSize:"0.56rem",color:"#6a5a3a",marginLeft:"0.2rem"}},priceSub)
+            React.createElement("div",null,
+              React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem",color:"#e8dcc8",fontWeight:600}},explorerPrice),
+              React.createElement("span",{style:{fontSize:"0.56rem",color:"#6a5a3a",marginLeft:"0.2rem"}},"/mo")
+            ),
+            expTotal&&React.createElement("p",{style:{fontSize:"0.55rem",color:"#6abf6a",marginTop:"0.1rem"}},expTotal+" billed yearly")
           )
         ),
-        ["Everything in Pro","Advanced trip customization","Priority support"].map((f,i)=>
-          React.createElement("div",{key:i,style:{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.3rem"}},
-            React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.5rem"}},"◆"),
-            React.createElement("span",{style:{fontSize:"0.73rem",color:"#b8b0a0"}},f)
-          )
-        ),
+
+        feat("🤖","Always Claude AI — every single response","No Groq fallbacks. The best AI, always."),
+        feat("📋","Custom AI instruction","Train Atlas to match your style: language, budget, preferences — saved forever."),
+        feat("✈️","Multi-destination planning","Plan Tokyo + Bali back-to-back in one conversation."),
+        feat("📊","Destination comparison cards","Side-by-side visual breakdowns of any two destinations."),
+        feat("📄","Premium PDF export","Beautiful travel documents you can print or share."),
+        feat("📅","Google Calendar sync","Add day-by-day itinerary events directly to your calendar."),
+        feat("🗺️","Interactive maps","Visual pin maps for every itinerary."),
+        feat("💬","Unlimited plans","999+ plans/day — no daily limit, ever."),
+
         React.createElement("button",{
           onClick:()=>handleUpgrade('explorer'),
           disabled:!!loading,
-          style:{width:"100%",marginTop:"1rem",padding:"0.72rem",background:"transparent",border:"1px solid rgba(201,169,110,0.2)",borderRadius:9,color:"#8a7a50",cursor:loading?"default":"pointer",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}
-        },loading==='explorer'?"Redirecting...":`Get Explorer · ${explorerPrice}`)
+          style:{width:"100%",marginTop:"1.1rem",padding:"0.85rem",background:"linear-gradient(135deg,rgba(201,169,110,0.25),rgba(201,169,110,0.15))",border:"1.5px solid rgba(201,169,110,0.6)",borderRadius:10,color:"#d4aa6e",cursor:loading?"default":"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500,transition:"all 0.2s"}
+        },loading==='explorer'?"Redirecting...":billing==='yearly'?`Get Explorer · $143.88/yr`:`Get Explorer · ${explorerPrice}/mo`)
       ),
 
-      React.createElement("button",{onClick:onClose,style:{width:"100%",padding:"0.6rem",background:"none",border:"none",color:"#4a3a22",cursor:"pointer",fontSize:"0.62rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Maybe later")
+      // ── PRO CARD ──
+      React.createElement("div",{style:{background:"#1e1a14",border:"1px solid rgba(201,169,110,0.25)",borderRadius:14,padding:"1.1rem",marginBottom:"1rem"}},
+        React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.85rem"}},
+          React.createElement("div",null,
+            React.createElement("p",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem",color:"#c9a96e"}},"⭐ Pro"),
+            React.createElement("p",{style:{fontSize:"0.58rem",color:"#5a4a2a",marginTop:"0.1rem"}},"For serious travelers")
+          ),
+          React.createElement("div",{style:{textAlign:"right"}},
+            React.createElement("div",null,
+              React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.3rem",color:"#d8d0b8",fontWeight:600}},proPrice),
+              React.createElement("span",{style:{fontSize:"0.56rem",color:"#6a5a3a",marginLeft:"0.2rem"}},"/mo")
+            ),
+            proTotal&&React.createElement("p",{style:{fontSize:"0.55rem",color:"#6abf6a",marginTop:"0.1rem"}},proTotal+" billed yearly")
+          )
+        ),
+
+        feat("✅","Unlimited travel plans","Up to 350 plans/day"),
+        feat("🧭","Day-by-day itineraries","Full structured travel plans"),
+        feat("📄","PDF export","Download your trip plan"),
+        feat("🗺️","Interactive maps","Pin maps for every trip"),
+        feat("📅","Calendar sync","Google Calendar integration"),
+
+        React.createElement("button",{
+          onClick:()=>handleUpgrade('pro'),
+          disabled:!!loading,
+          style:{width:"100%",marginTop:"0.9rem",padding:"0.72rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.3)",borderRadius:9,color:"#a89060",cursor:loading?"default":"pointer",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}
+        },loading==='pro'?"Redirecting...":billing==='yearly'?`Get Pro · $71.88/yr`:`Get Pro · ${proPrice}/mo`)
+      ),
+
+      React.createElement("p",{style:{textAlign:"center",fontSize:"0.58rem",color:"#3a2a12",marginBottom:"0.5rem",letterSpacing:"0.04em"}},"Cancel anytime · Secure checkout via Stripe"),
+      React.createElement("button",{onClick:onClose,style:{width:"100%",padding:"0.6rem",background:"none",border:"none",color:"#3a2a12",cursor:"pointer",fontSize:"0.62rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Maybe later")
     )
   );
 }
