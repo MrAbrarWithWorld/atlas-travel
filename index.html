@@ -179,7 +179,12 @@
   window.fbAsyncInit=function(){FB.init({appId:'4386286641618045',cookie:true,xfbml:false,version:'v19.0'});};
   (function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(d.getElementById(id))return;js=d.createElement(s);js.id=id;js.src="https://connect.facebook.net/en_US/sdk.js";fjs.parentNode.insertBefore(js,fjs);}(document,'script','facebook-jssdk'));
 </script>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://maps.googleapis.com"/>
+<link rel="preconnect" href="https://prffhhkemxibujjjiyhg.supabase.co"/>
+<link rel="dns-prefetch" href="https://api.anthropic.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap&display=swap" rel="stylesheet"/>
 <!-- Google Maps loaded dynamically after fetching key from /api/map-config -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  
 <style>
@@ -2215,8 +2220,13 @@ function renamePlan(id,newTitle){
     const location=await getLocation();
     const locationStr=location?`\nUser location: ${location}`:"";
     const userInfo=user?`\nUser: ${user.user_metadata?.full_name||user.email} (logged in, ${userTier==='pro'?'Pro':'Free'} plan)`:"\nUser: Guest (not logged in)";
+    // Detect local currency from browser locale
+    const localeCurrencyMap={'en-US':'USD','en-CA':'CAD','en-GB':'GBP','en-AU':'AUD','en-NZ':'NZD','bn':'BDT','bn-BD':'BDT','hi':'INR','hi-IN':'INR','ar':'AED','ar-AE':'AED','ar-SA':'SAR','fr':'EUR','fr-FR':'EUR','de':'EUR','de-DE':'EUR','it':'EUR','es':'EUR','pt-BR':'BRL','pt':'EUR','ja':'JPY','ko':'KRW','zh':'CNY','zh-CN':'CNY','zh-TW':'TWD','tr':'TRY','th':'THB','id':'IDR','ms':'MYR','vi':'VND','ru':'RUB','pl':'PLN','nl':'EUR','sv':'SEK','no':'NOK','da':'DKK','fi':'EUR'};
+    const lang=navigator.language||'en';
+    const detectedCurrency=localeCurrencyMap[lang]||localeCurrencyMap[lang.split('-')[0]]||'USD';
+    const currencyStr=`\nUser preferred currency: ${detectedCurrency} (detected from browser locale: ${lang})`;
     const msgText=t||"";
-    const msgWithTime=`${msgText}\n\n[Current date & time: ${dateTime}${locationStr}${userInfo}]`;
+    const msgWithTime=`${msgText}\n\n[Current date & time: ${dateTime}${locationStr}${userInfo}${currencyStr}]`;
     const msgWithTime2=t?msgWithTime:`[Current date & time: ${dateTime}${locationStr}${userInfo}]`; const userContent=photo   ?[{type:"image",source:{type:"base64",media_type:photo.mediaType,data:photo.base64}},{type:"text",text:msgWithTime2}]   :msgWithTime;
     const displayText=msgText.replace(/\s*\[Current date.*$/s,'').trim();
     const newMsgs=[...msgs,{id:Date.now(),from:"user",text:displayText,photoPreview:photo?.preview||null}];

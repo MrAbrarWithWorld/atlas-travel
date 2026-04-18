@@ -44,6 +44,10 @@
       "destination": "/trip.html"
     },
     {
+      "source": "/plan/:dest",
+      "destination": "/api/plan?dest=:dest"
+    },
+    {
       "source": "/((?!_vercel).*)",
       "destination": "/index.html"
     }
