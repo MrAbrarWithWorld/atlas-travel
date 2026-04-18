@@ -48,6 +48,14 @@
       "destination": "/api/plan?dest=:dest"
     },
     {
+      "source": "/blog",
+      "destination": "/api/blog?slug=index"
+    },
+    {
+      "source": "/blog/:slug",
+      "destination": "/api/blog?slug=:slug"
+    },
+    {
       "source": "/((?!_vercel).*)",
       "destination": "/index.html"
     }
