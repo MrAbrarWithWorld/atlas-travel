@@ -997,10 +997,10 @@ function PricingModal({user, onClose}) {
     }
   }
 
-  const proPrice = billing === 'monthly' ? '$7.99' : '$5.99';
-  const explorerPrice = billing === 'monthly' ? '$14.99' : '$11.99';
-  const proTotal = billing === 'yearly' ? '$71.88/yr' : null;
-  const expTotal = billing === 'yearly' ? '$143.88/yr' : null;
+  const proPrice = billing === 'monthly' ? '$7.99' : '$6.67';
+  const explorerPrice = billing === 'monthly' ? '$14.99' : '$12.50';
+  const proTotal = billing === 'yearly' ? '$79.99/yr' : null;
+  const expTotal = billing === 'yearly' ? '$149.99/yr' : null;
 
   const feat=(icon,text,sub)=>React.createElement("div",{style:{display:"flex",gap:"0.6rem",marginBottom:"0.45rem",alignItems:"flex-start"}},
     React.createElement("span",{style:{fontSize:"0.85rem",flexShrink:0,marginTop:"0.05rem"}},icon),
@@ -1032,7 +1032,7 @@ function PricingModal({user, onClose}) {
       React.createElement("div",{style:{display:"flex",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.12)",borderRadius:10,padding:"0.2rem",marginBottom:"1.1rem"}},
         React.createElement("button",{onClick:()=>setBilling('monthly'),style:{flex:1,padding:"0.45rem",borderRadius:8,border:"none",background:billing==='monthly'?"rgba(201,169,110,0.18)":"transparent",color:billing==='monthly'?"#c9a96e":"#5a4a2a",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.06em",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},"Monthly"),
         React.createElement("button",{onClick:()=>setBilling('yearly'),style:{flex:1,padding:"0.45rem",borderRadius:8,border:"none",background:billing==='yearly'?"rgba(201,169,110,0.18)":"transparent",color:billing==='yearly'?"#c9a96e":"#5a4a2a",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.06em",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},
-          "Yearly ",React.createElement("span",{style:{fontSize:"0.58rem",color:"#6abf6a",fontWeight:500}},"· Save 25%")
+          "Yearly ",React.createElement("span",{style:{fontSize:"0.58rem",color:"#6abf6a",fontWeight:500}},"· Save ~17%")
         )
       ),
 
@@ -1068,7 +1068,7 @@ function PricingModal({user, onClose}) {
           onClick:()=>handleUpgrade('explorer'),
           disabled:!!loading,
           style:{width:"100%",marginTop:"1.1rem",padding:"0.85rem",background:"linear-gradient(135deg,rgba(201,169,110,0.25),rgba(201,169,110,0.15))",border:"1.5px solid rgba(201,169,110,0.6)",borderRadius:10,color:"#d4aa6e",cursor:loading?"default":"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500,transition:"all 0.2s"}
-        },loading==='explorer'?"Redirecting...":billing==='yearly'?`Get Explorer · $143.88/yr`:`Get Explorer · ${explorerPrice}/mo`)
+        },loading==='explorer'?"Redirecting...":billing==='yearly'?`Get Explorer · $149.99/yr`:`Get Explorer · ${explorerPrice}/mo`)
       ),
 
       // ── PRO CARD ──
@@ -1097,7 +1097,7 @@ function PricingModal({user, onClose}) {
           onClick:()=>handleUpgrade('pro'),
           disabled:!!loading,
           style:{width:"100%",marginTop:"0.9rem",padding:"0.72rem",background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.3)",borderRadius:9,color:"#a89060",cursor:loading?"default":"pointer",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}
-        },loading==='pro'?"Redirecting...":billing==='yearly'?`Get Pro · $71.88/yr`:`Get Pro · ${proPrice}/mo`)
+        },loading==='pro'?"Redirecting...":billing==='yearly'?`Get Pro · $79.99/yr`:`Get Pro · ${proPrice}/mo`)
       ),
 
       React.createElement("p",{style:{textAlign:"center",fontSize:"0.58rem",color:"#3a2a12",marginBottom:"0.5rem",letterSpacing:"0.04em"}},"Cancel anytime · Secure checkout via Stripe"),
