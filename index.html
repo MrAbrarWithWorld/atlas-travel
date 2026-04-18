@@ -555,6 +555,15 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
   const [prefs, setPrefs] = React.useState(()=>{
     try{return JSON.parse(localStorage.getItem('atlas_prefs')||'{}');}catch{return {};}
   });
+  const [voices, setVoices] = React.useState([]);
+  const [selectedVoiceURI, setSelectedVoiceURI] = React.useState(()=>localStorage.getItem('atlas_voice_uri')||'');
+  React.useEffect(()=>{
+    function loadVoices(){const v=window.speechSynthesis?.getVoices()||[];if(v.length>0)setVoices(v);}
+    loadVoices();
+    window.speechSynthesis?.addEventListener('voiceschanged',loadVoices);
+    return()=>window.speechSynthesis?.removeEventListener('voiceschanged',loadVoices);
+  },[]);
+  function testVoice(){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance("Hello, I am Atlas, your AI travel companion.");if(selectedVoiceURI){const sv=window.speechSynthesis.getVoices().find(v=>v.voiceURI===selectedVoiceURI);if(sv)u.voice=sv;}window.speechSynthesis.speak(u);}
 
   function updatePref(key,val){setPrefs(p=>({...p,[key]:val}));}
 
@@ -562,6 +571,7 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
     setSaving(true);
     localStorage.setItem('atlas_prefs',JSON.stringify(prefs));
     localStorage.setItem('atlas_fontsize',fontSize);
+    localStorage.setItem('atlas_voice_uri',selectedVoiceURI);
     document.documentElement.style.fontSize = fontSize==='small'?'13px':fontSize==='large'?'17px':'15px';
     setTimeout(()=>{setSaving(false);setSaved(true);setTimeout(()=>setSaved(false),2000);},400);
   }
@@ -779,20 +789,22 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
               )
             ),
 
-            React.createElement("label",{style:{...labelStyle,marginTop:"1.25rem"}},"Voice"),
-            React.createElement("div",{style:{background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"0.75rem",marginTop:"0.4rem",display:"flex",alignItems:"center",justifyContent:"space-between"}},
-              React.createElement("div",null,
-                React.createElement("p",{style:{fontSize:"0.75rem",color:"#c9a96e"}},"Text to Speech"),
-                React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",marginTop:"0.1rem"}},"Listen to AI responses out loud")
-              ),
-              React.createElement("button",{
-                onClick:()=>{
-                  const msg=new SpeechSynthesisUtterance("Hello, I am Atlas, your AI travel companion.");
-                  window.speechSynthesis.speak(msg);
-                },
-                style:{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:7,padding:"0.35rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",fontFamily:"'DM Sans',sans-serif"}
-              },"▶ Play")
-            ),
+            React.createElement("label",{style:{...labelStyle,marginTop:"1.25rem"}},"Voice for trip narration"),
+            React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",marginTop:"0.2rem",lineHeight:1.6}},"Choose the voice used when you tap 🔊 Listen on a trip plan."),
+            voices.length>0
+              ?React.createElement("div",null,
+                  React.createElement("select",{value:selectedVoiceURI,onChange:e=>setSelectedVoiceURI(e.target.value),style:{...inputStyle,cursor:"pointer",marginBottom:"0.5rem"}},
+                    React.createElement("option",{value:""},"Default voice"),
+                    voices.filter(v=>v.lang.startsWith('en')).map(v=>React.createElement("option",{key:v.voiceURI,value:v.voiceURI},`${v.name} (${v.lang})`)),
+                    voices.filter(v=>!v.lang.startsWith('en')).length>0&&React.createElement("option",{disabled:true},"── Other languages ──"),
+                    voices.filter(v=>!v.lang.startsWith('en')).map(v=>React.createElement("option",{key:v.voiceURI,value:v.voiceURI},`${v.name} (${v.lang})`))
+                  ),
+                  React.createElement("button",{onClick:testVoice,style:{background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:7,padding:"0.35rem 0.85rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",fontFamily:"'DM Sans',sans-serif"}},"▶ Preview voice")
+                )
+              :React.createElement("div",{style:{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.12)",borderRadius:8,padding:"0.6rem",marginTop:"0.4rem",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+                  React.createElement("p",{style:{fontSize:"0.7rem",color:"#6a5a35"}},"System default voice"),
+                  React.createElement("button",{onClick:testVoice,style:{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:7,padding:"0.35rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",fontFamily:"'DM Sans',sans-serif"}},"▶ Preview")
+                ),
 
             React.createElement("div",{style:{display:"flex",gap:"0.5rem",marginTop:"1.25rem"}},
               React.createElement("button",{onClick:save,style:{flex:1,padding:"0.6rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:8,color:saved?"#6abf6a":"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},saving?"Saving...":saved?"✓ Saved":"Save"),
@@ -1777,7 +1789,7 @@ function renamePlan(id,newTitle){
   },[]);
 
   function toggleVoice(){if(!recognitionRef.current){alert("Voice not supported.");return;}if(listening){recognitionRef.current.stop();setListening(false);}else{if(window.speechSynthesis)window.speechSynthesis.cancel();recognitionRef.current.start();setListening(true);}}
-  function toggleSpeak(text){if(!window.speechSynthesis)return;if(speaking){window.speechSynthesis.cancel();setSpeaking(false);return;}setSpeaking(true);const clean=stripMapData(text).replace(/##.*?\n/g,'').replace(/\*\*/g,'').replace(/[◆•]/g,'').slice(0,1000);const u=new SpeechSynthesisUtterance(clean);u.rate=0.95;u.onend=()=>setSpeaking(false);u.onerror=()=>setSpeaking(false);window.speechSynthesis.speak(u);}
+  function toggleSpeak(text){if(!window.speechSynthesis)return;if(speaking){window.speechSynthesis.cancel();setSpeaking(false);return;}setSpeaking(true);const clean=stripMapData(text).replace(/##.*?\n/g,'').replace(/\*\*/g,'').replace(/[◆•]/g,'').slice(0,1000);const u=new SpeechSynthesisUtterance(clean);u.rate=0.95;const savedVoiceURI=localStorage.getItem('atlas_voice_uri');if(savedVoiceURI){const vv=window.speechSynthesis.getVoices();const sv=vv.find(v=>v.voiceURI===savedVoiceURI);if(sv)u.voice=sv;}u.onend=()=>setSpeaking(false);u.onerror=()=>setSpeaking(false);window.speechSynthesis.speak(u);}
   function handlePhotoSelect(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');const MAX=600;let w=img.width,h=img.height;if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);const compressed=canvas.toDataURL('image/jpeg',0.5);setPhoto({base64:compressed.split(",")[1],mediaType:'image/jpeg',preview:compressed});};img.src=ev.target.result;};reader.readAsDataURL(file);e.target.value="";}
   function startEdit(msg){setEditingId(msg.id);setEditText(msg.text);setTimeout(()=>editRef.current?.focus(),50);}
   async function submitEdit(msgId){const t=editText.trim();if(!t)return;setEditingId(null);const msgIndex=msgs.findIndex(m=>m.id===msgId);const newMsgs=msgs.slice(0,msgIndex);setMsgs(newMsgs);const baseHist=[...defaultHist];for(const m of newMsgs)baseHist.push({role:m.from==="user"?"user":"assistant",content:m.text});hist.current=baseHist;await send(t);}
@@ -1948,18 +1960,21 @@ function renamePlan(id,newTitle){
         React.createElement(PhotoButton,{photo,onClick:()=>photoRef.current?.click()}),
         hasVoice&&React.createElement(MicButton,{listening,onClick:toggleVoice}),
         React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{   const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);   if(e.key==="Enter"&&!e.shiftKey&&!holdActive&&!isMobile){e.preventDefault();send();} },onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";},placeholder:listening?"Listening...":holdActive?"Add more to your message...":photo?"Add a message or just send the photo...":"Where would you like to go?",disabled:busy||listening,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:holdActive?"#e8d890":"#e0d8c8",fontSize:"0.9rem",resize:"none",lineHeight:1.7,maxHeight:100,overflowY:"auto",paddingTop:"0.2rem"}}),
-        React.createElement("button",{onClick:()=>{if(holdActive){setHoldActive(false);}else{setHoldActive(true);setTimeout(()=>taRef.current?.focus(),50);}},disabled:busy,style:{flexShrink:0,width:32,height:32,borderRadius:"50%",border:`1.5px solid ${holdActive?"#c9a96e":"rgba(201,169,110,0.2)"}`,background:holdActive?"rgba(201,169,110,0.15)":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}},
-          holdActive
-            ?React.createElement("svg",{width:"12",height:"12",viewBox:"0 0 24 24",fill:"none",stroke:"#c9a96e",strokeWidth:"2.5",strokeLinecap:"round"},React.createElement("line",{x1:"8",y1:"5",x2:"8",y2:"19"}),React.createElement("line",{x1:"16",y1:"5",x2:"16",y2:"19"}))
-            :React.createElement("svg",{width:"12",height:"12",viewBox:"0 0 24 24",fill:"none",stroke:"rgba(201,169,110,0.4)",strokeWidth:"2.5",strokeLinecap:"round"},React.createElement("line",{x1:"8",y1:"5",x2:"8",y2:"19"}),React.createElement("line",{x1:"16",y1:"5",x2:"16",y2:"19"}))
-        ),
         React.createElement("div",{style:{position:"relative",flexShrink:0}},
-          holdActive&&React.createElement("div",{style:{position:"absolute",inset:-4,borderRadius:"50%",border:"2px solid rgba(201,169,110,0.6)",animation:"glow 1s ease-in-out infinite",pointerEvents:"none"}}),
-          React.createElement("button",{disabled:(!draft.trim()&&!photo)||busy,onClick:()=>{if(!holdActive)send();},style:{width:42,height:42,borderRadius:"50%",border:`2px solid ${canSend?"#c9a96e":"rgba(201,169,110,0.35)"}`,background:holdActive?"rgba(201,169,110,0.2)":canSend?"rgba(201,169,110,0.15)":"rgba(201,169,110,0.05)",cursor:canSend&&!holdActive?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}},
+          holdActive&&React.createElement("div",{style:{position:"absolute",inset:-4,borderRadius:"50%",border:"2px solid rgba(201,169,110,0.55)",animation:"glow 1s ease-in-out infinite",pointerEvents:"none"}}),
+          React.createElement("button",{
+            disabled:busy,
+            onPointerDown:()=>{holdTimerRef.current=setTimeout(()=>{holdTimerRef._fired=true;setHoldActive(h=>{if(!h)setTimeout(()=>taRef.current?.focus(),50);return!h;});},480);holdTimerRef._fired=false;},
+            onPointerUp:()=>{clearTimeout(holdTimerRef.current);if(!holdTimerRef._fired){if(holdActive){if((draft.trim()||photo)&&!busy){setHoldActive(false);send();}}else if((draft.trim()||photo)&&!busy){send();}}},
+            onPointerLeave:()=>{clearTimeout(holdTimerRef.current);},
+            style:{width:42,height:42,borderRadius:"50%",border:`2px solid ${holdActive?"#c9a96e":canSend?"#c9a96e":"rgba(201,169,110,0.35)"}`,background:holdActive?"rgba(201,169,110,0.22)":canSend?"rgba(201,169,110,0.15)":"rgba(201,169,110,0.05)",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"1px",transition:"all 0.2s",touchAction:"none",userSelect:"none",WebkitUserSelect:"none"}},
             busy
               ?React.createElement("svg",{width:"16",height:"16",viewBox:"0 0 24 24",fill:"none"},React.createElement("circle",{cx:"12",cy:"12",r:"4",fill:"#c9a96e"}))
               :holdActive
-                ?React.createElement("svg",{width:"14",height:"14",viewBox:"0 0 24 24",fill:"none",stroke:"rgba(201,169,110,0.3)",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round"},React.createElement("path",{d:"M12 19V5M5 12l7-7 7 7"}))
+                ?React.createElement(React.Fragment,null,
+                    React.createElement("svg",{width:"10",height:"10",viewBox:"0 0 24 24",fill:"none",stroke:"#c9a96e",strokeWidth:"2.8",strokeLinecap:"round"},React.createElement("line",{x1:"8",y1:"4",x2:"8",y2:"20"}),React.createElement("line",{x1:"16",y1:"4",x2:"16",y2:"20"})),
+                    React.createElement("span",{style:{fontSize:"0.36rem",color:canSend?"#c9a96e":"rgba(201,169,110,0.5)",letterSpacing:"0.04em",lineHeight:1}},canSend?"SEND":"HOLD")
+                  )
                 :React.createElement("svg",{width:"16",height:"16",viewBox:"0 0 24 24",fill:"none",stroke:canSend?"#c9a96e":"#6a5a3a",strokeWidth:"2",strokeLinecap:"round",strokeLinejoin:"round"},React.createElement("path",{d:"M12 19V5M5 12l7-7 7 7"}))
           )
         )
