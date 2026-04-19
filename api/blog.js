@@ -70,10 +70,14 @@ a:hover{color:#e8dcc8;}
 .fact-item{display:flex;flex-direction:column;gap:0.2rem;}
 .fact-label{font-size:0.6rem;color:#6a5a3a;letter-spacing:0.12em;text-transform:uppercase;}
 .fact-value{font-size:0.82rem;color:#d4c8b0;font-weight:500;}
-.lang-toggle{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.5rem;}
-.lang-btn{font-size:0.7rem;padding:0.3rem 0.75rem;cursor:pointer;border:1px solid rgba(201,169,110,0.2);border-radius:20px;background:transparent;color:#6a5a3a;transition:background 0.15s,color 0.15s,border-color 0.15s;white-space:nowrap;}
-.lang-btn.active{background:rgba(201,169,110,0.18);color:#c9a96e;border-color:rgba(201,169,110,0.45);}
-.lang-btn:hover{color:#c9a96e;border-color:rgba(201,169,110,0.35);}
+.lang-selector{position:relative;display:inline-block;margin-bottom:1.5rem;}
+.lang-selected{display:flex;align-items:center;gap:0.5rem;background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.25);border-radius:8px;padding:0.45rem 0.9rem;cursor:pointer;font-size:0.78rem;color:#c9a96e;font-family:'DM Sans',sans-serif;user-select:none;}
+.lang-selected-arrow{font-size:0.65rem;margin-left:0.2rem;transition:transform 0.2s;}
+.lang-dropdown{position:absolute;top:calc(100% + 4px);left:0;background:#1e1a14;border:1px solid rgba(201,169,110,0.2);border-radius:8px;overflow:hidden;z-index:100;min-width:160px;box-shadow:0 4px 20px rgba(0,0,0,0.4);display:none;}
+.lang-dropdown.open{display:block;}
+.lang-option{padding:0.5rem 0.9rem;font-size:0.78rem;color:#ede5d5;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.15s;}
+.lang-option:hover{background:rgba(201,169,110,0.12);}
+.lang-option.active{color:#c9a96e;font-weight:600;}
 [dir="rtl"] .article-body{direction:rtl;text-align:right;font-family:'DM Sans',Tahoma,Arial,sans-serif;}
 .highlights{display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.75rem 0 1.5rem;}
 .highlight-tag{background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.2);border-radius:20px;padding:0.3rem 0.85rem;font-size:0.75rem;color:#c9a96e;}
@@ -219,8 +223,13 @@ function buildArticlePage(slug, article) {
   const hasMultiLang = LANGS.length > 1;
 
   const langToggle = hasMultiLang ? `
-  <div class="lang-toggle" id="lang-toggle">
-    ${LANGS.map((l, i) => `<button class="lang-btn${i===0?' active':''}" onclick="switchLang('${l.code}')">${l.label}</button>`).join('')}
+  <div class="lang-selector" id="lang-selector">
+    <div class="lang-selected" id="lang-selected" onclick="toggleLangDropdown()">
+      ${LANGS[0].label} <span class="lang-selected-arrow">▾</span>
+    </div>
+    <div class="lang-dropdown" id="lang-dropdown">
+      ${LANGS.map((l, i) => `<div class="lang-option${i===0?' active':''}" onclick="switchLang('${l.code}',this)">${l.label}</div>`).join('')}
+    </div>
   </div>` : '';
 
   const contentHtml = hasMultiLang
@@ -297,14 +306,32 @@ function buildArticlePage(slug, article) {
 <script type="application/ld+json">${breadcrumb}</script>
 <script>
   // Language switcher
-  function switchLang(lang) {
-    document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.remove('active'); });
-    var btn = document.querySelector('.lang-btn[onclick="switchLang(\''+lang+'\')"]');
-    if(btn) btn.classList.add('active');
-    document.querySelectorAll('.article-body').forEach(function(el){ el.style.display='none'; });
-    var target = document.getElementById('content-'+lang);
-    if(target) target.style.display='';
+  function toggleLangDropdown(){
+    var dd=document.getElementById('lang-dropdown');
+    var arrow=document.querySelector('.lang-selected-arrow');
+    var isOpen=dd.classList.toggle('open');
+    if(arrow) arrow.style.transform=isOpen?'rotate(180deg)':'';
   }
+  function switchLang(lang,el){
+    var label=el.textContent;
+    document.getElementById('lang-selected').innerHTML=label+' <span class="lang-selected-arrow">▾</span>';
+    document.querySelectorAll('.lang-option').forEach(function(o){o.classList.remove('active');});
+    el.classList.add('active');
+    document.getElementById('lang-dropdown').classList.remove('open');
+    document.querySelector('.lang-selected-arrow').style.transform='';
+    document.querySelectorAll('.article-body').forEach(function(e){e.style.display='none';});
+    var t=document.getElementById('content-'+lang);
+    if(t) t.style.display='';
+  }
+  document.addEventListener('click',function(e){
+    var sel=document.getElementById('lang-selector');
+    if(sel&&!sel.contains(e.target)){
+      var dd=document.getElementById('lang-dropdown');
+      if(dd) dd.classList.remove('open');
+      var arrow=document.querySelector('.lang-selected-arrow');
+      if(arrow) arrow.style.transform='';
+    }
+  });
 
   // Sticky CTA — show after scrolling 40% of page
   (function(){

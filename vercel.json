@@ -3,6 +3,9 @@
     "api/chat.js": {
       "maxDuration": 60
     },
+    "api/admin.js": {
+      "maxDuration": 30
+    },
     "api/warmup.js": {
       "maxDuration": 10
     },
