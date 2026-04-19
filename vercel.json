@@ -14,6 +14,9 @@
     },
     "api/cron-report.js": {
       "maxDuration": 30
+    },
+    "api/subscribe.js": {
+      "maxDuration": 10
     }
   },
   "crons": [

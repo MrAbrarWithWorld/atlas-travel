@@ -75,6 +75,30 @@ a:hover{color:#e8dcc8;}
 .lang-btn.active{background:rgba(201,169,110,0.15);color:#c9a96e;}
 .highlights{display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.75rem 0 1.5rem;}
 .highlight-tag{background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.2);border-radius:20px;padding:0.3rem 0.85rem;font-size:0.75rem;color:#c9a96e;}
+.newsletter{background:linear-gradient(135deg,rgba(201,169,110,0.08),rgba(201,169,110,0.03));border:1px solid rgba(201,169,110,0.25);border-radius:14px;padding:1.75rem 2rem;margin:2.5rem 0;text-align:center;}
+.newsletter-icon{font-size:2rem;margin-bottom:0.75rem;}
+.newsletter-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:400;color:#e8dcc8;margin-bottom:0.5rem;}
+.newsletter-desc{font-size:0.82rem;color:#8a7a60;margin-bottom:1.1rem;line-height:1.7;}
+.newsletter-form{display:flex;gap:0.5rem;max-width:400px;margin:0 auto;}
+.newsletter-form input{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(201,169,110,0.25);border-radius:7px;padding:0.6rem 0.9rem;color:#ede5d5;font-size:0.82rem;font-family:'DM Sans',sans-serif;outline:none;}
+.newsletter-form input::placeholder{color:#5a4a2a;}
+.newsletter-form input:focus{border-color:rgba(201,169,110,0.5);}
+.newsletter-form button{background:#c9a96e;color:#1c1914;border:none;border-radius:7px;padding:0.6rem 1.1rem;font-size:0.78rem;font-weight:600;letter-spacing:0.06em;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.newsletter-form button:hover{background:#e0c080;}
+.newsletter-note{font-size:0.75rem;margin-top:0.6rem;}
+@media(max-width:480px){.newsletter-form{flex-direction:column;}.newsletter{padding:1.4rem 1.2rem;}}
+.gyg-section{margin:2rem 0;padding:1.25rem 1.5rem;border:1px solid rgba(201,169,110,0.15);border-radius:12px;background:rgba(201,169,110,0.03);}
+.gyg-section h3{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:#d4aa6e;margin-bottom:0.4rem;border:none;padding:0;text-transform:none;letter-spacing:0;}
+.gyg-section p{font-size:0.8rem;color:#8a7a60;margin-bottom:0.85rem;}
+.gyg-btn{display:inline-block;border:1px solid rgba(201,169,110,0.35);color:#c9a96e;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.45rem 1rem;border-radius:6px;text-decoration:none;transition:background 0.2s,border-color 0.2s;}
+.gyg-btn:hover{background:rgba(201,169,110,0.1);border-color:rgba(201,169,110,0.5);color:#c9a96e;}
+.sticky-cta{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#2a1f0e,#1c1408);border-top:1px solid rgba(201,169,110,0.25);padding:0.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;z-index:999;transform:translateY(100%);transition:transform 0.35s ease;}
+.sticky-cta.visible{transform:translateY(0);}
+.sticky-cta-text{font-size:0.78rem;color:#c4b89a;flex:1;}
+.sticky-cta-text strong{color:#e8dcc8;display:block;font-size:0.85rem;}
+.sticky-cta-btn{background:#c9a96e;color:#1c1914;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.55rem 1.2rem;border-radius:7px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+.sticky-cta-btn:hover{background:#e0c080;color:#1c1914;}
+@media(max-width:480px){.sticky-cta-text{display:none;}.sticky-cta{justify-content:center;}}
 </style>
 </head>`;
 }
@@ -194,8 +218,28 @@ function buildArticlePage(slug, article) {
   <div id="content-bn" class="article-body" style="display:none">${contentBn}</div>` :
   `<div class="article-body">${article.content}</div>`;
 
+  // Derive a destination name for contextual CTAs
+  const destName = article.related_destinations && article.related_destinations.length > 0
+    ? article.related_destinations[0].split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    : 'your next destination';
+
+  // GetYourGuide activity link — replace GYG_PARTNER_ID with your real ID after signup
+  const gygDestQuery = (article.related_destinations && article.related_destinations.length > 0)
+    ? article.related_destinations[0].replace(/-/g, '+')
+    : 'travel';
+  const gygUrl = `https://www.getyourguide.com/s/?q=${gygDestQuery}&partner_id=GYG_PARTNER_ID`;
+
   return buildHead(article.title, article.description, `/blog/${slug}`, article.cover_image_url) + `
 <body>
+<!-- Sticky floating CTA bar -->
+<div class="sticky-cta" id="sticky-cta">
+  <div class="sticky-cta-text">
+    <strong>Plan ${destName} with ATLAS</strong>
+    AI itinerary, visa info, hotels &amp; budget — free in seconds
+  </div>
+  <a href="/" class="sticky-cta-btn">Plan Now →</a>
+</div>
+
 <div class="container">
   <header><a href="/">${logoSvg()}<span>Atlas</span></a></header>
   ${article.cover_image_url ? `<img src="${article.cover_image_url}" alt="${article.title}" class="hero-img"/>` : ''}
@@ -209,15 +253,85 @@ function buildArticlePage(slug, article) {
   ${keyFactsHtml}
   ${langToggle}
   ${contentHtml}
-  <div class="cta">
-    <p>Ready to plan your trip? Let ATLAS build a personalized itinerary in seconds.</p>
-    <a href="/" class="cta-btn">Plan with ATLAS →</a>
+
+  <!-- Primary CTA -->
+  <div class="cta" style="margin-top:2.5rem;">
+    <p style="font-size:1rem;color:#e8dcc8;font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.2rem;margin-bottom:0.4rem;">Ready to plan your trip to ${destName}?</p>
+    <p>ATLAS builds your full itinerary in seconds — day-by-day schedule, visa info, hotel picks, and budget estimate. Free to use.</p>
+    <a href="/" class="cta-btn">Plan with ATLAS — It's Free →</a>
   </div>
+
+  <!-- GetYourGuide activities -->
+  <div class="gyg-section">
+    <h3>🎟 Book Tours &amp; Activities</h3>
+    <p>Skip the queue and book the best experiences in ${destName} — guided tours, day trips, transfers, and more.</p>
+    <a href="${gygUrl}" class="gyg-btn" target="_blank" rel="noopener">Browse Activities on GetYourGuide →</a>
+  </div>
+
+  <!-- Newsletter signup -->
+  <div class="newsletter">
+    <div class="newsletter-icon">✉️</div>
+    <div class="newsletter-title">Travel tips for Bangladeshi passport holders</div>
+    <p class="newsletter-desc">Visa news, budget routes, hidden destinations — straight to your inbox. No spam, unsubscribe anytime.</p>
+    <form class="newsletter-form" id="subscribe-form">
+      <input type="email" placeholder="your@email.com" required id="sub-email"/>
+      <button type="submit" id="sub-btn">Subscribe →</button>
+    </form>
+    <p class="newsletter-note" id="sub-msg" style="display:none;"></p>
+  </div>
+
   ${relatedLinks ? `<div class="related"><h3>Plan a Trip</h3><div class="related-links">${relatedLinks}</div></div>` : ''}
   <a href="/blog" class="back">← Back to Blog</a>
 </div>
+
 <script type="application/ld+json">${schema}</script>
 <script type="application/ld+json">${breadcrumb}</script>
+<script>
+  // Sticky CTA — show after scrolling 40% of page
+  (function(){
+    var bar = document.getElementById('sticky-cta');
+    var shown = false;
+    window.addEventListener('scroll', function(){
+      var pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+      if(!shown && pct > 0.35){ bar.classList.add('visible'); shown = true; }
+      if(shown && pct < 0.1){ bar.classList.remove('visible'); shown = false; }
+    }, {passive:true});
+  })();
+
+  // Newsletter subscribe
+  document.getElementById('subscribe-form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var email = document.getElementById('sub-email').value;
+    var btn = document.getElementById('sub-btn');
+    var msg = document.getElementById('sub-msg');
+    btn.textContent = '...';
+    btn.disabled = true;
+    try {
+      var res = await fetch('/api/subscribe', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({email: email, source: 'blog-article'})
+      });
+      msg.style.display = '';
+      if(res.ok){
+        msg.style.color = '#c9a96e';
+        msg.textContent = '✓ You\\'re in! First email coming soon.';
+        document.getElementById('subscribe-form').style.display = 'none';
+      } else {
+        msg.style.color = '#c08060';
+        msg.textContent = 'Something went wrong — try again.';
+        btn.textContent = 'Subscribe →';
+        btn.disabled = false;
+      }
+    } catch(err){
+      msg.style.display = '';
+      msg.style.color = '#c08060';
+      msg.textContent = 'Connection error — try again.';
+      btn.textContent = 'Subscribe →';
+      btn.disabled = false;
+    }
+  });
+</script>
 </body></html>`;
 }
 
