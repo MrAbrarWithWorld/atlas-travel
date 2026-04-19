@@ -70,9 +70,11 @@ a:hover{color:#e8dcc8;}
 .fact-item{display:flex;flex-direction:column;gap:0.2rem;}
 .fact-label{font-size:0.6rem;color:#6a5a3a;letter-spacing:0.12em;text-transform:uppercase;}
 .fact-value{font-size:0.82rem;color:#d4c8b0;font-weight:500;}
-.lang-toggle{display:flex;gap:0;margin-bottom:1.5rem;border:1px solid rgba(201,169,110,0.2);border-radius:6px;overflow:hidden;width:fit-content;}
-.lang-btn{font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.35rem 0.85rem;cursor:pointer;border:none;background:transparent;color:#6a5a3a;transition:background 0.15s,color 0.15s;}
-.lang-btn.active{background:rgba(201,169,110,0.15);color:#c9a96e;}
+.lang-toggle{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.5rem;}
+.lang-btn{font-size:0.7rem;padding:0.3rem 0.75rem;cursor:pointer;border:1px solid rgba(201,169,110,0.2);border-radius:20px;background:transparent;color:#6a5a3a;transition:background 0.15s,color 0.15s,border-color 0.15s;white-space:nowrap;}
+.lang-btn.active{background:rgba(201,169,110,0.18);color:#c9a96e;border-color:rgba(201,169,110,0.45);}
+.lang-btn:hover{color:#c9a96e;border-color:rgba(201,169,110,0.35);}
+[dir="rtl"] .article-body{direction:rtl;text-align:right;font-family:'DM Sans',Tahoma,Arial,sans-serif;}
 .highlights{display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.75rem 0 1.5rem;}
 .highlight-tag{background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.2);border-radius:20px;padding:0.3rem 0.85rem;font-size:0.75rem;color:#c9a96e;}
 .newsletter{background:linear-gradient(135deg,rgba(201,169,110,0.08),rgba(201,169,110,0.03));border:1px solid rgba(201,169,110,0.25);border-radius:14px;padding:1.75rem 2rem;margin:2.5rem 0;text-align:center;}
@@ -200,23 +202,30 @@ function buildArticlePage(slug, article) {
     ${highlights.map(h => `<span class="highlight-tag">${h}</span>`).join('')}
   </div>` : '';
 
-  const langToggle = contentBn ? `
-  <div class="lang-toggle">
-    <button class="lang-btn active" onclick="switchLang('en')">English</button>
-    <button class="lang-btn" onclick="switchLang('bn')">বাংলা</button>
-  </div>
-  <script>
-    function switchLang(lang) {
-      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === (lang==='en'?'English':'বাংলা')));
-      document.getElementById('content-en').style.display = lang==='en' ? '' : 'none';
-      document.getElementById('content-bn').style.display = lang==='bn' ? '' : 'none';
-    }
-  </script>` : '';
+  // Build available languages list
+  const translations = article.content_translations || {};
+  const LANGS = [
+    { code: 'en',  label: '🇬🇧 English',  content: article.content,  rtl: false },
+    { code: 'bn',  label: '🇧🇩 বাংলা',     content: contentBn,        rtl: false },
+    { code: 'hi',  label: '🇮🇳 हिंदी',      content: translations.hi,  rtl: false },
+    { code: 'ar',  label: '🇸🇦 العربية',    content: translations.ar,  rtl: true  },
+    { code: 'zh',  label: '🇨🇳 中文',       content: translations.zh,  rtl: false },
+    { code: 'ja',  label: '🇯🇵 日本語',     content: translations.ja,  rtl: false },
+    { code: 'ko',  label: '🇰🇷 한국어',     content: translations.ko,  rtl: false },
+    { code: 'es',  label: '🇪🇸 Español',   content: translations.es,  rtl: false },
+    { code: 'fr',  label: '🇫🇷 Français',  content: translations.fr,  rtl: false },
+  ].filter(l => l.content);
 
-  const contentHtml = contentBn ? `
-  <div id="content-en" class="article-body">${article.content}</div>
-  <div id="content-bn" class="article-body" style="display:none">${contentBn}</div>` :
-  `<div class="article-body">${article.content}</div>`;
+  const hasMultiLang = LANGS.length > 1;
+
+  const langToggle = hasMultiLang ? `
+  <div class="lang-toggle" id="lang-toggle">
+    ${LANGS.map((l, i) => `<button class="lang-btn${i===0?' active':''}" onclick="switchLang('${l.code}')">${l.label}</button>`).join('')}
+  </div>` : '';
+
+  const contentHtml = hasMultiLang
+    ? LANGS.map((l, i) => `<div id="content-${l.code}" class="article-body"${i>0?' style="display:none"':''}${l.rtl?' dir="rtl"':''}>${l.content}</div>`).join('\n')
+    : `<div class="article-body">${article.content}</div>`;
 
   // Derive a destination name for contextual CTAs
   const destName = article.related_destinations && article.related_destinations.length > 0
@@ -287,6 +296,16 @@ function buildArticlePage(slug, article) {
 <script type="application/ld+json">${schema}</script>
 <script type="application/ld+json">${breadcrumb}</script>
 <script>
+  // Language switcher
+  function switchLang(lang) {
+    document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.remove('active'); });
+    var btn = document.querySelector('.lang-btn[onclick="switchLang(\''+lang+'\')"]');
+    if(btn) btn.classList.add('active');
+    document.querySelectorAll('.article-body').forEach(function(el){ el.style.display='none'; });
+    var target = document.getElementById('content-'+lang);
+    if(target) target.style.display='';
+  }
+
   // Sticky CTA — show after scrolling 40% of page
   (function(){
     var bar = document.getElementById('sticky-cta');
@@ -355,7 +374,7 @@ export default async function handler(req, res) {
 
   const { data, error } = await sb
     .from('blog_posts')
-    .select('slug,title,description,category,date_published,read_time,hero_emoji,content,content_bn,cover_image_url,key_facts,highlights,related_destinations,updated_at')
+    .select('slug,title,description,category,date_published,read_time,hero_emoji,content,content_bn,content_translations,cover_image_url,key_facts,highlights,related_destinations,updated_at')
     .eq('slug', slug)
     .eq('is_published', true)
     .single();
