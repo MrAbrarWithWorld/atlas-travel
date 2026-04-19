@@ -280,8 +280,8 @@ function buildArticlePage(slug, article) {
   <!-- Newsletter signup -->
   <div class="newsletter">
     <div class="newsletter-icon">✉️</div>
-    <div class="newsletter-title">Travel tips for Bangladeshi passport holders</div>
-    <p class="newsletter-desc">Visa news, budget routes, hidden destinations — straight to your inbox. No spam, unsubscribe anytime.</p>
+    <div class="newsletter-title">Discover the world — one destination at a time</div>
+    <p class="newsletter-desc">Hidden gems, budget routes, and travel inspiration from across the globe — straight to your inbox. No spam, unsubscribe anytime.</p>
     <form class="newsletter-form" id="subscribe-form">
       <input type="email" placeholder="your@email.com" required id="sub-email"/>
       <button type="submit" id="sub-btn">Subscribe →</button>
