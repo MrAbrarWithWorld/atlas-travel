@@ -106,6 +106,7 @@ a:hover{color:#e8dcc8;}
 .sticky-cta-btn:hover{background:#e0c080;color:#1c1914;}
 @media(max-width:480px){.sticky-cta-text{display:none;}.sticky-cta{justify-content:center;}}
 </style>
+<script async defer src="https://widget.getyourguide.com/dist/pa.umd.production.min.js" data-gyg-partner-id="TIBSGZK"></script>
 </head>`;
 }
 
@@ -245,7 +246,7 @@ function buildArticlePage(slug, article) {
   const gygDestQuery = (article.related_destinations && article.related_destinations.length > 0)
     ? article.related_destinations[0].replace(/-/g, '+')
     : 'travel';
-  const gygUrl = `https://www.getyourguide.com/s/?q=${gygDestQuery}&partner_id=GYG_PARTNER_ID`;
+  const gygUrl = `https://www.getyourguide.com/s/?q=${gygDestQuery}&partner_id=TIBSGZK`;
 
   return buildHead(article.title, article.description, `/blog/${slug}`, article.cover_image_url) + `
 <body>
