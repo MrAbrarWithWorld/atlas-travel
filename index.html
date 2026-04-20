@@ -1738,6 +1738,92 @@ function ComparisonCard({text}){
   );
 }
 
+// ===================== MULTI-DESTINATION =====================
+function isMultiDestination(text){
+  if(!text)return null;
+  const clean=stripMapData(text);
+  const dayCount=(clean.match(/\bDay\s+\d+/gi)||[]).length;
+  if(dayCount<4)return null;
+  const hh=clean.match(/^##\s+(.+)$/gm);
+  if(hh&&hh.length>=2){
+    // Count Day references under each ## section
+    const lines=clean.split('\n');
+    const counts=new Array(hh.length).fill(0);
+    let cur=-1;
+    for(const ln of lines){
+      const hm=ln.match(/^##\s+(.+)$/);
+      if(hm){const idx=hh.findIndex(h=>h===ln.trim());if(idx>=0)cur=idx;continue;}
+      if(cur>=0&&/\bDay\s+\d+/i.test(ln))counts[cur]++;
+    }
+    const sectionsWithDays=counts.filter(c=>c>0).length;
+    if(sectionsWithDays>=2)return hh.map(h=>h.replace(/^##\s+/,'').trim());
+  }
+  // Arrow-routing pattern: "City A → City B"
+  const arrowM=clean.slice(0,600).match(/([A-Z][a-zA-ZÀ-ÿ\s,]{2,28}?)\s*(?:→|->|➔)\s*([A-Z][a-zA-ZÀ-ÿ\s,]{2,28}?)(?:\s*(?:→|->|➔)\s*([A-Z][a-zA-ZÀ-ÿ\s,]{2,28}))?/);
+  if(arrowM)return[arrowM[1].trim(),arrowM[2].trim(),arrowM[3]?.trim()].filter(Boolean);
+  return null;
+}
+
+function MultiDestDocument({text,msgs,destinations}){
+  const clean=stripMapData(text);
+  const lines=clean.split('\n');
+  const em={'tokyo':'🗼','paris':'🗺️','bali':'🌴','new york':'🗽','rome':'🏛️','seoul':'🌸','london':'🎡','dubai':'🏙️','iceland':'🏔️','kenya':'🦁','thailand':'🏝️','barcelona':'⛪','amsterdam':'🌷','sydney':'🦘','singapore':'🦁','mexico':'🌮','vietnam':'🌿','japan':'🗼','india':'🕌','maldives':'🏖️','morocco':'🕌','greece':'🏛️','turkey':'🕌','portugal':'🏰','costa rica':'🌿','peru':'🏔️','hawaii':'🌺','miami':'🌴','berlin':'🏛️','prague':'⛪','budapest':'🏰','florence':'🎨','kyoto':'⛩️','osaka':'🏯','shanghai':'🌆','beijing':'🏯','hong kong':'🌆','cancun':'🌴','lisbon':'🏰','rio':'🌄','cairo':'🏛️','istanbul':'🕌','dubai':'🏙️'};
+  const ge=d=>{const k=d.toLowerCase();for(const[n,e]of Object.entries(em))if(k.includes(n))return e;return'📍';};
+  const accentColors=['rgba(201,169,110,0.55)','rgba(180,130,90,0.4)','rgba(160,110,70,0.3)','rgba(140,90,50,0.25)','rgba(120,75,35,0.2)'];
+  // Parse sections
+  const sections=[];let curDest=null;let curDay=null;const prelines=[];
+  for(const line of lines){
+    const t=line.trim();if(!t)continue;
+    const hm=t.match(/^##\s+(.+)$/);
+    if(hm){
+      if(curDay){if(curDest)curDest.days.push(curDay);curDay=null;}
+      if(curDest)sections.push(curDest);
+      curDest={name:hm[1].trim(),days:[],pre:[]};continue;
+    }
+    const dm=t.match(/^\*{0,2}(Day\s+\d+(?:[–\-]\d+)?)[:\*\s\—\–]+([^\n]*)/i);
+    if(dm){
+      if(curDay){if(curDest)curDest.days.push(curDay);else if(sections.length)sections[sections.length-1].days.push(curDay);}
+      curDay={label:dm[1],title:dm[2].replace(/\*+/g,'').trim(),items:[]};continue;
+    }
+    if(curDay){
+      if(t.startsWith('- ')||t.startsWith('* '))curDay.items.push(t.slice(2).replace(/\*\*/g,''));
+      else if(!t.startsWith('#'))curDay.items.push(t.replace(/\*\*/g,''));
+    }else if(curDest){curDest.pre.push(line);}
+    else{prelines.push(line);}
+  }
+  if(curDay&&curDest)curDest.days.push(curDay);
+  if(curDest)sections.push(curDest);
+  const route=(destinations||sections.map(s=>s.name)).join(' → ');
+  const totalDays=sections.reduce((a,s)=>a+s.days.length,0)||(clean.match(/\bDay\s+\d+/gi)||[]).length;
+  return React.createElement('div',{style:{width:'100%'}},
+    // Route header
+    React.createElement('div',{style:{background:'linear-gradient(135deg,rgba(201,169,110,0.1),rgba(201,169,110,0.04))',border:'1px solid rgba(201,169,110,0.22)',borderRadius:12,padding:'0.75rem 1rem',marginBottom:'0.75rem',display:'flex',alignItems:'center',gap:'0.65rem'}},
+      React.createElement('span',{style:{fontSize:'1.3rem'}},'✈️'),
+      React.createElement('div',null,
+        React.createElement('p',{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:'1rem',fontWeight:400,color:'#d4aa6e',letterSpacing:'0.04em',lineHeight:1.4}},route),
+        React.createElement('p',{style:{fontSize:'0.58rem',color:'rgba(201,169,110,0.5)',letterSpacing:'0.12em',textTransform:'uppercase',marginTop:'0.15rem'}},totalDays+'-day multi-destination · Atlas AI')
+      )
+    ),
+    // Intro prose
+    prelines.length>0&&React.createElement('div',{style:{fontSize:'0.78rem',color:'#8a7a55',lineHeight:1.8,marginBottom:'0.65rem'}},React.createElement(Prose,{text:prelines.join('\n')})),
+    // Destination sections
+    sections.length>0
+      ?sections.map((sect,si)=>React.createElement('div',{key:si,style:{marginBottom:'0.7rem'}},
+          React.createElement('div',{style:{background:'rgba(201,169,110,0.05)',border:'1px solid rgba(201,169,110,0.18)',borderTop:'3px solid '+(accentColors[si%accentColors.length]),borderRadius:'0 0 8px 8px',padding:'0.5rem 0.75rem',marginBottom:'0.4rem',display:'flex',alignItems:'center',gap:'0.5rem'}},
+            React.createElement('span',{style:{fontSize:'1rem'}},ge(sect.name)),
+            React.createElement('span',{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:'0.88rem',fontWeight:600,color:'#c9a96e'}},sect.name),
+            sect.days.length>0&&React.createElement('span',{style:{fontSize:'0.58rem',color:'rgba(201,169,110,0.4)',marginLeft:'auto'}},sect.days.length+' day'+(sect.days.length!==1?'s':''))
+          ),
+          sect.pre.join('\n').trim()&&React.createElement('div',{style:{fontSize:'0.76rem',color:'#7a6a48',lineHeight:1.75,marginBottom:'0.4rem',paddingLeft:'0.4rem'}},React.createElement(Prose,{text:sect.pre.join('\n')})),
+          sect.days.map((day,di)=>React.createElement('div',{key:di,style:{marginBottom:'0.35rem',padding:'0.45rem 0.65rem',background:'rgba(201,169,110,0.02)',border:'1px solid rgba(201,169,110,0.09)',borderLeft:'2px solid rgba(201,169,110,0.25)',borderRadius:'0 6px 6px 0'}},
+            React.createElement('p',{style:{fontSize:'0.68rem',fontWeight:600,color:'#b89860',marginBottom:'0.2rem'}},day.label+(day.title?': '+day.title:'')),
+            day.items.slice(0,10).map((item,ii)=>React.createElement('p',{key:ii,style:{fontSize:'0.7rem',color:'#7a6a48',lineHeight:1.6}},'• '+item))
+          ))
+        ))
+      :React.createElement(Prose,{text:clean})
+  );
+}
+
 function TripDocument({text,msgs}){
   const destination=extractTitle(msgs.map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||''})));
   // Extract budget estimate from text
@@ -2365,11 +2451,11 @@ function renamePlan(id,newTitle){
         )
       ),
       msgs.length>0&&React.createElement("div",{style:{padding:"1.25rem 1.5rem",display:"flex",flexDirection:"column",gap:"1.35rem"}},
-        ...msgs.map(msg=>{const _isItin=msg.from==="ai"&&isItinerary(msg.text);const _cmpDests=!_isItin&&msg.from==="ai"?isComparison(msg.text):null;const _isCmp=!!_cmpDests;return React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:(_isItin||_isCmp)?"0.4rem":"0.75rem",alignItems:"flex-start"}},
-          React.createElement("div",{style:{flexShrink:0,width:(_isItin||_isCmp)?18:24,height:(_isItin||_isCmp)?18:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:(_isItin||_isCmp)?4:2}},
+        ...msgs.map(msg=>{const _multiDests=msg.from==="ai"?isMultiDestination(msg.text):null;const _isMulti=!!_multiDests;const _isItin=!_isMulti&&msg.from==="ai"&&isItinerary(msg.text);const _cmpDests=!_isMulti&&!_isItin&&msg.from==="ai"?isComparison(msg.text):null;const _isCmp=!!_cmpDests;return React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:(_isItin||_isCmp||_isMulti)?"0.4rem":"0.75rem",alignItems:"flex-start"}},
+          React.createElement("div",{style:{flexShrink:0,width:(_isItin||_isCmp||_isMulti)?18:24,height:(_isItin||_isCmp||_isMulti)?18:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:(_isItin||_isCmp||_isMulti)?4:2}},
             React.createElement("span",{style:{fontSize:"0.42rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
           ),
-          React.createElement("div",{style:{maxWidth:(_isItin||_isCmp)?"100%":"88%",width:"100%"}},
+          React.createElement("div",{style:{maxWidth:(_isItin||_isCmp||_isMulti)?"100%":"88%",width:"100%"}},
             msg.from==="user"
               ?editingId===msg.id
                 ?React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"0.5rem"}},
@@ -2385,13 +2471,15 @@ function renamePlan(id,newTitle){
                     !busy&&React.createElement("button",{className:"edit-btn",onClick:()=>startEdit(msg),style:{position:"absolute",top:-8,left:-8,background:"#252018",border:"1px solid rgba(201,169,110,0.2)",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#8a7a50"}},React.createElement(EditIcon))
                   )
               :React.createElement("div",null,
-                  _isItin?React.createElement(TripDocument,{text:msg.text,msgs}):_isCmp?React.createElement(ComparisonCard,{text:msg.text,destinations:_cmpDests}):React.createElement(Prose,{text:msg.text}),
+                  _isMulti?React.createElement(MultiDestDocument,{text:msg.text,msgs,destinations:_multiDests}):_isItin?React.createElement(TripDocument,{text:msg.text,msgs}):_isCmp?React.createElement(ComparisonCard,{text:msg.text,destinations:_cmpDests}):React.createElement(Prose,{text:msg.text}),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
                   React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.5rem",flexWrap:"wrap"}},
                   hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen"),
                   React.createElement("button",{onClick:()=>setShowCalendar(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📅 Calendar"),
-                  _isItin&&React.createElement("button",{onClick:()=>send("Based on this trip plan, generate a detailed packing list organized by category (clothing, documents, electronics, toiletries, etc). Tailor it to the destination and activities mentioned."),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📦 Pack"),
-                  isPro&&React.createElement("button",{onClick:()=>generatePDF(),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📄 PDF")
+                  (_isItin||_isMulti)&&React.createElement("button",{onClick:()=>send("Based on this trip plan, generate a detailed packing list organized by category (clothing, documents, electronics, toiletries, etc). Tailor it to the destination and activities mentioned."),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📦 Pack"),
+                  isPro
+                    ?React.createElement("button",{onClick:()=>generatePDF(),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📄 PDF")
+                    :React.createElement("button",{onClick:()=>setShowPricing(true),title:"Upgrade to Pro for PDF export",style:{background:"none",border:"1px solid rgba(201,169,110,0.1)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#4a3a25",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",opacity:0.7}},"🔒 PDF")
                  )
                 )
               )
