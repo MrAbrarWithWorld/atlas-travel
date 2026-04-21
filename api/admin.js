@@ -329,10 +329,27 @@ async function blogEditorPage(slug, saved = false) {
 
       <h2>Cover Photo</h2>
       <div class="photo-row">
-        <img src="${post.cover_image_url || ''}" alt="" onerror="this.style.opacity=0.15"/>
+        <img id="cover-preview" src="${post.cover_image_url || ''}" alt="" onerror="this.style.opacity=0.15" style="cursor:pointer;" onclick="openPhotoModal()"/>
         <div style="flex:1">
-          <div class="photo-tag">Cover image URL</div>
-          <input type="text" name="cover_image_url" value="${(post.cover_image_url || '').replace(/"/g, '&quot;')}"/>
+          <div class="photo-tag">Cover image URL — <span style="color:#8a7a5a;font-size:0.72rem;">Change করার পর ছবি auto-update হবে</span></div>
+          <input type="text" id="cover-url-input" name="cover_image_url" value="${(post.cover_image_url || '').replace(/"/g, '&quot;')}" oninput="updateCoverPreview(this.value)" onpaste="setTimeout(()=>updateCoverPreview(this.value),50)"/>
+          <div id="photo-warn" style="display:none;margin-top:0.5rem;padding:0.5rem 0.8rem;background:rgba(200,80,50,0.12);border:1px solid rgba(200,80,50,0.3);border-radius:6px;font-size:0.75rem;color:#e08060;">
+            ⚠️ ছবিটি article-এর destination-এর সাথে match করছে কিনা verify করুন।
+          </div>
+        </div>
+      </div>
+
+      <!-- Photo confirm modal -->
+      <div id="photo-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;">
+        <div style="background:#1a1610;border:1px solid rgba(201,169,110,0.25);border-radius:14px;padding:2rem;max-width:560px;width:90%;text-align:center;">
+          <div style="font-size:0.68rem;letter-spacing:0.15em;text-transform:uppercase;color:#c9a96e;margin-bottom:1rem;">Photo Verification</div>
+          <img id="modal-img" src="" style="width:100%;height:240px;object-fit:cover;border-radius:8px;margin-bottom:1.2rem;"/>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#ede5d5;margin-bottom:0.6rem;" id="modal-title"></div>
+          <div style="font-size:0.82rem;color:#8a7a5a;margin-bottom:1.5rem;">এই ছবিটি কি উপরের article-এর destination-এর সাথে সঠিকভাবে match করছে?</div>
+          <div style="display:flex;gap:0.8rem;justify-content:center;">
+            <button onclick="confirmSave()" style="background:#5a9a6a;color:#fff;border:none;padding:0.6rem 1.5rem;border-radius:7px;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;">✓ হ্যাঁ, ঠিক আছে — Save করো</button>
+            <button onclick="closeModal()" style="background:rgba(201,169,110,0.1);color:#c9a96e;border:1px solid rgba(201,169,110,0.25);padding:0.6rem 1.5rem;border-radius:7px;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;">✗ না, ছবি পরিবর্তন করব</button>
+          </div>
         </div>
       </div>
 
@@ -341,9 +358,49 @@ async function blogEditorPage(slug, saved = false) {
       <h2>Content HTML (English)</h2>
       <div class="field"><textarea name="content" rows="22" style="font-size:0.72rem;font-family:monospace">${safeContent}</textarea></div>
 
-      <button type="submit" class="btn">Save Changes</button>
+      <button type="button" class="btn" onclick="checkBeforeSave()">Save Changes</button>
       &nbsp;&nbsp;<a href="/blog/${slug}" target="_blank" class="btn btn-ghost btn-sm">View Live →</a>
     </form>
+
+    <script>
+    var _articleTitle = ${JSON.stringify(post.title || '')};
+    var _formConfirmed = false;
+
+    function updateCoverPreview(url) {
+      var img = document.getElementById('cover-preview');
+      if (url && url.startsWith('http')) {
+        img.src = url;
+        img.style.opacity = 1;
+        document.getElementById('photo-warn').style.display = 'none';
+      }
+    }
+
+    function openPhotoModal() {
+      var url = document.getElementById('cover-url-input').value;
+      document.getElementById('modal-img').src = url;
+      document.getElementById('modal-title').textContent = _articleTitle;
+      document.getElementById('photo-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('photo-modal').style.display = 'none';
+      document.getElementById('photo-warn').style.display = 'block';
+    }
+
+    function confirmSave() {
+      document.getElementById('photo-modal').style.display = 'none';
+      _formConfirmed = true;
+      document.querySelector('form').submit();
+    }
+
+    function checkBeforeSave() {
+      if (_formConfirmed) { document.querySelector('form').submit(); return; }
+      openPhotoModal();
+    }
+
+    // ESC closes modal
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+    </script>
   `);
 }
 
