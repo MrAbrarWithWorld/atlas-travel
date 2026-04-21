@@ -677,7 +677,7 @@ export default async function handler(req, res) {
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', 'index, follow');
-  res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+  res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
 
   if (!slug || slug === 'index') {
     const { data, error } = await sb
