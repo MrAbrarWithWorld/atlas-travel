@@ -192,8 +192,8 @@ function buildListingPage(articles, activeCatParam) {
   });
 
   const destCategories = [
-    { label: 'Bangladesh', sub: 'Dhaka · Cox\'s Bazar · Sundarbans', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80', q: 'bangladesh' },
-    { label: 'Asia & Pacific', sub: 'Japan · Bali · Singapore · Thailand', img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600&q=80', q: 'asia' },
+    { label: 'South Asia', sub: 'Bangladesh · Maldives · Nepal · India', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80', q: 'southasia' },
+    { label: 'East & Southeast Asia', sub: 'Japan · Bali · Singapore · Thailand', img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600&q=80', q: 'eastasia' },
     { label: 'Europe & Middle East', sub: 'Istanbul · Turkey · Beyond', img: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=600&q=80', q: 'europe' },
     { label: 'Visa & Budget Tips', sub: 'Guides · Packing · Solo Travel', img: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80', q: 'tips' },
   ];
@@ -375,8 +375,8 @@ ${listingStyles}
   <a href="/blog" class="blog-nav-logo">${logoSvg()} Atlas</a>
   <ul class="blog-nav-links">
     <li><a href="/blog"${!activeCat ? ' class="active"' : ''}>All</a></li>
-    <li><a href="/blog?cat=bangladesh"${activeCat==='bangladesh' ? ' class="active"' : ''}>Bangladesh</a></li>
-    <li><a href="/blog?cat=asia"${activeCat==='asia' ? ' class="active"' : ''}>Asia</a></li>
+    <li><a href="/blog?cat=southasia"${activeCat==='southasia' ? ' class="active"' : ''}>South Asia</a></li>
+    <li><a href="/blog?cat=eastasia"${activeCat==='eastasia' ? ' class="active"' : ''}>East Asia</a></li>
     <li><a href="/blog?cat=tips"${activeCat==='tips' ? ' class="active"' : ''}>Tips & Visa</a></li>
   </ul>
   <a href="/" class="blog-nav-cta">Plan Free →</a>
@@ -666,8 +666,8 @@ function buildArticlePage(slug, article) {
 }
 
 const CAT_KEYWORDS = {
-  bangladesh: ['bangladesh','dhaka','cox','sundarbans','coxs-bazar'],
-  asia: ['japan','kyoto','bali','singapore','thailand','asia','pacific'],
+  southasia: ['bangladesh','dhaka','cox','sundarbans','maldives','nepal','everest','india'],
+  eastasia: ['japan','kyoto','bali','singapore','thailand','asia','pacific'],
   europe: ['istanbul','turkey','europe','middle-east'],
   tips: ['visa','budget','packing','solo','tips','travel-tips'],
 };
