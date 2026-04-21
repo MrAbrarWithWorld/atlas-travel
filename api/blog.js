@@ -114,7 +114,7 @@ function logoSvg() {
   return `<svg width="28" height="28" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><circle cx="200" cy="200" r="170" fill="none" stroke="#c9a96e" stroke-width="2.2"/><circle cx="200" cy="200" r="130" fill="none" stroke="#8a6a3a" stroke-width="1"/><circle cx="200" cy="200" r="18" fill="#c9a96e"/></svg>`;
 }
 
-function buildListingPage(articles) {
+function buildListingPage(articles, activeCatParam) {
   const hero = articles[0];
   const row1 = articles.slice(1, 3);
   const grid1 = articles.slice(3, 6);
@@ -135,12 +135,12 @@ function buildListingPage(articles) {
     const text = `
       <div class="afr-content">
         <div class="afr-issue">${a.category}</div>
-        <a href="/blog/${a.slug}" class="afr-title-link"><h2 class="afr-title">${a.title}</h2></a>
+        <h2 class="afr-title">${a.title}</h2>
         <p class="afr-excerpt">${a.description}</p>
         <div class="afr-meta"><span>${d}</span><span class="afr-sep"></span><span>${a.read_time}</span></div>
-        <a href="/blog/${a.slug}" class="afr-link">Read the story <div class="afr-link-line"></div></a>
+        <div class="afr-link">Read the story <div class="afr-link-line"></div></div>
       </div>`;
-    return `<div class="article-fullrow${imgRight ? '' : ' reverse'}">${imgRight ? text + img : img + text}</div>`;
+    return `<a href="/blog/${a.slug}" class="article-fullrow${imgRight ? '' : ' reverse'}">${imgRight ? text + img : img + text}</a>`;
   }
 
   function threeGrid(arr) {
@@ -197,16 +197,17 @@ function buildListingPage(articles) {
     { label: 'Europe & Middle East', sub: 'Istanbul · Turkey · Beyond', img: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=600&q=80', q: 'europe' },
     { label: 'Visa & Budget Tips', sub: 'Guides · Packing · Solo Travel', img: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80', q: 'tips' },
   ];
+  const activeCat = activeCatParam || null;
 
   const destGrid = `
   <section class="dest-section">
     <div class="section-head-bar">
       <h2 class="sh-title">Browse by <em>Destination</em></h2>
-      <a href="/blog" class="sh-link">All articles →</a>
+      ${activeCat ? `<a href="/blog" class="sh-link">← All articles</a>` : ''}
     </div>
     <div class="dest-grid">
       ${destCategories.map(d => `
-      <a href="/blog?cat=${d.q}" class="dest-card">
+      <a href="/blog?cat=${d.q}" class="dest-card${activeCat === d.q ? ' active-cat' : ''}">
         <img src="${d.img}" alt="${d.label}" loading="lazy"/>
         <div class="dest-overlay">
           <div class="dest-label">${d.label}</div>
@@ -266,11 +267,12 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 .dest-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(23,20,15,0.88) 0%,rgba(23,20,15,0.3) 60%,rgba(23,20,15,0.05) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:1.3rem 1.2rem;}
 .dest-label{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:500;color:#f0e8d8;margin-bottom:0.25rem;}
 .dest-sub{font-size:0.62rem;color:rgba(201,169,110,0.7);letter-spacing:0.06em;}
+.dest-card.active-cat{box-shadow:inset 0 0 0 2px #c9a96e;}
 @media(max-width:800px){.dest-grid{grid-template-columns:repeat(2,1fr);}.dest-section{padding:2.5rem 1.2rem 0;}}
 
 /* FULL-ROW ARTICLES */
 .articles-body{padding:0 3rem 4rem;}
-.article-fullrow{display:grid;grid-template-columns:1fr 1fr;min-height:440px;border-bottom:1px solid rgba(201,169,110,0.12);margin-top:0;}
+.article-fullrow{display:grid;grid-template-columns:1fr 1fr;min-height:440px;border-bottom:1px solid rgba(201,169,110,0.12);margin-top:0;text-decoration:none;color:inherit;}
 .article-fullrow.reverse .afr-image{order:1;}
 .article-fullrow.reverse .afr-content{order:2;}
 .afr-image{position:relative;overflow:hidden;background:#1e1a12;}
@@ -370,11 +372,12 @@ ${listingStyles}
 
 <!-- NAV -->
 <nav class="blog-nav">
-  <a href="/" class="blog-nav-logo">${logoSvg()} Atlas</a>
+  <a href="/blog" class="blog-nav-logo">${logoSvg()} Atlas</a>
   <ul class="blog-nav-links">
-    <li><a href="/">Plan a Trip</a></li>
-    <li><a href="/blog" class="active">Journal</a></li>
-    <li><a href="/#pricing">Pricing</a></li>
+    <li><a href="/blog"${!activeCat ? ' class="active"' : ''}>All</a></li>
+    <li><a href="/blog?cat=bangladesh"${activeCat==='bangladesh' ? ' class="active"' : ''}>Bangladesh</a></li>
+    <li><a href="/blog?cat=asia"${activeCat==='asia' ? ' class="active"' : ''}>Asia</a></li>
+    <li><a href="/blog?cat=tips"${activeCat==='tips' ? ' class="active"' : ''}>Tips & Visa</a></li>
   </ul>
   <a href="/" class="blog-nav-cta">Plan Free →</a>
 </nav>
@@ -662,8 +665,15 @@ function buildArticlePage(slug, article) {
 </body></html>`;
 }
 
+const CAT_KEYWORDS = {
+  bangladesh: ['bangladesh','dhaka','cox','sundarbans','coxs-bazar'],
+  asia: ['japan','kyoto','bali','singapore','thailand','asia','pacific'],
+  europe: ['istanbul','turkey','europe','middle-east'],
+  tips: ['visa','budget','packing','solo','tips','travel-tips'],
+};
+
 export default async function handler(req, res) {
-  const { slug } = req.query;
+  const { slug, cat } = req.query;
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', 'index, follow');
@@ -677,7 +687,19 @@ export default async function handler(req, res) {
       .order('date_published', { ascending: false });
 
     if (error) return res.status(500).send('<h1>Error loading blog</h1>');
-    return res.status(200).send(buildListingPage(data || []));
+
+    let articles = data || [];
+
+    // Filter by category if ?cat= param present
+    if (cat && CAT_KEYWORDS[cat]) {
+      const kw = CAT_KEYWORDS[cat];
+      articles = articles.filter(a => {
+        const haystack = (a.slug + ' ' + (a.category || '')).toLowerCase();
+        return kw.some(k => haystack.includes(k));
+      });
+    }
+
+    return res.status(200).send(buildListingPage(articles, cat || null));
   }
 
   const { data, error } = await sb
