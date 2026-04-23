@@ -6,10 +6,7 @@
     "api/admin.js": {
       "maxDuration": 30
     },
-    "api/warmup.js": {
-      "maxDuration": 10
-    },
-    "api/create-checkout.js": {
+"api/create-checkout.js": {
       "maxDuration": 30
     },
     "api/webhook.js": {
