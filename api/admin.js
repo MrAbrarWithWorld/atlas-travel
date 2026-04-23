@@ -378,13 +378,16 @@ async function blogEditorPage(slug, saved = false) {
       status.textContent = '⏳ Uploading...';
       status.style.color = '#c9a96e';
       try {
-        var resp = await fetch('/api/upload', {
+        var base64 = await new Promise(function(resolve, reject) {
+          var reader = new FileReader();
+          reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        var resp = await fetch('/api/admin?section=upload', {
           method: 'POST',
-          headers: {
-            'Content-Type': file.type,
-            'x-filename': file.name
-          },
-          body: file
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64: base64, filename: file.name, mimeType: file.type, uploadType: 'admin' })
         });
         var data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'Upload failed');
@@ -492,6 +495,29 @@ export default async function handler(req, res) {
     res.setHeader('Set-Cookie', 'atlas_admin=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict');
     res.setHeader('Location', '/admin');
     return res.status(302).end();
+  }
+
+  // ── Upload (base64 JSON body) ──────────────────────────────────────────────
+  if (req.method === 'POST' && section === 'upload') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    let body;
+    try { body = JSON.parse(await readBody(req)); } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
+    const { base64, filename = 'photo.jpg', mimeType = 'image/jpeg', uploadType = 'admin' } = body;
+    const isComment = uploadType === 'comment';
+    if (!isComment && !isAuthed(req)) return res.status(401).json({ error: 'Unauthorized' });
+    const allowed = ['image/jpeg','image/jpg','image/png','image/webp'];
+    if (!allowed.includes(mimeType)) return res.status(400).json({ error: 'Only JPEG, PNG, WebP allowed' });
+    if (!base64) return res.status(400).json({ error: 'No image data' });
+    const buffer = Buffer.from(base64, 'base64');
+    if (buffer.length > 3 * 1024 * 1024) return res.status(400).json({ error: 'Max 3MB' });
+    const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase();
+    const bucket = isComment ? 'comment-photos' : 'blog-images';
+    const folder = isComment ? 'uploads' : 'covers';
+    const path = `${folder}/${Date.now()}-${safeName}`;
+    const { error } = await sb.storage.from(bucket).upload(path, buffer, { contentType: mimeType, upsert: false });
+    if (error) return res.status(500).json({ error: error.message });
+    const { data: { publicUrl } } = sb.storage.from(bucket).getPublicUrl(path);
+    return res.status(200).json({ url: publicUrl });
   }
 
   // POST

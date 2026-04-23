@@ -698,7 +698,7 @@ function buildArticlePage(slug, article) {
 
   async function loadComments(){
     try {
-      var r = await fetch('/api/comments?slug=' + _postSlug);
+      var r = await fetch('/api/blog?action=comments&slug=' + _postSlug);
       var d = await r.json();
       var comments = d.comments || [];
       var badge = document.getElementById('comment-count');
@@ -733,7 +733,7 @@ function buildArticlePage(slug, article) {
   async function likeComment(id, btn){
     btn.disabled = true;
     try {
-      await fetch('/api/comments?action=like', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+      await fetch('/api/blog?action=comments', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({likeId: id}) });
       var span = btn.querySelector('span');
       span.textContent = parseInt(span.textContent) + 1;
       btn.classList.add('liked');
@@ -747,10 +747,11 @@ function buildArticlePage(slug, article) {
     status.textContent = '⏳ Uploading...';
     status.style.color = '#c9a96e';
     try {
-      var r = await fetch('/api/upload', {
+      var base64 = await new Promise(function(res,rej){ var rd=new FileReader(); rd.onload=function(e){res(e.target.result.split(',')[1]);}; rd.onerror=rej; rd.readAsDataURL(file); });
+      var r = await fetch('/api/admin?section=upload', {
         method: 'POST',
-        headers: { 'Content-Type': file.type, 'x-filename': file.name, 'x-upload-type': 'comment' },
-        body: file
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64: base64, filename: file.name, mimeType: file.type, uploadType: 'comment' })
       });
       var d = await r.json();
       if(!r.ok) throw new Error(d.error || 'Upload failed');
@@ -789,7 +790,7 @@ function buildArticlePage(slug, article) {
     btn.textContent = 'Posting...';
     btn.disabled = true;
     try {
-      var r = await fetch('/api/comments?slug=' + _postSlug, {
+      var r = await fetch('/api/blog?action=comments&slug=' + _postSlug, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ name, content, photo_url: photo_url || null })
@@ -906,8 +907,68 @@ const CAT_KEYWORDS = {
   tips: ['visa','budget','packing','solo','tips','travel-tips'],
 };
 
+// In-memory rate limit for comments
+const commentRateMap = new Map();
+function isCommentRateLimited(ip) {
+  const now = Date.now();
+  const e = commentRateMap.get(ip) || { count: 0, reset: now + 10 * 60 * 1000 };
+  if (now > e.reset) { e.count = 0; e.reset = now + 10 * 60 * 1000; }
+  e.count++;
+  commentRateMap.set(ip, e);
+  return e.count > 5;
+}
+
 export default async function handler(req, res) {
-  const { slug, cat } = req.query;
+  const { slug, cat, action } = req.query;
+
+  // ── Comments API (action=comments) ───────────────────────────────────────
+  if (action === 'comments') {
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Type', 'application/json');
+
+    if (req.method === 'GET') {
+      if (!slug) return res.status(400).json({ error: 'slug required' });
+      const { data, error } = await sb.from('comments')
+        .select('id, name, content, photo_url, likes, parent_id, created_at')
+        .eq('post_slug', slug).eq('is_approved', true)
+        .order('created_at', { ascending: true }).limit(200);
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(200).json({ comments: data || [] });
+    }
+
+    if (req.method === 'POST') {
+      let body = {};
+      try {
+        const raw = await new Promise(r => { let d = ''; req.on('data', c => d += c); req.on('end', () => r(d)); });
+        body = JSON.parse(raw);
+      } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
+
+      const { name, content, photo_url, parent_id, likeId } = body;
+
+      // Like action
+      if (likeId) {
+        const { data: c } = await sb.from('comments').select('likes').eq('id', likeId).single();
+        await sb.from('comments').update({ likes: (c?.likes || 0) + 1 }).eq('id', likeId);
+        return res.status(200).json({ ok: true });
+      }
+
+      // Submit comment
+      if (!slug || !name || !content) return res.status(400).json({ error: 'slug, name and content required' });
+      if (content.length > 1200) return res.status(400).json({ error: 'Too long' });
+      const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
+      if (isCommentRateLimited(ip)) return res.status(429).json({ error: 'Too many comments. Wait a few minutes.' });
+      const { data: post } = await sb.from('blog_posts').select('slug').eq('slug', slug).single();
+      if (!post) return res.status(404).json({ error: 'Post not found' });
+      const { data, error } = await sb.from('comments').insert({
+        post_slug: slug, name: name.trim().slice(0, 80),
+        content: content.trim().slice(0, 1200),
+        photo_url: photo_url || null, parent_id: parent_id || null,
+      }).select().single();
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(201).json({ comment: data });
+    }
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', 'index, follow');
