@@ -2557,7 +2557,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(
 </script>
 <script>
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/service-worker.js');});}
-(function warmup(){fetch('/api/warmup').catch(()=>{});setInterval(()=>fetch('/api/warmup').catch(()=>{}),4*60*1000);})();
 </script>
 </body>
 </html>
