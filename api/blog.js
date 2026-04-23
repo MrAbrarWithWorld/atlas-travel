@@ -70,6 +70,9 @@ a:hover{color:#e8dcc8;}
 .fact-item{display:flex;flex-direction:column;gap:0.2rem;}
 .fact-label{font-size:0.6rem;color:#6a5a3a;letter-spacing:0.12em;text-transform:uppercase;}
 .fact-value{font-size:0.82rem;color:#d4c8b0;font-weight:500;}
+.visa-disclaimer{display:flex;align-items:flex-start;gap:0.6rem;background:rgba(201,169,110,0.06);border:1px solid rgba(201,169,110,0.2);border-left:3px solid #c9a96e;border-radius:0 8px 8px 0;padding:0.7rem 1rem;margin:-0.5rem 0 1.5rem;font-size:0.78rem;color:#9a8a70;line-height:1.6;}
+.visa-disclaimer-icon{flex-shrink:0;font-size:0.9rem;margin-top:0.05rem;}
+.visa-disclaimer strong{color:#c9a96e;}
 .lang-selector{position:relative;display:inline-block;margin-bottom:1.5rem;}
 .lang-selected{display:flex;align-items:center;gap:0.5rem;background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.25);border-radius:8px;padding:0.45rem 0.9rem;cursor:pointer;font-size:0.78rem;color:#c9a96e;font-family:'DM Sans',sans-serif;user-select:none;}
 .lang-selected-arrow{font-size:0.65rem;margin-left:0.2rem;transition:transform 0.2s;}
@@ -524,6 +527,10 @@ function buildArticlePage(slug, article) {
   const keyFactsHtml = keyFacts ? `
   <div class="key-facts">
     ${Object.entries(keyFacts).map(([k,v]) => `<div class="fact-item"><span class="fact-label">${k}</span><span class="fact-value">${v}</span></div>`).join('')}
+  </div>
+  <div class="visa-disclaimer">
+    <span class="visa-disclaimer-icon">⚠️</span>
+    <span><strong>Visa rules vary by passport.</strong> The info above is a general overview — requirements differ significantly by nationality. Use <a href="/" style="color:#c9a96e;">Atlas AI</a> to get accurate visa rules for your specific passport.</span>
   </div>` : '';
 
   const highlightsHtml = highlights.length ? `
