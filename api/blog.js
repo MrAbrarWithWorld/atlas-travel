@@ -557,9 +557,32 @@ function buildArticlePage(slug, article) {
     </div>
   </div>` : '';
 
+  // Inject inline photos after every 2nd H2 in English content
+  function injectInlinePhotos(html, photos) {
+    if (!photos || !photos.length) return html;
+    const validPhotos = photos.filter(Boolean);
+    if (!validPhotos.length) return html;
+    let photoIdx = 0;
+    let h2Count = 0;
+    return html.replace(/<\/h2>/gi, () => {
+      h2Count++;
+      if (h2Count % 2 === 0 && photoIdx < validPhotos.length) {
+        const url = validPhotos[photoIdx++];
+        return `</h2><img src="${url}" alt="" class="inline-img" loading="lazy"/>`;
+      }
+      return '</h2>';
+    });
+  }
+
+  const inlinePhotos = Array.isArray(article.inline_photos) ? article.inline_photos : [];
+  const enrichedContent = injectInlinePhotos(article.content || '', inlinePhotos);
+
   const contentHtml = hasMultiLang
-    ? LANGS.map((l, i) => `<div id="content-${l.code}" class="article-body"${i>0?' style="display:none"':''}${l.rtl?' dir="rtl"':''}>${l.content}</div>`).join('\n')
-    : `<div class="article-body">${article.content}</div>`;
+    ? LANGS.map((l, i) => {
+        const enriched = l.code === 'en' ? injectInlinePhotos(l.content || '', inlinePhotos) : l.content;
+        return `<div id="content-${l.code}" class="article-body"${i>0?' style="display:none"':''}${l.rtl?' dir="rtl"':''}>${enriched}</div>`;
+      }).join('\n')
+    : `<div class="article-body">${enrichedContent}</div>`;
 
   // Derive a destination name for contextual CTAs
   const destName = article.related_destinations && article.related_destinations.length > 0
@@ -999,7 +1022,7 @@ export default async function handler(req, res) {
 
   const { data, error } = await sb
     .from('blog_posts')
-    .select('slug,title,description,category,date_published,read_time,hero_emoji,content,content_bn,content_translations,cover_image_url,key_facts,highlights,related_destinations,updated_at')
+    .select('slug,title,description,category,date_published,read_time,hero_emoji,content,content_bn,content_translations,cover_image_url,key_facts,highlights,related_destinations,updated_at,inline_photos')
     .eq('slug', slug)
     .eq('is_published', true)
     .single();

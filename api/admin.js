@@ -294,24 +294,23 @@ async function blogListPage() {
 async function blogEditorPage(slug, saved = false) {
   const { data: post } = await sb
     .from('blog_posts')
-    .select('slug,title,description,read_time,is_published,cover_image_url,content')
+    .select('slug,title,description,read_time,is_published,cover_image_url,content,inline_photos')
     .eq('slug', slug)
     .single();
 
   if (!post) return shell('blog', 'Not Found', `<p style="color:#c06050;padding:2rem">Article not found: ${slug}</p>`);
 
-  const imgs = [];
-  const imgRe = /<img[^>]+src="([^"]+)"[^>]*>/gi;
-  let m;
-  while ((m = imgRe.exec(post.content || '')) !== null) imgs.push({ src: m[1] });
+  // Always show 5 inline photo slots, pulling from inline_photos JSONB array
+  const savedPhotos = Array.isArray(post.inline_photos) ? post.inline_photos : [];
+  const PHOTO_SLOTS = 5;
+  const photoSlots = Array.from({ length: PHOTO_SLOTS }, (_, i) => savedPhotos[i] || '');
 
-  const photoInputs = imgs.map((img, i) => `
+  const photoInputs = photoSlots.map((url, i) => `
     <div class="photo-row">
-      <img id="inline-preview-${i}" src="${img.src}" alt="" onerror="this.style.opacity=0.15"/>
+      <img id="inline-preview-${i}" src="${url}" alt="" onerror="this.style.opacity=0.15" style="${url ? '' : 'opacity:0.15;background:#2a2419;'}"/>
       <div style="flex:1">
-        <div class="photo-tag">Photo ${i + 1}</div>
-        <input type="text" id="inline-url-${i}" name="img_${i}" value="${img.src.replace(/"/g, '&quot;')}" style="margin-bottom:0.4rem;" oninput="document.getElementById('inline-preview-${i}').src=this.value"/>
-        <input type="hidden" name="img_orig_${i}" value="${img.src.replace(/"/g, '&quot;')}"/>
+        <div class="photo-tag">Photo ${i + 1}${url ? '' : ' <span style="color:#4a3a1a;font-size:0.62rem;">(empty)</span>'}</div>
+        <input type="text" id="inline-url-${i}" name="inline_photo_${i}" value="${url.replace(/"/g, '&quot;')}" placeholder="Photo URL paste করো অথবা upload করো" style="margin-bottom:0.4rem;" oninput="updateInlinePreview(${i},this.value)"/>
         <div style="display:flex;gap:0.6rem;align-items:center;">
           <button type="button" onclick="document.getElementById('inline-file-${i}').click()" style="background:rgba(201,169,110,0.12);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;padding:0.3rem 0.75rem;border-radius:6px;font-size:0.72rem;cursor:pointer;font-family:'DM Sans',sans-serif;">📁 Upload</button>
           <span id="inline-status-${i}" style="font-size:0.7rem;color:#8a7a5a;"></span>
@@ -363,7 +362,9 @@ async function blogEditorPage(slug, saved = false) {
         </div>
       </div>
 
-      ${imgs.length > 0 ? `<h2>Inline Photos (${imgs.length})</h2>${photoInputs}` : ''}
+      <h2>Inline Photos (Article-এ ছড়িয়ে দেওয়া হবে)</h2>
+      <p style="font-size:0.72rem;color:#5a4a2a;margin-bottom:0.85rem;">এই ছবিগুলো article-এর H2 section-গুলোর পরে automatically insert হবে। ফাঁকা রাখলে skip করবে।</p>
+      ${photoInputs}
 
       <h2>Content HTML (English)</h2>
       <div class="field"><textarea name="content" rows="22" style="font-size:0.72rem;font-family:monospace">${safeContent}</textarea></div>
@@ -407,6 +408,11 @@ async function blogEditorPage(slug, saved = false) {
         status.style.color = '#e08060';
       }
       input.value = '';
+    }
+
+    function updateInlinePreview(idx, url) {
+      var img = document.getElementById('inline-preview-' + idx);
+      if (url && url.startsWith('http')) { img.src = url; img.style.opacity = 1; }
     }
 
     async function uploadInlinePhoto(idx, input) {
@@ -498,13 +504,14 @@ async function saveArticle(slug, body) {
   let content = body.content || post?.content || '';
   content = content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
 
-  let i = 0;
-  while (body[`img_orig_${i}`] !== undefined) {
-    const orig = body[`img_orig_${i}`];
-    const next = body[`img_${i}`] || orig;
-    if (orig !== next) content = content.split(orig).join(next);
-    i++;
+  // Collect inline photos (up to 5 slots), filter empty
+  const inlinePhotos = [];
+  for (let i = 0; i < 5; i++) {
+    const url = (body[`inline_photo_${i}`] || '').trim();
+    inlinePhotos.push(url); // keep empty strings to preserve slot order
   }
+  // Trim trailing empties
+  while (inlinePhotos.length && !inlinePhotos[inlinePhotos.length - 1]) inlinePhotos.pop();
 
   await sb.from('blog_posts').update({
     title: body.title,
@@ -513,6 +520,7 @@ async function saveArticle(slug, body) {
     is_published: body.is_published === '1',
     cover_image_url: body.cover_image_url,
     content,
+    inline_photos: inlinePhotos,
   }).eq('slug', slug);
 }
 
