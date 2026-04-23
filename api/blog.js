@@ -93,6 +93,47 @@ a:hover{color:#e8dcc8;}
 .newsletter-form button:hover{background:#e0c080;}
 .newsletter-note{font-size:0.75rem;margin-top:0.6rem;}
 @media(max-width:480px){.newsletter-form{flex-direction:column;}.newsletter{padding:1.4rem 1.2rem;}}
+/* Share */
+.share-section{margin:2.5rem 0 1rem;padding-top:1.5rem;border-top:1px solid rgba(201,169,110,0.15);}
+.share-label{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:#6a5a3a;margin-bottom:0.75rem;}
+.share-btns{display:flex;flex-wrap:wrap;gap:0.5rem;}
+.share-btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.4rem 0.9rem;border-radius:7px;font-size:0.75rem;font-family:'DM Sans',sans-serif;text-decoration:none;cursor:pointer;border:1px solid rgba(201,169,110,0.2);background:rgba(201,169,110,0.06);color:#c9a96e;transition:background 0.2s,border-color 0.2s;}
+.share-btn:hover{background:rgba(201,169,110,0.14);border-color:rgba(201,169,110,0.4);}
+.share-btn svg{width:14px;height:14px;flex-shrink:0;}
+.share-wa{color:#25D366;border-color:rgba(37,211,102,0.25);background:rgba(37,211,102,0.06);}
+.share-wa:hover{background:rgba(37,211,102,0.12);}
+.share-fb{color:#1877F2;border-color:rgba(24,119,242,0.25);background:rgba(24,119,242,0.06);}
+.share-fb:hover{background:rgba(24,119,242,0.12);}
+.share-tw{color:#e8dcc8;border-color:rgba(232,220,200,0.2);background:rgba(232,220,200,0.04);}
+.share-tw:hover{background:rgba(232,220,200,0.08);}
+/* Comments */
+.comments-section{margin:2.5rem 0;padding-top:1.5rem;border-top:1px solid rgba(201,169,110,0.15);}
+.comments-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:400;color:#d4aa6e;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.6rem;}
+.comment-count-badge{background:rgba(201,169,110,0.12);border:1px solid rgba(201,169,110,0.2);border-radius:12px;padding:0.1rem 0.6rem;font-size:0.7rem;font-family:'DM Sans',sans-serif;color:#c9a96e;}
+.comment-item{padding:1rem 0;border-bottom:1px solid rgba(201,169,110,0.08);}
+.comment-meta{display:flex;gap:0.75rem;align-items:center;margin-bottom:0.4rem;}
+.comment-author{font-size:0.8rem;font-weight:500;color:#d4c8b0;}
+.comment-date{font-size:0.68rem;color:#5a4a2a;letter-spacing:0.05em;}
+.comment-body{font-size:0.85rem;color:#a8a090;line-height:1.8;white-space:pre-wrap;word-break:break-word;}
+.comment-photo{margin-top:0.75rem;}
+.comment-photo img{max-height:220px;border-radius:8px;cursor:zoom-in;border:1px solid rgba(201,169,110,0.15);}
+.comment-actions{margin-top:0.5rem;display:flex;gap:1rem;}
+.like-btn{background:none;border:none;color:#6a5a3a;font-size:0.75rem;cursor:pointer;padding:0;display:flex;align-items:center;gap:0.3rem;transition:color 0.2s;}
+.like-btn:hover,.like-btn.liked{color:#c9a96e;}
+.comment-form-wrap{margin-top:2rem;background:rgba(201,169,110,0.04);border:1px solid rgba(201,169,110,0.15);border-radius:12px;padding:1.5rem;}
+.comment-form-title{font-size:0.8rem;font-weight:500;color:#c9a96e;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:1rem;}
+.comment-input,.comment-textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(201,169,110,0.2);border-radius:8px;padding:0.65rem 0.9rem;color:#ede5d5;font-size:0.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:0.6rem;box-sizing:border-box;}
+.comment-input:focus,.comment-textarea:focus{border-color:rgba(201,169,110,0.45);}
+.comment-textarea{resize:vertical;min-height:90px;}
+.comment-char-count{font-size:0.68rem;color:#5a4a2a;text-align:right;margin-bottom:0.6rem;}
+.comment-photo-row{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;flex-wrap:wrap;}
+.comment-photo-btn{background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.25);color:#c9a96e;padding:0.4rem 0.9rem;border-radius:7px;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.comment-submit-btn{background:#c9a96e;color:#1c1914;border:none;padding:0.6rem 1.5rem;border-radius:8px;font-size:0.8rem;font-weight:600;letter-spacing:0.06em;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;}
+.comment-submit-btn:hover{background:#e0c080;}
+.comment-submit-btn:disabled{opacity:0.6;cursor:default;}
+/* Image lightbox */
+#img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;}
+#img-modal img{max-width:90vw;max-height:90vh;border-radius:10px;}
 .gyg-section{margin:2rem 0;padding:1.25rem 1.5rem;border:1px solid rgba(201,169,110,0.15);border-radius:12px;background:rgba(201,169,110,0.03);}
 .gyg-section h3{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:#d4aa6e;margin-bottom:0.4rem;border:none;padding:0;text-transform:none;letter-spacing:0;}
 .gyg-section p{font-size:0.8rem;color:#8a7a60;margin-bottom:0.85rem;}
@@ -583,12 +624,201 @@ function buildArticlePage(slug, article) {
   </div>
 
   ${relatedLinks ? `<div class="related"><h3>Plan a Trip</h3><div class="related-links">${relatedLinks}</div></div>` : ''}
+
+  <!-- Share Buttons -->
+  <div class="share-section">
+    <div class="share-label">Share this article</div>
+    <div class="share-btns">
+      <a class="share-btn share-wa" href="https://wa.me/?text=${encodeURIComponent(article.title + ' — ' + 'https://getatlas.ca/blog/' + slug)}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.106 1.508 5.836L0 24l6.335-1.652A11.953 11.953 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.003-1.368l-.36-.214-3.727.977.993-3.62-.235-.374A9.818 9.818 0 1112 21.818z"/></svg>
+        WhatsApp
+      </a>
+      <a class="share-btn share-fb" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://getatlas.ca/blog/' + slug)}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        Facebook
+      </a>
+      <a class="share-btn share-tw" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent('https://getatlas.ca/blog/' + slug)}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        X / Twitter
+      </a>
+      <button class="share-btn share-copy" onclick="copyLink()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+        <span id="copy-label">Copy Link</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Comments Section -->
+  <div class="comments-section" id="comments-section">
+    <h2 class="comments-title">Comments <span id="comment-count" class="comment-count-badge"></span></h2>
+    <div id="comments-list"></div>
+
+    <!-- Comment Form -->
+    <div class="comment-form-wrap">
+      <div class="comment-form-title">Leave a Comment</div>
+      <input type="text" id="c-name" placeholder="Your name" maxlength="80" class="comment-input"/>
+      <textarea id="c-content" placeholder="Share your thoughts, tips, or questions..." maxlength="1200" rows="4" class="comment-textarea"></textarea>
+      <div class="comment-char-count"><span id="c-chars">0</span>/1200</div>
+      <div class="comment-photo-row">
+        <button type="button" class="comment-photo-btn" onclick="document.getElementById('c-photo-input').click()">📷 Add Photo (optional)</button>
+        <span id="c-photo-status"></span>
+        <input type="file" id="c-photo-input" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;" onchange="uploadCommentPhoto(this)"/>
+      </div>
+      <div id="c-photo-preview-wrap" style="display:none;margin:0.75rem 0;">
+        <img id="c-photo-preview" src="" style="max-height:180px;border-radius:8px;border:1px solid rgba(201,169,110,0.2);"/>
+        <button onclick="removeCommentPhoto()" style="display:block;margin-top:0.4rem;background:none;border:none;color:#c08060;font-size:0.72rem;cursor:pointer;">✕ Remove photo</button>
+      </div>
+      <input type="hidden" id="c-photo-url" value=""/>
+      <button class="comment-submit-btn" onclick="submitComment()">Post Comment →</button>
+      <div id="c-msg" style="display:none;margin-top:0.75rem;font-size:0.8rem;"></div>
+    </div>
+  </div>
+
   <a href="/blog" class="back">← Back to Blog</a>
 </div>
 
 <script type="application/ld+json">${schema}</script>
 <script type="application/ld+json">${breadcrumb}</script>
 <script>
+  var _postSlug = ${JSON.stringify(slug)};
+
+  // ── Share ────────────────────────────────────────────────────────────────
+  function copyLink(){
+    navigator.clipboard.writeText(window.location.href).then(function(){
+      var el = document.getElementById('copy-label');
+      el.textContent = 'Copied!';
+      setTimeout(function(){ el.textContent = 'Copy Link'; }, 2000);
+    });
+  }
+
+  // ── Comments ─────────────────────────────────────────────────────────────
+  document.getElementById('c-content').addEventListener('input', function(){
+    document.getElementById('c-chars').textContent = this.value.length;
+  });
+
+  async function loadComments(){
+    try {
+      var r = await fetch('/api/comments?slug=' + _postSlug);
+      var d = await r.json();
+      var comments = d.comments || [];
+      var badge = document.getElementById('comment-count');
+      badge.textContent = comments.length > 0 ? comments.length : '';
+      var list = document.getElementById('comments-list');
+      if(comments.length === 0){
+        list.innerHTML = '<p style="color:#6a5a3a;font-size:0.82rem;margin-bottom:1.5rem;">No comments yet — be the first!</p>';
+        return;
+      }
+      var html = '';
+      comments.forEach(function(c){
+        var d = new Date(c.created_at);
+        var dateStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        var photoHtml = c.photo_url ? '<div class="comment-photo"><img src="'+c.photo_url+'" loading="lazy" onclick="openImgModal(this.src)"/></div>' : '';
+        html += '<div class="comment-item" id="comment-'+c.id+'">'
+          + '<div class="comment-meta"><span class="comment-author">'+escHtml(c.name)+'</span><span class="comment-date">'+dateStr+'</span></div>'
+          + '<div class="comment-body">'+escHtml(c.content)+'</div>'
+          + photoHtml
+          + '<div class="comment-actions">'
+          + '<button class="like-btn" onclick="likeComment(\''+c.id+'\',this)">♥ <span>'+c.likes+'</span></button>'
+          + '</div>'
+          + '</div>';
+      });
+      list.innerHTML = html;
+    } catch(e){ console.error('Failed to load comments', e); }
+  }
+
+  function escHtml(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function likeComment(id, btn){
+    btn.disabled = true;
+    try {
+      await fetch('/api/comments?action=like', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+      var span = btn.querySelector('span');
+      span.textContent = parseInt(span.textContent) + 1;
+      btn.classList.add('liked');
+    } catch(e){ btn.disabled = false; }
+  }
+
+  async function uploadCommentPhoto(input){
+    var file = input.files[0];
+    if(!file) return;
+    var status = document.getElementById('c-photo-status');
+    status.textContent = '⏳ Uploading...';
+    status.style.color = '#c9a96e';
+    try {
+      var r = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': file.type, 'x-filename': file.name, 'x-upload-type': 'comment' },
+        body: file
+      });
+      var d = await r.json();
+      if(!r.ok) throw new Error(d.error || 'Upload failed');
+      document.getElementById('c-photo-url').value = d.url;
+      document.getElementById('c-photo-preview').src = d.url;
+      document.getElementById('c-photo-preview-wrap').style.display = '';
+      status.textContent = '✓ Photo added';
+      status.style.color = '#6aaa7a';
+    } catch(e){
+      status.textContent = '✗ ' + e.message;
+      status.style.color = '#e08060';
+    }
+    input.value = '';
+  }
+
+  function removeCommentPhoto(){
+    document.getElementById('c-photo-url').value = '';
+    document.getElementById('c-photo-preview-wrap').style.display = 'none';
+    document.getElementById('c-photo-status').textContent = '';
+  }
+
+  function openImgModal(src){
+    var m = document.getElementById('img-modal');
+    document.getElementById('img-modal-img').src = src;
+    m.style.display = 'flex';
+  }
+
+  async function submitComment(){
+    var name = document.getElementById('c-name').value.trim();
+    var content = document.getElementById('c-content').value.trim();
+    var photo_url = document.getElementById('c-photo-url').value;
+    var msg = document.getElementById('c-msg');
+    if(!name){ showMsg('Please enter your name.', '#e08060'); return; }
+    if(!content || content.length < 2){ showMsg('Please write a comment.', '#e08060'); return; }
+    var btn = document.querySelector('.comment-submit-btn');
+    btn.textContent = 'Posting...';
+    btn.disabled = true;
+    try {
+      var r = await fetch('/api/comments?slug=' + _postSlug, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ name, content, photo_url: photo_url || null })
+      });
+      var d = await r.json();
+      if(!r.ok) throw new Error(d.error || 'Failed to post');
+      document.getElementById('c-name').value = '';
+      document.getElementById('c-content').value = '';
+      document.getElementById('c-chars').textContent = '0';
+      removeCommentPhoto();
+      showMsg('✓ Comment posted!', '#6aaa7a');
+      await loadComments();
+    } catch(e){
+      showMsg('✗ ' + e.message, '#e08060');
+    }
+    btn.textContent = 'Post Comment →';
+    btn.disabled = false;
+  }
+
+  function showMsg(text, color){
+    var msg = document.getElementById('c-msg');
+    msg.textContent = text;
+    msg.style.color = color;
+    msg.style.display = '';
+    setTimeout(function(){ msg.style.display = 'none'; }, 4000);
+  }
+
+  loadComments();
+
   // Language switcher
   function toggleLangDropdown(){
     var dd=document.getElementById('lang-dropdown');
@@ -662,6 +892,10 @@ function buildArticlePage(slug, article) {
     }
   });
 </script>
+<!-- Image lightbox modal -->
+<div id="img-modal" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;">
+  <img id="img-modal-img" src="" alt="" style="max-width:90vw;max-height:90vh;border-radius:10px;"/>
+</div>
 </body></html>`;
 }
 

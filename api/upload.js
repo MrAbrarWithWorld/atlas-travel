@@ -8,23 +8,42 @@ const sb = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
+// Simple in-memory rate limit for public comment photo uploads
+const uploadRateMap = new Map();
+function isUploadRateLimited(ip) {
+  const now = Date.now();
+  const entry = uploadRateMap.get(ip) || { count: 0, reset: now + 60 * 60 * 1000 };
+  if (now > entry.reset) { entry.count = 0; entry.reset = now + 60 * 60 * 1000; }
+  entry.count++;
+  uploadRateMap.set(ip, entry);
+  return entry.count > 10; // max 10 uploads/hour for public
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', 'https://getatlas.ca');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-filename, x-admin-auth');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-filename, x-admin-auth, x-upload-type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Check admin auth cookie
-  const cookie = req.headers.cookie || '';
-  const adminToken = req.headers['x-admin-auth'] || '';
-  const cookieMatch = cookie.match(/atlas_admin=([^;]+)/);
-  const tokenFromCookie = cookieMatch ? cookieMatch[1] : '';
-  const expectedHash = process.env.ADMIN_HASH;
+  const uploadType = req.headers['x-upload-type'] || 'admin'; // 'admin' or 'comment'
+  const isCommentUpload = uploadType === 'comment';
 
-  if (tokenFromCookie !== expectedHash && adminToken !== expectedHash) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  // Admin uploads require auth cookie
+  if (!isCommentUpload) {
+    const cookie = req.headers.cookie || '';
+    const adminToken = req.headers['x-admin-auth'] || '';
+    const cookieMatch = cookie.match(/atlas_admin=([^;]+)/);
+    const tokenFromCookie = cookieMatch ? cookieMatch[1] : '';
+    const expectedHash = process.env.ADMIN_HASH;
+    if (tokenFromCookie !== expectedHash && adminToken !== expectedHash) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  } else {
+    // Rate limit public comment uploads
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
+    if (isUploadRateLimited(ip)) return res.status(429).json({ error: 'Too many uploads. Try again later.' });
   }
 
   // Get file metadata from headers
@@ -49,15 +68,17 @@ export default async function handler(req, res) {
   if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'File too large (max 5MB).' });
 
   // Upload to Supabase Storage
-  const path = `covers/${Date.now()}-${filename}`;
+  const bucket = isCommentUpload ? 'comment-photos' : 'blog-images';
+  const folder = isCommentUpload ? 'uploads' : 'covers';
+  const path = `${folder}/${Date.now()}-${filename}`;
   const { error } = await sb.storage
-    .from('blog-images')
+    .from(bucket)
     .upload(path, buffer, { contentType, upsert: false });
 
   if (error) return res.status(500).json({ error: error.message });
 
   const { data: { publicUrl } } = sb.storage
-    .from('blog-images')
+    .from(bucket)
     .getPublicUrl(path);
 
   return res.status(200).json({ url: publicUrl });
