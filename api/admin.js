@@ -331,8 +331,13 @@ async function blogEditorPage(slug, saved = false) {
       <div class="photo-row">
         <img id="cover-preview" src="${post.cover_image_url || ''}" alt="" onerror="this.style.opacity=0.15" style="cursor:pointer;" onclick="openPhotoModal()"/>
         <div style="flex:1">
-          <div class="photo-tag">Cover image URL — <span style="color:#8a7a5a;font-size:0.72rem;">Change করার পর ছবি auto-update হবে</span></div>
-          <input type="text" id="cover-url-input" name="cover_image_url" value="${(post.cover_image_url || '').replace(/"/g, '&quot;')}" oninput="updateCoverPreview(this.value)" onpaste="setTimeout(()=>updateCoverPreview(this.value),50)"/>
+          <div class="photo-tag">Cover image URL — <span style="color:#8a7a5a;font-size:0.72rem;">URL paste করো অথবা নিচের বাটন দিয়ে PC থেকে upload করো</span></div>
+          <input type="text" id="cover-url-input" name="cover_image_url" value="${(post.cover_image_url || '').replace(/"/g, '&quot;')}" oninput="updateCoverPreview(this.value)" onpaste="setTimeout(()=>updateCoverPreview(this.value),50)" style="margin-bottom:0.5rem;"/>
+          <div style="display:flex;gap:0.6rem;align-items:center;margin-bottom:0.5rem;">
+            <button type="button" onclick="document.getElementById('pc-photo-input').click()" style="background:rgba(201,169,110,0.12);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;padding:0.4rem 1rem;border-radius:6px;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;">📁 PC থেকে Upload</button>
+            <span id="upload-status" style="font-size:0.72rem;color:#8a7a5a;"></span>
+          </div>
+          <input type="file" id="pc-photo-input" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;" onchange="uploadPhotoFromPC(this)"/>
           <div id="photo-warn" style="display:none;margin-top:0.5rem;padding:0.5rem 0.8rem;background:rgba(200,80,50,0.12);border:1px solid rgba(200,80,50,0.3);border-radius:6px;font-size:0.75rem;color:#e08060;">
             ⚠️ ছবিটি article-এর destination-এর সাথে match করছে কিনা verify করুন।
           </div>
@@ -365,6 +370,36 @@ async function blogEditorPage(slug, saved = false) {
     <script>
     var _articleTitle = ${JSON.stringify(post.title || '')};
     var _formConfirmed = false;
+
+    async function uploadPhotoFromPC(input) {
+      var file = input.files[0];
+      if (!file) return;
+      var status = document.getElementById('upload-status');
+      status.textContent = '⏳ Uploading...';
+      status.style.color = '#c9a96e';
+      try {
+        var resp = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': file.type,
+            'x-filename': file.name
+          },
+          body: file
+        });
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Upload failed');
+        var urlInput = document.getElementById('cover-url-input');
+        urlInput.value = data.url;
+        updateCoverPreview(data.url);
+        status.textContent = '✓ Upload সফল!';
+        status.style.color = '#6aaa7a';
+        setTimeout(function(){ status.textContent = ''; }, 3000);
+      } catch(e) {
+        status.textContent = '✗ Error: ' + e.message;
+        status.style.color = '#e08060';
+      }
+      input.value = '';
+    }
 
     function updateCoverPreview(url) {
       var img = document.getElementById('cover-preview');
