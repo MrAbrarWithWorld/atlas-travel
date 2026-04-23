@@ -307,11 +307,16 @@ async function blogEditorPage(slug, saved = false) {
 
   const photoInputs = imgs.map((img, i) => `
     <div class="photo-row">
-      <img src="${img.src}" alt="" onerror="this.style.opacity=0.15"/>
+      <img id="inline-preview-${i}" src="${img.src}" alt="" onerror="this.style.opacity=0.15"/>
       <div style="flex:1">
         <div class="photo-tag">Photo ${i + 1}</div>
-        <input type="text" name="img_${i}" value="${img.src.replace(/"/g, '&quot;')}"/>
+        <input type="text" id="inline-url-${i}" name="img_${i}" value="${img.src.replace(/"/g, '&quot;')}" style="margin-bottom:0.4rem;" oninput="document.getElementById('inline-preview-${i}').src=this.value"/>
         <input type="hidden" name="img_orig_${i}" value="${img.src.replace(/"/g, '&quot;')}"/>
+        <div style="display:flex;gap:0.6rem;align-items:center;">
+          <button type="button" onclick="document.getElementById('inline-file-${i}').click()" style="background:rgba(201,169,110,0.12);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;padding:0.3rem 0.75rem;border-radius:6px;font-size:0.72rem;cursor:pointer;font-family:'DM Sans',sans-serif;">📁 Upload</button>
+          <span id="inline-status-${i}" style="font-size:0.7rem;color:#8a7a5a;"></span>
+        </div>
+        <input type="file" id="inline-file-${i}" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;" onchange="uploadInlinePhoto(${i}, this)"/>
       </div>
     </div>`).join('');
 
@@ -399,6 +404,38 @@ async function blogEditorPage(slug, saved = false) {
         setTimeout(function(){ status.textContent = ''; }, 3000);
       } catch(e) {
         status.textContent = '✗ Error: ' + e.message;
+        status.style.color = '#e08060';
+      }
+      input.value = '';
+    }
+
+    async function uploadInlinePhoto(idx, input) {
+      var file = input.files[0];
+      if (!file) return;
+      var status = document.getElementById('inline-status-' + idx);
+      status.textContent = '⏳ Uploading...';
+      status.style.color = '#c9a96e';
+      try {
+        var base64 = await new Promise(function(resolve, reject) {
+          var reader = new FileReader();
+          reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        var resp = await fetch('/api/admin?section=upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64: base64, filename: file.name, mimeType: file.type, uploadType: 'admin' })
+        });
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Upload failed');
+        document.getElementById('inline-url-' + idx).value = data.url;
+        document.getElementById('inline-preview-' + idx).src = data.url;
+        status.textContent = '✓ Done!';
+        status.style.color = '#6aaa7a';
+        setTimeout(function(){ status.textContent = ''; }, 3000);
+      } catch(e) {
+        status.textContent = '✗ ' + e.message;
         status.style.color = '#e08060';
       }
       input.value = '';
