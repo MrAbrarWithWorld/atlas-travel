@@ -101,8 +101,14 @@ input[type=checkbox]{width:15px;height:15px;accent-color:#c9a96e;}
 /* Photo row */
 .photo-row{display:flex;align-items:center;gap:0.85rem;margin-bottom:0.75rem;padding:0.65rem 0.85rem;background:rgba(201,169,110,0.03);border:1px solid rgba(201,169,110,0.09);border-radius:8px;}
 .photo-row img{width:72px;height:54px;object-fit:cover;border-radius:5px;flex-shrink:0;background:#1e1a14;}
-.photo-row input{flex:1;}
+.photo-row input[type=text]{flex:1;}
 .photo-tag{font-size:0.62rem;color:#4a3a1a;margin-bottom:0.3rem;}
+.upload-row{display:flex;align-items:center;gap:0.6rem;margin-top:0.4rem;}
+.upload-btn{display:inline-block;background:rgba(201,169,110,0.1);border:1px solid rgba(201,169,110,0.25);color:#c9a96e;padding:0.3rem 0.7rem;border-radius:6px;font-size:0.7rem;cursor:pointer;letter-spacing:0.03em;transition:background 0.15s;margin:0;}
+.upload-btn:hover{background:rgba(201,169,110,0.18);}
+.upload-status{font-size:0.68rem;color:#8a7a5a;}
+.upload-status.err{color:#e08060;}
+.upload-status.ok{color:#70c070;}
 
 /* Alerts */
 .success{background:rgba(80,200,80,0.08);border:1px solid rgba(80,200,80,0.2);border-radius:8px;padding:0.65rem 1rem;margin-bottom:1.25rem;font-size:0.8rem;color:#70c070;}
@@ -307,11 +313,16 @@ async function blogEditorPage(slug, saved = false) {
 
   const photoInputs = imgs.map((img, i) => `
     <div class="photo-row">
-      <img src="${img.src}" alt="" onerror="this.style.opacity=0.15"/>
+      <img id="img-preview-${i}" src="${img.src}" alt="" onerror="this.style.opacity=0.15"/>
       <div style="flex:1">
         <div class="photo-tag">Photo ${i + 1}</div>
-        <input type="text" name="img_${i}" value="${img.src.replace(/"/g, '&quot;')}"/>
+        <input type="text" id="img-url-${i}" name="img_${i}" value="${img.src.replace(/"/g, '&quot;')}" oninput="document.getElementById('img-preview-${i}').src=this.value"/>
         <input type="hidden" name="img_orig_${i}" value="${img.src.replace(/"/g, '&quot;')}"/>
+        <div class="upload-row">
+          <label class="upload-btn" for="img-file-${i}">📤 Upload photo</label>
+          <input type="file" id="img-file-${i}" accept="image/*" style="display:none" onchange="uploadPhoto(this, 'img-url-${i}', 'img-preview-${i}', 'img-status-${i}')"/>
+          <span class="upload-status" id="img-status-${i}"></span>
+        </div>
       </div>
     </div>`).join('');
 
@@ -331,8 +342,13 @@ async function blogEditorPage(slug, saved = false) {
       <div class="photo-row">
         <img id="cover-preview" src="${post.cover_image_url || ''}" alt="" onerror="this.style.opacity=0.15" style="cursor:pointer;" onclick="openPhotoModal()"/>
         <div style="flex:1">
-          <div class="photo-tag">Cover image URL — <span style="color:#8a7a5a;font-size:0.72rem;">Change করার পর ছবি auto-update হবে</span></div>
+          <div class="photo-tag">Cover image — URL দিন অথবা নিজের device থেকে upload করুন</div>
           <input type="text" id="cover-url-input" name="cover_image_url" value="${(post.cover_image_url || '').replace(/"/g, '&quot;')}" oninput="updateCoverPreview(this.value)" onpaste="setTimeout(()=>updateCoverPreview(this.value),50)"/>
+          <div class="upload-row">
+            <label class="upload-btn" for="cover-file">📤 Upload photo</label>
+            <input type="file" id="cover-file" accept="image/*" style="display:none" onchange="uploadPhoto(this, 'cover-url-input', 'cover-preview', 'cover-status')"/>
+            <span class="upload-status" id="cover-status"></span>
+          </div>
           <div id="photo-warn" style="display:none;margin-top:0.5rem;padding:0.5rem 0.8rem;background:rgba(200,80,50,0.12);border:1px solid rgba(200,80,50,0.3);border-radius:6px;font-size:0.75rem;color:#e08060;">
             ⚠️ ছবিটি article-এর destination-এর সাথে match করছে কিনা verify করুন।
           </div>
@@ -400,6 +416,61 @@ async function blogEditorPage(slug, saved = false) {
 
     // ESC closes modal
     document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+
+    function compressImage(file) {
+      return new Promise(function(resolve, reject){
+        var reader = new FileReader();
+        reader.onerror = function(){ reject(new Error('Could not read file')); };
+        reader.onload = function(ev){
+          var img = new Image();
+          img.onerror = function(){ reject(new Error('Could not decode image')); };
+          img.onload = function(){
+            var MAX = 1600;
+            var w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+              else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            resolve({ contentType: 'image/jpeg', base64: dataUrl.split(',')[1] });
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function uploadPhoto(input, urlInputId, previewId, statusId) {
+      var file = input.files && input.files[0];
+      if (!file) return;
+      var status = document.getElementById(statusId);
+      status.className = 'upload-status';
+      status.textContent = 'Compressing...';
+      try {
+        var payload = await compressImage(file);
+        status.textContent = 'Uploading...';
+        var res = await fetch('/admin?upload=1', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        var data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Upload failed');
+        document.getElementById(urlInputId).value = data.url;
+        var preview = document.getElementById(previewId);
+        if (preview) { preview.src = data.url; preview.style.opacity = 1; }
+        status.className = 'upload-status ok';
+        status.textContent = '✓ Uploaded';
+      } catch (err) {
+        status.className = 'upload-status err';
+        status.textContent = '✗ ' + (err.message || 'Upload failed');
+      } finally {
+        input.value = '';
+      }
+    }
     </script>
   `);
 }
@@ -414,6 +485,35 @@ function newsPage() {
       <p>Atlas News integration coming soon.<br/>This section will be connected when the project is ready.</p>
     </div>
   `);
+}
+
+// ─── Upload image to Supabase storage ─────────────────────────────────────────
+
+const UPLOAD_BUCKET = 'blog-images';
+
+async function uploadImage({ contentType, base64 }) {
+  if (!contentType || !base64) return { error: 'Missing contentType or base64' };
+  if (!contentType.startsWith('image/')) return { error: 'Only image uploads are allowed' };
+
+  const buf = Buffer.from(base64, 'base64');
+  if (buf.length > 8 * 1024 * 1024) return { error: 'Image exceeds 8MB limit' };
+
+  const ext = (contentType.split('/')[1] || 'jpg').replace(/[^a-z0-9]/gi, '').toLowerCase() || 'jpg';
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+
+  const { error } = await sb.storage
+    .from(UPLOAD_BUCKET)
+    .upload(path, buf, { contentType, cacheControl: '31536000', upsert: false });
+
+  if (error) {
+    const msg = /bucket.*not.*found|not found/i.test(error.message || '')
+      ? `Storage bucket "${UPLOAD_BUCKET}" not found. Create a public bucket named "${UPLOAD_BUCKET}" in Supabase.`
+      : error.message || 'Upload failed';
+    return { error: msg };
+  }
+
+  const { data } = sb.storage.from(UPLOAD_BUCKET).getPublicUrl(path);
+  return { url: data.publicUrl };
 }
 
 // ─── Save article ──────────────────────────────────────────────────────────────
@@ -449,6 +549,7 @@ export default async function handler(req, res) {
   const editSlug = url.searchParams.get('edit');
   const saved = url.searchParams.get('saved') === '1';
   const logout = url.searchParams.get('logout') === '1';
+  const isUpload = url.searchParams.get('upload') === '1';
 
   res.setHeader('Cache-Control', 'no-store');
 
@@ -457,6 +558,17 @@ export default async function handler(req, res) {
     res.setHeader('Set-Cookie', 'atlas_admin=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict');
     res.setHeader('Location', '/admin');
     return res.status(302).end();
+  }
+
+  // Image upload (JSON, auth-gated)
+  if (req.method === 'POST' && isUpload) {
+    res.setHeader('Content-Type', 'application/json');
+    if (!isAuthed(req)) return res.status(401).send(JSON.stringify({ error: 'Not authenticated' }));
+    let payload;
+    try { payload = JSON.parse(await readBody(req)); }
+    catch { return res.status(400).send(JSON.stringify({ error: 'Invalid JSON' })); }
+    const result = await uploadImage(payload);
+    return res.status(result.error ? 400 : 200).send(JSON.stringify(result));
   }
 
   // POST
