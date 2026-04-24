@@ -122,15 +122,26 @@ async function getTravelContext(messages) {
       : Array.isArray(content) ? (content.find(c => c.type === 'text')?.text || '') : '')
       .replace(/\[Current date.*$/s, '').trim();
 
-    // After travel keywords: "going to Montreal", "trip to Paris", "visit Rome" etc.
-    const kwMatch = txt.match(/(?:going\s+to|trip\s+to|travel(?:ling)?\s+to|visit(?:ing)?(?:\s+to)?|plan(?:ning)?\s+(?:to\s+(?:go\s+to|visit)|a\s+trip\s+to))\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)?)/i);
-    if (kwMatch) return kwMatch[1].trim();
+    // Pattern 1: "go/drive/fly [to] <dest> for/on/<date-word>/,"
+    // Catches: "go montrial for 3 days", "drive to Paris for a weekend", "fly Tokyo this May"
+    const goMatch = txt.match(/\b(?:go|drive|fly|head|travel|visit|going|driving|flying)\b\s+(?:to\s+)?([a-zA-Z]{3,}(?:\s+[a-zA-Z]{3,})?)\s*(?:for\s+\d|for\s+a|this\s+|next\s+|in\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)|on\s+|,)/i);
+    if (goMatch) {
+      const w = goMatch[1].trim();
+      if (!SKIP_WORDS.has(w)) return w;
+    }
 
-    // Destination before "trip/travel/visit": "Montreal trip", "Paris travel"
-    const suffixMatch = txt.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)?)\s+(?:trip|travel|visit|tour|guide|jabo|jaoa|jawar|jawa)\b/i);
+    // Pattern 2: "trip to / travel to / want to visit / planning to go to <dest>"
+    const kwMatch = txt.match(/(?:trip\s+to|travel(?:ling)?\s+to|visit(?:ing)?\s+to|plan(?:ning)?\s+(?:to\s+(?:go\s+to|visit)|a\s+trip\s+to)|want\s+to\s+(?:go\s+to|visit))\s+([a-zA-Z]{3,}(?:\s+[a-zA-Z]{3,})?)/i);
+    if (kwMatch) {
+      const w = kwMatch[1].trim();
+      if (!SKIP_WORDS.has(w)) return w;
+    }
+
+    // Pattern 3: "<dest> trip/travel/tour" suffix — "Montreal trip", "paris travel guide"
+    const suffixMatch = txt.match(/\b([a-zA-Z]{3,}(?:\s+[a-zA-Z]{3,})?)\s+(?:trip|travel|visit|tour|guide|jabo|jaoa|jawar|jawa)\b/i);
     if (suffixMatch && !SKIP_WORDS.has(suffixMatch[1])) return suffixMatch[1].trim();
 
-    // Any capitalized proper noun not in skip list
+    // Pattern 4: Capitalized proper noun (for well-formed messages like "I want to go to Montreal")
     const properNouns = txt.match(/\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)\b/g) || [];
     const dest = properNouns.find(w => !SKIP_WORDS.has(w.trim()));
     if (dest) return dest.trim();
