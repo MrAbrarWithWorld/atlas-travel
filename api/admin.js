@@ -148,6 +148,7 @@ function sidebar(active) {
       ${item('overview', '📊', 'Overview')}
       <div class="nav-section">Content</div>
       ${item('blog', '📝', 'Blog Articles')}
+      ${item('community', '✍️', 'Community Posts')}
       ${item('news', '📰', 'Atlas News')}
     </nav>
     <div class="sidebar-foot">
@@ -497,6 +498,98 @@ function newsPage() {
   `);
 }
 
+// ─── Community Posts ───────────────────────────────────────────────────────────
+
+async function communityPage(msg = '') {
+  const { data: posts } = await sb
+    .from('user_posts')
+    .select('id, user_name, user_email, title, destination, excerpt, content, cover_photo, status, created_at')
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  const allPosts = posts || [];
+  const pending = allPosts.filter(p => p.status === 'pending');
+  const approved = allPosts.filter(p => p.status === 'approved');
+  const rejected = allPosts.filter(p => p.status === 'rejected');
+
+  function statusBadge(s) {
+    if (s === 'approved') return '<span style="background:rgba(100,180,100,0.15);border:1px solid rgba(100,180,100,0.3);color:#8aba8a;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:4px;">Approved</span>';
+    if (s === 'rejected') return '<span style="background:rgba(200,100,100,0.12);border:1px solid rgba(200,100,100,0.25);color:#c08080;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:4px;">Rejected</span>';
+    return '<span style="background:rgba(201,169,110,0.12);border:1px solid rgba(201,169,110,0.25);color:#c9a96e;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:4px;">Pending</span>';
+  }
+
+  function postRow(p) {
+    const date = new Date(p.created_at).toLocaleDateString('en-CA');
+    const preview = (p.excerpt || p.content || '').slice(0, 120) + '...';
+    return `<tr>
+      <td style="padding:0.9rem 1rem;">
+        <div style="font-size:0.85rem;color:#e8dcc8;font-weight:500;margin-bottom:0.25rem;">${p.title}</div>
+        <div style="font-size:0.72rem;color:#6a5a3a;">${preview}</div>
+      </td>
+      <td style="padding:0.9rem 1rem;font-size:0.78rem;color:#a8a090;white-space:nowrap;">${p.user_name}<br/><span style="font-size:0.68rem;color:#5a4a2a;">${p.user_email || ''}</span></td>
+      <td style="padding:0.9rem 1rem;font-size:0.75rem;color:#7a7060;">${p.destination || '—'}</td>
+      <td style="padding:0.9rem 1rem;">${statusBadge(p.status)}</td>
+      <td style="padding:0.9rem 1rem;font-size:0.72rem;color:#5a4a2a;white-space:nowrap;">${date}</td>
+      <td style="padding:0.9rem 1rem;">
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+          <button onclick="togglePreview('${p.id}')" style="background:rgba(201,169,110,0.1);border:1px solid rgba(201,169,110,0.2);color:#c9a96e;padding:0.3rem 0.7rem;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:'DM Sans',sans-serif;">👁 View</button>
+          ${p.status !== 'approved' ? `<form method="POST" action="/admin?section=community" style="display:inline;"><input type="hidden" name="post_id" value="${p.id}"/><input type="hidden" name="action" value="approve"/><button type="submit" style="background:rgba(100,180,100,0.15);border:1px solid rgba(100,180,100,0.3);color:#8aba8a;padding:0.3rem 0.7rem;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:'DM Sans',sans-serif;">✓ Approve</button></form>` : ''}
+          ${p.status !== 'rejected' ? `<form method="POST" action="/admin?section=community" style="display:inline;"><input type="hidden" name="post_id" value="${p.id}"/><input type="hidden" name="action" value="reject"/><button type="submit" style="background:rgba(200,100,100,0.1);border:1px solid rgba(200,100,100,0.2);color:#c08080;padding:0.3rem 0.7rem;border-radius:5px;font-size:0.72rem;cursor:pointer;font-family:'DM Sans',sans-serif;">✕ Reject</button></form>` : ''}
+        </div>
+        <div id="preview-${p.id}" style="display:none;margin-top:0.75rem;padding:0.75rem;background:rgba(0,0,0,0.2);border-radius:6px;font-size:0.78rem;color:#a8a090;white-space:pre-wrap;word-break:break-word;max-height:220px;overflow-y:auto;">${p.content || ''}</div>
+      </td>
+    </tr>`;
+  }
+
+  const tableStyle = 'width:100%;border-collapse:collapse;';
+  const thStyle = 'padding:0.6rem 1rem;font-size:0.65rem;color:#6a5a3a;letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid rgba(201,169,110,0.12);text-align:left;';
+
+  return shell('community', 'Community Posts', `
+    <h1>Community Posts <span style="font-size:0.8rem;font-weight:400;color:#6a5a3a;margin-left:0.5rem;">${pending.length} pending · ${approved.length} approved · ${rejected.length} rejected</span></h1>
+    ${msg ? `<div style="margin-bottom:1rem;padding:0.65rem 1rem;background:rgba(100,180,100,0.1);border:1px solid rgba(100,180,100,0.25);border-radius:8px;font-size:0.82rem;color:#8aba8a;">${msg}</div>` : ''}
+
+    ${pending.length ? `
+    <div style="margin-bottom:2rem;">
+      <div style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:#c9a96e;margin-bottom:0.75rem;">⏳ Pending Review (${pending.length})</div>
+      <div style="border:1px solid rgba(201,169,110,0.2);border-radius:10px;overflow:hidden;">
+        <table style="${tableStyle}">
+          <thead><tr><th style="${thStyle}">Title</th><th style="${thStyle}">Author</th><th style="${thStyle}">Destination</th><th style="${thStyle}">Status</th><th style="${thStyle}">Date</th><th style="${thStyle}">Actions</th></tr></thead>
+          <tbody>${pending.map(postRow).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : '<div style="padding:1.5rem;border:1px solid rgba(201,169,110,0.12);border-radius:8px;color:#5a4a2a;font-size:0.82rem;">No pending submissions.</div>'}
+
+    ${approved.length ? `
+    <div style="margin-bottom:2rem;margin-top:1.5rem;">
+      <div style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:#8aba8a;margin-bottom:0.75rem;">✓ Approved (${approved.length})</div>
+      <div style="border:1px solid rgba(201,169,110,0.15);border-radius:10px;overflow:hidden;">
+        <table style="${tableStyle}">
+          <thead><tr><th style="${thStyle}">Title</th><th style="${thStyle}">Author</th><th style="${thStyle}">Destination</th><th style="${thStyle}">Status</th><th style="${thStyle}">Date</th><th style="${thStyle}">Actions</th></tr></thead>
+          <tbody>${approved.map(postRow).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : ''}
+
+    ${rejected.length ? `
+    <div style="margin-top:1.5rem;">
+      <div style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:#c08080;margin-bottom:0.75rem;">✕ Rejected (${rejected.length})</div>
+      <div style="border:1px solid rgba(201,169,110,0.12);border-radius:10px;overflow:hidden;">
+        <table style="${tableStyle}">
+          <thead><tr><th style="${thStyle}">Title</th><th style="${thStyle}">Author</th><th style="${thStyle}">Destination</th><th style="${thStyle}">Status</th><th style="${thStyle}">Date</th><th style="${thStyle}">Actions</th></tr></thead>
+          <tbody>${rejected.map(postRow).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : ''}
+
+    <script>
+    function togglePreview(id){
+      var el=document.getElementById('preview-'+id);
+      el.style.display=el.style.display==='none'?'':'none';
+    }
+    </script>
+  `);
+}
+
 // ─── Save article ──────────────────────────────────────────────────────────────
 
 async function saveArticle(slug, body) {
@@ -548,16 +641,16 @@ export default async function handler(req, res) {
     let body;
     try { body = JSON.parse(await readBody(req)); } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
     const { base64, filename = 'photo.jpg', mimeType = 'image/jpeg', uploadType = 'admin' } = body;
-    const isComment = uploadType === 'comment';
-    if (!isComment && !isAuthed(req)) return res.status(401).json({ error: 'Unauthorized' });
+    const isPublicUpload = uploadType === 'comment' || uploadType === 'community';
+    if (!isPublicUpload && !isAuthed(req)) return res.status(401).json({ error: 'Unauthorized' });
     const allowed = ['image/jpeg','image/jpg','image/png','image/webp'];
     if (!allowed.includes(mimeType)) return res.status(400).json({ error: 'Only JPEG, PNG, WebP allowed' });
     if (!base64) return res.status(400).json({ error: 'No image data' });
     const buffer = Buffer.from(base64, 'base64');
     if (buffer.length > 3 * 1024 * 1024) return res.status(400).json({ error: 'Max 3MB' });
     const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase();
-    const bucket = isComment ? 'comment-photos' : 'blog-images';
-    const folder = isComment ? 'uploads' : 'covers';
+    const bucket = isPublicUpload ? 'comment-photos' : 'blog-images';
+    const folder = isPublicUpload ? 'uploads' : 'covers';
     const path = `${folder}/${Date.now()}-${safeName}`;
     const { error } = await sb.storage.from(bucket).upload(path, buffer, { contentType: mimeType, upsert: false });
     if (error) return res.status(500).json({ error: error.message });
@@ -570,7 +663,7 @@ export default async function handler(req, res) {
     const body = parseBody(await readBody(req));
 
     // Login
-    if (!editSlug) {
+    if (!editSlug && section !== 'community') {
       if (body.password === PASSWORD) {
         res.setHeader('Set-Cookie', `atlas_admin=${TOKEN}; Path=/; Max-Age=86400; HttpOnly; SameSite=Strict`);
         res.setHeader('Location', '/admin');
@@ -580,8 +673,22 @@ export default async function handler(req, res) {
       return res.status(401).send(loginPage('Wrong password — try again.'));
     }
 
-    // Save article
     if (!isAuthed(req)) { res.setHeader('Location', '/admin'); return res.status(302).end(); }
+
+    // Community post approve/reject
+    if (section === 'community') {
+      const { post_id, action: postAction } = body;
+      if (post_id && (postAction === 'approve' || postAction === 'reject')) {
+        const newStatus = postAction === 'approve' ? 'approved' : 'rejected';
+        await sb.from('user_posts').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', post_id);
+        res.setHeader('Location', `/admin?section=community&msg=${postAction === 'approve' ? 'approved' : 'rejected'}`);
+        return res.status(302).end();
+      }
+      res.setHeader('Location', '/admin?section=community');
+      return res.status(302).end();
+    }
+
+    // Save article
     await saveArticle(editSlug, body);
     res.setHeader('Location', `/admin?section=blog&edit=${encodeURIComponent(editSlug)}&saved=1`);
     return res.status(302).end();
@@ -601,5 +708,11 @@ export default async function handler(req, res) {
     return res.status(200).send(await blogListPage());
   }
   if (section === 'news') return res.status(200).send(newsPage());
+  if (section === 'community') {
+    const msgParam = req.query.msg;
+    const msgText = msgParam === 'approved' ? '✓ Post approved and is now live on the blog.'
+      : msgParam === 'rejected' ? '✓ Post has been rejected.' : '';
+    return res.status(200).send(await communityPage(msgText));
+  }
   return res.status(200).send(await overviewPage());
 }

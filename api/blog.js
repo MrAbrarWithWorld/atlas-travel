@@ -1,9 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const sb = createClient(
-  'https://prffhhkemxibujjjiyhg.supabase.co',
-  process.env.SUPABASE_SERVICE_KEY
-);
+const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
+const sb = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 function buildHead(title, description, path, imageUrl) {
   return `<!DOCTYPE html>
@@ -394,6 +392,45 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 .sec-divider a{font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:#8a7960;}
 .sec-divider a:hover{color:#c9a96e;}
 @media(max-width:700px){.sec-divider{padding:2rem 1.2rem 0;}}
+
+/* WRITE BUTTON */
+.blog-nav-write{background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.45rem 1rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;letter-spacing:0.04em;display:none;align-items:center;gap:0.4rem;margin-right:0.6rem;transition:background 0.2s;}
+.blog-nav-write:hover{background:rgba(201,169,110,0.28);}
+
+/* COMMUNITY SECTION */
+.community-section{padding:3rem 3rem 2.5rem;display:none;}
+.community-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;margin-top:1.5rem;}
+.comm-card{background:#1e1a12;border:1px solid rgba(201,169,110,0.15);border-radius:10px;overflow:hidden;transition:border-color 0.2s,background 0.2s;}
+.comm-card:hover{border-color:rgba(201,169,110,0.35);}
+.comm-img{width:100%;height:150px;object-fit:cover;display:block;}
+.comm-body{padding:1rem 1.2rem 1.3rem;}
+.comm-dest{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:#c9a96e;margin-bottom:0.4rem;}
+.comm-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;color:#ede3d2;line-height:1.3;margin-bottom:0.5rem;}
+.comm-excerpt{font-size:0.78rem;color:#8a7960;line-height:1.7;margin-bottom:0.6rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.comm-meta{font-size:0.65rem;color:#52473a;}
+.community-badge{display:inline-block;background:rgba(100,160,100,0.15);border:1px solid rgba(100,180,100,0.25);color:#8aba8a;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:4px;margin-left:0.6rem;vertical-align:middle;}
+@media(max-width:700px){.community-section{padding:2.5rem 1.2rem;}.community-grid{grid-template-columns:1fr;}}
+
+/* WRITE MODAL */
+.write-modal{display:none;position:fixed;inset:0;background:rgba(10,8,5,0.88);z-index:9999;align-items:center;justify-content:center;padding:1.5rem;}
+.write-modal.open{display:flex;}
+.write-box{background:#1e1a12;border:1px solid rgba(201,169,110,0.25);border-radius:14px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:2rem 2.2rem;}
+.write-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+.write-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;color:#e8dcc8;}
+.write-close{background:none;border:none;color:#8a7960;font-size:1.4rem;cursor:pointer;padding:0.2rem 0.5rem;border-radius:4px;}
+.write-close:hover{color:#c9a96e;}
+.write-author{font-size:0.75rem;color:#6a5a3a;margin-bottom:1.2rem;padding:0.5rem 0.8rem;background:rgba(201,169,110,0.06);border-radius:6px;}
+.write-author strong{color:#c9a96e;}
+.write-input,.write-textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(201,169,110,0.2);border-radius:8px;padding:0.7rem 1rem;color:#ede5d5;font-size:0.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:0.75rem;box-sizing:border-box;}
+.write-input:focus,.write-textarea:focus{border-color:rgba(201,169,110,0.5);}
+.write-textarea{min-height:200px;resize:vertical;line-height:1.7;}
+.write-label{font-size:0.68rem;color:#6a5a3a;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.35rem;display:block;}
+.write-photo-btn{background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.25);color:#c9a96e;padding:0.4rem 0.9rem;border-radius:7px;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:0.5rem;}
+.write-submit-btn{background:#c9a96e;color:#1c1914;border:none;padding:0.7rem 1.8rem;border-radius:8px;font-size:0.8rem;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;margin-top:0.5rem;}
+.write-submit-btn:hover{background:#e0c080;}
+.write-submit-btn:disabled{opacity:0.6;cursor:default;}
+.write-chars{font-size:0.68rem;color:#5a4a2a;text-align:right;margin:-0.5rem 0 0.75rem;}
+@media(max-width:500px){.write-box{padding:1.5rem 1.2rem;}}
 </style>`;
 
   return `<!DOCTYPE html>
@@ -423,6 +460,7 @@ ${listingStyles}
     <li><a href="/blog?cat=eastasia"${activeCat==='eastasia' ? ' class="active"' : ''}>East Asia</a></li>
     <li><a href="/blog?cat=tips"${activeCat==='tips' ? ' class="active"' : ''}>Tips & Visa</a></li>
   </ul>
+  <button id="write-btn" class="blog-nav-write" onclick="openWriteModal()">✍️ Write</button>
   <a href="/" class="blog-nav-cta">Plan Free →</a>
 </nav>
 
@@ -451,6 +489,47 @@ ${threeGrid(grid2)}
 
 ${rest.length ? `<div class="rest-section"><div class="section-head-bar" style="margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,169,110,0.12);"><h2 class="sh-title">All <em>Articles</em></h2></div>${restCards(rest)}</div>` : ''}
 
+<!-- COMMUNITY STORIES -->
+<div class="community-section" id="community-section">
+  <div class="sec-divider-bar" style="padding-bottom:1.2rem;border-bottom:1px solid rgba(201,169,110,0.15);margin-bottom:0;">
+    <h2 class="sh-title">Community <em>Stories</em> <span class="community-badge">Traveller-written</span></h2>
+    <button id="write-btn-2" onclick="openWriteModal()" style="display:none;background:rgba(201,169,110,0.12);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;padding:0.4rem 1rem;border-radius:6px;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">✍️ Share Your Story</button>
+  </div>
+  <div class="community-grid" id="community-grid"></div>
+</div>
+
+<!-- WRITE STORY MODAL -->
+<div class="write-modal" id="write-modal" onclick="if(event.target===this)closeWriteModal()">
+  <div class="write-box">
+    <div class="write-header">
+      <div class="write-title">Share Your Travel Story</div>
+      <button class="write-close" onclick="closeWriteModal()">✕</button>
+    </div>
+    <div class="write-author">Writing as <strong id="write-author-name"></strong></div>
+    <label class="write-label">Title *</label>
+    <input type="text" id="ws-title" class="write-input" placeholder="e.g. 10 Days in Bali on a Budget — What I Actually Spent" maxlength="200"/>
+    <label class="write-label">Destination (optional)</label>
+    <input type="text" id="ws-dest" class="write-input" placeholder="e.g. Bali, Indonesia"/>
+    <label class="write-label">Your Story * <span style="color:#5a4a2a;font-size:0.65rem;text-transform:none;">(min 100 characters)</span></label>
+    <textarea id="ws-content" class="write-textarea" placeholder="Write your travel experience, tips, hidden gems, visa advice, budget breakdown — anything that would help fellow travellers..." maxlength="15000" oninput="document.getElementById('ws-chars').textContent=this.value.length"></textarea>
+    <div class="write-chars"><span id="ws-chars">0</span>/15000</div>
+    <label class="write-label">Cover Photo (optional)</label>
+    <div style="margin-bottom:0.75rem;">
+      <button type="button" class="write-photo-btn" onclick="document.getElementById('ws-photo-input').click()">📷 Add Cover Photo</button>
+      <span id="ws-photo-status" style="font-size:0.75rem;margin-left:0.5rem;"></span>
+      <input type="file" id="ws-photo-input" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;" onchange="uploadStoryPhoto(this)"/>
+      <input type="hidden" id="ws-photo-url" value=""/>
+    </div>
+    <div id="ws-photo-preview-wrap" style="display:none;margin-bottom:0.75rem;">
+      <img id="ws-photo-preview" src="" style="max-height:160px;border-radius:8px;border:1px solid rgba(201,169,110,0.2);"/>
+      <button onclick="document.getElementById('ws-photo-url').value='';document.getElementById('ws-photo-preview-wrap').style.display='none';" style="display:block;margin-top:0.3rem;background:none;border:none;color:#c08060;font-size:0.72rem;cursor:pointer;">✕ Remove</button>
+    </div>
+    <p style="font-size:0.72rem;color:#5a4a2a;margin-bottom:1rem;line-height:1.6;">Your story will be reviewed before it goes live. We typically review within 24 hours.</p>
+    <button class="write-submit-btn" id="ws-submit-btn" onclick="submitStory()">Submit Story →</button>
+    <div id="ws-msg" style="display:none;margin-top:0.75rem;font-size:0.82rem;"></div>
+  </div>
+</div>
+
 <!-- NEWSLETTER -->
 <div class="nl-section">
   <div class="nl-left">
@@ -472,6 +551,7 @@ ${rest.length ? `<div class="rest-section"><div class="section-head-bar" style="
 
 <script type="application/ld+json">${schema}</script>
 <script>
+// Newsletter
 async function nlSubscribe(){
   var email=document.getElementById('nl-email').value;
   if(!email||!email.includes('@')) return;
@@ -485,6 +565,140 @@ async function nlSubscribe(){
     else{msg.style.color='#c08060';msg.textContent='Something went wrong — try again.';btn.textContent='Subscribe — it\\'s free';btn.disabled=false;}
   }catch(e){msg.style.display='';msg.style.color='#c08060';msg.textContent='Connection error — try again.';btn.textContent='Subscribe — it\\'s free';btn.disabled=false;}
 }
+
+// ── Auth ───────────────────────────────────────────────────────────────────
+function getBlogUser(){
+  try{
+    var raw=localStorage.getItem('sb-prffhhkemxibujjjiyhg-auth-token');
+    if(!raw) return null;
+    var parsed=JSON.parse(raw);
+    var session=Array.isArray(parsed)?parsed[0]:parsed;
+    var user=session&&session.user;
+    if(!user) return null;
+    return {
+      id:user.id,
+      email:user.email,
+      name:user.user_metadata&&(user.user_metadata.full_name||user.user_metadata.name)||user.email.split('@')[0]||'Traveller',
+      token:session.access_token
+    };
+  }catch(e){return null;}
+}
+var _blogUser=null;
+
+function initBlogAuth(){
+  _blogUser=getBlogUser();
+  if(_blogUser){
+    var wb=document.getElementById('write-btn');
+    var wb2=document.getElementById('write-btn-2');
+    if(wb){wb.style.display='inline-flex';wb.textContent='✍️ '+_blogUser.name.split(' ')[0];}
+    if(wb2){wb2.style.display='';}
+    document.getElementById('write-author-name').textContent=_blogUser.name+' ('+_blogUser.email+')';
+  }
+  loadCommunityPosts();
+}
+
+// ── Write Story Modal ──────────────────────────────────────────────────────
+function openWriteModal(){
+  if(!_blogUser){window.location.href='/?showAuth=1';return;}
+  document.getElementById('write-modal').style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closeWriteModal(){
+  document.getElementById('write-modal').style.display='none';
+  document.body.style.overflow='';
+}
+
+async function submitStory(){
+  if(!_blogUser) return;
+  var title=document.getElementById('ws-title').value.trim();
+  var content=document.getElementById('ws-content').value.trim();
+  var destination=document.getElementById('ws-dest').value.trim();
+  var cover_photo=document.getElementById('ws-photo-url').value;
+  var msg=document.getElementById('ws-msg');
+  var btn=document.getElementById('ws-submit-btn');
+  if(!title){msg.style.color='#e08060';msg.textContent='Please add a title.';msg.style.display='';return;}
+  if(content.length<100){msg.style.color='#e08060';msg.textContent='Story should be at least 100 characters.';msg.style.display='';return;}
+  btn.disabled=true;btn.textContent='Submitting...';
+  try{
+    var r=await fetch('/api/blog?action=submit_post',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_blogUser.token},
+      body:JSON.stringify({title,content,destination:destination||null,cover_photo:cover_photo||null})
+    });
+    var d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Failed to submit');
+    msg.style.color='#6aaa7a';
+    msg.textContent='✓ Story submitted! It will appear after a quick review (usually within 24h).';
+    msg.style.display='';
+    document.getElementById('ws-title').value='';
+    document.getElementById('ws-content').value='';
+    document.getElementById('ws-dest').value='';
+    document.getElementById('ws-chars').textContent='0';
+    document.getElementById('ws-photo-url').value='';
+    document.getElementById('ws-photo-preview-wrap').style.display='none';
+    setTimeout(closeWriteModal,3000);
+  }catch(e){
+    msg.style.color='#e08060';msg.textContent='✗ '+e.message;msg.style.display='';
+  }
+  btn.disabled=false;btn.textContent='Submit Story →';
+}
+
+async function uploadStoryPhoto(input){
+  if(!input.files||!input.files[0]) return;
+  var file=input.files[0];
+  if(file.size>5*1024*1024){alert('Photo too large (max 5MB)');return;}
+  var status=document.getElementById('ws-photo-status');
+  status.textContent='Uploading...';status.style.color='#c9a96e';
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      var base64=e.target.result.split(',')[1];
+      var r=await fetch('/api/admin?section=upload',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({base64,filename:file.name,mimeType:file.type,uploadType:'community'})
+      });
+      var d=await r.json();
+      if(d.url){
+        document.getElementById('ws-photo-url').value=d.url;
+        document.getElementById('ws-photo-preview').src=d.url;
+        document.getElementById('ws-photo-preview-wrap').style.display='';
+        status.textContent='✓ Uploaded';status.style.color='#6aaa7a';
+      }else{throw new Error(d.error||'Upload failed');}
+    }catch(err){status.textContent='✗ '+err.message;status.style.color='#e08060';}
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Community Posts ────────────────────────────────────────────────────────
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+async function loadCommunityPosts(){
+  try{
+    var r=await fetch('/api/blog?action=community_posts');
+    var d=await r.json();
+    var posts=d.posts||[];
+    var section=document.getElementById('community-section');
+    if(!posts.length||!section) return;
+    section.style.display='';
+    var grid=document.getElementById('community-grid');
+    grid.innerHTML=posts.map(function(p){
+      var date=new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      var excerpt=p.excerpt||(p.content.slice(0,160)+'...');
+      return '<div class="comm-card">'
+        +(p.cover_photo?'<img src="'+escHtml(p.cover_photo)+'" class="comm-img" loading="lazy"/>':'')
+        +'<div class="comm-body">'
+        +(p.destination?'<div class="comm-dest">✈️ '+escHtml(p.destination)+'</div>':'')
+        +'<div class="comm-title">'+escHtml(p.title)+'</div>'
+        +'<div class="comm-excerpt">'+escHtml(excerpt)+'</div>'
+        +'<div class="comm-meta">By '+escHtml(p.user_name)+' · '+date+'</div>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }catch(e){}
+}
+
+window.addEventListener('DOMContentLoaded',initBlogAuth);
 </script>
 </body></html>`;
 }
@@ -848,6 +1062,23 @@ function buildArticlePage(slug, article) {
     setTimeout(function(){ msg.style.display = 'none'; }, 4000);
   }
 
+  // ── Auth: auto-fill name from Supabase session ──────────────────────────
+  (function(){
+    try{
+      var raw=localStorage.getItem('sb-prffhhkemxibujjjiyhg-auth-token');
+      if(!raw) return;
+      var parsed=JSON.parse(raw);
+      var session=Array.isArray(parsed)?parsed[0]:parsed;
+      var user=session&&session.user;
+      if(!user) return;
+      var name=user.user_metadata&&(user.user_metadata.full_name||user.user_metadata.name)||user.email.split('@')[0]||'';
+      if(name){
+        var nameInput=document.getElementById('c-name');
+        if(nameInput&&!nameInput.value) nameInput.value=name;
+      }
+    }catch(e){}
+  })();
+
   loadComments();
 
   // Language switcher
@@ -998,6 +1229,57 @@ export default async function handler(req, res) {
       return res.status(201).json({ comment: data });
     }
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // ── Community Posts (action=community_posts) ─────────────────────────────
+  if (action === 'community_posts') {
+    res.setHeader('Cache-Control', 'public, max-age=60');
+    res.setHeader('Content-Type', 'application/json');
+    const { data: cposts, error: cperr } = await sb
+      .from('user_posts')
+      .select('id, user_name, title, excerpt, content, cover_photo, destination, created_at')
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (cperr) return res.status(500).json({ error: cperr.message });
+    return res.status(200).json({ posts: cposts || [] });
+  }
+
+  // ── Submit Post (action=submit_post) ─────────────────────────────────────
+  if (action === 'submit_post') {
+    res.setHeader('Content-Type', 'application/json');
+    if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+    const authHeader = req.headers['authorization'];
+    if (!authHeader?.startsWith('Bearer ')) return res.status(401).json({ error: 'Login required to submit a story' });
+    const token = authHeader.slice(7);
+    const sbAuth = createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const { data: { user: authUser }, error: authErr } = await sbAuth.auth.getUser(token);
+    if (authErr || !authUser) return res.status(401).json({ error: 'Session expired. Please log in again.' });
+    let body = {};
+    try {
+      const raw = await new Promise(r => { let d = ''; req.on('data', c => d += c); req.on('end', () => r(d)); });
+      body = JSON.parse(raw);
+    } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
+    const { title, content, cover_photo, destination } = body;
+    if (!title?.trim() || !content?.trim()) return res.status(400).json({ error: 'Title and content required' });
+    if (title.length > 200) return res.status(400).json({ error: 'Title too long (max 200 characters)' });
+    if (content.length > 15000) return res.status(400).json({ error: 'Story too long (max 15,000 characters)' });
+    if (content.length < 100) return res.status(400).json({ error: 'Story too short (min 100 characters)' });
+    const userName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Traveller';
+    const excerpt = content.replace(/\n+/g, ' ').trim().slice(0, 200) + (content.length > 200 ? '...' : '');
+    const { error: insErr } = await sb.from('user_posts').insert({
+      user_id: authUser.id,
+      user_name: userName,
+      user_email: authUser.email,
+      title: title.trim(),
+      excerpt,
+      content: content.trim(),
+      cover_photo: cover_photo || null,
+      destination: destination?.trim() || null,
+      status: 'pending',
+    });
+    if (insErr) return res.status(500).json({ error: insErr.message });
+    return res.status(201).json({ ok: true, message: 'Story submitted! It will appear after review.' });
   }
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
