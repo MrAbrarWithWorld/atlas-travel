@@ -113,20 +113,56 @@ async function getWeather(destination) {
 }
 
 async function getTravelContext(messages) {
-  const userMsgs = messages.filter(m => m.role === 'user');
-  const last = userMsgs[userMsgs.length - 1]?.content;
-  const text = typeof last === 'string' ? last
-    : Array.isArray(last) ? (last.find(c => c.type === 'text')?.text || '') : '';
+  // --- Smarter destination extraction ---
+  // Scan last 6 messages (user + assistant) most-recent-first for the destination
+  const SKIP_WORDS = new Set(['I','My','The','This','That','What','How','When','Where','Why','Can','Could','Please','Thanks','Yes','No','Ok','Sure','Great','Hello','Hi','And','But','Or']);
 
-  // Extract first 5 words as search query instead of regex
-  const cleanText = text.replace(/\[Current date.*$/s, '').trim();
-// Extract destination - first meaningful word(s)
-const destMatch = cleanText.match(/^([a-zA-Z\s]+?)(?:\s+for|\s+\d|\s+solo|\s+budget|,|$)/i);
-const searchQuery = destMatch ? destMatch[1].trim() : cleanText.slice(0, 30);
-  
+  function extractDest(content) {
+    const txt = (typeof content === 'string' ? content
+      : Array.isArray(content) ? (content.find(c => c.type === 'text')?.text || '') : '')
+      .replace(/\[Current date.*$/s, '').trim();
+
+    // After travel keywords: "going to Montreal", "trip to Paris", "visit Rome" etc.
+    const kwMatch = txt.match(/(?:going\s+to|trip\s+to|travel(?:ling)?\s+to|visit(?:ing)?(?:\s+to)?|plan(?:ning)?\s+(?:to\s+(?:go\s+to|visit)|a\s+trip\s+to))\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)?)/i);
+    if (kwMatch) return kwMatch[1].trim();
+
+    // Destination before "trip/travel/visit": "Montreal trip", "Paris travel"
+    const suffixMatch = txt.match(/\b([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)?)\s+(?:trip|travel|visit|tour|guide|jabo|jaoa|jawar|jawa)\b/i);
+    if (suffixMatch && !SKIP_WORDS.has(suffixMatch[1])) return suffixMatch[1].trim();
+
+    // Any capitalized proper noun not in skip list
+    const properNouns = txt.match(/\b([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)\b/g) || [];
+    const dest = properNouns.find(w => !SKIP_WORDS.has(w.trim()));
+    if (dest) return dest.trim();
+
+    return null;
+  }
+
+  let searchQuery = '';
+  const recent = [...messages].slice(-6).reverse();
+  for (const msg of recent) {
+    const d = extractDest(msg.content);
+    if (d) { searchQuery = d; break; }
+  }
+
+  // Final fallback: first latin words of last user message
+  if (!searchQuery) {
+    const userMsgs = messages.filter(m => m.role === 'user');
+    const last = userMsgs[userMsgs.length - 1]?.content;
+    const text = typeof last === 'string' ? last
+      : Array.isArray(last) ? (last.find(c => c.type === 'text')?.text || '') : '';
+    const cleanText = text.replace(/\[Current date.*$/s, '').trim();
+    const destMatch = cleanText.match(/^([a-zA-Z\s]+?)(?:\s+for|\s+\d|\s+solo|\s+budget|,|$)/i);
+    searchQuery = destMatch ? destMatch[1].trim() : cleanText.slice(0, 30);
+  }
+
   if (!searchQuery || searchQuery.length < 3) return '';
 
-  const passport = text.match(/\b(canadian|american|british|bangladeshi|indian|pakistani|nigerian|australian|eu|european)\s*(passport|rtd|ctd|travel document)\b/i)?.[0] || 'canadian passport';
+  // passport detection across all user messages
+  const allUserText = messages.filter(m => m.role === 'user').map(m =>
+    typeof m.content === 'string' ? m.content : (Array.isArray(m.content) ? (m.content.find(c => c.type === 'text')?.text || '') : '')
+  ).join(' ');
+  const passport = allUserText.match(/\b(canadian|american|british|bangladeshi|indian|pakistani|nigerian|australian|eu|european)\s*(passport|rtd|ctd|travel document)\b/i)?.[0] || 'canadian passport';
 
   const queries = [
     `${searchQuery} visa requirements 2026`,
