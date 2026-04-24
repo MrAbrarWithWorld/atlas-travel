@@ -680,7 +680,11 @@ export default async function handler(req, res) {
       const { post_id, action: postAction } = body;
       if (post_id && (postAction === 'approve' || postAction === 'reject')) {
         const newStatus = postAction === 'approve' ? 'approved' : 'rejected';
-        await sb.from('user_posts').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', post_id);
+        const updateData = { status: newStatus, updated_at: new Date().toISOString() };
+        if (postAction === 'approve') {
+          updateData.slug = 'community-' + post_id.slice(0, 8);
+        }
+        await sb.from('user_posts').update(updateData).eq('id', post_id);
         res.setHeader('Location', `/admin?section=community&msg=${postAction === 'approve' ? 'approved' : 'rejected'}`);
         return res.status(302).end();
       }

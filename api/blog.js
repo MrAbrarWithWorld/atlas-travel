@@ -156,6 +156,59 @@ function logoSvg() {
   return `<svg width="28" height="28" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><circle cx="200" cy="200" r="170" fill="none" stroke="#c9a96e" stroke-width="2.2"/><circle cx="200" cy="200" r="130" fill="none" stroke="#8a6a3a" stroke-width="1"/><circle cx="200" cy="200" r="18" fill="#c9a96e"/></svg>`;
 }
 
+// Shared styles for listing pages (also used by buildCommunityIndexPage)
+const LISTING_STYLES = `<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#17140f;color:#ede3d2;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;}
+a{text-decoration:none;color:inherit;}
+img{display:block;width:100%;height:100%;object-fit:cover;}
+.blog-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 3rem;height:64px;background:rgba(23,20,15,0.95);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,169,110,0.15);}
+.blog-nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-weight:600;color:#c9a96e;letter-spacing:0.05em;display:flex;align-items:center;gap:0.6rem;}
+.blog-nav-links{display:flex;gap:2rem;list-style:none;}
+.blog-nav-links a{color:#8a7960;font-size:0.78rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.blog-nav-links a:hover,.blog-nav-links a.active{color:#c9a96e;}
+.blog-nav-cta{background:#c9a96e;color:#17140f;border:none;padding:0.48rem 1.3rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;letter-spacing:0.04em;}
+.blog-nav-cta:hover{opacity:0.88;}
+@media(max-width:700px){.blog-nav{padding:0 1.2rem;}.blog-nav-links{display:none;}}
+.dest-section{padding:3.5rem 3rem 0;}
+.section-head-bar{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.8rem;padding-bottom:1.2rem;border-bottom:1px solid rgba(201,169,110,0.15);}
+.sh-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:#ede3d2;}
+.sh-title em{font-style:italic;color:#c9a96e;}
+.sh-link{font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:#8a7960;transition:color 0.2s;}
+.sh-link:hover{color:#c9a96e;}
+.community-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;margin-top:0;}
+.comm-card{background:#1e1a12;border:1px solid rgba(201,169,110,0.15);border-radius:10px;overflow:hidden;transition:border-color 0.2s,background 0.2s;color:inherit;}
+.comm-card:hover{border-color:rgba(201,169,110,0.35);background:#242019;}
+.comm-img{width:100%;height:180px;object-fit:cover;display:block;}
+.comm-body{padding:1rem 1.2rem 1.3rem;}
+.comm-dest{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:#c9a96e;margin-bottom:0.4rem;}
+.comm-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;color:#ede3d2;line-height:1.3;margin-bottom:0.5rem;}
+.comm-excerpt{font-size:0.78rem;color:#8a7960;line-height:1.7;margin-bottom:0.6rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.comm-meta{font-size:0.65rem;color:#52473a;}
+.community-badge{display:inline-block;background:rgba(100,160,100,0.15);border:1px solid rgba(100,180,100,0.25);color:#8aba8a;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:4px;margin-left:0.6rem;vertical-align:middle;}
+.write-modal{display:none;position:fixed;inset:0;background:rgba(10,8,5,0.88);z-index:9999;align-items:center;justify-content:center;padding:1.5rem;}
+.write-modal.open{display:flex;}
+.write-box{background:#1e1a12;border:1px solid rgba(201,169,110,0.25);border-radius:14px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:2rem 2.2rem;}
+.write-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+.write-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;color:#e8dcc8;}
+.write-close{background:none;border:none;color:#8a7960;font-size:1.4rem;cursor:pointer;padding:0.2rem 0.5rem;border-radius:4px;}
+.write-close:hover{color:#c9a96e;}
+.write-author{font-size:0.75rem;color:#6a5a3a;margin-bottom:1.2rem;padding:0.5rem 0.8rem;background:rgba(201,169,110,0.06);border-radius:6px;}
+.write-author strong{color:#c9a96e;}
+.write-input,.write-textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(201,169,110,0.2);border-radius:8px;padding:0.7rem 1rem;color:#ede5d5;font-size:0.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:0.75rem;box-sizing:border-box;}
+.write-input:focus,.write-textarea:focus{border-color:rgba(201,169,110,0.5);}
+.write-textarea{min-height:200px;resize:vertical;line-height:1.7;}
+.write-label{font-size:0.68rem;color:#6a5a3a;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.35rem;display:block;}
+.write-photo-btn{background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.25);color:#c9a96e;padding:0.4rem 0.9rem;border-radius:7px;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:0.5rem;}
+.write-submit-btn{background:#c9a96e;color:#1c1914;border:none;padding:0.7rem 1.8rem;border-radius:8px;font-size:0.8rem;font-weight:600;letter-spacing:0.08em;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;margin-top:0.5rem;}
+.write-submit-btn:hover{background:#e0c080;}
+.write-submit-btn:disabled{opacity:0.6;cursor:default;}
+.write-chars{font-size:0.68rem;color:#5a4a2a;text-align:right;margin:-0.5rem 0 0.75rem;}
+.blog-nav-write{background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.45rem 1rem;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;letter-spacing:0.04em;display:none;align-items:center;gap:0.4rem;margin-right:0.6rem;transition:background 0.2s;}
+.blog-nav-write:hover{background:rgba(201,169,110,0.28);}
+@media(max-width:700px){.dest-section{padding:2.5rem 1.2rem 0;}.community-grid{grid-template-columns:1fr;}.write-box{padding:1.5rem 1.2rem;}}
+</style>`;
+
 function buildListingPage(articles, activeCatParam) {
   const hero = articles[0];
   const row1 = articles.slice(1, 3);
@@ -259,8 +312,7 @@ function buildListingPage(articles, activeCatParam) {
     </div>
   </section>`;
 
-  const listingStyles = `
-<style>
+  const listingStyles = `<style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#17140f;color:#ede3d2;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;}
 a{text-decoration:none;color:inherit;}
@@ -458,7 +510,8 @@ ${listingStyles}
     <li><a href="/blog"${!activeCat ? ' class="active"' : ''}>All</a></li>
     <li><a href="/blog?cat=southasia"${activeCat==='southasia' ? ' class="active"' : ''}>South Asia</a></li>
     <li><a href="/blog?cat=eastasia"${activeCat==='eastasia' ? ' class="active"' : ''}>East Asia</a></li>
-    <li><a href="/blog?cat=tips"${activeCat==='tips' ? ' class="active"' : ''}>Tips & Visa</a></li>
+    <li><a href="/blog?cat=tips"${activeCat==='tips' ? ' class="active"' : ''}>Tips &amp; Visa</a></li>
+    <li><a href="/blog?cat=community"${activeCat==='community' ? ' class="active"' : ''}>Community ✍️</a></li>
   </ul>
   <button id="write-btn" class="blog-nav-write" onclick="openWriteModal()" style="display:inline-flex;">✍️ Write</button>
   <a href="/" class="blog-nav-cta">Plan Free →</a>
@@ -538,16 +591,19 @@ ${rest.length ? `<div class="rest-section"><div class="section-head-bar" style="
       <label class="write-label">Your Story * <span style="color:#5a4a2a;font-size:0.65rem;text-transform:none;">(min 100 characters)</span></label>
       <textarea id="ws-content" class="write-textarea" placeholder="Write your travel experience, tips, hidden gems, visa advice, budget breakdown — anything that would help fellow travellers..." maxlength="15000" oninput="document.getElementById('ws-chars').textContent=this.value.length"></textarea>
       <div class="write-chars"><span id="ws-chars">0</span>/15000</div>
-      <label class="write-label">Cover Photo (optional)</label>
-      <div style="margin-bottom:0.75rem;">
-        <button type="button" class="write-photo-btn" onclick="document.getElementById('ws-photo-input').click()">📷 Add Cover Photo</button>
-        <span id="ws-photo-status" style="font-size:0.75rem;margin-left:0.5rem;"></span>
-        <input type="file" id="ws-photo-input" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;" onchange="uploadStoryPhoto(this)"/>
-        <input type="hidden" id="ws-photo-url" value=""/>
-      </div>
-      <div id="ws-photo-preview-wrap" style="display:none;margin-bottom:0.75rem;">
-        <img id="ws-photo-preview" src="" style="max-height:160px;border-radius:8px;border:1px solid rgba(201,169,110,0.2);"/>
-        <button onclick="document.getElementById('ws-photo-url').value='';document.getElementById('ws-photo-preview-wrap').style.display='none';" style="display:block;margin-top:0.3rem;background:none;border:none;color:#c08060;font-size:0.72rem;cursor:pointer;">✕ Remove</button>
+      <label class="write-label">Photos — up to 3 (optional)</label>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:0.75rem;">
+        ${[0,1,2].map(i => `
+        <div>
+          <button type="button" class="write-photo-btn" onclick="document.getElementById('ws-photo-input-${i}').click()">${i===0?'📷 Cover Photo':'📷 Photo '+(i+1)}</button>
+          <span id="ws-photo-status-${i}" style="font-size:0.75rem;margin-left:0.5rem;color:#c9a96e;"></span>
+          <input type="file" id="ws-photo-input-${i}" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;" onchange="uploadStoryPhoto(this,${i})"/>
+          <input type="hidden" id="ws-photo-url-${i}" value=""/>
+          <div id="ws-photo-preview-wrap-${i}" style="display:none;margin-top:0.4rem;">
+            <img id="ws-photo-preview-${i}" src="" style="max-height:120px;border-radius:8px;border:1px solid rgba(201,169,110,0.2);"/>
+            <button onclick="removeStoryPhoto(${i})" style="display:block;margin-top:0.25rem;background:none;border:none;color:#c08060;font-size:0.72rem;cursor:pointer;">✕ Remove</button>
+          </div>
+        </div>`).join('')}
       </div>
       <p style="font-size:0.72rem;color:#5a4a2a;margin-bottom:1rem;line-height:1.6;">Your story will be reviewed before it goes live — usually within 24 hours.</p>
       <button class="write-submit-btn" id="ws-submit-btn" onclick="submitStory()">Submit Story →</button>
@@ -680,7 +736,7 @@ async function submitStory(){
   var title=document.getElementById('ws-title').value.trim();
   var content=document.getElementById('ws-content').value.trim();
   var destination=document.getElementById('ws-dest').value.trim();
-  var cover_photo=document.getElementById('ws-photo-url').value;
+  var photos=[0,1,2].map(function(i){return document.getElementById('ws-photo-url-'+i).value;}).filter(Boolean);
   var msg=document.getElementById('ws-msg');
   var btn=document.getElementById('ws-submit-btn');
   if(!title){msg.style.color='#e08060';msg.textContent='Please add a title.';msg.style.display='';return;}
@@ -690,7 +746,7 @@ async function submitStory(){
     var r=await fetch('/api/blog?action=submit_post',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+_blogUser.token},
-      body:JSON.stringify({title,content,destination:destination||null,cover_photo:cover_photo||null})
+      body:JSON.stringify({title,content,destination:destination||null,photos:photos.length?photos:null})
     });
     var d=await r.json();
     if(!r.ok) throw new Error(d.error||'Failed to submit');
@@ -701,8 +757,7 @@ async function submitStory(){
     document.getElementById('ws-content').value='';
     document.getElementById('ws-dest').value='';
     document.getElementById('ws-chars').textContent='0';
-    document.getElementById('ws-photo-url').value='';
-    document.getElementById('ws-photo-preview-wrap').style.display='none';
+    [0,1,2].forEach(function(i){removeStoryPhoto(i);});
     setTimeout(closeWriteModal,3000);
   }catch(e){
     msg.style.color='#e08060';msg.textContent='✗ '+e.message;msg.style.display='';
@@ -710,11 +765,11 @@ async function submitStory(){
   btn.disabled=false;btn.textContent='Submit Story →';
 }
 
-async function uploadStoryPhoto(input){
+async function uploadStoryPhoto(input,slot){
   if(!input.files||!input.files[0]) return;
   var file=input.files[0];
   if(file.size>5*1024*1024){alert('Photo too large (max 5MB)');return;}
-  var status=document.getElementById('ws-photo-status');
+  var status=document.getElementById('ws-photo-status-'+slot);
   status.textContent='Uploading...';status.style.color='#c9a96e';
   var reader=new FileReader();
   reader.onload=async function(e){
@@ -727,14 +782,21 @@ async function uploadStoryPhoto(input){
       });
       var d=await r.json();
       if(d.url){
-        document.getElementById('ws-photo-url').value=d.url;
-        document.getElementById('ws-photo-preview').src=d.url;
-        document.getElementById('ws-photo-preview-wrap').style.display='';
+        document.getElementById('ws-photo-url-'+slot).value=d.url;
+        document.getElementById('ws-photo-preview-'+slot).src=d.url;
+        document.getElementById('ws-photo-preview-wrap-'+slot).style.display='';
         status.textContent='✓ Uploaded';status.style.color='#6aaa7a';
       }else{throw new Error(d.error||'Upload failed');}
     }catch(err){status.textContent='✗ '+err.message;status.style.color='#e08060';}
   };
   reader.readAsDataURL(file);
+}
+
+function removeStoryPhoto(slot){
+  document.getElementById('ws-photo-url-'+slot).value='';
+  document.getElementById('ws-photo-preview-wrap-'+slot).style.display='none';
+  document.getElementById('ws-photo-status-'+slot).textContent='';
+  document.getElementById('ws-photo-input-'+slot).value='';
 }
 
 // ── Community Posts ────────────────────────────────────────────────────────
@@ -751,16 +813,19 @@ async function loadCommunityPosts(){
     var grid=document.getElementById('community-grid');
     grid.innerHTML=posts.map(function(p){
       var date=new Date(p.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-      var excerpt=p.excerpt||(p.content.slice(0,160)+'...');
-      return '<div class="comm-card">'
-        +(p.cover_photo?'<img src="'+escHtml(p.cover_photo)+'" class="comm-img" loading="lazy"/>':'')
+      var excerpt=p.excerpt||(p.content?p.content.slice(0,160)+'...':'');
+      var coverPhoto=p.cover_photo||(p.photos&&p.photos[0])||null;
+      var href=p.slug?'/blog/'+p.slug:'#';
+      var tag=p.slug?'a':'div';
+      return '<'+tag+(p.slug?' href="'+escHtml(href)+'"':'')+' class="comm-card" style="display:block;text-decoration:none;">'
+        +(coverPhoto?'<img src="'+escHtml(coverPhoto)+'" class="comm-img" loading="lazy"/>':'')
         +'<div class="comm-body">'
         +(p.destination?'<div class="comm-dest">✈️ '+escHtml(p.destination)+'</div>':'')
         +'<div class="comm-title">'+escHtml(p.title)+'</div>'
         +'<div class="comm-excerpt">'+escHtml(excerpt)+'</div>'
         +'<div class="comm-meta">By '+escHtml(p.user_name)+' · '+date+'</div>'
         +'</div>'
-        +'</div>';
+        +'</'+tag+'>';
     }).join('');
   }catch(e){}
 }
@@ -1228,6 +1293,381 @@ function buildArticlePage(slug, article) {
 </body></html>`;
 }
 
+// ─── Community Post Page ───────────────────────────────────────────────────
+
+function buildCommunityPostPage(slug, post) {
+  const dateFormatted = new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const coverPhoto = post.cover_photo || (Array.isArray(post.photos) && post.photos[0]) || null;
+  const extraPhotos = Array.isArray(post.photos) ? post.photos.slice(1) : [];
+
+  function escHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  const photosHtml = extraPhotos.map(url => `<img src="${escHtml(url)}" alt="" class="inline-img" loading="lazy"/>`).join('');
+
+  const contentHtml = (post.content || '').replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br/>');
+
+  return buildHead(
+    post.title + ' — Community Story | ATLAS Travel Blog',
+    post.excerpt || post.content?.slice(0, 150) || '',
+    `/blog/${slug}`,
+    coverPhoto
+  ) + `
+<body>
+<div class="sticky-cta" id="sticky-cta">
+  <div class="sticky-cta-text">
+    <strong>Plan your trip with ATLAS</strong>
+    AI itinerary, visa info, hotels &amp; budget — free in seconds
+  </div>
+  <a href="/" class="sticky-cta-btn">Plan Now →</a>
+</div>
+
+<div class="container">
+  <header><a href="/">${logoSvg()}<span>Atlas</span></a></header>
+  ${coverPhoto ? `<img src="${escHtml(coverPhoto)}" alt="${escHtml(post.title)}" class="hero-img"/>` : ''}
+  <span class="badge">Community Story</span>
+  <h1 style="margin-top:0.75rem;">${escHtml(post.title)}</h1>
+  <div class="meta">
+    <span>By ${escHtml(post.user_name)}</span>
+    <span>${dateFormatted}</span>
+    ${post.destination ? `<span class="badge">✈️ ${escHtml(post.destination)}</span>` : ''}
+  </div>
+
+  <div class="article-body">
+    <p>${contentHtml}</p>
+  </div>
+
+  ${photosHtml ? `<div style="margin:2rem 0;">${photosHtml}</div>` : ''}
+
+  <div class="cta" style="margin-top:2.5rem;">
+    <p style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.2rem;color:#e8dcc8;margin-bottom:0.4rem;">Ready to plan your own trip?</p>
+    <p>ATLAS builds your full itinerary in seconds — day-by-day schedule, visa info, hotel picks, and budget estimate. Free to use.</p>
+    <a href="/" class="cta-btn">Plan with ATLAS — It's Free →</a>
+  </div>
+
+  <div class="share-section">
+    <div class="share-label">Share this story</div>
+    <div class="share-btns">
+      <a class="share-btn share-wa" href="https://wa.me/?text=${encodeURIComponent(post.title + ' — https://getatlas.ca/blog/' + slug)}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.549 4.106 1.508 5.836L0 24l6.335-1.652A11.953 11.953 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.003-1.368l-.36-.214-3.727.977.993-3.62-.235-.374A9.818 9.818 0 1112 21.818z"/></svg>
+        WhatsApp
+      </a>
+      <button class="share-btn share-copy" onclick="navigator.clipboard.writeText(window.location.href).then(function(){var e=document.getElementById('copy-label');e.textContent='Copied!';setTimeout(function(){e.textContent='Copy Link';},2000);})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+        <span id="copy-label">Copy Link</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Comments Section -->
+  <div class="comments-section" id="comments-section">
+    <h2 class="comments-title">Comments <span id="comment-count" class="comment-count-badge"></span></h2>
+    <div id="comments-list"></div>
+    <div class="comment-form-wrap">
+      <div class="comment-form-title">Leave a Comment</div>
+      <input type="text" id="c-name" placeholder="Your name" maxlength="80" class="comment-input"/>
+      <textarea id="c-content" placeholder="Share your thoughts..." maxlength="1200" rows="4" class="comment-textarea"></textarea>
+      <div class="comment-char-count"><span id="c-chars">0</span>/1200</div>
+      <div class="comment-photo-row">
+        <button type="button" class="comment-photo-btn" onclick="document.getElementById('c-photo-input').click()">📷 Add Photo (optional)</button>
+        <span id="c-photo-status"></span>
+        <input type="file" id="c-photo-input" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;" onchange="uploadCommentPhoto(this)"/>
+      </div>
+      <div id="c-photo-preview-wrap" style="display:none;margin:0.75rem 0;">
+        <img id="c-photo-preview" src="" style="max-height:180px;border-radius:8px;border:1px solid rgba(201,169,110,0.2);"/>
+        <button onclick="removeCommentPhoto()" style="display:block;margin-top:0.4rem;background:none;border:none;color:#c08060;font-size:0.72rem;cursor:pointer;">✕ Remove photo</button>
+      </div>
+      <input type="hidden" id="c-photo-url" value=""/>
+      <button class="comment-submit-btn" onclick="submitComment()">Post Comment →</button>
+      <div id="c-msg" style="display:none;margin-top:0.75rem;font-size:0.8rem;"></div>
+    </div>
+  </div>
+
+  <a href="/blog?cat=community" class="back">← Back to Community Stories</a>
+</div>
+
+<div id="img-modal" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;">
+  <img id="img-modal-img" src="" alt="" style="max-width:90vw;max-height:90vh;border-radius:10px;"/>
+</div>
+
+<script>
+  var _postSlug = ${JSON.stringify(slug)};
+
+  document.getElementById('c-content').addEventListener('input', function(){
+    document.getElementById('c-chars').textContent = this.value.length;
+  });
+
+  function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  async function loadComments(){
+    try {
+      var r = await fetch('/api/blog?action=comments&slug=' + _postSlug);
+      var d = await r.json();
+      var comments = d.comments || [];
+      var badge = document.getElementById('comment-count');
+      badge.textContent = comments.length > 0 ? comments.length : '';
+      var list = document.getElementById('comments-list');
+      if(comments.length === 0){ list.innerHTML = '<p style="color:#6a5a3a;font-size:0.82rem;margin-bottom:1.5rem;">No comments yet — be the first!</p>'; return; }
+      list.innerHTML = comments.map(function(c){
+        var dateStr = new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        var photoHtml = c.photo_url ? '<div class="comment-photo"><img src="'+c.photo_url+'" loading="lazy" onclick="openImgModal(this.src)"/></div>' : '';
+        return '<div class="comment-item" id="comment-'+c.id+'">'
+          + '<div class="comment-meta"><span class="comment-author">'+escHtml(c.name)+'</span><span class="comment-date">'+dateStr+'</span></div>'
+          + '<div class="comment-body">'+escHtml(c.content)+'</div>'
+          + photoHtml
+          + '<div class="comment-actions"><button class="like-btn" onclick="likeComment(\''+c.id+'\',this)">♥ <span>'+c.likes+'</span></button></div>'
+          + '</div>';
+      }).join('');
+    } catch(e){}
+  }
+
+  async function likeComment(id, btn){
+    btn.disabled = true;
+    try {
+      await fetch('/api/blog?action=comments', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({likeId: id}) });
+      var span = btn.querySelector('span');
+      span.textContent = parseInt(span.textContent) + 1;
+      btn.classList.add('liked');
+    } catch(e){ btn.disabled = false; }
+  }
+
+  async function uploadCommentPhoto(input){
+    var file = input.files[0]; if(!file) return;
+    var status = document.getElementById('c-photo-status');
+    status.textContent = '⏳ Uploading...'; status.style.color = '#c9a96e';
+    try {
+      var base64 = await new Promise(function(res,rej){ var rd=new FileReader(); rd.onload=function(e){res(e.target.result.split(',')[1]);}; rd.onerror=rej; rd.readAsDataURL(file); });
+      var r = await fetch('/api/admin?section=upload', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({base64,filename:file.name,mimeType:file.type,uploadType:'comment'}) });
+      var d = await r.json();
+      if(!r.ok) throw new Error(d.error||'Upload failed');
+      document.getElementById('c-photo-url').value = d.url;
+      document.getElementById('c-photo-preview').src = d.url;
+      document.getElementById('c-photo-preview-wrap').style.display = '';
+      status.textContent = '✓ Photo added'; status.style.color = '#6aaa7a';
+    } catch(e){ status.textContent = '✗ '+e.message; status.style.color='#e08060'; }
+    input.value = '';
+  }
+
+  function removeCommentPhoto(){
+    document.getElementById('c-photo-url').value='';
+    document.getElementById('c-photo-preview-wrap').style.display='none';
+    document.getElementById('c-photo-status').textContent='';
+  }
+
+  function openImgModal(src){
+    var m = document.getElementById('img-modal');
+    document.getElementById('img-modal-img').src = src;
+    m.style.display = 'flex';
+  }
+
+  async function submitComment(){
+    var name = document.getElementById('c-name').value.trim();
+    var content = document.getElementById('c-content').value.trim();
+    var photo_url = document.getElementById('c-photo-url').value;
+    var msg = document.getElementById('c-msg');
+    if(!name){ showMsg('Please enter your name.','#e08060'); return; }
+    if(!content||content.length<2){ showMsg('Please write a comment.','#e08060'); return; }
+    var btn = document.querySelector('.comment-submit-btn');
+    btn.textContent='Posting...'; btn.disabled=true;
+    try {
+      var r = await fetch('/api/blog?action=comments&slug='+_postSlug, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,content,photo_url:photo_url||null}) });
+      var d = await r.json();
+      if(!r.ok) throw new Error(d.error||'Failed to post');
+      document.getElementById('c-name').value='';
+      document.getElementById('c-content').value='';
+      document.getElementById('c-chars').textContent='0';
+      removeCommentPhoto();
+      showMsg('✓ Comment posted!','#6aaa7a');
+      await loadComments();
+    } catch(e){ showMsg('✗ '+e.message,'#e08060'); }
+    btn.textContent='Post Comment →'; btn.disabled=false;
+  }
+
+  function showMsg(text,color){
+    var msg=document.getElementById('c-msg');
+    msg.textContent=text; msg.style.color=color; msg.style.display='';
+    setTimeout(function(){msg.style.display='none';},4000);
+  }
+
+  // Auto-fill name from Supabase session
+  (function(){
+    try{
+      var raw=localStorage.getItem('sb-prffhhkemxibujjjiyhg-auth-token');
+      if(!raw) return;
+      var parsed=JSON.parse(raw);
+      var session=Array.isArray(parsed)?parsed[0]:parsed;
+      var user=session&&session.user;
+      if(!user) return;
+      var name=user.user_metadata&&(user.user_metadata.full_name||user.user_metadata.name)||user.email.split('@')[0]||'';
+      if(name){ var ni=document.getElementById('c-name'); if(ni&&!ni.value) ni.value=name; }
+    }catch(e){}
+  })();
+
+  loadComments();
+
+  (function(){
+    var bar=document.getElementById('sticky-cta'); var shown=false;
+    window.addEventListener('scroll',function(){
+      var pct=window.scrollY/(document.body.scrollHeight-window.innerHeight);
+      if(!shown&&pct>0.35){bar.classList.add('visible');shown=true;}
+      if(shown&&pct<0.1){bar.classList.remove('visible');shown=false;}
+    },{passive:true});
+  })();
+</script>
+</body></html>`;
+}
+
+// ─── Community Index Page ──────────────────────────────────────────────────
+
+function buildCommunityIndexPage(posts) {
+  function escHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  const communityCards = posts.length ? posts.map(p => {
+    const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const excerpt = p.excerpt || (p.content ? p.content.slice(0, 160) + '...' : '');
+    const cover = p.cover_photo || (Array.isArray(p.photos) && p.photos[0]) || null;
+    const href = p.slug ? '/blog/' + p.slug : '#';
+    return `<a href="${escHtml(href)}" class="comm-card" style="display:block;text-decoration:none;">
+      ${cover ? `<img src="${escHtml(cover)}" class="comm-img" loading="lazy"/>` : ''}
+      <div class="comm-body">
+        ${p.destination ? `<div class="comm-dest">✈️ ${escHtml(p.destination)}</div>` : ''}
+        <div class="comm-title">${escHtml(p.title)}</div>
+        <div class="comm-excerpt">${escHtml(excerpt)}</div>
+        <div class="comm-meta">By ${escHtml(p.user_name)} · ${date}</div>
+      </div>
+    </a>`;
+  }).join('') : `<div style="padding:3rem;text-align:center;color:#6a5a3a;font-size:0.9rem;">No community stories yet — be the first to share yours! ✍️</div>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Community Travel Stories | ATLAS Blog</title>
+<meta name="description" content="Real travel stories from the Atlas community — tips, itineraries, visa experiences, and hidden gems shared by fellow travellers."/>
+<link rel="canonical" href="https://getatlas.ca/blog?cat=community"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+${LISTING_STYLES}
+</head>
+<body>
+
+<nav class="blog-nav">
+  <a href="/blog" class="blog-nav-logo">${logoSvg()} Atlas</a>
+  <ul class="blog-nav-links">
+    <li><a href="/blog">All</a></li>
+    <li><a href="/blog?cat=southasia">South Asia</a></li>
+    <li><a href="/blog?cat=eastasia">East Asia</a></li>
+    <li><a href="/blog?cat=tips">Tips &amp; Visa</a></li>
+    <li><a href="/blog?cat=community" class="active">Community ✍️</a></li>
+  </ul>
+  <button id="write-btn" class="blog-nav-write" onclick="openWriteModal()" style="display:inline-flex;">✍️ Write</button>
+  <a href="/" class="blog-nav-cta">Plan Free →</a>
+</nav>
+
+<div style="padding-top:96px;">
+  <div class="dest-section" style="padding-bottom:3rem;">
+    <div class="section-head-bar">
+      <h2 class="sh-title">Community <em>Stories</em> <span class="community-badge">Traveller-written</span></h2>
+      <a href="/blog" class="sh-link">← All Articles</a>
+    </div>
+    <p style="font-size:0.85rem;color:#7a6a50;margin-top:1rem;margin-bottom:2rem;line-height:1.7;">Real experiences from fellow travellers — itineraries, visa tips, budget breakdowns, and hidden gems. Want to share yours?
+      <button onclick="openWriteModal()" style="background:none;border:none;color:#c9a96e;cursor:pointer;font-size:0.85rem;font-family:'DM Sans',sans-serif;text-decoration:underline;padding:0;">Write your story →</button>
+    </p>
+    <div class="community-grid">${communityCards}</div>
+  </div>
+</div>
+
+<!-- WRITE STORY MODAL -->
+<div class="write-modal" id="write-modal" onclick="if(event.target===this)closeWriteModal()">
+  <div class="write-box">
+    <div id="ws-auth-step">
+      <div class="write-header">
+        <div class="write-title">Share Your Story</div>
+        <button class="write-close" onclick="closeWriteModal()">✕</button>
+      </div>
+      <p style="font-size:0.85rem;color:#8a7a60;margin-bottom:1.5rem;line-height:1.7;">Sign in to share your travel story with the Atlas community.</p>
+      <button id="ws-google-btn" onclick="signInWithGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.75rem;background:#fff;color:#1c1914;border:none;border-radius:8px;padding:0.75rem 1.2rem;font-size:0.9rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:1.2rem;transition:opacity 0.2s;">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+        Continue with Google
+      </button>
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.2rem;">
+        <div style="flex:1;height:1px;background:rgba(201,169,110,0.15);"></div>
+        <span style="font-size:0.7rem;color:#5a4a2a;letter-spacing:0.08em;">OR</span>
+        <div style="flex:1;height:1px;background:rgba(201,169,110,0.15);"></div>
+      </div>
+      <label class="write-label">Sign in with email</label>
+      <input type="email" id="ws-magic-email" class="write-input" placeholder="your@email.com"/>
+      <button id="ws-magic-btn" onclick="signInWithMagicLink()" class="write-submit-btn" style="width:100%;text-align:center;">Send Magic Link →</button>
+      <div id="ws-magic-msg" style="display:none;margin-top:0.75rem;font-size:0.82rem;"></div>
+    </div>
+    <div id="ws-write-form" style="display:none;">
+      <div class="write-header">
+        <div class="write-title">Share Your Travel Story</div>
+        <button class="write-close" onclick="closeWriteModal()">✕</button>
+      </div>
+      <div class="write-author">Writing as <strong id="write-author-name"></strong></div>
+      <label class="write-label">Title *</label>
+      <input type="text" id="ws-title" class="write-input" placeholder="e.g. 10 Days in Bali on a Budget" maxlength="200"/>
+      <label class="write-label">Destination (optional)</label>
+      <input type="text" id="ws-dest" class="write-input" placeholder="e.g. Bali, Indonesia"/>
+      <label class="write-label">Your Story * <span style="color:#5a4a2a;font-size:0.65rem;text-transform:none;">(min 100 characters)</span></label>
+      <textarea id="ws-content" class="write-textarea" placeholder="Share your experience..." maxlength="15000" oninput="document.getElementById('ws-chars').textContent=this.value.length"></textarea>
+      <div class="write-chars"><span id="ws-chars">0</span>/15000</div>
+      <label class="write-label">Photos — up to 3 (optional)</label>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:0.75rem;">
+        ${[0,1,2].map(i => `
+        <div>
+          <button type="button" class="write-photo-btn" onclick="document.getElementById('ws-photo-input-${i}').click()">${i===0?'📷 Cover Photo':'📷 Photo '+(i+1)}</button>
+          <span id="ws-photo-status-${i}" style="font-size:0.75rem;margin-left:0.5rem;color:#c9a96e;"></span>
+          <input type="file" id="ws-photo-input-${i}" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;" onchange="uploadStoryPhoto(this,${i})"/>
+          <input type="hidden" id="ws-photo-url-${i}" value=""/>
+          <div id="ws-photo-preview-wrap-${i}" style="display:none;margin-top:0.4rem;">
+            <img id="ws-photo-preview-${i}" src="" style="max-height:120px;border-radius:8px;border:1px solid rgba(201,169,110,0.2);"/>
+            <button onclick="removeStoryPhoto(${i})" style="display:block;margin-top:0.25rem;background:none;border:none;color:#c08060;font-size:0.72rem;cursor:pointer;">✕ Remove</button>
+          </div>
+        </div>`).join('')}
+      </div>
+      <p style="font-size:0.72rem;color:#5a4a2a;margin-bottom:1rem;line-height:1.6;">Your story will be reviewed before it goes live — usually within 24 hours.</p>
+      <button class="write-submit-btn" id="ws-submit-btn" onclick="submitStory()">Submit Story →</button>
+      <div id="ws-msg" style="display:none;margin-top:0.75rem;font-size:0.82rem;"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+var _sb=window.supabase.createClient(
+  'https://prffhhkemxibujjjiyhg.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByZmZoaGtlbXhpYnVqamppeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NzYwMDIsImV4cCI6MjA5MDM1MjAwMn0.Tqxz_6EHwv4oWA9NvPSRK1uC7HJ1_chhFjZGg2PRhiE'
+);
+var _blogUser=null;
+function _setUser(session){
+  if(!session||!session.user) return;
+  var u=session.user;
+  _blogUser={id:u.id,email:u.email,token:session.access_token,name:(u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name))||u.email.split('@')[0]||'Traveller'};
+  var wb=document.getElementById('write-btn'); if(wb) wb.textContent='✍️ '+_blogUser.name.split(' ')[0];
+  var el=document.getElementById('write-author-name'); if(el) el.textContent=_blogUser.name+' ('+_blogUser.email+')';
+}
+async function initBlogAuth(){
+  var {data:{session}}=await _sb.auth.getSession();
+  _setUser(session);
+  _sb.auth.onAuthStateChange(function(event,sess){
+    if(event==='SIGNED_IN'&&sess){_setUser(sess);var modal=document.getElementById('write-modal');if(modal&&modal.style.display==='flex')showWriteForm();}
+  });
+}
+function openWriteModal(){ document.getElementById('write-modal').style.display='flex'; document.body.style.overflow='hidden'; if(_blogUser)showWriteForm();else showAuthStep(); }
+function closeWriteModal(){ document.getElementById('write-modal').style.display='none'; document.body.style.overflow=''; }
+function showAuthStep(){ document.getElementById('ws-auth-step').style.display=''; document.getElementById('ws-write-form').style.display='none'; }
+function showWriteForm(){ document.getElementById('ws-auth-step').style.display='none'; document.getElementById('ws-write-form').style.display=''; }
+async function signInWithGoogle(){ var btn=document.getElementById('ws-google-btn'); btn.disabled=true; btn.textContent='Opening Google sign in...'; await _sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}}); }
+async function signInWithMagicLink(){ var email=document.getElementById('ws-magic-email').value.trim(); var msg=document.getElementById('ws-magic-msg'); if(!email||!email.includes('@')){msg.style.color='#e08060';msg.textContent='Please enter a valid email.';msg.style.display='';return;} var btn=document.getElementById('ws-magic-btn'); btn.disabled=true; btn.textContent='Sending...'; var {error}=await _sb.auth.signInWithOtp({email,options:{emailRedirectTo:window.location.href}}); msg.style.display=''; if(error){msg.style.color='#e08060';msg.textContent='✗ '+error.message;btn.disabled=false;btn.textContent='Send Magic Link →';}else{msg.style.color='#6aaa7a';msg.textContent='✓ Check your email — click the link to come back and start writing.';btn.textContent='Email sent ✓';} }
+async function uploadStoryPhoto(input,slot){ if(!input.files||!input.files[0]) return; var file=input.files[0]; if(file.size>5*1024*1024){alert('Photo too large (max 5MB)');return;} var status=document.getElementById('ws-photo-status-'+slot); status.textContent='Uploading...'; status.style.color='#c9a96e'; var reader=new FileReader(); reader.onload=async function(e){ try{ var base64=e.target.result.split(',')[1]; var r=await fetch('/api/admin?section=upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({base64,filename:file.name,mimeType:file.type,uploadType:'community'})}); var d=await r.json(); if(d.url){document.getElementById('ws-photo-url-'+slot).value=d.url;document.getElementById('ws-photo-preview-'+slot).src=d.url;document.getElementById('ws-photo-preview-wrap-'+slot).style.display='';status.textContent='✓ Uploaded';status.style.color='#6aaa7a';}else{throw new Error(d.error||'Upload failed');} }catch(err){status.textContent='✗ '+err.message;status.style.color='#e08060';} }; reader.readAsDataURL(file); }
+function removeStoryPhoto(slot){ document.getElementById('ws-photo-url-'+slot).value=''; document.getElementById('ws-photo-preview-wrap-'+slot).style.display='none'; document.getElementById('ws-photo-status-'+slot).textContent=''; document.getElementById('ws-photo-input-'+slot).value=''; }
+async function submitStory(){ if(!_blogUser) return; var title=document.getElementById('ws-title').value.trim(); var content=document.getElementById('ws-content').value.trim(); var destination=document.getElementById('ws-dest').value.trim(); var photos=[0,1,2].map(function(i){return document.getElementById('ws-photo-url-'+i).value;}).filter(Boolean); var msg=document.getElementById('ws-msg'); var btn=document.getElementById('ws-submit-btn'); if(!title){msg.style.color='#e08060';msg.textContent='Please add a title.';msg.style.display='';return;} if(content.length<100){msg.style.color='#e08060';msg.textContent='Story should be at least 100 characters.';msg.style.display='';return;} btn.disabled=true;btn.textContent='Submitting...'; try{ var r=await fetch('/api/blog?action=submit_post',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_blogUser.token},body:JSON.stringify({title,content,destination:destination||null,photos:photos.length?photos:null})}); var d=await r.json(); if(!r.ok) throw new Error(d.error||'Failed to submit'); msg.style.color='#6aaa7a'; msg.textContent='✓ Story submitted! It will appear after a quick review.'; msg.style.display=''; [0,1,2].forEach(function(i){removeStoryPhoto(i);}); document.getElementById('ws-title').value=''; document.getElementById('ws-content').value=''; document.getElementById('ws-dest').value=''; document.getElementById('ws-chars').textContent='0'; setTimeout(closeWriteModal,3000); }catch(e){msg.style.color='#e08060';msg.textContent='✗ '+e.message;msg.style.display='';} btn.disabled=false;btn.textContent='Submit Story →'; }
+window.addEventListener('DOMContentLoaded',initBlogAuth);
+</script>
+</body></html>`;
+}
+
 const CAT_KEYWORDS = {
   southasia: ['bangladesh','dhaka','cox','sundarbans','maldives','nepal','everest','india'],
   eastasia: ['japan','kyoto','bali','singapore','thailand','asia','pacific'],
@@ -1285,8 +1725,16 @@ export default async function handler(req, res) {
       if (content.length > 1200) return res.status(400).json({ error: 'Too long' });
       const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
       if (isCommentRateLimited(ip)) return res.status(429).json({ error: 'Too many comments. Wait a few minutes.' });
-      const { data: post } = await sb.from('blog_posts').select('slug').eq('slug', slug).single();
-      if (!post) return res.status(404).json({ error: 'Post not found' });
+      // Allow comments on both blog posts and approved community posts
+      let postExists = false;
+      if (slug.startsWith('community-')) {
+        const { data: cp } = await sb.from('user_posts').select('slug').eq('slug', slug).eq('status', 'approved').single();
+        postExists = !!cp;
+      } else {
+        const { data: bp } = await sb.from('blog_posts').select('slug').eq('slug', slug).single();
+        postExists = !!bp;
+      }
+      if (!postExists) return res.status(404).json({ error: 'Post not found' });
       const { data, error } = await sb.from('comments').insert({
         post_slug: slug, name: name.trim().slice(0, 80),
         content: content.trim().slice(0, 1200),
@@ -1304,7 +1752,7 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'application/json');
     const { data: cposts, error: cperr } = await sb
       .from('user_posts')
-      .select('id, user_name, title, excerpt, content, cover_photo, destination, created_at')
+      .select('id, slug, user_name, title, excerpt, content, cover_photo, photos, destination, created_at')
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
       .limit(20);
@@ -1327,13 +1775,15 @@ export default async function handler(req, res) {
       const raw = await new Promise(r => { let d = ''; req.on('data', c => d += c); req.on('end', () => r(d)); });
       body = JSON.parse(raw);
     } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
-    const { title, content, cover_photo, destination } = body;
+    const { title, content, destination, photos } = body;
     if (!title?.trim() || !content?.trim()) return res.status(400).json({ error: 'Title and content required' });
     if (title.length > 200) return res.status(400).json({ error: 'Title too long (max 200 characters)' });
     if (content.length > 15000) return res.status(400).json({ error: 'Story too long (max 15,000 characters)' });
     if (content.length < 100) return res.status(400).json({ error: 'Story too short (min 100 characters)' });
     const userName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Traveller';
     const excerpt = content.replace(/\n+/g, ' ').trim().slice(0, 200) + (content.length > 200 ? '...' : '');
+    const photosArr = Array.isArray(photos) ? photos.filter(u => typeof u === 'string' && u.startsWith('http')).slice(0, 3) : [];
+    const cover_photo = photosArr[0] || null;
     const { error: insErr } = await sb.from('user_posts').insert({
       user_id: authUser.id,
       user_name: userName,
@@ -1341,7 +1791,8 @@ export default async function handler(req, res) {
       title: title.trim(),
       excerpt,
       content: content.trim(),
-      cover_photo: cover_photo || null,
+      cover_photo,
+      photos: photosArr.length ? photosArr : null,
       destination: destination?.trim() || null,
       status: 'pending',
     });
@@ -1354,6 +1805,17 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
 
   if (!slug || slug === 'index') {
+    // Community index page
+    if (cat === 'community') {
+      const { data: cposts } = await sb
+        .from('user_posts')
+        .select('id, slug, user_name, title, excerpt, content, cover_photo, photos, destination, created_at')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      return res.status(200).send(buildCommunityIndexPage(cposts || []));
+    }
+
     const { data, error } = await sb
       .from('blog_posts')
       .select('slug, title, description, category, date_published, read_time, hero_emoji, cover_image_url')
@@ -1374,6 +1836,21 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).send(buildListingPage(articles, cat || null));
+  }
+
+  // Community post individual page
+  if (slug.startsWith('community-')) {
+    const { data: cpost, error: cperr } = await sb
+      .from('user_posts')
+      .select('id, slug, title, excerpt, content, cover_photo, photos, destination, user_name, created_at')
+      .eq('slug', slug)
+      .eq('status', 'approved')
+      .single();
+    if (cperr || !cpost) {
+      res.writeHead(302, { Location: '/blog?cat=community' });
+      return res.end();
+    }
+    return res.status(200).send(buildCommunityPostPage(slug, cpost));
   }
 
   const { data, error } = await sb
