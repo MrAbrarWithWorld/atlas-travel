@@ -364,7 +364,7 @@ async function blogEditorPage(slug, saved = false) {
       </div>
 
       <h2>Inline Photos (Article-এ ছড়িয়ে দেওয়া হবে)</h2>
-      <p style="font-size:0.72rem;color:#5a4a2a;margin-bottom:0.85rem;">এই ছবিগুলো article-এর H2 section-গুলোর পরে automatically insert হবে। ফাঁকা রাখলে skip করবে।</p>
+      <p style="font-size:0.72rem;color:#5a4a2a;margin-bottom:0.85rem;">Content-এ যেখানে photo দিতে চাও সেখানে <strong>[photo-1]</strong>, <strong>[photo-2]</strong>, <strong>[photo-3]</strong> লিখে দাও — ওই জায়গায় ছবি বসবে। ফাঁকা রাখলে skip করবে।</p>
       ${photoInputs}
 
       <h2>Content HTML (English)</h2>

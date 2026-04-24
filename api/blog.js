@@ -47,7 +47,7 @@ a:hover{color:#e8dcc8;}
 .cta-btn{display:inline-block;background:#c9a96e;color:#1c1914;font-size:0.75rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:0.65rem 1.5rem;border-radius:8px;text-decoration:none;transition:background 0.2s;}
 .cta-btn:hover{background:#e0c080;color:#1c1914;}
 .hero-img{width:100%;height:380px;object-fit:cover;border-radius:14px;margin-bottom:2rem;display:block;}
-.inline-img{width:100%;height:260px;object-fit:cover;border-radius:10px;margin:1.5rem 0;display:block;}
+.inline-img{width:100%;height:auto;border-radius:10px;margin:1.5rem 0;display:block;}
 .inline-img-caption{font-size:0.7rem;color:#5a4a2a;text-align:center;margin-top:-1rem;margin-bottom:1.5rem;letter-spacing:0.06em;}
 .card-img{width:100%;height:170px;object-fit:cover;border-radius:8px 8px 0 0;margin-bottom:0;display:block;}
 .related{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid rgba(201,169,110,0.15);}
@@ -910,20 +910,17 @@ function buildArticlePage(slug, article) {
     </div>
   </div>` : '';
 
-  // Inject inline photos after every 2nd H2 in English content
+  // Inject inline photos at [photo-1], [photo-2], ... placeholders in content
   function injectInlinePhotos(html, photos) {
     if (!photos || !photos.length) return html;
     const validPhotos = photos.filter(Boolean);
     if (!validPhotos.length) return html;
-    let photoIdx = 0;
-    let h2Count = 0;
-    return html.replace(/<\/h2>/gi, () => {
-      h2Count++;
-      if (h2Count % 2 === 0 && photoIdx < validPhotos.length) {
-        const url = validPhotos[photoIdx++];
-        return `</h2><img src="${url}" alt="" class="inline-img" loading="lazy"/>`;
+    return html.replace(/\[photo-(\d+)\]/gi, (match, num) => {
+      const idx = parseInt(num) - 1;
+      if (idx >= 0 && idx < validPhotos.length && validPhotos[idx]) {
+        return `<img src="${validPhotos[idx]}" alt="" class="inline-img" loading="lazy"/>`;
       }
-      return '</h2>';
+      return '';
     });
   }
 
