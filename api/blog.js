@@ -460,7 +460,7 @@ ${listingStyles}
     <li><a href="/blog?cat=eastasia"${activeCat==='eastasia' ? ' class="active"' : ''}>East Asia</a></li>
     <li><a href="/blog?cat=tips"${activeCat==='tips' ? ' class="active"' : ''}>Tips & Visa</a></li>
   </ul>
-  <button id="write-btn" class="blog-nav-write" onclick="openWriteModal()">✍️ Write</button>
+  <button id="write-btn" class="blog-nav-write" onclick="openWriteModal()" style="display:inline-flex;">✍️ Write</button>
   <a href="/" class="blog-nav-cta">Plan Free →</a>
 </nav>
 
@@ -587,12 +587,14 @@ var _blogUser=null;
 
 function initBlogAuth(){
   _blogUser=getBlogUser();
+  var wb=document.getElementById('write-btn');
+  var wb2=document.getElementById('write-btn-2');
   if(_blogUser){
-    var wb=document.getElementById('write-btn');
-    var wb2=document.getElementById('write-btn-2');
-    if(wb){wb.style.display='inline-flex';wb.textContent='✍️ '+_blogUser.name.split(' ')[0];}
-    if(wb2){wb2.style.display='';}
+    if(wb) wb.textContent='✍️ '+_blogUser.name.split(' ')[0];
+    if(wb2) wb2.style.display='';
     document.getElementById('write-author-name').textContent=_blogUser.name+' ('+_blogUser.email+')';
+  } else {
+    if(wb2) wb2.style.display='';
   }
   loadCommunityPosts();
 }
