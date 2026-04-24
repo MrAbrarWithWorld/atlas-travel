@@ -501,32 +501,59 @@ ${rest.length ? `<div class="rest-section"><div class="section-head-bar" style="
 <!-- WRITE STORY MODAL -->
 <div class="write-modal" id="write-modal" onclick="if(event.target===this)closeWriteModal()">
   <div class="write-box">
-    <div class="write-header">
-      <div class="write-title">Share Your Travel Story</div>
-      <button class="write-close" onclick="closeWriteModal()">✕</button>
+
+    <!-- STEP 1: Sign in (shown when not logged in) -->
+    <div id="ws-auth-step">
+      <div class="write-header">
+        <div class="write-title">Share Your Story</div>
+        <button class="write-close" onclick="closeWriteModal()">✕</button>
+      </div>
+      <p style="font-size:0.85rem;color:#8a7a60;margin-bottom:1.5rem;line-height:1.7;">Sign in to share your travel story with the Atlas community — tips, itineraries, visa experiences, hidden gems.</p>
+      <button id="ws-google-btn" onclick="signInWithGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.75rem;background:#fff;color:#1c1914;border:none;border-radius:8px;padding:0.75rem 1.2rem;font-size:0.9rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:1.2rem;transition:opacity 0.2s;">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+        Continue with Google
+      </button>
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.2rem;">
+        <div style="flex:1;height:1px;background:rgba(201,169,110,0.15);"></div>
+        <span style="font-size:0.7rem;color:#5a4a2a;letter-spacing:0.08em;">OR</span>
+        <div style="flex:1;height:1px;background:rgba(201,169,110,0.15);"></div>
+      </div>
+      <label class="write-label">Sign in with email</label>
+      <input type="email" id="ws-magic-email" class="write-input" placeholder="your@email.com"/>
+      <button id="ws-magic-btn" onclick="signInWithMagicLink()" class="write-submit-btn" style="width:100%;text-align:center;">Send Magic Link →</button>
+      <div id="ws-magic-msg" style="display:none;margin-top:0.75rem;font-size:0.82rem;"></div>
     </div>
-    <div class="write-author">Writing as <strong id="write-author-name"></strong></div>
-    <label class="write-label">Title *</label>
-    <input type="text" id="ws-title" class="write-input" placeholder="e.g. 10 Days in Bali on a Budget — What I Actually Spent" maxlength="200"/>
-    <label class="write-label">Destination (optional)</label>
-    <input type="text" id="ws-dest" class="write-input" placeholder="e.g. Bali, Indonesia"/>
-    <label class="write-label">Your Story * <span style="color:#5a4a2a;font-size:0.65rem;text-transform:none;">(min 100 characters)</span></label>
-    <textarea id="ws-content" class="write-textarea" placeholder="Write your travel experience, tips, hidden gems, visa advice, budget breakdown — anything that would help fellow travellers..." maxlength="15000" oninput="document.getElementById('ws-chars').textContent=this.value.length"></textarea>
-    <div class="write-chars"><span id="ws-chars">0</span>/15000</div>
-    <label class="write-label">Cover Photo (optional)</label>
-    <div style="margin-bottom:0.75rem;">
-      <button type="button" class="write-photo-btn" onclick="document.getElementById('ws-photo-input').click()">📷 Add Cover Photo</button>
-      <span id="ws-photo-status" style="font-size:0.75rem;margin-left:0.5rem;"></span>
-      <input type="file" id="ws-photo-input" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;" onchange="uploadStoryPhoto(this)"/>
-      <input type="hidden" id="ws-photo-url" value=""/>
+
+    <!-- STEP 2: Write form (shown when logged in) -->
+    <div id="ws-write-form" style="display:none;">
+      <div class="write-header">
+        <div class="write-title">Share Your Travel Story</div>
+        <button class="write-close" onclick="closeWriteModal()">✕</button>
+      </div>
+      <div class="write-author">Writing as <strong id="write-author-name"></strong></div>
+      <label class="write-label">Title *</label>
+      <input type="text" id="ws-title" class="write-input" placeholder="e.g. 10 Days in Bali on a Budget — What I Actually Spent" maxlength="200"/>
+      <label class="write-label">Destination (optional)</label>
+      <input type="text" id="ws-dest" class="write-input" placeholder="e.g. Bali, Indonesia"/>
+      <label class="write-label">Your Story * <span style="color:#5a4a2a;font-size:0.65rem;text-transform:none;">(min 100 characters)</span></label>
+      <textarea id="ws-content" class="write-textarea" placeholder="Write your travel experience, tips, hidden gems, visa advice, budget breakdown — anything that would help fellow travellers..." maxlength="15000" oninput="document.getElementById('ws-chars').textContent=this.value.length"></textarea>
+      <div class="write-chars"><span id="ws-chars">0</span>/15000</div>
+      <label class="write-label">Cover Photo (optional)</label>
+      <div style="margin-bottom:0.75rem;">
+        <button type="button" class="write-photo-btn" onclick="document.getElementById('ws-photo-input').click()">📷 Add Cover Photo</button>
+        <span id="ws-photo-status" style="font-size:0.75rem;margin-left:0.5rem;"></span>
+        <input type="file" id="ws-photo-input" accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none;" onchange="uploadStoryPhoto(this)"/>
+        <input type="hidden" id="ws-photo-url" value=""/>
+      </div>
+      <div id="ws-photo-preview-wrap" style="display:none;margin-bottom:0.75rem;">
+        <img id="ws-photo-preview" src="" style="max-height:160px;border-radius:8px;border:1px solid rgba(201,169,110,0.2);"/>
+        <button onclick="document.getElementById('ws-photo-url').value='';document.getElementById('ws-photo-preview-wrap').style.display='none';" style="display:block;margin-top:0.3rem;background:none;border:none;color:#c08060;font-size:0.72rem;cursor:pointer;">✕ Remove</button>
+      </div>
+      <p style="font-size:0.72rem;color:#5a4a2a;margin-bottom:1rem;line-height:1.6;">Your story will be reviewed before it goes live — usually within 24 hours.</p>
+      <button class="write-submit-btn" id="ws-submit-btn" onclick="submitStory()">Submit Story →</button>
+      <div id="ws-msg" style="display:none;margin-top:0.75rem;font-size:0.82rem;"></div>
     </div>
-    <div id="ws-photo-preview-wrap" style="display:none;margin-bottom:0.75rem;">
-      <img id="ws-photo-preview" src="" style="max-height:160px;border-radius:8px;border:1px solid rgba(201,169,110,0.2);"/>
-      <button onclick="document.getElementById('ws-photo-url').value='';document.getElementById('ws-photo-preview-wrap').style.display='none';" style="display:block;margin-top:0.3rem;background:none;border:none;color:#c08060;font-size:0.72rem;cursor:pointer;">✕ Remove</button>
-    </div>
-    <p style="font-size:0.72rem;color:#5a4a2a;margin-bottom:1rem;line-height:1.6;">Your story will be reviewed before it goes live. We typically review within 24 hours.</p>
-    <button class="write-submit-btn" id="ws-submit-btn" onclick="submitStory()">Submit Story →</button>
-    <div id="ws-msg" style="display:none;margin-top:0.75rem;font-size:0.82rem;"></div>
+
   </div>
 </div>
 
@@ -550,6 +577,7 @@ ${rest.length ? `<div class="rest-section"><div class="section-head-bar" style="
 </div>
 
 <script type="application/ld+json">${schema}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 // Newsletter
 async function nlSubscribe(){
@@ -566,48 +594,85 @@ async function nlSubscribe(){
   }catch(e){msg.style.display='';msg.style.color='#c08060';msg.textContent='Connection error — try again.';btn.textContent='Subscribe — it\\'s free';btn.disabled=false;}
 }
 
-// ── Auth ───────────────────────────────────────────────────────────────────
-function getBlogUser(){
-  try{
-    var raw=localStorage.getItem('sb-prffhhkemxibujjjiyhg-auth-token');
-    if(!raw) return null;
-    var parsed=JSON.parse(raw);
-    var session=Array.isArray(parsed)?parsed[0]:parsed;
-    var user=session&&session.user;
-    if(!user) return null;
-    return {
-      id:user.id,
-      email:user.email,
-      name:user.user_metadata&&(user.user_metadata.full_name||user.user_metadata.name)||user.email.split('@')[0]||'Traveller',
-      token:session.access_token
-    };
-  }catch(e){return null;}
-}
+// ── Supabase client for blog auth ─────────────────────────────────────────
+var _sb=window.supabase.createClient(
+  'https://prffhhkemxibujjjiyhg.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByZmZoaGtlbXhpYnVqamppeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NzYwMDIsImV4cCI6MjA5MDM1MjAwMn0.Tqxz_6EHwv4oWA9NvPSRK1uC7HJ1_chhFjZGg2PRhiE'
+);
 var _blogUser=null;
 
-function initBlogAuth(){
-  _blogUser=getBlogUser();
+function _setUser(session){
+  if(!session||!session.user) return;
+  var u=session.user;
+  _blogUser={
+    id:u.id,email:u.email,token:session.access_token,
+    name:(u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name))||u.email.split('@')[0]||'Traveller'
+  };
   var wb=document.getElementById('write-btn');
-  var wb2=document.getElementById('write-btn-2');
-  if(_blogUser){
-    if(wb) wb.textContent='✍️ '+_blogUser.name.split(' ')[0];
-    if(wb2) wb2.style.display='';
-    document.getElementById('write-author-name').textContent=_blogUser.name+' ('+_blogUser.email+')';
-  } else {
-    if(wb2) wb2.style.display='';
-  }
+  if(wb) wb.textContent='✍️ '+_blogUser.name.split(' ')[0];
+  var el=document.getElementById('write-author-name');
+  if(el) el.textContent=_blogUser.name+' ('+_blogUser.email+')';
+}
+
+async function initBlogAuth(){
+  var {data:{session}}=await _sb.auth.getSession();
+  _setUser(session);
   loadCommunityPosts();
+  // Listen for sign-in after OAuth/magic link redirect
+  _sb.auth.onAuthStateChange(function(event,sess){
+    if(event==='SIGNED_IN'&&sess){
+      _setUser(sess);
+      // If modal is open, switch to write form
+      var modal=document.getElementById('write-modal');
+      if(modal&&modal.style.display==='flex') showWriteForm();
+    }
+  });
 }
 
 // ── Write Story Modal ──────────────────────────────────────────────────────
 function openWriteModal(){
-  if(!_blogUser){window.location.href='/?showAuth=1';return;}
   document.getElementById('write-modal').style.display='flex';
   document.body.style.overflow='hidden';
+  if(_blogUser) showWriteForm(); else showAuthStep();
 }
 function closeWriteModal(){
   document.getElementById('write-modal').style.display='none';
   document.body.style.overflow='';
+}
+function showAuthStep(){
+  document.getElementById('ws-auth-step').style.display='';
+  document.getElementById('ws-write-form').style.display='none';
+}
+function showWriteForm(){
+  document.getElementById('ws-auth-step').style.display='none';
+  document.getElementById('ws-write-form').style.display='';
+}
+
+async function signInWithGoogle(){
+  var btn=document.getElementById('ws-google-btn');
+  btn.disabled=true;btn.textContent='Opening Google sign in...';
+  await _sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:window.location.href}
+  });
+}
+
+async function signInWithMagicLink(){
+  var email=document.getElementById('ws-magic-email').value.trim();
+  var msg=document.getElementById('ws-magic-msg');
+  if(!email||!email.includes('@')){msg.style.color='#e08060';msg.textContent='Please enter a valid email.';msg.style.display='';return;}
+  var btn=document.getElementById('ws-magic-btn');
+  btn.disabled=true;btn.textContent='Sending...';
+  var {error}=await _sb.auth.signInWithOtp({email,options:{emailRedirectTo:window.location.href}});
+  msg.style.display='';
+  if(error){
+    msg.style.color='#e08060';msg.textContent='✗ '+error.message;
+    btn.disabled=false;btn.textContent='Send Magic Link →';
+  }else{
+    msg.style.color='#6aaa7a';
+    msg.textContent='✓ Check your email — click the link to come back and start writing.';
+    btn.textContent='Email sent ✓';
+  }
 }
 
 async function submitStory(){
