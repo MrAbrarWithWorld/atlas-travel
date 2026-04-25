@@ -692,7 +692,8 @@ const travelContext = await getTravelContext(messages);
       return match ? match[1].toUpperCase() : null;
     }
 
-    const detectedCurrency = detectCurrency(userPrefs.passport||'', userPrefs.homeCity||'')
+    const detectedCurrency = userPrefs.currency
+      || detectCurrency(userPrefs.passport||'', userPrefs.homeCity||'')
       || detectCurrencyFromMessages(messages)
       || 'USD';
 
@@ -701,7 +702,8 @@ const travelContext = await getTravelContext(messages);
       userPrefs.homeCity?`User home city: ${userPrefs.homeCity}`:'',
       userPrefs.travelStyle?`User travel style: ${userPrefs.travelStyle}`:'',
       userPrefs.customPrefs?`User preferences: ${userPrefs.customPrefs}`:'',
-      `User preferred currency: ${detectedCurrency} — use this for ALL price displays`,
+      userPrefs.language&&userPrefs.language!=='auto'?`User language preference: ${userPrefs.language} — respond in this language`:'',
+      `User preferred currency: ${detectedCurrency} — use this for ALL price displays${userPrefs.currency?' (manually set by user)':' (auto-detected)'}`,
     ].filter(Boolean).join('\n');
     // Explorer custom system prompt
     const customInstruction = userTier==='explorer' && req.headers['x-custom-prompt']

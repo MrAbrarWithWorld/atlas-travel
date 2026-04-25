@@ -716,6 +716,100 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
   const [voices, setVoices] = React.useState([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = React.useState(()=>localStorage.getItem('atlas_voice_uri')||'');
   const [customPrompt, setCustomPrompt] = React.useState(()=>localStorage.getItem('atlas_custom_prompt')||'');
+  // Push notifications state
+  const [pushEnabled, setPushEnabled] = React.useState(()=>localStorage.getItem('atlas_push_enabled')==='true');
+  const [pushLoading, setPushLoading] = React.useState(false);
+  const [pushStatus, setPushStatus] = React.useState('');
+  const VAPID_PUBLIC_KEY = 'BGptz3aIXzAwHRW37OhPoRetGGR9GtHE-RprbaEnn351x2BgT0_0MiUrI-PJ1Q2Vr3JtOPtB5GyQPSkJ_3pAeEE';
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+    return outputArray;
+  }
+
+  async function enablePushNotifications() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setPushStatus('Push notifications are not supported in this browser.');
+      return;
+    }
+    setPushLoading(true);
+    setPushStatus('');
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        setPushStatus('Permission denied. Please allow notifications in your browser settings.');
+        setPushLoading(false);
+        return;
+      }
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+      // Save to server if logged in
+      if (user) {
+        const {data:{session}} = await sb.auth.getSession();
+        if (session?.access_token) {
+          await fetch('/api/push-subscribe', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`},
+            body: JSON.stringify({ subscription: sub.toJSON() })
+          });
+        }
+      }
+      localStorage.setItem('atlas_push_enabled', 'true');
+      localStorage.setItem('atlas_push_sub', JSON.stringify(sub.toJSON()));
+      setPushEnabled(true);
+      setPushStatus('✓ Push notifications enabled!');
+    } catch (e) {
+      setPushStatus('Could not enable notifications: ' + e.message);
+    }
+    setPushLoading(false);
+  }
+
+  async function disablePushNotifications() {
+    setPushLoading(true);
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) await sub.unsubscribe();
+      if (user) {
+        const {data:{session}} = await sb.auth.getSession();
+        if (session?.access_token) {
+          await fetch('/api/push-subscribe', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`},
+            body: JSON.stringify({ action: 'unsubscribe' })
+          });
+        }
+      }
+      localStorage.setItem('atlas_push_enabled', 'false');
+      localStorage.removeItem('atlas_push_sub');
+      setPushEnabled(false);
+      setPushStatus('Notifications disabled.');
+    } catch(e) {
+      setPushStatus('Error: ' + e.message);
+    }
+    setPushLoading(false);
+  }
+
+  async function sendTestNotification() {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      reg.showNotification('🌍 Atlas Travel', {
+        body: 'Push notifications are working! You\'ll get trip reminders here.',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag: 'atlas-test'
+      });
+    } catch(e) {
+      setPushStatus('Test failed: ' + e.message);
+    }
+  }
   React.useEffect(()=>{
     function loadVoices(){const v=window.speechSynthesis?.getVoices()||[];if(v.length>0)setVoices(v);}
     loadVoices();
@@ -841,6 +935,7 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
           React.createElement("button",{style:tabStyle('personalization'),onClick:()=>setTab('personalization')},"✦","Preferences"),
           React.createElement("button",{style:tabStyle('appearance'),onClick:()=>setTab('appearance')},"◈","Appearance"),
           userTier==='explorer'&&React.createElement("button",{style:tabStyle('ai'),onClick:()=>setTab('ai')},"💎","AI Prompt"),
+          React.createElement("button",{style:tabStyle('notifications'),onClick:()=>setTab('notifications')},"🔔","Notifications"),
           React.createElement("button",{style:tabStyle('account'),onClick:()=>setTab('account')},"◎","Account"),
           React.createElement("button",{style:tabStyle('security'),onClick:()=>setTab('security')},"🔒","Security")
         ),
@@ -881,6 +976,32 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
               onChange:e=>updatePref('homeCity',e.target.value),
               style:inputStyle
             }),
+
+            React.createElement("label",{style:labelStyle},"Preferred currency"),
+            React.createElement("p",{style:{fontSize:"0.6rem",color:"#4a3a22",marginTop:"0.2rem",lineHeight:1.6}},"All prices (hotels, food, flights) will be shown in this currency. Overrides auto-detection."),
+            React.createElement("select",{
+              value:prefs.currency||"",
+              onChange:e=>updatePref('currency',e.target.value),
+              style:{...inputStyle,cursor:"pointer"}
+            },
+              React.createElement("option",{value:""},"Auto-detect from passport / location"),
+              React.createElement("option",{value:"CAD"},"🇨🇦 CAD — Canadian Dollar"),
+              React.createElement("option",{value:"USD"},"🇺🇸 USD — US Dollar"),
+              React.createElement("option",{value:"GBP"},"🇬🇧 GBP — British Pound"),
+              React.createElement("option",{value:"EUR"},"🇪🇺 EUR — Euro"),
+              React.createElement("option",{value:"AUD"},"🇦🇺 AUD — Australian Dollar"),
+              React.createElement("option",{value:"NZD"},"🇳🇿 NZD — New Zealand Dollar"),
+              React.createElement("option",{value:"BDT"},"🇧🇩 BDT — Bangladeshi Taka"),
+              React.createElement("option",{value:"INR"},"🇮🇳 INR — Indian Rupee"),
+              React.createElement("option",{value:"PKR"},"🇵🇰 PKR — Pakistani Rupee"),
+              React.createElement("option",{value:"AED"},"🇦🇪 AED — UAE Dirham"),
+              React.createElement("option",{value:"SAR"},"🇸🇦 SAR — Saudi Riyal"),
+              React.createElement("option",{value:"SGD"},"🇸🇬 SGD — Singapore Dollar"),
+              React.createElement("option",{value:"MYR"},"🇲🇾 MYR — Malaysian Ringgit"),
+              React.createElement("option",{value:"JPY"},"🇯🇵 JPY — Japanese Yen"),
+              React.createElement("option",{value:"KRW"},"🇰🇷 KRW — South Korean Won"),
+              React.createElement("option",{value:"NGN"},"🇳🇬 NGN — Nigerian Naira")
+            ),
 
             React.createElement("label",{style:labelStyle},"Travel style"),
             React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.4rem",flexWrap:"wrap"}},
@@ -999,6 +1120,53 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
             customPrompt&&React.createElement("button",{onClick:()=>setCustomPrompt(''),style:{background:"none",border:"none",color:"#4a3a22",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.08em",padding:"0.25rem 0",textDecoration:"underline"}},"Clear instruction"),
             React.createElement("div",{style:{display:"flex",gap:"0.5rem",marginTop:"1rem"}},
               React.createElement("button",{onClick:save,style:{flex:1,padding:"0.6rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:8,color:saved?"#6abf6a":"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},saving?"Saving...":saved?"✓ Saved":"Save Instruction")
+            )
+          ),
+
+          // ---- NOTIFICATIONS ----
+          tab==='notifications'&&React.createElement("div",null,
+            React.createElement("p",{style:sectionTitle},"Notifications"),
+
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"1rem"}},
+              React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}},
+                React.createElement("div",null,
+                  React.createElement("p",{style:{fontSize:"0.8rem",color:"#e0d8c8",marginBottom:"0.15rem"}},"Trip Reminders"),
+                  React.createElement("p",{style:{fontSize:"0.62rem",color:"#6a5a3a",lineHeight:1.6}},"Get notified before your trips and for travel deals")
+                ),
+                React.createElement("button",{
+                  onClick:pushEnabled?disablePushNotifications:enablePushNotifications,
+                  disabled:pushLoading,
+                  style:{
+                    width:46,height:26,borderRadius:13,
+                    background:pushEnabled?"rgba(201,169,110,0.5)":"rgba(100,90,70,0.2)",
+                    border:"none",cursor:pushLoading?"wait":"pointer",position:"relative",transition:"all 0.2s",
+                    flexShrink:0
+                  }
+                },
+                  React.createElement("span",{style:{
+                    position:"absolute",top:3,left:pushEnabled?22:3,width:20,height:20,
+                    borderRadius:"50%",background:pushEnabled?"#c9a96e":"#6a5a3a",
+                    transition:"all 0.2s"
+                  }})
+                )
+              ),
+              pushStatus&&React.createElement("p",{style:{fontSize:"0.65rem",color:pushStatus.startsWith('✓')?"#6abf6a":"#8a7a60",marginTop:"0.5rem",lineHeight:1.5}},pushStatus)
+            ),
+
+            pushEnabled&&React.createElement("button",{
+              onClick:sendTestNotification,
+              style:{width:"100%",padding:"0.55rem",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",marginBottom:"1rem"}
+            },"🔔 Send Test Notification"),
+
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.03)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:10,padding:"1rem"}},
+              React.createElement("p",{style:{fontSize:"0.72rem",color:"#6a5a3a",marginBottom:"0.5rem"}},"📋 What you'll receive:"),
+              ["✈️ Trip reminders — 1 day before departure","💰 Price drop alerts (coming soon)","📍 Destination tips when you're near a saved location (coming soon)"].map((item,i)=>
+                React.createElement("p",{key:i,style:{fontSize:"0.65rem",color:"#4a3a22",lineHeight:1.7}},item)
+              )
+            ),
+
+            !('Notification' in window)&&React.createElement("div",{style:{background:"rgba(180,60,60,0.06)",border:"1px solid rgba(180,60,60,0.15)",borderRadius:8,padding:"0.75rem",marginTop:"0.75rem"}},
+              React.createElement("p",{style:{fontSize:"0.65rem",color:"#8a5050",lineHeight:1.6}},"⚠️ Push notifications are not supported in your current browser. Try Chrome or Firefox on desktop, or use the app on your phone.")
             )
           ),
 
@@ -2323,11 +2491,12 @@ function renamePlan(id,newTitle){
     const location=await getLocation();
     const locationStr=location?`\nUser location: ${location}`:"";
     const userInfo=user?`\nUser: ${user.user_metadata?.full_name||user.email} (logged in, ${userTier==='pro'?'Pro':'Free'} plan)`:"\nUser: Guest (not logged in)";
-    // Detect local currency from browser locale
+    // Detect local currency — manual pref takes priority
+    const _savedPrefs=(()=>{try{return JSON.parse(localStorage.getItem('atlas_prefs')||'{}');}catch{return {};}})();
     const localeCurrencyMap={'en-US':'USD','en-CA':'CAD','en-GB':'GBP','en-AU':'AUD','en-NZ':'NZD','bn':'BDT','bn-BD':'BDT','hi':'INR','hi-IN':'INR','ar':'AED','ar-AE':'AED','ar-SA':'SAR','fr':'EUR','fr-FR':'EUR','de':'EUR','de-DE':'EUR','it':'EUR','es':'EUR','pt-BR':'BRL','pt':'EUR','ja':'JPY','ko':'KRW','zh':'CNY','zh-CN':'CNY','zh-TW':'TWD','tr':'TRY','th':'THB','id':'IDR','ms':'MYR','vi':'VND','ru':'RUB','pl':'PLN','nl':'EUR','sv':'SEK','no':'NOK','da':'DKK','fi':'EUR'};
     const lang=navigator.language||'en';
-    const detectedCurrency=localeCurrencyMap[lang]||localeCurrencyMap[lang.split('-')[0]]||'USD';
-    const currencyStr=`\nUser preferred currency: ${detectedCurrency} (detected from browser locale: ${lang})`;
+    const detectedCurrency=_savedPrefs.currency||localeCurrencyMap[lang]||localeCurrencyMap[lang.split('-')[0]]||'USD';
+    const currencyStr=`\nUser preferred currency: ${detectedCurrency}${_savedPrefs.currency?' (manually set)':' (detected from browser locale: '+lang+')'}`;
     const msgText=t||"";
     const msgWithTime=`${msgText}\n\n[Current date & time: ${dateTime}${locationStr}${userInfo}${currencyStr}]`;
     const msgWithTime2=t?msgWithTime:`[Current date & time: ${dateTime}${locationStr}${userInfo}]`; const userContent=photo   ?[{type:"image",source:{type:"base64",media_type:photo.mediaType,data:photo.base64}},{type:"text",text:msgWithTime2}]   :msgWithTime;
@@ -2556,7 +2725,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(
 
 </script>
 <script>
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/service-worker.js');});}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').then(reg=>{console.log('SW registered');}).catch(err=>{console.log('SW failed:',err);});});}
 </script>
 </body>
 </html>
