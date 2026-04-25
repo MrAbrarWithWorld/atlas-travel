@@ -1011,9 +1011,9 @@ function buildArticlePage(slug, article, relatedPosts = []) {
     <span>${dateFormatted}</span>
     <span>${article.read_time}</span>
   </div>
+  ${langToggle}
   ${highlightsHtml}
   ${keyFactsHtml}
-  ${langToggle}
   ${contentHtml}
 
   <!-- Primary CTA -->
@@ -1069,7 +1069,7 @@ function buildArticlePage(slug, article, relatedPosts = []) {
 
   <!-- Related Blog Posts -->
   ${relatedPosts.length > 0 ? `<div class="related-posts-section">
-    <h3 class="related-posts-title">আরো পড়ুন · Read More</h3>
+    <h3 class="related-posts-title">Read More</h3>
     <div class="articles-grid">
       ${relatedPosts.map(p => {
         const pDate = new Date(p.date_published).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
