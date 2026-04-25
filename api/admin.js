@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
 import webpush from 'web-push';
+import nodemailer from 'nodemailer';
 
 const sb = createClient(
   'https://prffhhkemxibujjjiyhg.supabase.co',
@@ -41,7 +42,7 @@ async function sendBlogPushNotifications(title, slug, description) {
 }
 
 async function sendNewsletterEmails(title, slug, description, heroEmoji) {
-  if (!process.env.RESEND_API_KEY) return;
+  if (!process.env.ZOHO_APP_PASSWORD) return;
   try {
     const { data: subscribers } = await sb
       .from('newsletter_subscribers')
@@ -79,26 +80,27 @@ async function sendNewsletterEmails(title, slug, description, heroEmoji) {
   </div>
 </body></html>`;
 
-    // Send in batches of 10 to avoid rate limits
-    let sent = 0;
-    for (const row of subscribers) {
-      try {
-        const r = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            from: 'Atlas Travel <support@getatlas.ca>',
-            to: row.email,
-            subject: `${emoji} ${title}`,
-            html: buildHtml(row.email)
-          })
-        });
-        if (r.ok) sent++;
-      } catch {}
-    }
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.zoho.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'support@getatlas.ca',
+        pass: process.env.ZOHO_APP_PASSWORD
+      }
+    });
+
+    const results = await Promise.allSettled(
+      subscribers.map(row =>
+        transporter.sendMail({
+          from: '"Atlas Travel" <support@getatlas.ca>',
+          to: row.email,
+          subject: `${emoji} ${title}`,
+          html: buildHtml(row.email)
+        })
+      )
+    );
+    const sent = results.filter(r => r.status === 'fulfilled').length;
     console.log(`Newsletter sent to ${sent}/${subscribers.length} subscribers for: ${title}`);
   } catch (e) {
     console.error('Newsletter email error:', e.message);
