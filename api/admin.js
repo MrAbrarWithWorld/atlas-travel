@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
 import webpush from 'web-push';
+import nodemailer from 'nodemailer';
 
 const sb = createClient(
   'https://prffhhkemxibujjjiyhg.supabase.co',
@@ -37,6 +38,78 @@ async function sendBlogPushNotifications(title, slug, description) {
     console.log(`Push sent to ${sent}/${subs.length} subscribers for: ${title}`);
   } catch (e) {
     console.error('Push notification error:', e.message);
+  }
+}
+
+async function sendNewsletterEmails(title, slug, description, heroEmoji) {
+  if (!process.env.GMAIL_APP_PASSWORD) return;
+  try {
+    const { data: subscribers } = await sb
+      .from('newsletter_subscribers')
+      .select('email')
+      .eq('unsubscribed', false);
+    if (!subscribers?.length) return;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER || 'smfahimabrar93@gmail.com',
+        pass: process.env.GMAIL_APP_PASSWORD
+      }
+    });
+
+    const articleUrl = `https://getatlas.ca/blog/${slug}`;
+    const emoji = heroEmoji || '✈️';
+
+    const htmlBody = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0e0c08;font-family:'Georgia',serif;">
+  <div style="max-width:560px;margin:0 auto;padding:2rem 1rem;">
+    <!-- Header -->
+    <div style="text-align:center;padding-bottom:1.5rem;border-bottom:1px solid rgba(201,169,110,0.2);">
+      <p style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:#8a6a3a;margin:0 0 0.5rem;">Atlas · AI Travel Intelligence</p>
+      <p style="font-size:0.75rem;color:#5a4a2a;margin:0;">New article just published</p>
+    </div>
+
+    <!-- Article -->
+    <div style="padding:2rem 0;">
+      <div style="font-size:3rem;text-align:center;margin-bottom:1rem;">${emoji}</div>
+      <h1 style="font-family:'Georgia',serif;font-size:1.6rem;font-weight:400;color:#e8dcc8;text-align:center;line-height:1.35;margin:0 0 1rem;">${title}</h1>
+      <p style="font-size:0.9rem;color:#8a7a60;line-height:1.75;text-align:center;margin:0 0 2rem;">${description || ''}</p>
+      <div style="text-align:center;">
+        <a href="${articleUrl}" style="display:inline-block;background:#c9a96e;color:#1c1914;text-decoration:none;padding:0.85rem 2rem;border-radius:8px;font-size:0.85rem;font-weight:600;letter-spacing:0.08em;">Read Article →</a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="border-top:1px solid rgba(201,169,110,0.15);padding-top:1.5rem;text-align:center;">
+      <p style="font-size:0.7rem;color:#3a3020;margin:0 0 0.5rem;">You're receiving this because you subscribed to Atlas Travel updates.</p>
+      <p style="font-size:0.7rem;color:#3a3020;margin:0;">
+        <a href="https://getatlas.ca/api/unsubscribe?email={{EMAIL}}" style="color:#5a4a2a;text-decoration:underline;">Unsubscribe</a>
+        &nbsp;·&nbsp;
+        <a href="https://getatlas.ca/blog" style="color:#5a4a2a;text-decoration:underline;">View all articles</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const results = await Promise.allSettled(
+      subscribers.map(row => {
+        const personalizedHtml = htmlBody.replace('{{EMAIL}}', encodeURIComponent(row.email));
+        return transporter.sendMail({
+          from: `"Atlas Travel" <${process.env.GMAIL_USER || 'smfahimabrar93@gmail.com'}>`,
+          to: row.email,
+          subject: `${emoji} ${title}`,
+          html: personalizedHtml
+        });
+      })
+    );
+    const sent = results.filter(r => r.status === 'fulfilled').length;
+    console.log(`Newsletter sent to ${sent}/${subscribers.length} subscribers for: ${title}`);
+  } catch (e) {
+    console.error('Newsletter email error:', e.message);
   }
 }
 
@@ -734,8 +807,9 @@ export default async function handler(req, res) {
     await saveArticle(editSlug, body);
     const nowPublished = body.is_published === '1';
     if (!wasPublished && nowPublished) {
-      // Newly published — send push to all subscribers (fire and forget)
+      // Newly published — send push + newsletter email (fire and forget)
       sendBlogPushNotifications(body.title, editSlug, body.description).catch(() => {});
+      sendNewsletterEmails(body.title, editSlug, body.description, body.hero_emoji).catch(() => {});
     }
     res.setHeader('Location', `/admin?section=blog&edit=${encodeURIComponent(editSlug)}&saved=1`);
     return res.status(302).end();
