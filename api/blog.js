@@ -552,27 +552,24 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 .write-chars{font-size:0.68rem;color:#5a4a2a;text-align:right;margin:-0.5rem 0 0.75rem;}
 @media(max-width:500px){.write-box{padding:1.5rem 1.2rem;}}
 
-/* CATEGORY FILTER BAR */
-.cat-bar{background:#17140f;border-bottom:1px solid rgba(201,169,110,0.1);display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;position:sticky;top:64px;z-index:90;padding:0 3rem;gap:0;}
-.cat-bar::-webkit-scrollbar{display:none;}
-.cat-pill{padding:0.8rem 0;margin-right:2.2rem;font-size:0.68rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#52473a;white-space:nowrap;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;flex-shrink:0;display:flex;align-items:center;gap:0.3rem;}
-.cat-pill:hover{color:#a08858;}
-.cat-pill.active{color:#c9a96e;border-bottom-color:#c9a96e;}
-.cat-arrow{font-size:0.48rem;opacity:0.45;transition:transform 0.2s,opacity 0.2s;margin-left:0.1rem;}
-@media(max-width:700px){.cat-bar{padding:0 1.2rem;}}
-
-/* CATEGORY DROPDOWN */
-.cat-pill-wrap{position:relative;display:inline-flex;align-items:center;flex-shrink:0;}
-.cat-pill-wrap>.cat-pill{margin-right:2.2rem;}
-.cat-drop{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:210px;background:#1e1a12;border:1px solid rgba(201,169,110,0.2);border-radius:10px;padding:0.5rem 0;z-index:300;box-shadow:0 10px 36px rgba(0,0,0,0.55);}
-.cat-pill-wrap:hover .cat-drop,.cat-pill-wrap.open .cat-drop{display:block;}
-.cat-pill-wrap:hover .cat-arrow,.cat-pill-wrap.open .cat-arrow{opacity:1;transform:rotate(180deg);}
-.cat-pill-wrap.open .cat-pill{color:#c9a96e;}
-.cat-drop-item{display:block;padding:0.48rem 1.1rem;font-size:0.72rem;color:#8a7960;transition:color 0.15s,background 0.15s;letter-spacing:0.03em;white-space:nowrap;}
-.cat-drop-item:hover{color:#e8dcc8;background:rgba(201,169,110,0.07);}
-.cat-drop-all{color:#c9a96e;font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;}
-.cat-drop-all:hover{color:#e0c080;background:rgba(201,169,110,0.07);}
-.cat-drop-divider{height:1px;background:rgba(201,169,110,0.1);margin:0.4rem 0;}
+/* MEGA MENU NAV */
+.blog-nav{overflow:visible;}
+.nav-dest-item{position:static;list-style:none;}
+.nav-dest-trigger{color:#8a7960;font-size:0.78rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:0.3rem;transition:color 0.2s;user-select:none;}
+.nav-dest-trigger:hover,.nav-dest-trigger.active{color:#c9a96e;}
+.nav-arrow{font-size:0.5rem;opacity:0.4;transition:transform 0.25s,opacity 0.2s;}
+.nav-dest-item:hover .nav-arrow,.nav-dest-item.open .nav-arrow{opacity:1;transform:rotate(180deg);}
+.nav-dest-item:hover .nav-dest-trigger,.nav-dest-item.open .nav-dest-trigger{color:#c9a96e;}
+.mega-panel{position:absolute;top:64px;left:0;right:0;background:#1a1610;border-bottom:1px solid rgba(201,169,110,0.15);padding:2.2rem 4rem 2.5rem;display:none;z-index:200;box-shadow:0 20px 60px rgba(0,0,0,0.65);}
+.nav-dest-item:hover .mega-panel,.nav-dest-item.open .mega-panel{display:block;}
+.mega-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:2.5rem;max-width:1100px;}
+.mega-region-title{font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:#5a4a2a;font-weight:600;margin-bottom:0.8rem;padding-bottom:0.5rem;border-bottom:1px solid rgba(201,169,110,0.1);}
+.mega-link{display:flex;align-items:center;gap:0.45rem;padding:0.3rem 0;font-size:0.74rem;color:#8a7960;transition:color 0.15s;white-space:nowrap;}
+.mega-link:hover{color:#e8dcc8;}
+.mega-all{display:inline-flex;align-items:center;gap:0.35rem;margin-top:0.7rem;padding-top:0.55rem;border-top:1px solid rgba(201,169,110,0.08);font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:#c9a96e;transition:color 0.15s;}
+.mega-all:hover{color:#e0c080;}
+@media(max-width:800px){.mega-panel{padding:1.5rem 1.5rem 2rem;}.mega-inner{grid-template-columns:1fr 1fr;gap:1.5rem;}}
+@media(max-width:700px){.mega-panel{display:none !important;}}
 
 /* NEW BADGE */
 .new-badge{display:inline-block;background:rgba(100,200,120,0.12);border:1px solid rgba(100,200,120,0.28);color:#7aba7a;font-size:0.54rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.1rem 0.45rem;border-radius:3px;margin-left:0.5rem;vertical-align:middle;font-family:'DM Sans',sans-serif;}
@@ -602,15 +599,60 @@ ${listingStyles}
 <!-- NAV -->
 <nav class="blog-nav">
   <a href="/blog" class="blog-nav-logo">${logoSvg()} Atlas</a>
+  <ul class="blog-nav-links">
+    <li><a href="/blog"${!activeCat ? ' class="active"' : ''}>All</a></li>
+    <li class="nav-dest-item">
+      <span class="nav-dest-trigger${activeCat && ['southasia','eastasia','europe'].includes(activeCat) ? ' active' : ''}">Destinations <span class="nav-arrow">▾</span></span>
+      <div class="mega-panel">
+        <div class="mega-inner">
+          <div>
+            <div class="mega-region-title">South Asia</div>
+            <a href="/blog?cat=southasia" class="mega-link">📖 All South Asia</a>
+            <a href="/plan/dhaka" class="mega-link">🇧🇩 Bangladesh</a>
+            <a href="/plan/coxs-bazar" class="mega-link">🏖 Cox's Bazar</a>
+            <a href="/plan/maldives" class="mega-link">🇲🇻 Maldives</a>
+            <a href="/plan/kathmandu" class="mega-link">🇳🇵 Nepal</a>
+            <a href="/plan/delhi" class="mega-link">🇮🇳 India</a>
+            <a href="/plan/colombo" class="mega-link">🇱🇰 Sri Lanka</a>
+          </div>
+          <div>
+            <div class="mega-region-title">East Asia</div>
+            <a href="/blog?cat=eastasia" class="mega-link">📖 All East Asia</a>
+            <a href="/plan/tokyo" class="mega-link">🇯🇵 Japan</a>
+            <a href="/plan/bali" class="mega-link">🇮🇩 Bali</a>
+            <a href="/plan/singapore" class="mega-link">🇸🇬 Singapore</a>
+            <a href="/plan/bangkok" class="mega-link">🇹🇭 Thailand</a>
+            <a href="/plan/seoul" class="mega-link">🇰🇷 South Korea</a>
+          </div>
+          <div>
+            <div class="mega-region-title">Europe &amp; Middle East</div>
+            <a href="/blog?cat=europe" class="mega-link">📖 All Europe &amp; ME</a>
+            <a href="/plan/istanbul" class="mega-link">🇹🇷 Istanbul</a>
+            <a href="/plan/paris" class="mega-link">🇫🇷 Paris</a>
+            <a href="/plan/rome" class="mega-link">🇮🇹 Rome</a>
+            <a href="/plan/barcelona" class="mega-link">🇪🇸 Barcelona</a>
+            <a href="/plan/dubai" class="mega-link">🇦🇪 Dubai</a>
+          </div>
+          <div>
+            <div class="mega-region-title">Americas &amp; Africa</div>
+            <a href="/plan/new-york" class="mega-link">🇺🇸 New York</a>
+            <a href="/plan/mexico-city" class="mega-link">🇲🇽 Mexico City</a>
+            <a href="/plan/rio" class="mega-link">🇧🇷 Rio de Janeiro</a>
+            <a href="/plan/cape-town" class="mega-link">🇿🇦 Cape Town</a>
+            <a href="/plan/marrakech" class="mega-link">🇲🇦 Morocco</a>
+          </div>
+        </div>
+      </div>
+    </li>
+    <li><a href="/blog?cat=tips"${activeCat==='tips' ? ' class="active"' : ''}>Tips &amp; Visa</a></li>
+    <li><a href="/blog?cat=community"${activeCat==='community' ? ' class="active"' : ''}>Community ✍️</a></li>
+  </ul>
   <button id="write-btn" class="blog-nav-write" onclick="openWriteModal()" style="display:inline-flex;">✍️ Write</button>
   <a href="/" class="blog-nav-cta">Plan Free →</a>
 </nav>
 
 <!-- HERO -->
 ${heroHtml}
-
-<!-- CATEGORY FILTER BAR -->
-${catBar}
 
 <!-- DESTINATION CATEGORIES -->
 ${destGrid}
@@ -924,20 +966,18 @@ async function loadCommunityPosts(){
 
 window.addEventListener('DOMContentLoaded',initBlogAuth);
 
-// Category dropdown — tap to open on mobile, hover on desktop
+// Mega-menu — click/tap to toggle on mobile/tablet; hover handled by CSS on desktop
 (function(){
-  var wraps=document.querySelectorAll('.cat-pill-wrap');
-  wraps.forEach(function(wrap){
-    var pill=wrap.querySelector('.cat-pill');
-    if(!pill)return;
-    pill.addEventListener('click',function(e){
-      var isOpen=wrap.classList.contains('open');
-      wraps.forEach(function(w){w.classList.remove('open');});
-      if(!isOpen){e.preventDefault();wrap.classList.add('open');}
-    });
+  var item=document.querySelector('.nav-dest-item');
+  if(!item)return;
+  var trigger=item.querySelector('.nav-dest-trigger');
+  if(!trigger)return;
+  trigger.addEventListener('click',function(e){
+    e.stopPropagation();
+    item.classList.toggle('open');
   });
   document.addEventListener('click',function(e){
-    if(!e.target.closest('.cat-pill-wrap'))wraps.forEach(function(w){w.classList.remove('open');});
+    if(!e.target.closest('.nav-dest-item'))item.classList.remove('open');
   });
 })();
 </script>
