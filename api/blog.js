@@ -682,6 +682,7 @@ ${listingStyles}
           <div class="mega-col">
             <div class="mega-continent"><span class="mega-continent-icon">🌎</span> Americas</div>
             <div class="mega-region-title">North America</div>
+            <a href="/blog/banff-canada-travel-guide" class="mega-link"><span class="mega-link-flag">🇨🇦</span> Canada / Banff</a>
             <a href="/plan/new-york" class="mega-link"><span class="mega-link-flag">🇺🇸</span> New York</a>
             <a href="/plan/los-angeles" class="mega-link"><span class="mega-link-flag">🇺🇸</span> Los Angeles</a>
             <a href="/plan/mexico-city" class="mega-link"><span class="mega-link-flag">🇲🇽</span> Mexico</a>
