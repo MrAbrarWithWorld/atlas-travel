@@ -250,6 +250,7 @@ function sidebar(active) {
       ${item('overview', '📊', 'Overview')}
       <div class="nav-section">Content</div>
       ${item('blog', '📝', 'Blog Articles')}
+      ${item('schedule', '🗓️', 'Schedule')}
       ${item('community', '✍️', 'Community Posts')}
       ${item('news', '📰', 'Atlas News')}
     </nav>
@@ -397,7 +398,7 @@ async function blogListPage() {
 async function blogEditorPage(slug, saved = false) {
   const { data: post } = await sb
     .from('blog_posts')
-    .select('slug,title,description,read_time,is_published,cover_image_url,content,inline_photos')
+    .select('slug,title,description,category,read_time,is_published,date_published,cover_image_url,content,inline_photos')
     .eq('slug', slug)
     .single();
 
@@ -431,7 +432,11 @@ async function blogEditorPage(slug, saved = false) {
     <form method="POST" action="/admin?section=blog&edit=${encodeURIComponent(slug)}">
       <div class="field"><label>Title</label><input type="text" name="title" value="${(post.title || '').replace(/"/g, '&quot;')}"/></div>
       <div class="field"><label>Description</label><textarea name="description" rows="3">${post.description || ''}</textarea></div>
-      <div class="field"><label>Read Time</label><input type="text" name="read_time" value="${post.read_time || ''}"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+        <div class="field"><label>Category</label><input type="text" name="category" value="${(post.category || '').replace(/"/g, '&quot;')}" placeholder="e.g. americas, southasia, tips"/></div>
+        <div class="field"><label>Publish Date</label><input type="date" name="date_published" value="${post.date_published || ''}"/></div>
+        <div class="field"><label>Read Time</label><input type="text" name="read_time" value="${post.read_time || ''}" placeholder="e.g. 12 min read"/></div>
+      </div>
       <div class="field"><label class="check-label"><input type="checkbox" name="is_published" value="1" ${post.is_published ? 'checked' : ''}/> Published (visible on blog)</label></div>
 
       <h2>Cover Photo</h2>
@@ -692,6 +697,85 @@ async function communityPage(msg = '') {
   `);
 }
 
+// ─── Schedule page ─────────────────────────────────────────────────────────────
+
+async function schedulePage(msg) {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const { data: posts } = await sb
+    .from('blog_posts')
+    .select('slug,title,category,date_published,is_published,cover_image_url')
+    .order('date_published', { ascending: false });
+
+  const all = posts || [];
+  const upcoming = all.filter(p => p.date_published && p.date_published > today);
+  const live     = all.filter(p => p.date_published && p.date_published <= today && p.is_published);
+  const drafts   = all.filter(p => !p.is_published && (!p.date_published || p.date_published <= today));
+
+  const row = (p, badge, badgeCls) => `
+  <tr>
+    <td style="width:38px;">
+      ${p.cover_image_url
+        ? `<img src="${p.cover_image_url}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;display:block;" onerror="this.style.display='none'"/>`
+        : `<div style="width:36px;height:36px;background:#2a2010;border-radius:4px;"></div>`}
+    </td>
+    <td>
+      <a href="/admin?section=blog&edit=${encodeURIComponent(p.slug)}" style="color:#e8dcc8;font-size:0.85rem;font-weight:500;">${p.title}</a>
+      <div style="font-size:0.68rem;color:#5a4a2a;margin-top:0.1rem;">${p.slug}</div>
+    </td>
+    <td style="font-size:0.75rem;color:#8a7960;">${p.category ?? '—'}</td>
+    <td style="font-size:0.8rem;font-weight:500;color:#c9a96e;">${p.date_published ?? '—'}</td>
+    <td><span class="badge ${badgeCls}">${badge}</span></td>
+    <td>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <a href="/admin?section=blog&edit=${encodeURIComponent(p.slug)}" class="btn btn-sm btn-ghost">Edit →</a>
+        <a href="/blog/${p.slug}" target="_blank" class="btn btn-sm btn-ghost" style="color:#5a4a2a;">View ↗</a>
+      </div>
+    </td>
+  </tr>`;
+
+  const section = (title, rows, emptyMsg) => rows.length
+    ? `<h2 style="margin:2rem 0 0.75rem;font-size:1rem;color:#c9a96e;letter-spacing:0.05em;">${title} <span style="font-size:0.72rem;color:#5a4a2a;font-family:'DM Sans',sans-serif;font-weight:400;">(${rows.length})</span></h2>
+       <table><thead><tr><th style="width:38px;"></th><th>Title</th><th>Category</th><th>Publish Date</th><th>Status</th><th></th></tr></thead>
+       <tbody>${rows.map(p => {
+         if (title.includes('Upcoming')) return row(p, '🗓 Scheduled', 'badge-scheduled');
+         if (title.includes('Live'))     return row(p, '✓ Live',      'badge-yes');
+         return row(p, '○ Draft', 'badge-no');
+       }).join('')}</tbody></table>`
+    : `<h2 style="margin:2rem 0 0.75rem;font-size:1rem;color:#c9a96e;">${title}</h2><p style="color:#4a3a1a;font-size:0.82rem;padding:0.5rem 0;">${emptyMsg}</p>`;
+
+  return shell('schedule', 'Schedule', `
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:0.5rem;">
+      <h1>Content Schedule</h1>
+      <a href="/admin?section=blog&edit=new" class="btn" style="font-size:0.78rem;">+ New Article</a>
+    </div>
+    ${msg ? `<div class="success">${msg}</div>` : ''}
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;">
+      <div class="card" style="background:rgba(201,169,110,0.06);border:1px solid rgba(201,169,110,0.15);border-radius:10px;padding:1rem 1.25rem;">
+        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#5a4a2a;margin-bottom:0.3rem;">Upcoming / Scheduled</div>
+        <div style="font-size:2rem;font-weight:300;color:#c9a96e;font-family:'Cormorant Garamond',serif;">${upcoming.length}</div>
+      </div>
+      <div class="card" style="background:rgba(100,180,100,0.05);border:1px solid rgba(100,180,100,0.15);border-radius:10px;padding:1rem 1.25rem;">
+        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#5a4a2a;margin-bottom:0.3rem;">Published &amp; Live</div>
+        <div style="font-size:2rem;font-weight:300;color:#8aba8a;font-family:'Cormorant Garamond',serif;">${live.length}</div>
+      </div>
+      <div class="card" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:1rem 1.25rem;">
+        <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#5a4a2a;margin-bottom:0.3rem;">Drafts</div>
+        <div style="font-size:2rem;font-weight:300;color:#6a5a3a;font-family:'Cormorant Garamond',serif;">${drafts.length}</div>
+      </div>
+    </div>
+
+    ${section('🗓 Upcoming / Scheduled', upcoming, 'No scheduled posts — create one from Blog Articles.')}
+    ${section('✓ Live Articles', live, 'No published articles yet.')}
+    ${section('○ Drafts', drafts, 'No drafts.')}
+
+    <style>
+      .badge-scheduled{background:rgba(201,169,110,0.15);border:1px solid rgba(201,169,110,0.3);color:#c9a96e;}
+    </style>
+  `);
+}
+
 // ─── Save article ──────────────────────────────────────────────────────────────
 
 async function saveArticle(slug, body) {
@@ -711,7 +795,9 @@ async function saveArticle(slug, body) {
   await sb.from('blog_posts').update({
     title: body.title,
     description: body.description,
+    category: body.category,
     read_time: body.read_time,
+    date_published: body.date_published || null,
     is_published: body.is_published === '1',
     cover_image_url: body.cover_image_url,
     content,
@@ -823,6 +909,7 @@ export default async function handler(req, res) {
     if (editSlug) return res.status(200).send(await blogEditorPage(editSlug, saved));
     return res.status(200).send(await blogListPage());
   }
+  if (section === 'schedule') return res.status(200).send(await schedulePage(url.searchParams.get('msg') || ''));
   if (section === 'news') return res.status(200).send(newsPage());
   if (section === 'community') {
     const msgParam = req.query.msg;
