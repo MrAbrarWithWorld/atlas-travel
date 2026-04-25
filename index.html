@@ -1688,11 +1688,10 @@ const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id
                         },style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"✏️"),
                         React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();onDeletePlan(plan.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem",padding:"0.1rem"}},"🗑")
                       )
+                    )
                   )
-                )
-              )
-            );
-          })
+                );
+              })
         )
       ),
 
