@@ -218,21 +218,28 @@ function buildListingPage(articles, activeCatParam) {
   const row2 = articles.slice(6, 8);
   const grid2 = articles.slice(8, 11);
   const rest = articles.slice(11);
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
   function heroDate(a) {
     return new Date(a.date_published).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
   }
 
+  function isNew(a) {
+    return new Date(a.date_published).getTime() > thirtyDaysAgo;
+  }
+
   function fullRow(a, imgRight) {
     if (!a) return '';
     const d = heroDate(a);
+    const newBadge = isNew(a) ? '<span class="new-badge">New</span>' : '';
+    const emojiPrefix = a.hero_emoji ? `${a.hero_emoji} ` : '';
     const img = a.cover_image_url
       ? `<div class="afr-image"><img src="${a.cover_image_url}" alt="${a.title}" loading="lazy"/></div>`
       : `<div class="afr-image" style="background:#2a2419;"></div>`;
     const text = `
       <div class="afr-content">
-        <div class="afr-issue">${a.category}</div>
-        <h2 class="afr-title">${a.title}</h2>
+        <div class="afr-issue">${a.category}${newBadge}</div>
+        <h2 class="afr-title">${emojiPrefix}${a.title}</h2>
         <p class="afr-excerpt">${a.description}</p>
         <div class="afr-meta"><span>${d}</span><span class="afr-sep"></span><span>${a.read_time}</span></div>
         <div class="afr-link">Read the story <div class="afr-link-line"></div></div>
@@ -242,28 +249,36 @@ function buildListingPage(articles, activeCatParam) {
 
   function threeGrid(arr) {
     if (!arr.length) return '';
-    const cards = arr.map((a, i) => `
+    const cards = arr.map((a, i) => {
+      const newBadge = isNew(a) ? '<span class="new-badge">New</span>' : '';
+      const emojiPrefix = a.hero_emoji ? `${a.hero_emoji} ` : '';
+      return `
       <a href="/blog/${a.slug}" class="sg-card">
         <div class="sg-img">${a.cover_image_url ? `<img src="${a.cover_image_url}" alt="${a.title}" loading="lazy"/>` : ''}<span class="sg-num">0${i+1}</span></div>
-        <div class="sg-cat">${a.category}</div>
-        <div class="sg-title">${a.title}</div>
+        <div class="sg-cat">${a.category}${newBadge}</div>
+        <div class="sg-title">${emojiPrefix}${a.title}</div>
         <p class="sg-excerpt">${a.description}</p>
         <div class="sg-meta">${a.read_time} · ${heroDate(a)}</div>
-      </a>`).join('');
+      </a>`;
+    }).join('');
     return `<div class="three-grid">${cards}</div>`;
   }
 
   function restCards(arr) {
     if (!arr.length) return '';
-    const cards = arr.map(a => `
+    const cards = arr.map(a => {
+      const emojiPrefix = a.hero_emoji ? `${a.hero_emoji} ` : '';
+      const newBadge = isNew(a) ? '<span class="new-badge">New</span>' : '';
+      return `
       <a href="/blog/${a.slug}" class="rest-card">
         <div class="rest-img">${a.cover_image_url ? `<img src="${a.cover_image_url}" alt="${a.title}" loading="lazy"/>` : ''}</div>
         <div class="rest-body">
-          <div class="rest-cat">${a.category}</div>
-          <div class="rest-title">${a.title}</div>
+          <div class="rest-cat">${a.category}${newBadge}</div>
+          <div class="rest-title">${emojiPrefix}${a.title}</div>
           <div class="rest-meta">${a.read_time} · ${heroDate(a)}</div>
         </div>
-      </a>`).join('');
+      </a>`;
+    }).join('');
     return `<div class="rest-grid">${cards}</div>`;
   }
 
@@ -295,12 +310,23 @@ function buildListingPage(articles, activeCatParam) {
     { label: 'Visa & Budget Tips', sub: 'Guides · Packing · Solo Travel', img: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80', q: 'tips' },
   ];
   const activeCat = activeCatParam || null;
+  const totalCount = articles.length;
+
+  const catBar = `
+  <nav class="cat-bar">
+    <a href="/blog" class="cat-pill${!activeCat ? ' active' : ''}">All Stories</a>
+    <a href="/blog?cat=southasia" class="cat-pill${activeCat==='southasia' ? ' active' : ''}">South Asia</a>
+    <a href="/blog?cat=eastasia" class="cat-pill${activeCat==='eastasia' ? ' active' : ''}">East Asia</a>
+    <a href="/blog?cat=europe" class="cat-pill${activeCat==='europe' ? ' active' : ''}">Europe &amp; ME</a>
+    <a href="/blog?cat=tips" class="cat-pill${activeCat==='tips' ? ' active' : ''}">Tips &amp; Visa</a>
+    <a href="/blog?cat=community" class="cat-pill${activeCat==='community' ? ' active' : ''}">Community ✍️</a>
+  </nav>`;
 
   const destGrid = `
   <section class="dest-section">
     <div class="section-head-bar">
       <h2 class="sh-title">Browse by <em>Destination</em></h2>
-      ${activeCat ? `<a href="/blog" class="sh-link">← All articles</a>` : ''}
+      <span class="articles-count">${activeCat ? `<a href="/blog" class="sh-link">← All ${totalCount} articles</a>` : `${totalCount} articles`}</span>
     </div>
     <div class="dest-grid">
       ${destCategories.map(d => `
@@ -403,7 +429,8 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 .sg-card:hover .sg-title{color:#c9a96e;}
 .sg-excerpt{font-size:0.78rem;color:#8a7960;line-height:1.7;margin-bottom:0.8rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .sg-meta{font-size:0.67rem;color:#52473a;}
-@media(max-width:800px){.three-grid{grid-template-columns:1fr;}.sg-card{border-right:none;border-bottom:1px solid rgba(201,169,110,0.12);padding:1.8rem 1.5rem;}}
+@media(max-width:800px){.three-grid{grid-template-columns:1fr 1fr;}.sg-card{border-right:none;border-bottom:1px solid rgba(201,169,110,0.12);padding:1.8rem 1.5rem;}.sg-card:nth-child(odd){border-right:1px solid rgba(201,169,110,0.12);}}
+@media(max-width:500px){.three-grid{grid-template-columns:1fr;}.sg-card:nth-child(odd){border-right:none;}}
 
 /* REST GRID */
 .rest-section{padding:3rem 3rem 2rem;}
@@ -485,6 +512,20 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 .write-submit-btn:disabled{opacity:0.6;cursor:default;}
 .write-chars{font-size:0.68rem;color:#5a4a2a;text-align:right;margin:-0.5rem 0 0.75rem;}
 @media(max-width:500px){.write-box{padding:1.5rem 1.2rem;}}
+
+/* CATEGORY FILTER BAR */
+.cat-bar{background:#17140f;border-bottom:1px solid rgba(201,169,110,0.1);display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;position:sticky;top:64px;z-index:90;padding:0 3rem;}
+.cat-bar::-webkit-scrollbar{display:none;}
+.cat-pill{padding:0.8rem 0;margin-right:2.2rem;font-size:0.68rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#52473a;white-space:nowrap;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;flex-shrink:0;}
+.cat-pill:hover{color:#a08858;}
+.cat-pill.active{color:#c9a96e;border-bottom-color:#c9a96e;}
+@media(max-width:700px){.cat-bar{padding:0 1.2rem;}}
+
+/* NEW BADGE */
+.new-badge{display:inline-block;background:rgba(100,200,120,0.12);border:1px solid rgba(100,200,120,0.28);color:#7aba7a;font-size:0.54rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.1rem 0.45rem;border-radius:3px;margin-left:0.5rem;vertical-align:middle;font-family:'DM Sans',sans-serif;}
+
+/* ARTICLE COUNT */
+.articles-count{font-size:0.68rem;color:#52473a;letter-spacing:0.08em;}
 </style>`;
 
   return `<!DOCTYPE html>
@@ -522,6 +563,9 @@ ${listingStyles}
 <!-- HERO -->
 ${heroHtml}
 
+<!-- CATEGORY FILTER BAR -->
+${catBar}
+
 <!-- DESTINATION CATEGORIES -->
 ${destGrid}
 
@@ -542,7 +586,7 @@ ${threeGrid(grid1)}
 
 ${threeGrid(grid2)}
 
-${rest.length ? `<div class="rest-section"><div class="section-head-bar" style="margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,169,110,0.12);"><h2 class="sh-title">All <em>Articles</em></h2></div>${restCards(rest)}</div>` : ''}
+${rest.length ? `<div class="rest-section"><div class="section-head-bar" style="margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(201,169,110,0.12);"><h2 class="sh-title">All <em>Articles</em></h2><span class="articles-count">${rest.length + 11} total</span></div>${restCards(rest)}</div>` : ''}
 
 <!-- COMMUNITY STORIES -->
 <div class="community-section" id="community-section">

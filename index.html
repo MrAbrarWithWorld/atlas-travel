@@ -2246,7 +2246,7 @@ function App(){
 
   useEffect(()=>{
     sb.auth.getSession().then(({data:{session}})=>setUser(session?.user||null));
-    const{data:{subscription}}=sb.auth.onAuthStateChange((_,session)=>{setUser(session?.user||null);if(window.location.hash)window.history.replaceState({},'',window.location.pathname+window.location.search);});
+    const{data:{subscription}}=sb.auth.onAuthStateChange((event,session)=>{setUser(session?.user||null);if(window.location.hash)window.history.replaceState({},'',window.location.pathname+window.location.search);try{if(event==='SIGNED_IN'&&session?.user&&window.gtag){const uid=session.user.id;const seenKey='atlas_seen_'+uid;if(!localStorage.getItem(seenKey)){localStorage.setItem(seenKey,'1');window.gtag('event','sign_up',{event_category:'auth',method:session.user.app_metadata?.provider||'email'});}else{window.gtag('event','login',{event_category:'auth',method:session.user.app_metadata?.provider||'email'});}}}catch{}});
     return()=>subscription.unsubscribe();
   },[]);
 
@@ -2291,10 +2291,10 @@ async function deleteProject(id){
       const locs=msgs.filter(m=>m.locations).flatMap(m=>m.locations||[]);
       if(activePlanId){
         const{error}=await sb.from('saved_plans').update({is_draft:false,title,messages:hist.current,locations:locs.length>0?locs:null}).eq('id',activePlanId);
-        if(!error){await loadPlans();showToast('✓ Trip saved!');}
+        if(!error){await loadPlans();showToast('✓ Trip saved!');try{if(window.gtag)window.gtag('event','plan_saved',{event_category:'engagement',plan_title:title,plan_type:'update'});}catch{}}
       } else {
         const{data,error}=await sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null,is_draft:false}).select('id,share_id').single();
-        if(!error){await loadPlans();showToast('✓ Trip saved!');if(data?.id)setActivePlanId(data.id);}
+        if(!error){await loadPlans();showToast('✓ Trip saved!');if(data?.id)setActivePlanId(data.id);try{if(window.gtag)window.gtag('event','plan_saved',{event_category:'engagement',plan_title:title,plan_type:'new'});}catch{}}
       }
     }catch{}setSavingPlan(false);
   }
@@ -2535,6 +2535,7 @@ async function setPlanTag(id,tag){
     const displayText=msgText.replace(/\s*\[Current date.*$/s,'').trim();
     const newMsgs=[...msgs,{id:Date.now(),from:"user",text:displayText,photoPreview:photo?.preview||null}];
     setMsgs(newMsgs);setBusy(true);hist.current=[...hist.current,{role:"user",content:userContent}];setPhoto(null);
+    try{if(window.gtag)window.gtag('event','chat_message_sent',{event_category:'engagement',is_first_message:msgs.length===0,has_photo:!!photo,user_type:user?'logged_in':'guest'});}catch{}
     try{
       const headers={"Content-Type":"application/json"}; try{const prefs=JSON.parse(localStorage.getItem('atlas_prefs')||'{}');if(Object.keys(prefs).length>0)headers['x-user-prefs']=btoa(unescape(encodeURIComponent(JSON.stringify(prefs))));}catch{}
       // Send Explorer custom instruction if set
