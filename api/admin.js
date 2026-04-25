@@ -1,10 +1,44 @@
 import { createClient } from '@supabase/supabase-js';
 import { createHash } from 'crypto';
+import webpush from 'web-push';
 
 const sb = createClient(
   'https://prffhhkemxibujjjiyhg.supabase.co',
   process.env.SUPABASE_SERVICE_KEY
 );
+
+// VAPID setup for push notifications
+const VAPID_PUBLIC_KEY = 'BGptz3aIXzAwHRW37OhPoRetGGR9GtHE-RprbaEnn351x2BgT0_0MiUrI-PJ1Q2Vr3JtOPtB5GyQPSkJ_3pAeEE';
+if (process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails('mailto:support@getatlas.ca', VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
+}
+
+async function sendBlogPushNotifications(title, slug, description) {
+  if (!process.env.VAPID_PRIVATE_KEY) return;
+  try {
+    const { data: subs } = await sb.from('push_subscriptions').select('subscription');
+    if (!subs?.length) return;
+    const payload = JSON.stringify({
+      title: '📖 New on Atlas Blog',
+      body: title,
+      icon: '/icon-192.png',
+      url: `/blog/${slug}`,
+      tag: `blog-${slug}`
+    });
+    const results = await Promise.allSettled(
+      subs.map(row => {
+        try {
+          const sub = JSON.parse(row.subscription);
+          return webpush.sendNotification(sub, payload);
+        } catch { return Promise.resolve(); }
+      })
+    );
+    const sent = results.filter(r => r.status === 'fulfilled').length;
+    console.log(`Push sent to ${sent}/${subs.length} subscribers for: ${title}`);
+  } catch (e) {
+    console.error('Push notification error:', e.message);
+  }
+}
 
 const PASSWORD = process.env.ADMIN_PASSWORD || 'Pinuatlas2121@';
 const TOKEN = createHash('sha256').update(PASSWORD).digest('hex');
@@ -692,8 +726,17 @@ export default async function handler(req, res) {
       return res.status(302).end();
     }
 
-    // Save article
+    // Save article — check if newly publishing to trigger push notifications
+    const wasPublished = await (async () => {
+      const { data } = await sb.from('blog_posts').select('is_published').eq('slug', editSlug).single();
+      return data?.is_published ?? false;
+    })();
     await saveArticle(editSlug, body);
+    const nowPublished = body.is_published === '1';
+    if (!wasPublished && nowPublished) {
+      // Newly published — send push to all subscribers (fire and forget)
+      sendBlogPushNotifications(body.title, editSlug, body.description).catch(() => {});
+    }
     res.setHeader('Location', `/admin?section=blog&edit=${encodeURIComponent(editSlug)}&saved=1`);
     return res.status(302).end();
   }
