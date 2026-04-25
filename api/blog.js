@@ -315,9 +315,48 @@ function buildListingPage(articles, activeCatParam) {
   const catBar = `
   <nav class="cat-bar">
     <a href="/blog" class="cat-pill${!activeCat ? ' active' : ''}">All Stories</a>
-    <a href="/blog?cat=southasia" class="cat-pill${activeCat==='southasia' ? ' active' : ''}">South Asia</a>
-    <a href="/blog?cat=eastasia" class="cat-pill${activeCat==='eastasia' ? ' active' : ''}">East Asia</a>
-    <a href="/blog?cat=europe" class="cat-pill${activeCat==='europe' ? ' active' : ''}">Europe &amp; ME</a>
+
+    <div class="cat-pill-wrap">
+      <a href="/blog?cat=southasia" class="cat-pill${activeCat==='southasia' ? ' active' : ''}">South Asia <span class="cat-arrow">▾</span></a>
+      <div class="cat-drop">
+        <a href="/blog?cat=southasia" class="cat-drop-item cat-drop-all">All South Asia articles →</a>
+        <div class="cat-drop-divider"></div>
+        <a href="/plan/dhaka" class="cat-drop-item">🇧🇩 Bangladesh</a>
+        <a href="/plan/coxs-bazar" class="cat-drop-item">🏖 Cox's Bazar</a>
+        <a href="/plan/maldives" class="cat-drop-item">🇲🇻 Maldives</a>
+        <a href="/plan/kathmandu" class="cat-drop-item">🇳🇵 Nepal</a>
+        <a href="/plan/delhi" class="cat-drop-item">🇮🇳 India</a>
+        <a href="/plan/colombo" class="cat-drop-item">🇱🇰 Sri Lanka</a>
+      </div>
+    </div>
+
+    <div class="cat-pill-wrap">
+      <a href="/blog?cat=eastasia" class="cat-pill${activeCat==='eastasia' ? ' active' : ''}">East Asia <span class="cat-arrow">▾</span></a>
+      <div class="cat-drop">
+        <a href="/blog?cat=eastasia" class="cat-drop-item cat-drop-all">All East Asia articles →</a>
+        <div class="cat-drop-divider"></div>
+        <a href="/plan/tokyo" class="cat-drop-item">🇯🇵 Japan</a>
+        <a href="/plan/bali" class="cat-drop-item">🇮🇩 Bali</a>
+        <a href="/plan/singapore" class="cat-drop-item">🇸🇬 Singapore</a>
+        <a href="/plan/bangkok" class="cat-drop-item">🇹🇭 Thailand</a>
+        <a href="/plan/seoul" class="cat-drop-item">🇰🇷 South Korea</a>
+        <a href="/plan/tokyo" class="cat-drop-item">🇯🇵 Tokyo</a>
+      </div>
+    </div>
+
+    <div class="cat-pill-wrap">
+      <a href="/blog?cat=europe" class="cat-pill${activeCat==='europe' ? ' active' : ''}">Europe &amp; ME <span class="cat-arrow">▾</span></a>
+      <div class="cat-drop">
+        <a href="/blog?cat=europe" class="cat-drop-item cat-drop-all">All Europe &amp; ME articles →</a>
+        <div class="cat-drop-divider"></div>
+        <a href="/plan/istanbul" class="cat-drop-item">🇹🇷 Istanbul</a>
+        <a href="/plan/paris" class="cat-drop-item">🇫🇷 Paris</a>
+        <a href="/plan/rome" class="cat-drop-item">🇮🇹 Rome</a>
+        <a href="/plan/barcelona" class="cat-drop-item">🇪🇸 Barcelona</a>
+        <a href="/plan/dubai" class="cat-drop-item">🇦🇪 Dubai</a>
+      </div>
+    </div>
+
     <a href="/blog?cat=tips" class="cat-pill${activeCat==='tips' ? ' active' : ''}">Tips &amp; Visa</a>
     <a href="/blog?cat=community" class="cat-pill${activeCat==='community' ? ' active' : ''}">Community ✍️</a>
   </nav>`;
@@ -514,12 +553,26 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 @media(max-width:500px){.write-box{padding:1.5rem 1.2rem;}}
 
 /* CATEGORY FILTER BAR */
-.cat-bar{background:#17140f;border-bottom:1px solid rgba(201,169,110,0.1);display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;position:sticky;top:64px;z-index:90;padding:0 3rem;}
+.cat-bar{background:#17140f;border-bottom:1px solid rgba(201,169,110,0.1);display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;position:sticky;top:64px;z-index:90;padding:0 3rem;gap:0;}
 .cat-bar::-webkit-scrollbar{display:none;}
-.cat-pill{padding:0.8rem 0;margin-right:2.2rem;font-size:0.68rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#52473a;white-space:nowrap;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;flex-shrink:0;}
+.cat-pill{padding:0.8rem 0;margin-right:2.2rem;font-size:0.68rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#52473a;white-space:nowrap;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;flex-shrink:0;display:flex;align-items:center;gap:0.3rem;}
 .cat-pill:hover{color:#a08858;}
 .cat-pill.active{color:#c9a96e;border-bottom-color:#c9a96e;}
+.cat-arrow{font-size:0.48rem;opacity:0.45;transition:transform 0.2s,opacity 0.2s;margin-left:0.1rem;}
 @media(max-width:700px){.cat-bar{padding:0 1.2rem;}}
+
+/* CATEGORY DROPDOWN */
+.cat-pill-wrap{position:relative;display:inline-flex;align-items:center;flex-shrink:0;}
+.cat-pill-wrap>.cat-pill{margin-right:2.2rem;}
+.cat-drop{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:210px;background:#1e1a12;border:1px solid rgba(201,169,110,0.2);border-radius:10px;padding:0.5rem 0;z-index:300;box-shadow:0 10px 36px rgba(0,0,0,0.55);}
+.cat-pill-wrap:hover .cat-drop,.cat-pill-wrap.open .cat-drop{display:block;}
+.cat-pill-wrap:hover .cat-arrow,.cat-pill-wrap.open .cat-arrow{opacity:1;transform:rotate(180deg);}
+.cat-pill-wrap.open .cat-pill{color:#c9a96e;}
+.cat-drop-item{display:block;padding:0.48rem 1.1rem;font-size:0.72rem;color:#8a7960;transition:color 0.15s,background 0.15s;letter-spacing:0.03em;white-space:nowrap;}
+.cat-drop-item:hover{color:#e8dcc8;background:rgba(201,169,110,0.07);}
+.cat-drop-all{color:#c9a96e;font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;}
+.cat-drop-all:hover{color:#e0c080;background:rgba(201,169,110,0.07);}
+.cat-drop-divider{height:1px;background:rgba(201,169,110,0.1);margin:0.4rem 0;}
 
 /* NEW BADGE */
 .new-badge{display:inline-block;background:rgba(100,200,120,0.12);border:1px solid rgba(100,200,120,0.28);color:#7aba7a;font-size:0.54rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.1rem 0.45rem;border-radius:3px;margin-left:0.5rem;vertical-align:middle;font-family:'DM Sans',sans-serif;}
@@ -549,13 +602,6 @@ ${listingStyles}
 <!-- NAV -->
 <nav class="blog-nav">
   <a href="/blog" class="blog-nav-logo">${logoSvg()} Atlas</a>
-  <ul class="blog-nav-links">
-    <li><a href="/blog"${!activeCat ? ' class="active"' : ''}>All</a></li>
-    <li><a href="/blog?cat=southasia"${activeCat==='southasia' ? ' class="active"' : ''}>South Asia</a></li>
-    <li><a href="/blog?cat=eastasia"${activeCat==='eastasia' ? ' class="active"' : ''}>East Asia</a></li>
-    <li><a href="/blog?cat=tips"${activeCat==='tips' ? ' class="active"' : ''}>Tips &amp; Visa</a></li>
-    <li><a href="/blog?cat=community"${activeCat==='community' ? ' class="active"' : ''}>Community ✍️</a></li>
-  </ul>
   <button id="write-btn" class="blog-nav-write" onclick="openWriteModal()" style="display:inline-flex;">✍️ Write</button>
   <a href="/" class="blog-nav-cta">Plan Free →</a>
 </nav>
@@ -877,6 +923,23 @@ async function loadCommunityPosts(){
 }
 
 window.addEventListener('DOMContentLoaded',initBlogAuth);
+
+// Category dropdown — tap to open on mobile, hover on desktop
+(function(){
+  var wraps=document.querySelectorAll('.cat-pill-wrap');
+  wraps.forEach(function(wrap){
+    var pill=wrap.querySelector('.cat-pill');
+    if(!pill)return;
+    pill.addEventListener('click',function(e){
+      var isOpen=wrap.classList.contains('open');
+      wraps.forEach(function(w){w.classList.remove('open');});
+      if(!isOpen){e.preventDefault();wrap.classList.add('open');}
+    });
+  });
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('.cat-pill-wrap'))wraps.forEach(function(w){w.classList.remove('open');});
+  });
+})();
 </script>
 </body></html>`;
 }
