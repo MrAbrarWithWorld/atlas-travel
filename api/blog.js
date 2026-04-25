@@ -163,6 +163,33 @@ a:hover{color:#e8dcc8;}
 #back-top.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
 #back-top:hover{background:rgba(201,169,110,0.25);}
 @media(max-width:600px){#back-top{bottom:4.5rem;right:1rem;}}
+/* ── Unique Atlas blog features ───────────────────────────── */
+/* Local Tip callout */
+.local-tip{display:flex;align-items:flex-start;gap:0.75rem;background:rgba(201,169,110,0.07);border:1px solid rgba(201,169,110,0.22);border-left:3px solid #c9a96e;border-radius:0 10px 10px 0;padding:0.9rem 1.1rem;margin:1.6rem 0;position:relative;}
+.local-tip::before{content:'💡';font-size:1.05rem;flex-shrink:0;margin-top:0.05rem;}
+.local-tip-body{flex:1;}
+.local-tip-label{font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:#c9a96e;font-weight:700;margin-bottom:0.3rem;}
+.local-tip p{font-size:0.82rem;color:#b0a080;line-height:1.75;margin:0;}
+/* Pull quote */
+.pull-quote{margin:2rem -0.5rem;padding:1.3rem 1.8rem;border-top:2px solid rgba(201,169,110,0.3);border-bottom:2px solid rgba(201,169,110,0.3);text-align:center;}
+.pull-quote p{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:300;color:#d4c8b0;line-height:1.55;font-style:italic;margin:0;}
+.pull-quote cite{display:block;font-size:0.65rem;color:#6a5a3a;letter-spacing:0.12em;text-transform:uppercase;margin-top:0.6rem;font-style:normal;}
+/* Atlas Verdict box */
+.atlas-verdict{background:rgba(201,169,110,0.06);border:1px solid rgba(201,169,110,0.25);border-radius:12px;padding:1.2rem 1.4rem;margin:2rem 0;position:relative;overflow:hidden;}
+.atlas-verdict::before{content:'ATLAS VERDICT';font-size:0.5rem;letter-spacing:0.22em;color:#c9a96e;font-weight:700;display:block;margin-bottom:0.55rem;}
+.atlas-verdict-score{position:absolute;top:1.1rem;right:1.2rem;font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:#c9a96e;line-height:1;}
+.atlas-verdict-score span{font-size:0.7rem;color:#6a5a3a;vertical-align:middle;}
+.atlas-verdict p{font-size:0.82rem;color:#b0a080;line-height:1.75;margin:0;}
+/* Best-for tag pills */
+.best-for{display:flex;flex-wrap:wrap;gap:0.4rem;margin:1rem 0 1.5rem;}
+.best-for-label{font-size:0.57rem;letter-spacing:0.14em;text-transform:uppercase;color:#6a5a3a;margin-right:0.2rem;line-height:2;}
+.best-for-tag{font-size:0.65rem;padding:0.25rem 0.7rem;background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.2);border-radius:20px;color:#c9a96e;letter-spacing:0.06em;}
+/* Budget bar */
+.budget-bar{margin:1rem 0 1.5rem;}
+.budget-bar-label{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:#6a5a3a;margin-bottom:0.5rem;}
+.budget-bar-track{background:rgba(201,169,110,0.1);border-radius:4px;height:6px;overflow:hidden;}
+.budget-bar-fill{height:100%;background:linear-gradient(90deg,#c9a96e,#e8c87a);border-radius:4px;transition:width 0.6s ease;}
+.budget-bar-range{display:flex;justify-content:space-between;font-size:0.62rem;color:#5a4a2a;margin-top:0.3rem;}
 </style>
 <script async defer src="https://widget.getyourguide.com/dist/pa.umd.production.min.js" data-gyg-partner-id="TIBSGZK"></script>
 </head>`;
@@ -1135,17 +1162,39 @@ function buildArticlePage(slug, article, relatedPosts = []) {
     </div>
   </div>` : '';
 
-  // Inject inline photos at [photo-1], [photo-2], ... placeholders in content
+  // Inject inline photos — uses [photo-N] markers if present, otherwise auto-distributes between H2 sections
   function injectInlinePhotos(html, photos) {
     if (!photos || !photos.length) return html;
     const validPhotos = photos.filter(Boolean);
     if (!validPhotos.length) return html;
-    return html.replace(/\[photo-(\d+)\]/gi, (match, num) => {
-      const idx = parseInt(num) - 1;
-      if (idx >= 0 && idx < validPhotos.length && validPhotos[idx]) {
-        return `<img src="${validPhotos[idx]}" alt="" class="inline-img" loading="lazy"/>`;
+    // If explicit markers exist, replace them
+    if (/\[photo-\d+\]/i.test(html)) {
+      return html.replace(/\[photo-(\d+)\]/gi, (match, num) => {
+        const idx = parseInt(num) - 1;
+        if (idx >= 0 && idx < validPhotos.length && validPhotos[idx]) {
+          return `<img src="${validPhotos[idx]}" alt="" class="inline-img" loading="lazy"/>`;
+        }
+        return '';
+      });
+    }
+    // Auto-distribute: insert a photo after every Nth H2 closing tag
+    // Distribute photos as evenly as possible across H2 sections
+    const h2Count = (html.match(/<\/h2>/gi) || []).length;
+    if (h2Count === 0) {
+      // No H2s — just prepend photos at start
+      return validPhotos.map(u => `<img src="${u}" alt="" class="inline-img" loading="lazy"/>`).join('') + html;
+    }
+    const interval = Math.max(1, Math.floor(h2Count / Math.min(validPhotos.length, h2Count)));
+    let photoIdx = 0;
+    let h2Seen = 0;
+    return html.replace(/<\/h2>/gi, (match) => {
+      h2Seen++;
+      if (photoIdx < validPhotos.length && h2Seen % interval === 0) {
+        const img = `<img src="${validPhotos[photoIdx]}" alt="" class="inline-img" loading="lazy"/>`;
+        photoIdx++;
+        return match + img;
       }
-      return '';
+      return match;
     });
   }
 
