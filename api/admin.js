@@ -80,12 +80,13 @@ async function sendNewsletterEmails(title, slug, description, heroEmoji) {
   </div>
 </body></html>`;
 
+    const zohoFrom = process.env.ZOHO_FROM || 'support@getatlas.ca';
     const transporter = nodemailer.createTransport({
       host: 'smtp.zoho.com',
       port: 465,
       secure: true,
       auth: {
-        user: 'support@getatlas.ca',
+        user: zohoFrom,
         pass: process.env.ZOHO_APP_PASSWORD
       }
     });
@@ -93,7 +94,7 @@ async function sendNewsletterEmails(title, slug, description, heroEmoji) {
     const results = await Promise.allSettled(
       subscribers.map(row =>
         transporter.sendMail({
-          from: '"Atlas Travel" <support@getatlas.ca>',
+          from: `"Atlas Travel" <${zohoFrom}>`,
           to: row.email,
           subject: `${emoji} ${title}`,
           html: buildHtml(row.email)
