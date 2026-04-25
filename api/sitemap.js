@@ -29,7 +29,22 @@ export default async function handler(req, res) {
     <priority>0.6</priority>
   </url>`).join('');
 
-  const destinations = ['tokyo','paris','bali','dubai','new-york','london','rome','bangkok','singapore','maldives','barcelona','istanbul','seoul','kyoto','amsterdam','prague','santorini','lisbon','cape-town','sydney','dhaka','coxs-bazar','kathmandu','kuala-lumpur','ho-chi-minh','phuket','sri-lanka','chiang-mai','petra','cox-s-bazar','sundarbans','nepal'];
+  const destinations = [
+    // Asia - Southeast
+    'bali','bangkok','singapore','phuket','kuala-lumpur','ho-chi-minh-city','hanoi','chiang-mai','siem-reap','yangon','manila','jakarta','boracay','langkawi','penang','danang','hoi-an','phnom-penh','vientiane','luang-prabang',
+    // Asia - East
+    'tokyo','kyoto','osaka','seoul','busan','taipei','hong-kong','beijing','shanghai','bali',
+    // Asia - South
+    'dhaka','coxs-bazar','sundarbans','sylhet','kathmandu','pokhara','sri-lanka','colombo','maldives','mumbai','delhi','goa','jaipur','agra','varanasi','nepal','bhutan','lahore','karachi',
+    // Asia - Middle East
+    'dubai','abu-dhabi','istanbul','doha','muscat','riyadh','amman','petra','jerusalem','tel-aviv','beirut','kuwait-city',
+    // Europe
+    'paris','london','rome','barcelona','amsterdam','prague','santorini','lisbon','madrid','athens','vienna','berlin','budapest','venice','florence','dubrovnik','porto','reykjavik','edinburgh','brussels','stockholm','oslo','copenhagen','helsinki','zurich','milan','naples','seville','valencia','granada','lyon','nice','monaco','luxembourg','valletta','tallinn','riga','vilnius','krakow','warsaw','bucharest','sofia','belgrade','zagreb','sarajevo','podgorica','tirana',
+    // Americas
+    'new-york','miami','los-angeles','chicago','las-vegas','san-francisco','boston','washington-dc','cancun','mexico-city','havana','bogota','medellin','lima','cusco','machu-picchu','rio-de-janeiro','buenos-aires','santiago','cartagena','quito','la-paz','montevideo','toronto','vancouver','montreal',
+    // Africa & Oceania
+    'cape-town','nairobi','zanzibar','marrakech','cairo','casablanca','accra','lagos','addis-ababa','sydney','melbourne','auckland','queenstown','fiji','bora-bora','tahiti',
+  ].filter((v, i, a) => a.indexOf(v) === i); // deduplicate
   const destUrls = destinations.map(d => `
   <url>
     <loc>https://getatlas.ca/plan/${d}</loc>

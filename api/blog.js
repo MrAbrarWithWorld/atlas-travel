@@ -55,6 +55,8 @@ a:hover{color:#e8dcc8;}
 .related-links{display:flex;flex-wrap:wrap;gap:0.5rem;}
 .related-links a{font-size:0.72rem;padding:0.3rem 0.75rem;border:1px solid rgba(201,169,110,0.2);border-radius:4px;color:#c9a96e;text-decoration:none;letter-spacing:0.06em;transition:background 0.2s,border-color 0.2s;}
 .related-links a:hover{background:rgba(201,169,110,0.1);border-color:rgba(201,169,110,0.4);}
+.related-posts-section{margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid rgba(201,169,110,0.15);}
+.related-posts-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;color:#c9a96e;letter-spacing:0.08em;margin-bottom:1rem;}
 .articles-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-top:1.5rem;}
 @media(max-width:580px){.articles-grid{grid-template-columns:1fr;}}
 .article-card{border:1px solid rgba(201,169,110,0.15);border-radius:10px;text-decoration:none;transition:border-color 0.2s,background 0.2s;display:block;overflow:hidden;}
@@ -835,7 +837,7 @@ window.addEventListener('DOMContentLoaded',initBlogAuth);
 </body></html>`;
 }
 
-function buildArticlePage(slug, article) {
+function buildArticlePage(slug, article, relatedPosts = []) {
   const dateFormatted = new Date(article.date_published).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   const relatedLinks = (article.related_destinations || []).map(dest => {
@@ -1020,6 +1022,25 @@ function buildArticlePage(slug, article) {
       </button>
     </div>
   </div>
+
+  <!-- Related Blog Posts -->
+  ${relatedPosts.length > 0 ? `<div class="related-posts-section">
+    <h3 class="related-posts-title">আরো পড়ুন · Read More</h3>
+    <div class="articles-grid">
+      ${relatedPosts.map(p => {
+        const pDate = new Date(p.date_published).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        const pCat = (p.category || 'travel').replace(/-/g, ' ');
+        return `<a href="/blog/${p.slug}" class="article-card">
+          ${p.cover_image_url ? `<img src="${p.cover_image_url}" alt="${p.title}" class="card-img" loading="lazy"/>` : ''}
+          <div style="padding:0.85rem 1rem 1rem;">
+            <div class="card-top"><span class="card-emoji">${p.hero_emoji || '✈️'}</span><span class="card-title">${p.title}</span></div>
+            <p class="card-desc">${(p.description || '').slice(0, 110)}${(p.description || '').length > 110 ? '…' : ''}</p>
+            <div class="card-meta"><span>${pDate}</span><span>·</span><span>${pCat}</span>${p.read_time ? `<span>·</span><span>${p.read_time}</span>` : ''}</div>
+          </div>
+        </a>`;
+      }).join('')}
+    </div>
+  </div>` : ''}
 
   <!-- Comments Section -->
   <div class="comments-section" id="comments-section">
@@ -1862,5 +1883,29 @@ export default async function handler(req, res) {
     return res.end();
   }
 
-  return res.status(200).send(buildArticlePage(slug, data));
+  // Fetch related blog posts (same category, excluding current article, limit 3)
+  const { data: relatedPosts } = await sb
+    .from('blog_posts')
+    .select('slug,title,description,category,date_published,read_time,hero_emoji,cover_image_url')
+    .eq('is_published', true)
+    .eq('category', data.category)
+    .neq('slug', slug)
+    .order('date_published', { ascending: false })
+    .limit(3);
+
+  // If not enough from same category, fill with recent posts
+  let related = relatedPosts || [];
+  if (related.length < 3) {
+    const exclude = [slug, ...related.map(p => p.slug)];
+    const { data: morePosts } = await sb
+      .from('blog_posts')
+      .select('slug,title,description,category,date_published,read_time,hero_emoji,cover_image_url')
+      .eq('is_published', true)
+      .not('slug', 'in', `(${exclude.map(s => `"${s}"`).join(',')})`)
+      .order('date_published', { ascending: false })
+      .limit(3 - related.length);
+    related = [...related, ...(morePosts || [])];
+  }
+
+  return res.status(200).send(buildArticlePage(slug, data, related));
 }

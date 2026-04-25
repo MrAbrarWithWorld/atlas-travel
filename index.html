@@ -229,6 +229,10 @@ button{-webkit-tap-highlight-color:transparent;}
 .plan-item.active{background:rgba(201,169,110,0.1);border-color:rgba(201,169,110,0.2);}
 .plan-item-del{opacity:0;transition:opacity 0.15s;}
 .plan-item:hover .plan-item-del{opacity:1;}
+.plan-tag-badge{display:inline-block;font-size:0.52rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:0.12rem 0.45rem;border-radius:3px;margin-top:0.28rem;line-height:1.5;}
+.plan-tag-picker{position:absolute;right:2.2rem;top:0;background:#1e1a12;border:1px solid rgba(201,169,110,0.25);border-radius:8px;padding:0.4rem;z-index:100;display:flex;flex-wrap:wrap;gap:0.25rem;width:160px;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
+.plan-tag-opt{font-size:0.55rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:3px;cursor:pointer;border:none;line-height:1.5;transition:opacity 0.15s;}
+.plan-tag-opt:hover{opacity:0.8;}
 </style>
 <!-- Google Analytics GA4 — replace G-5CT9JK05WL with your Measurement ID -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-5CT9JK05WL"></script>
@@ -293,6 +297,16 @@ function getDateTime(){const now=new Date();const days=['Sunday','Monday','Tuesd
 function parseMapData(text){const m=text.match(/\[MAPDATA\]([\s\S]*?)\[\/MAPDATA\]/);if(!m)return null;try{const d=JSON.parse(m[1]);return d.places||null;}catch{return null;}}
 function stripMapData(text){return text.replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g,'').trim();}
 function formatDate(iso){const d=new Date(iso);const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;}
+const PLAN_TAGS=[
+  {id:'solo',label:'Solo',bg:'#2a3a2a',color:'#6abf6a'},
+  {id:'family',label:'Family',bg:'#2a2a3a',color:'#7a8fd4'},
+  {id:'honeymoon',label:'Honeymoon',bg:'#3a2a2a',color:'#d47a7a'},
+  {id:'budget',label:'Budget',bg:'#3a3020',color:'#c9a96e'},
+  {id:'luxury',label:'Luxury',bg:'#2a2820',color:'#d4af37'},
+  {id:'adventure',label:'Adventure',bg:'#2a3020',color:'#8fd47a'},
+  {id:'business',label:'Business',bg:'#202028',color:'#a0a8d4'},
+  {id:'weekend',label:'Weekend',bg:'#302228',color:'#d49ab0'},
+];
 function extractTitle(messages){
   const cleanMsg=raw=>{
     const t=typeof raw==="string"?raw:Array.isArray(raw)?(raw.find(c=>c.type==="text")?.text||""):"";
@@ -1522,9 +1536,10 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier,onSettings,o
 }
 
 // ===================== SIDEBAR =====================
-function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject,onAssignProject}){
+function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject,onAssignProject,onSetPlanTag}){
   const [activeProject,setActiveProject]=React.useState(null);
 const [assigningPlan,setAssigningPlan]=React.useState(null);
+const [tagPickerPlan,setTagPickerPlan]=React.useState(null);
 const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id):[];
   
   return React.createElement(React.Fragment,null,
@@ -1639,31 +1654,45 @@ const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id
             ?React.createElement("div",{style:{textAlign:"center",padding:"2rem",color:"#4a3a22",fontSize:"0.72rem"}},"Loading...")
             :plans.length===0
               ?React.createElement("div",{style:{textAlign:"center",padding:"2rem 1rem",color:"#4a3a22",fontSize:"0.72rem",lineHeight:1.8}},"No saved trips yet.")
-              :plans.map(plan=>React.createElement("div",{key:plan.id,className:`plan-item${activePlanId===plan.id?" active":""}`,onClick:()=>{onSelectPlan(plan);onClose();}},
-                  React.createElement("div",{style:{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"0.5rem"}},
-                    React.createElement("div",{style:{flex:1,minWidth:0}},
-                      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.35rem"}},
-                        React.createElement("p",{style:{fontSize:"0.78rem",color:"#d4c8a8",fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},plan.title),
-                        plan.is_draft&&React.createElement("span",{style:{fontSize:"0.48rem",color:"#6a5a3a",border:"1px solid rgba(106,90,58,0.4)",borderRadius:3,padding:"1px 4px",letterSpacing:"0.08em",flexShrink:0}},"DRAFT")
+              :plans.map(plan=>{
+                const planTagObj=plan.tag?PLAN_TAGS.find(t=>t.id===plan.tag):null;
+                return React.createElement("div",{key:plan.id,style:{position:"relative"}},
+                  tagPickerPlan===plan.id&&React.createElement("div",{className:"plan-tag-picker",onClick:e=>e.stopPropagation()},
+                    React.createElement("button",{className:"plan-tag-opt",style:{background:"#2a2018",color:"#5a4a2a",width:"100%"},onClick:e=>{e.stopPropagation();onSetPlanTag(plan.id,null);setTagPickerPlan(null);}},"✕ Remove tag"),
+                    ...PLAN_TAGS.map(t=>React.createElement("button",{key:t.id,className:"plan-tag-opt",style:{background:t.bg,color:t.color},onClick:e=>{e.stopPropagation();onSetPlanTag(plan.id,t.id);setTagPickerPlan(null);}},t.label))
+                  ),
+                  React.createElement("div",{className:`plan-item${activePlanId===plan.id?" active":""}`,onClick:()=>{onSelectPlan(plan);onClose();}},
+                    React.createElement("div",{style:{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"0.5rem"}},
+                      React.createElement("div",{style:{flex:1,minWidth:0}},
+                        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.35rem"}},
+                          React.createElement("p",{style:{fontSize:"0.78rem",color:"#d4c8a8",fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},plan.title),
+                          plan.is_draft&&React.createElement("span",{style:{fontSize:"0.48rem",color:"#6a5a3a",border:"1px solid rgba(106,90,58,0.4)",borderRadius:3,padding:"1px 4px",letterSpacing:"0.08em",flexShrink:0}},"DRAFT")
+                        ),
+                        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.4rem",marginTop:"0.2rem"}},
+                          React.createElement("p",{style:{fontSize:"0.62rem",color:"#5a4a2a"}},formatDate(plan.created_at)),
+                          planTagObj&&React.createElement("span",{className:"plan-tag-badge",style:{background:planTagObj.bg,color:planTagObj.color}},planTagObj.label)
+                        )
                       ),
-                      React.createElement("p",{style:{fontSize:"0.62rem",color:"#5a4a2a",marginTop:"0.2rem"}},formatDate(plan.created_at))
-                    ),
-                    React.createElement("div",{style:{display:"flex",gap:"0.25rem",flexShrink:0}},
-                      React.createElement("button",{className:"plan-item-del",onClick:e=>{
+                      React.createElement("div",{style:{display:"flex",gap:"0.25rem",flexShrink:0}},
+                        React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();setTagPickerPlan(tagPickerPlan===plan.id?null:plan.id);},style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"},title:"Set tag"},"🏷"),
+                        React.createElement("button",{className:"plan-item-del",onClick:e=>{
   e.stopPropagation();
   setAssigningPlan(plan.id);
 },style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"📁"),
-                      React.createElement("button",{className:"plan-item-del",onClick:e=>{
-                        e.stopPropagation();
-                        const newName=prompt("Rename trip:",plan.title);
-                        if(newName&&newName.trim()&&newName.trim()!==plan.title){
-                          sb.from('saved_plans').update({title:newName.trim()}).eq('id',plan.id).then(()=>onRenamePlan(plan.id,newName.trim()));
-                        }
-                      },style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"✏️"),
-                      React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();onDeletePlan(plan.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem",padding:"0.1rem"}},"🗑")
-                    )
+                        React.createElement("button",{className:"plan-item-del",onClick:e=>{
+                          e.stopPropagation();
+                          const newName=prompt("Rename trip:",plan.title);
+                          if(newName&&newName.trim()&&newName.trim()!==plan.title){
+                            sb.from('saved_plans').update({title:newName.trim()}).eq('id',plan.id).then(()=>onRenamePlan(plan.id,newName.trim()));
+                          }
+                        },style:{background:"none",border:"none",color:"#5a4a2a",cursor:"pointer",fontSize:"0.65rem",padding:"0.1rem"}},"✏️"),
+                        React.createElement("button",{className:"plan-item-del",onClick:e=>{e.stopPropagation();onDeletePlan(plan.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem",padding:"0.1rem"}},"🗑")
+                      )
                   )
-                ))
+                )
+              )
+            );
+          })
         )
       ),
 
@@ -2251,7 +2280,7 @@ async function deleteProject(id){
   
   async function loadPlans(){
     setLoadingPlans(true);
-    try{const{data,error}=await sb.from('saved_plans').select('id,title,created_at,is_draft,project_id').order('created_at',{ascending:false});if(!error)setPlans(data||[]);}
+    try{const{data,error}=await sb.from('saved_plans').select('id,title,created_at,is_draft,project_id,tag').order('created_at',{ascending:false});if(!error)setPlans(data||[]);}
     catch{}setLoadingPlans(false);
   }
 
@@ -2428,6 +2457,10 @@ async function deleteProject(id){
 function renamePlan(id,newTitle){
   setPlans(p=>p.map(x=>x.id===id?{...x,title:newTitle}:x));
 }
+async function setPlanTag(id,tag){
+  await sb.from('saved_plans').update({tag:tag||null}).eq('id',id);
+  setPlans(p=>p.map(x=>x.id===id?{...x,tag:tag||null}:x));
+}
   async function deletePlan(id){
     await sb.from('saved_plans').delete().eq('id',id);
     setPlans(p=>p.filter(x=>x.id!==id));
@@ -2577,7 +2610,7 @@ function renamePlan(id,newTitle){
     showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false)}),
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
     showCalendar&&React.createElement(CalendarModal,{msgs,onClose:()=>setShowCalendar(false)}),
-  showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject}),
+  showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject,onSetPlanTag:setPlanTag}),
 
     // Header
     React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.12)"}},
