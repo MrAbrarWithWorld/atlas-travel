@@ -560,15 +560,23 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 .nav-arrow{font-size:0.5rem;opacity:0.4;transition:transform 0.25s,opacity 0.2s;}
 .nav-dest-item:hover .nav-arrow,.nav-dest-item.open .nav-arrow{opacity:1;transform:rotate(180deg);}
 .nav-dest-item:hover .nav-dest-trigger,.nav-dest-item.open .nav-dest-trigger{color:#c9a96e;}
-.mega-panel{position:absolute;top:64px;left:0;right:0;background:#1a1610;border-bottom:1px solid rgba(201,169,110,0.15);padding:2.2rem 4rem 2.5rem;display:none;z-index:200;box-shadow:0 20px 60px rgba(0,0,0,0.65);}
+.mega-panel{position:absolute;top:64px;left:0;right:0;background:#1a1610;border-bottom:1px solid rgba(201,169,110,0.15);padding:2rem 4rem 2.5rem;display:none;z-index:200;box-shadow:0 24px 64px rgba(0,0,0,0.7);}
 .nav-dest-item:hover .mega-panel,.nav-dest-item.open .mega-panel{display:block;}
-.mega-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:2.5rem;max-width:1100px;}
-.mega-region-title{font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:#5a4a2a;font-weight:600;margin-bottom:0.8rem;padding-bottom:0.5rem;border-bottom:1px solid rgba(201,169,110,0.1);}
-.mega-link{display:flex;align-items:center;gap:0.45rem;padding:0.3rem 0;font-size:0.74rem;color:#8a7960;transition:color 0.15s;white-space:nowrap;}
+.mega-inner{display:grid;grid-template-columns:repeat(6,1fr);gap:0;max-width:1280px;margin:0 auto;}
+.mega-col{padding:0 1.5rem;border-right:1px solid rgba(201,169,110,0.07);}
+.mega-col:first-child{padding-left:0;}
+.mega-col:last-child{border-right:none;padding-right:0;}
+.mega-continent{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:#c9a96e;font-weight:600;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.4rem;}
+.mega-continent-icon{font-size:0.85rem;}
+.mega-region-title{font-size:0.52rem;letter-spacing:0.18em;text-transform:uppercase;color:#4a3a1a;font-weight:600;margin:0.65rem 0 0.5rem;padding-bottom:0.4rem;border-bottom:1px solid rgba(201,169,110,0.08);}
+.mega-region-title:first-of-type{margin-top:0;}
+.mega-link{display:flex;align-items:center;gap:0.45rem;padding:0.28rem 0;font-size:0.73rem;color:#8a7960;transition:color 0.15s;white-space:nowrap;}
 .mega-link:hover{color:#e8dcc8;}
-.mega-all{display:inline-flex;align-items:center;gap:0.35rem;margin-top:0.7rem;padding-top:0.55rem;border-top:1px solid rgba(201,169,110,0.08);font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:#c9a96e;transition:color 0.15s;}
+.mega-link-flag{font-size:0.9rem;line-height:1;}
+.mega-coming{font-size:0.68rem;color:#3a2e1a;font-style:italic;padding:0.3rem 0;}
+.mega-all{display:inline-flex;align-items:center;gap:0.35rem;margin-top:0.8rem;padding-top:0.5rem;border-top:1px solid rgba(201,169,110,0.08);font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:#c9a96e;transition:color 0.15s;}
 .mega-all:hover{color:#e0c080;}
-@media(max-width:800px){.mega-panel{padding:1.5rem 1.5rem 2rem;}.mega-inner{grid-template-columns:1fr 1fr;gap:1.5rem;}}
+@media(max-width:1050px){.mega-panel{padding:1.5rem 2rem 2rem;}.mega-inner{grid-template-columns:repeat(3,1fr);}.mega-col{border-right:none;border-bottom:1px solid rgba(201,169,110,0.07);padding:1rem 0;}.mega-col:last-child{border-bottom:none;}}
 @media(max-width:700px){.mega-panel{display:none !important;}}
 
 /* NEW BADGE */
@@ -602,45 +610,85 @@ ${listingStyles}
   <ul class="blog-nav-links">
     <li><a href="/blog"${!activeCat ? ' class="active"' : ''}>All</a></li>
     <li class="nav-dest-item">
-      <span class="nav-dest-trigger${activeCat && ['southasia','eastasia','europe'].includes(activeCat) ? ' active' : ''}">Destinations <span class="nav-arrow">▾</span></span>
+      <span class="nav-dest-trigger${activeCat && ['southasia','eastasia','europe','middleeast','americas','africa'].includes(activeCat) ? ' active' : ''}">Destinations <span class="nav-arrow">▾</span></span>
       <div class="mega-panel">
         <div class="mega-inner">
-          <div>
+
+          <!-- SOUTH ASIA -->
+          <div class="mega-col">
+            <div class="mega-continent"><span class="mega-continent-icon">🌏</span> Asia</div>
             <div class="mega-region-title">South Asia</div>
-            <a href="/blog?cat=southasia" class="mega-link">📖 All South Asia</a>
-            <a href="/plan/dhaka" class="mega-link">🇧🇩 Bangladesh</a>
-            <a href="/plan/coxs-bazar" class="mega-link">🏖 Cox's Bazar</a>
-            <a href="/plan/maldives" class="mega-link">🇲🇻 Maldives</a>
-            <a href="/plan/kathmandu" class="mega-link">🇳🇵 Nepal</a>
-            <a href="/plan/delhi" class="mega-link">🇮🇳 India</a>
-            <a href="/plan/colombo" class="mega-link">🇱🇰 Sri Lanka</a>
+            <a href="/plan/dhaka" class="mega-link"><span class="mega-link-flag">🇧🇩</span> Bangladesh</a>
+            <a href="/plan/coxs-bazar" class="mega-link"><span class="mega-link-flag">🏖</span> Cox's Bazar</a>
+            <a href="/plan/maldives" class="mega-link"><span class="mega-link-flag">🇲🇻</span> Maldives</a>
+            <a href="/plan/kathmandu" class="mega-link"><span class="mega-link-flag">🇳🇵</span> Nepal</a>
+            <a href="/plan/delhi" class="mega-link"><span class="mega-link-flag">🇮🇳</span> India</a>
+            <a href="/plan/colombo" class="mega-link"><span class="mega-link-flag">🇱🇰</span> Sri Lanka</a>
+            <a href="/blog?cat=southasia" class="mega-all">All South Asia →</a>
           </div>
-          <div>
+
+          <!-- EAST ASIA -->
+          <div class="mega-col">
+            <div class="mega-continent" style="opacity:0;pointer-events:none;">·</div>
             <div class="mega-region-title">East Asia</div>
-            <a href="/blog?cat=eastasia" class="mega-link">📖 All East Asia</a>
-            <a href="/plan/tokyo" class="mega-link">🇯🇵 Japan</a>
-            <a href="/plan/bali" class="mega-link">🇮🇩 Bali</a>
-            <a href="/plan/singapore" class="mega-link">🇸🇬 Singapore</a>
-            <a href="/plan/bangkok" class="mega-link">🇹🇭 Thailand</a>
-            <a href="/plan/seoul" class="mega-link">🇰🇷 South Korea</a>
+            <a href="/plan/tokyo" class="mega-link"><span class="mega-link-flag">🇯🇵</span> Japan</a>
+            <a href="/plan/bali" class="mega-link"><span class="mega-link-flag">🇮🇩</span> Bali</a>
+            <a href="/plan/singapore" class="mega-link"><span class="mega-link-flag">🇸🇬</span> Singapore</a>
+            <a href="/plan/bangkok" class="mega-link"><span class="mega-link-flag">🇹🇭</span> Thailand</a>
+            <a href="/plan/seoul" class="mega-link"><span class="mega-link-flag">🇰🇷</span> South Korea</a>
+            <a href="/plan/hanoi" class="mega-link"><span class="mega-link-flag">🇻🇳</span> Vietnam</a>
+            <a href="/blog?cat=eastasia" class="mega-all">All East Asia →</a>
           </div>
-          <div>
-            <div class="mega-region-title">Europe &amp; Middle East</div>
-            <a href="/blog?cat=europe" class="mega-link">📖 All Europe &amp; ME</a>
-            <a href="/plan/istanbul" class="mega-link">🇹🇷 Istanbul</a>
-            <a href="/plan/paris" class="mega-link">🇫🇷 Paris</a>
-            <a href="/plan/rome" class="mega-link">🇮🇹 Rome</a>
-            <a href="/plan/barcelona" class="mega-link">🇪🇸 Barcelona</a>
-            <a href="/plan/dubai" class="mega-link">🇦🇪 Dubai</a>
+
+          <!-- EUROPE -->
+          <div class="mega-col">
+            <div class="mega-continent"><span class="mega-continent-icon">🌍</span> Europe</div>
+            <div class="mega-region-title">Western Europe</div>
+            <a href="/plan/paris" class="mega-link"><span class="mega-link-flag">🇫🇷</span> France</a>
+            <a href="/plan/rome" class="mega-link"><span class="mega-link-flag">🇮🇹</span> Italy</a>
+            <a href="/plan/barcelona" class="mega-link"><span class="mega-link-flag">🇪🇸</span> Spain</a>
+            <a href="/plan/london" class="mega-link"><span class="mega-link-flag">🇬🇧</span> UK</a>
+            <a href="/plan/amsterdam" class="mega-link"><span class="mega-link-flag">🇳🇱</span> Netherlands</a>
+            <a href="/blog?cat=europe" class="mega-all">All Europe →</a>
           </div>
-          <div>
-            <div class="mega-region-title">Americas &amp; Africa</div>
-            <a href="/plan/new-york" class="mega-link">🇺🇸 New York</a>
-            <a href="/plan/mexico-city" class="mega-link">🇲🇽 Mexico City</a>
-            <a href="/plan/rio" class="mega-link">🇧🇷 Rio de Janeiro</a>
-            <a href="/plan/cape-town" class="mega-link">🇿🇦 Cape Town</a>
-            <a href="/plan/marrakech" class="mega-link">🇲🇦 Morocco</a>
+
+          <!-- MIDDLE EAST -->
+          <div class="mega-col">
+            <div class="mega-continent"><span class="mega-continent-icon">🌙</span> Middle East</div>
+            <div class="mega-region-title">Gulf &amp; Levant</div>
+            <a href="/plan/dubai" class="mega-link"><span class="mega-link-flag">🇦🇪</span> Dubai</a>
+            <a href="/plan/istanbul" class="mega-link"><span class="mega-link-flag">🇹🇷</span> Turkey</a>
+            <a href="/plan/jordan" class="mega-link"><span class="mega-link-flag">🇯🇴</span> Jordan</a>
+            <a href="/plan/riyadh" class="mega-link"><span class="mega-link-flag">🇸🇦</span> Saudi Arabia</a>
+            <a href="/plan/doha" class="mega-link"><span class="mega-link-flag">🇶🇦</span> Qatar</a>
+            <a href="/blog?cat=middleeast" class="mega-all">All Middle East →</a>
           </div>
+
+          <!-- AMERICAS -->
+          <div class="mega-col">
+            <div class="mega-continent"><span class="mega-continent-icon">🌎</span> Americas</div>
+            <div class="mega-region-title">North America</div>
+            <a href="/plan/new-york" class="mega-link"><span class="mega-link-flag">🇺🇸</span> New York</a>
+            <a href="/plan/los-angeles" class="mega-link"><span class="mega-link-flag">🇺🇸</span> Los Angeles</a>
+            <a href="/plan/mexico-city" class="mega-link"><span class="mega-link-flag">🇲🇽</span> Mexico</a>
+            <div class="mega-region-title">South America</div>
+            <a href="/plan/rio" class="mega-link"><span class="mega-link-flag">🇧🇷</span> Brazil</a>
+            <a href="/plan/bogota" class="mega-link"><span class="mega-link-flag">🇨🇴</span> Colombia</a>
+            <a href="/blog?cat=americas" class="mega-all">All Americas →</a>
+          </div>
+
+          <!-- AFRICA -->
+          <div class="mega-col">
+            <div class="mega-continent"><span class="mega-continent-icon">🌍</span> Africa</div>
+            <div class="mega-region-title">North Africa</div>
+            <a href="/plan/marrakech" class="mega-link"><span class="mega-link-flag">🇲🇦</span> Morocco</a>
+            <a href="/plan/cairo" class="mega-link"><span class="mega-link-flag">🇪🇬</span> Egypt</a>
+            <div class="mega-region-title">Southern Africa</div>
+            <a href="/plan/cape-town" class="mega-link"><span class="mega-link-flag">🇿🇦</span> South Africa</a>
+            <a href="/plan/nairobi" class="mega-link"><span class="mega-link-flag">🇰🇪</span> Kenya</a>
+            <a href="/blog?cat=africa" class="mega-all">All Africa →</a>
+          </div>
+
         </div>
       </div>
     </li>
