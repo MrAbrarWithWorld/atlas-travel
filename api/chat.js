@@ -331,11 +331,27 @@ PRICING HONESTY — CRITICAL RULES:
 HOTELS — USE RANGES, NEVER A SINGLE PRICE:
 Hotel prices change daily. Always give a RANGE calibrated to city tier AND traveler type. Format: "Budget: ~CAD X–Y/night · Mid-range: ~CAD Y–Z · Luxury: CAD Z+ — [check live rates →](Booking.com link)"
 
-CITY TIERS:
-- TIER 1 — Expensive (Montreal, Toronto, NYC, London, Paris, Sydney, Amsterdam, Tokyo, Singapore, Dubai, Zurich): base in CAD/USD/EUR
-- TIER 1.5 — Slightly above mid (Barcelona, Dhaka — both skew 20–30% higher than typical mid-tier due to tourism demand / business-only demand)
-- TIER 2 — Mid (Bangkok, Istanbul, Prague, Lisbon, Budapest, Kuala Lumpur, Mexico City, Cape Town, Bali resort areas)
-- TIER 3 — Budget (Kathmandu, Hanoi, Cairo, Colombo, non-resort Bali, smaller South Asian cities)
+CITY TIERS — applies to ANY city worldwide:
+Use these criteria to classify ANY destination, even if not listed:
+
+TIER 1 — Expensive (USD 80–150+ budget hotel/night)
+Criteria: Western Europe, North America, Australia/NZ, Japan, Singapore, Gulf cities, Scandinavia, Switzerland
+Examples: Montreal, Toronto, Vancouver, NYC, LA, London, Paris, Rome, Milan, Amsterdam, Berlin, Vienna, Stockholm, Oslo, Sydney, Melbourne, Tokyo, Osaka, Singapore, Dubai, Abu Dhabi, Zurich, Geneva
+Use CAD for Canada, USD for USA, EUR for Europe, AUD for Australia, JPY-equivalent for Japan, AED for Gulf
+
+TIER 1.5 — Elevated mid (roughly 20–30% above Tier 2)
+Criteria: High-tourism cities in mid-income countries, OR business-hub-only cities with little budget supply
+Examples: Barcelona, Madrid, Lisbon (peak season), Dhaka (business-only demand), Phuket/Samui resort areas, Maldives, Santorini, Dubrovnik, Reykjavik, Tel Aviv, Seoul, Hong Kong, Taipei, São Paulo, Buenos Aires
+
+TIER 2 — Mid (USD 40–100 budget hotel/night)
+Criteria: Southeast Asia cities, Eastern Europe, South America non-capitals, North Africa tourist cities, South Africa
+Examples: Bangkok, Chiang Mai, Kuala Lumpur, Jakarta, Ho Chi Minh City, Istanbul, Prague, Budapest, Krakow, Warsaw, Bucharest, Tbilisi, Oman, Jordan (Amman), Mexico City, Cancún, Medellín, Bogotá, Lima, Cape Town, Nairobi, Marrakech, Casablanca, Bali resort areas, Penang, Manila
+
+TIER 3 — Budget (USD 15–50 budget hotel/night)
+Criteria: South Asian cities (except Dhaka), Central Asia, Sub-Saharan Africa non-tourist, Southeast Asia small towns, South America rural
+Examples: Kathmandu, Colombo, Lahore, Karachi, Islamabad, Hanoi, Phnom Penh, Yangon, Vientiane, Chittagong, Sylhet, Cox's Bazar, Cairo, Luxor, Addis Ababa, Lagos (budget areas), non-resort Bali, rural Vietnam/Cambodia/Myanmar, most of Bangladesh outside Dhaka
+
+TIER RULE: If a city is not listed, use the criteria above to classify it. When unsure, default to the higher tier (safer estimate). Always name the tier in your response so the user understands the context.
 
 TRAVELER TYPE PRICING — MANDATORY RULES:
 
