@@ -599,11 +599,49 @@ const travelContext = await getTravelContext(messages);
 
  try {
     const userPrefs=req.headers['x-user-prefs']?(()=>{try{return JSON.parse(decodeURIComponent(escape(atob(req.headers['x-user-prefs']))));}catch{return {};}})():{};
+
+    // --- Auto-detect currency from passport or homeCity ---
+    function detectCurrency(passport='', homeCity='') {
+      const p = (passport + ' ' + homeCity).toLowerCase();
+      if (/canada|canadian|montreal|toronto|vancouver|calgary|ottawa|winnipeg|quebec/i.test(p)) return 'CAD';
+      if (/australia|australian|sydney|melbourne|brisbane|perth|adelaide/i.test(p)) return 'AUD';
+      if (/uk|united kingdom|british|england|scotland|wales|london|manchester|birmingham/i.test(p)) return 'GBP';
+      if (/europe|european|germany|german|france|french|italy|italian|spain|spanish|netherlands|dutch|belgium|belgium|austria|portugal|greek|greece|poland|polish|sweden|swedish|norway|norwegian|denmark|danish|finland|finnish|switzerland|swiss|ireland|irish/i.test(p)) return 'EUR';
+      if (/bangladesh|bangladeshi|dhaka|chittagong|sylhet|khulna|rajshahi/i.test(p)) return 'BDT';
+      if (/india|indian|delhi|mumbai|bangalore|kolkata|chennai|hyderabad|pune/i.test(p)) return 'INR';
+      if (/pakistan|pakistani|karachi|lahore|islamabad|rawalpindi/i.test(p)) return 'PKR';
+      if (/usa|united states|american|new york|los angeles|chicago|houston|miami|san francisco|seattle|boston/i.test(p)) return 'USD';
+      if (/uae|dubai|abu dhabi|emirati/i.test(p)) return 'AED';
+      if (/saudi|riyadh|jeddah/i.test(p)) return 'SAR';
+      if (/singapore|singaporean/i.test(p)) return 'SGD';
+      if (/malaysia|malaysian|kuala lumpur/i.test(p)) return 'MYR';
+      if (/nigeria|nigerian|lagos|abuja/i.test(p)) return 'NGN';
+      if (/japan|japanese|tokyo|osaka/i.test(p)) return 'JPY';
+      if (/korea|korean|seoul/i.test(p)) return 'KRW';
+      if (/new zealand|kiwi|auckland/i.test(p)) return 'NZD';
+      // Also check conversation for currency mentions
+      return null;
+    }
+
+    // Also scan recent messages for currency mentions
+    function detectCurrencyFromMessages(msgs) {
+      const recent = msgs.slice(-4).map(m =>
+        typeof m.content === 'string' ? m.content : (Array.isArray(m.content) ? (m.content.find(c=>c.type==='text')?.text||'') : '')
+      ).join(' ');
+      const match = recent.match(/\b(CAD|USD|GBP|EUR|BDT|INR|AED|SGD|AUD|JPY|MYR|PKR|NGN|SAR|NZD|KRW)\b/i);
+      return match ? match[1].toUpperCase() : null;
+    }
+
+    const detectedCurrency = detectCurrency(userPrefs.passport||'', userPrefs.homeCity||'')
+      || detectCurrencyFromMessages(messages)
+      || 'USD';
+
     const prefStr=[
       userPrefs.passport?`User passport: ${userPrefs.passport}`:'',
       userPrefs.homeCity?`User home city: ${userPrefs.homeCity}`:'',
       userPrefs.travelStyle?`User travel style: ${userPrefs.travelStyle}`:'',
       userPrefs.customPrefs?`User preferences: ${userPrefs.customPrefs}`:'',
+      `User preferred currency: ${detectedCurrency} — use this for ALL price displays`,
     ].filter(Boolean).join('\n');
     // Explorer custom system prompt
     const customInstruction = userTier==='explorer' && req.headers['x-custom-prompt']
