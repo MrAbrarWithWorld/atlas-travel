@@ -149,6 +149,20 @@ a:hover{color:#e8dcc8;}
 .sticky-cta-btn{background:#c9a96e;color:#1c1914;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.55rem 1.2rem;border-radius:7px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
 .sticky-cta-btn:hover{background:#e0c080;color:#1c1914;}
 @media(max-width:480px){.sticky-cta-text{display:none;}.sticky-cta{justify-content:center;}}
+/* Reading progress bar */
+#read-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#c9a96e,#e8c87a,#c9a96e);width:0%;z-index:9999;border-radius:0 2px 2px 0;transition:width 0.08s linear;pointer-events:none;}
+/* Table of Contents sidebar */
+.toc-sidebar{display:none;position:fixed;top:50%;right:1.5rem;transform:translateY(-50%);width:185px;background:rgba(18,15,10,0.94);border:1px solid rgba(201,169,110,0.18);border-radius:10px;padding:1rem 1.1rem;z-index:50;backdrop-filter:blur(10px);max-height:60vh;overflow-y:auto;}
+@media(min-width:1140px){.toc-sidebar{display:block;}}
+.toc-sidebar-title{font-size:0.56rem;letter-spacing:0.18em;text-transform:uppercase;color:#4a3a1a;font-weight:700;margin-bottom:0.7rem;padding-bottom:0.5rem;border-bottom:1px solid rgba(201,169,110,0.1);}
+.toc-sidebar a{display:block;font-size:0.7rem;color:#6a5a3a;padding:0.22rem 0 0.22rem 0.65rem;line-height:1.45;border-left:2px solid rgba(201,169,110,0.08);margin-bottom:0.1rem;transition:color 0.15s,border-color 0.15s;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.toc-sidebar a:hover{color:#c9a96e;border-left-color:rgba(201,169,110,0.4);}
+.toc-sidebar a.toc-active{color:#c9a96e;border-left-color:#c9a96e;font-weight:500;}
+/* Back to top button */
+#back-top{position:fixed;bottom:5rem;right:1.5rem;width:38px;height:38px;background:rgba(201,169,110,0.12);border:1px solid rgba(201,169,110,0.28);border-radius:50%;color:#c9a96e;font-size:1.1rem;cursor:pointer;z-index:998;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity 0.25s,transform 0.25s,background 0.2s;line-height:1;}
+#back-top.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
+#back-top:hover{background:rgba(201,169,110,0.25);}
+@media(max-width:600px){#back-top{bottom:4.5rem;right:1rem;}}
 </style>
 <script async defer src="https://widget.getyourguide.com/dist/pa.umd.production.min.js" data-gyg-partner-id="TIBSGZK"></script>
 </head>`;
@@ -562,8 +576,8 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 .nav-dest-item:hover .nav-dest-trigger,.nav-dest-item.open .nav-dest-trigger{color:#c9a96e;}
 .mega-panel{position:absolute;top:64px;left:0;right:0;background:#1a1610;border-bottom:1px solid rgba(201,169,110,0.15);padding:2rem 4rem 2.5rem;display:none;z-index:200;box-shadow:0 24px 64px rgba(0,0,0,0.7);}
 .nav-dest-item:hover .mega-panel,.nav-dest-item.open .mega-panel{display:block;}
-.mega-inner{display:grid;grid-template-columns:repeat(6,1fr);gap:0;max-width:1280px;margin:0 auto;}
-.mega-col{padding:0 1.5rem;border-right:1px solid rgba(201,169,110,0.07);}
+.mega-inner{display:grid;grid-template-columns:repeat(7,1fr);gap:0;max-width:1380px;margin:0 auto;}
+.mega-col{padding:0 1.2rem;border-right:1px solid rgba(201,169,110,0.07);}
 .mega-col:first-child{padding-left:0;}
 .mega-col:last-child{border-right:none;padding-right:0;}
 .mega-continent{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:#c9a96e;font-weight:600;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.4rem;}
@@ -576,8 +590,8 @@ img{display:block;width:100%;height:100%;object-fit:cover;}
 .mega-coming{font-size:0.68rem;color:#3a2e1a;font-style:italic;padding:0.3rem 0;}
 .mega-all{display:inline-flex;align-items:center;gap:0.35rem;margin-top:0.8rem;padding-top:0.5rem;border-top:1px solid rgba(201,169,110,0.08);font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:#c9a96e;transition:color 0.15s;}
 .mega-all:hover{color:#e0c080;}
-@media(max-width:1050px){.mega-panel{padding:1.5rem 2rem 2rem;}.mega-inner{grid-template-columns:repeat(3,1fr);}.mega-col{border-right:none;border-bottom:1px solid rgba(201,169,110,0.07);padding:1rem 0;}.mega-col:last-child{border-bottom:none;}}
-@media(max-width:700px){.mega-panel{display:none !important;}}
+@media(max-width:1150px){.mega-panel{padding:1.5rem 2rem 2rem;}.mega-inner{grid-template-columns:repeat(4,1fr);gap:0;}.mega-col{border-right:none;border-bottom:1px solid rgba(201,169,110,0.07);padding:1rem 1.2rem;}.mega-col:nth-child(4n){border-right:none;}.mega-col:nth-last-child(-n+4):nth-child(4n+1),.mega-col:nth-last-child(-n+3),.mega-col:nth-last-child(-n+2),.mega-col:last-child{border-bottom:none;}}
+@media(max-width:750px){.mega-panel{display:none !important;}}
 
 /* NEW BADGE */
 .new-badge{display:inline-block;background:rgba(100,200,120,0.12);border:1px solid rgba(100,200,120,0.28);color:#7aba7a;font-size:0.54rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.1rem 0.45rem;border-radius:3px;margin-left:0.5rem;vertical-align:middle;font-family:'DM Sans',sans-serif;}
@@ -683,10 +697,23 @@ ${listingStyles}
             <div class="mega-region-title">North Africa</div>
             <a href="/plan/marrakech" class="mega-link"><span class="mega-link-flag">🇲🇦</span> Morocco</a>
             <a href="/plan/cairo" class="mega-link"><span class="mega-link-flag">🇪🇬</span> Egypt</a>
-            <div class="mega-region-title">Southern Africa</div>
+            <div class="mega-region-title">East &amp; Southern</div>
             <a href="/plan/cape-town" class="mega-link"><span class="mega-link-flag">🇿🇦</span> South Africa</a>
             <a href="/plan/nairobi" class="mega-link"><span class="mega-link-flag">🇰🇪</span> Kenya</a>
+            <a href="/plan/tanzania" class="mega-link"><span class="mega-link-flag">🇹🇿</span> Tanzania</a>
             <a href="/blog?cat=africa" class="mega-all">All Africa →</a>
+          </div>
+
+          <!-- OCEANIA -->
+          <div class="mega-col">
+            <div class="mega-continent"><span class="mega-continent-icon">🌏</span> Oceania</div>
+            <div class="mega-region-title">Australia &amp; Pacific</div>
+            <a href="/plan/sydney" class="mega-link"><span class="mega-link-flag">🇦🇺</span> Australia</a>
+            <a href="/plan/auckland" class="mega-link"><span class="mega-link-flag">🇳🇿</span> New Zealand</a>
+            <a href="/plan/fiji" class="mega-link"><span class="mega-link-flag">🇫🇯</span> Fiji</a>
+            <a href="/plan/bali" class="mega-link"><span class="mega-link-flag">🇮🇩</span> Bali</a>
+            <a href="/plan/phuket" class="mega-link"><span class="mega-link-flag">🇹🇭</span> Phuket</a>
+            <a href="/blog?cat=oceania" class="mega-all">All Oceania →</a>
           </div>
 
         </div>
@@ -1144,6 +1171,8 @@ function buildArticlePage(slug, article, relatedPosts = []) {
 
   return buildHead(article.title, article.description, `/blog/${slug}`, article.cover_image_url) + `
 <body>
+<div id="read-progress"></div>
+<div class="toc-sidebar" id="toc-sidebar"></div>
 <!-- Sticky floating CTA bar -->
 <div class="sticky-cta" id="sticky-cta">
   <div class="sticky-cta-text">
@@ -1265,6 +1294,8 @@ function buildArticlePage(slug, article, relatedPosts = []) {
 
   <a href="/blog" class="back">← Back to Blog</a>
 </div>
+
+<button id="back-top" title="Back to top" aria-label="Back to top">↑</button>
 
 <script type="application/ld+json">${schema}</script>
 <script type="application/ld+json">${breadcrumb}</script>
@@ -1717,12 +1748,56 @@ function buildCommunityPostPage(slug, post) {
 
   loadComments();
 
+  // Sticky CTA + reading progress bar
   (function(){
-    var bar=document.getElementById('sticky-cta'); var shown=false;
+    var cta=document.getElementById('sticky-cta');
+    var prog=document.getElementById('read-progress');
+    var backTop=document.getElementById('back-top');
+    var shown=false;
     window.addEventListener('scroll',function(){
-      var pct=window.scrollY/(document.body.scrollHeight-window.innerHeight);
-      if(!shown&&pct>0.35){bar.classList.add('visible');shown=true;}
-      if(shown&&pct<0.1){bar.classList.remove('visible');shown=false;}
+      var scrolled=window.scrollY;
+      var total=document.documentElement.scrollHeight-window.innerHeight;
+      var pct=total>0?(scrolled/total*100):0;
+      if(prog)prog.style.width=pct+'%';
+      if(cta){
+        if(!shown&&pct>35){cta.classList.add('visible');shown=true;}
+        if(shown&&pct<10){cta.classList.remove('visible');shown=false;}
+      }
+      if(backTop){
+        if(scrolled>500)backTop.classList.add('visible');
+        else backTop.classList.remove('visible');
+      }
+    },{passive:true});
+    if(backTop)backTop.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});
+  })();
+
+  // Auto Table of Contents
+  (function(){
+    var sidebar=document.getElementById('toc-sidebar');
+    if(!sidebar)return;
+    var visibleBody=document.querySelector('.article-body:not([style*="display:none"]),.article-body');
+    if(!visibleBody)return;
+    var hh=visibleBody.querySelectorAll('h2');
+    var headings=[];
+    hh.forEach(function(h,i){
+      if(!h.id)h.id='toc-'+i;
+      headings.push({id:h.id,text:h.textContent.trim()});
+    });
+    if(headings.length<3){sidebar.style.display='none';return;}
+    var links=headings.map(function(h){
+      return '<a href="#'+h.id+'">'+h.text.slice(0,38)+(h.text.length>38?'…':'')+'</a>';
+    }).join('');
+    sidebar.innerHTML='<div class="toc-sidebar-title">On This Page</div>'+links;
+    var tocAnchors=sidebar.querySelectorAll('a');
+    window.addEventListener('scroll',function(){
+      var current='';
+      headings.forEach(function(h){
+        var el=document.getElementById(h.id);
+        if(el&&el.getBoundingClientRect().top<130)current=h.id;
+      });
+      tocAnchors.forEach(function(a){
+        a.classList.toggle('toc-active',a.getAttribute('href')==='#'+current);
+      });
     },{passive:true});
   })();
 </script>
