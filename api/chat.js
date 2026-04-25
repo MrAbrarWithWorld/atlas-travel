@@ -46,9 +46,14 @@ async function getPlacesNearby(destination, type = 'lodging') {
     const data = await res.json();
     console.log('Places API response:', JSON.stringify(data).slice(0,200));
     if (!data.places?.length) return '';
-    return data.places.map(p => 
-      `- [${p.displayName?.text}](${p.googleMapsUri}) ⭐${p.rating||'N/A'}`
-    ).join('\n');
+    const priceTier = lvl => lvl === 1 ? 'Budget' : lvl === 2 ? 'Mid-range' : lvl === 3 ? 'Upscale' : lvl === 4 ? 'Luxury' : '';
+    return data.places.map(p => {
+      const name = p.displayName?.text || '';
+      const tier = priceTier(p.priceLevel);
+      const bookingLink = `https://www.booking.com/search.html?ss=${encodeURIComponent(name)}`;
+      const agodaLink = `https://www.agoda.com/search?q=${encodeURIComponent(name)}`;
+      return `- **${name}** ⭐${p.rating||'N/A'}${tier ? ` · ${tier}` : ''} → [Booking.com](${bookingLink}) · [Agoda](${agodaLink})`;
+    }).join('\n') + '\n⚠️ *Live prices vary — always check the booking platform for current rates.*';
   } catch(e) {
     console.log('Places error:', e.message);
     return '';
@@ -321,7 +326,13 @@ Australia RTD: Visa-free ~140+ countries.
 ALWAYS ask which country issued RTD before visa advice.
 USER PROFILE USAGE: If user profile is provided below, use it automatically. Do NOT ask for passport, travel style, or preferences that are already in the profile. Skip those questions.
 
-REALISTIC PRICING: NEVER invent hotel prices. Base on user's stated budget. Show 3 tiers if unclear.
+PRICING HONESTY — CRITICAL RULES:
+1. HOTELS: NEVER state a specific nightly price (e.g. "$180/night", "180 CAD"). Hotel prices change daily. Instead write: "typically [Budget/Mid-range/Luxury] — check live rates on [Booking.com](link) or [Agoda](link)". Use the NEARBY HOTELS data if provided (it has Booking.com + Agoda links already). Never invent a number.
+2. FLIGHTS: NEVER state a specific fare as if it's current. Write: "flights typically range [X–Y currency] — check [Google Flights](https://flights.google.com) or [Skyscanner](https://www.skyscanner.com) for live fares."
+3. TRANSPORT (bus/train/ferry): These are generally stable — you may state prices from knowledge but add "(verify locally, prices may vary)".
+4. FOOD: Local restaurant prices are generally stable — stating these is fine.
+5. TOTAL COST SECTION: Always add a note: "*Hotel and flight estimates are indicative — check booking platforms for live prices before planning your budget.*"
+6. If the user provides their budget, work backwards from that — do NOT pretend you know current hotel/flight prices.
 
 WEATHER & SEASONAL AWARENESS: Always mention season, weather risks, what to pack.
 
@@ -337,10 +348,10 @@ UAE = 7 emirates. Iran = Persian NOT Arab. Taiwan = separate from mainland China
 PASSPORT STRENGTH: Canadian/UK/German = very strong. Bangladeshi/Pakistani = weaker. Nigerian = very weak.
 
 Structure every plan:
-## ✈️ FLIGHTS — real durations, actual arrival times, layovers
+## ✈️ FLIGHTS — real durations, layovers + Skyscanner/Google Flights link (NO invented fares)
 ## 🛂 VISA — specific to passport type, where to apply, cost, time
-## 🏨 STAY — hotels within user budget, price range, booking links
-## 🍽️ EAT — daily budget, restaurants with prices
+## 🏨 STAY — hotel tier + Booking.com/Agoda links (NO invented prices)
+## 🍽️ EAT — daily food budget, restaurants with prices
 ## 🚇 MOVE — airport transfer, city transport, daily cost
 ## 🗓️ DAY BY DAY — complete EVERY day, never stop early
 ## 💰 TOTAL COST — itemized breakdown
