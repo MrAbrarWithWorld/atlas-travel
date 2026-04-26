@@ -565,6 +565,17 @@ const travelContext = await getTravelContext(messages);
     return res.status(429).json({ error: { message: `PLAN_LIMIT|${resetInHours}|${tokensLeft}` } });
   }
 
+  // ── SSE streaming helpers ──────────────────────────────────────
+  function startSSE() {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+  }
+  function writeSSE(data) { res.write(`data: ${JSON.stringify(data)}\n\n`); }
+  function endStream(plansLeft) { writeSSE({ type: 'done', plansLeft }); res.end(); }
+
   if (detectDestinationOnly(messages)) {
     const lastContent = messages.filter(m => m.role === "user").slice(-1)[0]?.content;
     const last = typeof lastContent === "string" ? lastContent.toLowerCase()
@@ -573,10 +584,10 @@ const travelContext = await getTravelContext(messages);
     const questionText = isBengali
       ? `✈️ দারুণ পছন্দ! Trip plan করার আগে কিছু জানা দরকার:\n\n1. **কতদিন** থাকবেন?\n2. **মোট budget** কত? (CAD / USD / BDT যেকোনো)\n3. **কতজন** যাবেন?\n4. **কী ধরনের trip?** (relaxation / sightseeing / adventure)\n5. **কোন passport বা travel document** আছে আপনার? (যেমন: Canadian passport, RTD, USA RTD, UK CTD ইত্যাদি)`
       : `✈️ Great choice! Before I build your plan, I need a few details:\n\n1. **How many days** are you planning to stay?\n2. **What is your total budget?** (CAD / USD / any currency)\n3. **How many people** are traveling?\n4. **What kind of trip?** (relaxation / sightseeing / adventure)\n5. **What passport or travel document** do you hold? (e.g. Canadian passport, RTD, USA RTD, UK CTD, EU CTD, etc.)`;
-    return res.status(200).json({
-      content: [{ type: "text", text: questionText }],
-      usage: { input_tokens: 0, output_tokens: 0 }
-    });
+    startSSE();
+    writeSSE({ type: 'delta', text: questionText });
+    endStream(Math.max(0, limits.plans - user.plansUsed));
+    return;
   }
 
   const tokensLeft = limits.tokens - user.tokensUsed;
@@ -603,23 +614,39 @@ const travelContext = await getTravelContext(messages);
         body: JSON.stringify({
           model: "meta-llama/llama-4-scout-17b-16e-instruct",
           max_tokens: Math.min(tokensLeft, 4000),
+          stream: true,
           messages: [
-  { role: "system", content: SYSTEM_MSG + (travelContext ? travelContext : '') },
+            { role: "system", content: SYSTEM_MSG + (travelContext ? travelContext : '') },
             ...groqMessages.filter(m => m.role !== "system")
           ],
         }),
       });
-      const groqData = await groqRes.json();
-      if (groqData.choices?.[0]?.message?.content) {
-        const reply = groqData.choices[0].message.content;
-        const used = (groqData.usage?.prompt_tokens || 0) + (groqData.usage?.completion_tokens || 0);
-        user.tokensUsed += used;
+      if (groqRes.ok) {
+        startSSE();
+        const reader = groqRes.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '', fullText = '', promptTok = 0, completionTok = 0;
+        outer: while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split('\n'); buf = lines.pop() || '';
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const json = line.slice(6).trim();
+            if (json === '[DONE]') break outer;
+            try {
+              const ev = JSON.parse(json);
+              const text = ev.choices?.[0]?.delta?.content;
+              if (text) { fullText += text; writeSSE({ type: 'delta', text }); }
+              if (ev.x_groq?.usage) { promptTok = ev.x_groq.usage.prompt_tokens || 0; completionTok = ev.x_groq.usage.completion_tokens || 0; }
+            } catch {}
+          }
+        }
+        user.tokensUsed += (promptTok + completionTok) || Math.ceil(fullText.length * 0.35);
         if (requestingNewPlan) user.plansUsed += 1;
-        res.setHeader('X-Plans-Left', Math.max(0, limits.plans - user.plansUsed));
-        return res.status(200).json({
-          content: [{ type: "text", text: reply }],
-          usage: { input_tokens: groqData.usage?.prompt_tokens || 0, output_tokens: groqData.usage?.completion_tokens || 0 }
-        });
+        endStream(Math.max(0, limits.plans - user.plansUsed));
+        return;
       }
     } catch(e) {}
   }
@@ -646,13 +673,12 @@ const travelContext = await getTravelContext(messages);
       const geminiData = await geminiRes.json();
       const geminiReply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
       if (geminiReply) {
+        startSSE();
+        writeSSE({ type: 'delta', text: geminiReply });
         user.tokensUsed += 2000;
         if (requestingNewPlan) user.plansUsed += 1;
-        res.setHeader('X-Plans-Left', Math.max(0, limits.plans - user.plansUsed));
-        return res.status(200).json({
-          content: [{ type: "text", text: geminiReply }],
-          usage: { input_tokens: 1000, output_tokens: 1000 }
-        });
+        endStream(Math.max(0, limits.plans - user.plansUsed));
+        return;
       }
     } catch(e) {}
   }
@@ -713,6 +739,7 @@ const travelContext = await getTravelContext(messages);
   (travelContext ? travelContext : '') +
   (prefStr ? `\n\nUSER PROFILE:\n${prefStr}` : '') +
   (customInstruction ? `\n\nEXPLORER CUSTOM INSTRUCTION (follow this for every response):\n${customInstruction}` : '');
+    startSSE();
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -723,26 +750,55 @@ const travelContext = await getTravelContext(messages);
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: Math.min(tokensLeft, 4000),
+        stream: true,
         system: systemWithPrefs,
         messages: messages.filter(m => m.role !== "system"),
       }),
     });
-    const data = await response.json();
-    if (data.error) return res.status(500).json({ error: data.error });
-    const inputTok = data.usage?.input_tokens || 0;
-    const outputTok = data.usage?.output_tokens || 0;
+    if (response.status !== 200) {
+      let errMsg = `API error ${response.status}`;
+      try { const e = await response.json(); errMsg = e.error?.message || errMsg; } catch {}
+      writeSSE({ type: 'error', message: errMsg });
+      res.end();
+      return;
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '', fullText = '', inputTok = 0, outputTok = 0;
+    outer: while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n'); buf = lines.pop() || '';
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const ev = JSON.parse(line.slice(6));
+          if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+            const text = ev.delta.text;
+            fullText += text;
+            writeSSE({ type: 'delta', text });
+          } else if (ev.type === 'message_start' && ev.message?.usage) {
+            inputTok = ev.message.usage.input_tokens || 0;
+          } else if (ev.type === 'message_delta' && ev.usage) {
+            outputTok = ev.usage.output_tokens || 0;
+          } else if (ev.type === 'error') {
+            writeSSE({ type: 'error', message: ev.error?.message || 'Stream error' });
+            res.end(); return;
+          }
+        } catch {}
+      }
+    }
     const used = inputTok + outputTok;
     user.tokensUsed += used;
     if (requestingNewPlan) user.plansUsed += 1;
-    res.setHeader('X-Plans-Left', Math.max(0, limits.plans - user.plansUsed));
-    // Log usage to Supabase (fire and forget)
+    endStream(Math.max(0, limits.plans - user.plansUsed));
     if (SUPABASE_SERVICE_KEY) {
       const costUsd = (inputTok / 1_000_000) * 3 + (outputTok / 1_000_000) * 15;
       const sbLog = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
       sbLog.from('api_usage_log').insert({ user_id: userId || null, model: 'claude-sonnet-4', input_tokens: inputTok, output_tokens: outputTok, cost_usd: costUsd }).then(() => {}).catch(() => {});
     }
-    return res.status(200).json(data);
   } catch (error) {
-    return res.status(500).json({ error: { message: error.message } });
+    if (!res.writableEnded) { writeSSE({ type: 'error', message: error.message }); res.end(); }
   }
 }
