@@ -24,6 +24,11 @@ ${imageUrl ? `<meta name="twitter:image" content="${imageUrl}"/>` : ''}
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#1c1914;color:#ede5d5;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(201,169,110,0.35);border-radius:6px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(201,169,110,0.6);}
+html{scrollbar-color:rgba(201,169,110,0.35) transparent;scrollbar-width:thin;}
 .container{max-width:740px;margin:0 auto;padding:3rem 1.5rem 5rem;}
 header{display:flex;align-items:center;gap:0.75rem;margin-bottom:3rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(201,169,110,0.15);}
 header a{display:flex;align-items:center;gap:0.75rem;text-decoration:none;}
