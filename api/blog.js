@@ -1168,11 +1168,12 @@ function buildArticlePage(slug, article, relatedPosts = []) {
     const validPhotos = photos.filter(Boolean);
     if (!validPhotos.length) return html;
     // If explicit markers exist, replace them
+    const makeImg = (url) => `<img src="${url}" alt="" class="inline-img" loading="lazy" onerror="this.style.display='none'"/>`;
     if (/\[photo-\d+\]/i.test(html)) {
       return html.replace(/\[photo-(\d+)\]/gi, (match, num) => {
         const idx = parseInt(num) - 1;
         if (idx >= 0 && idx < validPhotos.length && validPhotos[idx]) {
-          return `<img src="${validPhotos[idx]}" alt="" class="inline-img" loading="lazy"/>`;
+          return makeImg(validPhotos[idx]);
         }
         return '';
       });
@@ -1182,7 +1183,7 @@ function buildArticlePage(slug, article, relatedPosts = []) {
     const h2Count = (html.match(/<\/h2>/gi) || []).length;
     if (h2Count === 0) {
       // No H2s — just prepend photos at start
-      return validPhotos.map(u => `<img src="${u}" alt="" class="inline-img" loading="lazy"/>`).join('') + html;
+      return validPhotos.map(u => makeImg(u)).join('') + html;
     }
     const interval = Math.max(1, Math.floor(h2Count / Math.min(validPhotos.length, h2Count)));
     let photoIdx = 0;
@@ -1190,7 +1191,7 @@ function buildArticlePage(slug, article, relatedPosts = []) {
     return html.replace(/<\/h2>/gi, (match) => {
       h2Seen++;
       if (photoIdx < validPhotos.length && h2Seen % interval === 0) {
-        const img = `<img src="${validPhotos[photoIdx]}" alt="" class="inline-img" loading="lazy"/>`;
+        const img = makeImg(validPhotos[photoIdx]);
         photoIdx++;
         return match + img;
       }
@@ -1596,7 +1597,7 @@ function buildCommunityPostPage(slug, post) {
 
   function escHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
-  const photosHtml = extraPhotos.map(url => `<img src="${escHtml(url)}" alt="" class="inline-img" loading="lazy"/>`).join('');
+  const photosHtml = extraPhotos.map(url => `<img src="${escHtml(url)}" alt="" class="inline-img" loading="lazy" onerror="this.style.display='none'"/>`).join('');
 
   const contentHtml = (post.content || '').replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br/>');
 
