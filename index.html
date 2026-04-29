@@ -1445,6 +1445,7 @@ function PricingModal({user, onClose}) {
 }
 
 // ===================== LOGIN MODAL =====================
+const isFBInAppBrowser = /FBAN|FBAV|FB_IAB|Instagram|FBIOS/i.test(navigator.userAgent);
 function LoginModal({onClose}){
   const [loading,setLoading]=useState(null);
   const [error,setError]=useState("");
@@ -1487,7 +1488,14 @@ function LoginModal({onClose}){
             React.createElement("button",{onClick:()=>{setMagicSent(false);setEmail("");},style:{marginTop:"1rem",background:"none",border:"none",color:"#5a4a30",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase"}},"← Try a different email")
           )
         :React.createElement(React.Fragment,null,
-            React.createElement("button",{className:"login-btn",onClick:()=>loginWith("google"),disabled:!!loading},
+            isFBInAppBrowser&&React.createElement("div",{style:{background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,padding:"0.75rem 1rem",marginBottom:"1rem",fontSize:"0.72rem",color:"#c9a96e",lineHeight:1.6,textAlign:"center"}},
+              React.createElement("div",{style:{fontSize:"1.1rem",marginBottom:"0.3rem"}},"⚠️"),
+              React.createElement("strong",{style:{display:"block",marginBottom:"0.3rem"}},"Open in your browser"),
+              React.createElement("span",{style:{color:"#8a7a60"}},"Google login doesn't work inside the Facebook app. Tap "),
+              React.createElement("strong",null,"⋯ → Open in Chrome"),
+              React.createElement("span",{style:{color:"#8a7a60"}}," — or use your email below.")
+            ),
+            React.createElement("button",{className:"login-btn",onClick:()=>loginWith("google"),disabled:!!loading||isFBInAppBrowser,style:isFBInAppBrowser?{opacity:0.4,cursor:"not-allowed"}:{}},
               loading==="google"?React.createElement("span",{style:{fontSize:"0.75rem",color:"#c9a96e",margin:"0 auto"}},"Connecting..."):React.createElement(React.Fragment,null,
                 React.createElement("svg",{width:"18",height:"18",viewBox:"0 0 24 24"},
                   React.createElement("path",{fill:"#4285F4",d:"M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"}),
