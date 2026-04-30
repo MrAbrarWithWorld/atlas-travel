@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByZmZoaGtlbXhpYnVqamppeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NzYwMDIsImV4cCI6MjA5MDM1MjAwMn0.Tqxz_6EHwv4oWA9NvPSRK1uC7HJ1_chhFjZGg2PRhiE';
+
 const sb = createClient(
   'https://prffhhkemxibujjjiyhg.supabase.co',
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_KEY || SUPABASE_ANON_KEY
 );
 
 export default async function handler(req, res) {
@@ -33,7 +35,7 @@ export default async function handler(req, res) {
     // Asia - Southeast
     'bali','bangkok','singapore','phuket','kuala-lumpur','ho-chi-minh-city','hanoi','chiang-mai','siem-reap','yangon','manila','jakarta','boracay','langkawi','penang','danang','hoi-an','phnom-penh','vientiane','luang-prabang',
     // Asia - East
-    'tokyo','kyoto','osaka','seoul','busan','taipei','hong-kong','beijing','shanghai','bali',
+    'tokyo','kyoto','osaka','seoul','busan','taipei','hong-kong','beijing','shanghai',
     // Asia - South
     'dhaka','coxs-bazar','sundarbans','sylhet','kathmandu','pokhara','sri-lanka','colombo','maldives','mumbai','delhi','goa','jaipur','agra','varanasi','nepal','bhutan','lahore','karachi',
     // Asia - Middle East
@@ -45,6 +47,7 @@ export default async function handler(req, res) {
     // Africa & Oceania
     'cape-town','nairobi','zanzibar','marrakech','cairo','casablanca','accra','lagos','addis-ababa','sydney','melbourne','auckland','queenstown','fiji','bora-bora','tahiti',
   ].filter((v, i, a) => a.indexOf(v) === i); // deduplicate
+
   const destUrls = destinations.map(d => `
   <url>
     <loc>https://getatlas.ca/plan/${d}</loc>
@@ -72,6 +75,12 @@ export default async function handler(req, res) {
   ${destUrls}
   ${blogUrls}
   <url>
+    <loc>https://getatlas.ca/pricing</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://getatlas.ca/privacy</loc>
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
@@ -86,7 +95,7 @@ export default async function handler(req, res) {
   ${tripUrls}
 </urlset>`;
 
-  res.setHeader('Content-Type', 'application/xml');
-  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=600');
   res.status(200).send(xml);
 }
