@@ -1,115 +1,24 @@
 {
-  "functions": {
-    "api/chat.js": {
-      "maxDuration": 60
-    },
-    "api/admin.js": {
-      "maxDuration": 30
-    },
-"api/create-checkout.js": {
-      "maxDuration": 30
-    },
-    "api/webhook.js": {
-      "maxDuration": 30
-    },
-    "api/cron-report.js": {
-      "maxDuration": 30
-    },
-    "api/subscribe.js": {
-      "maxDuration": 10
-    }
-  },
-  "crons": [
-    {
-      "path": "/api/cron-report",
-      "schedule": "0 9 * * *"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-  "source": "/sitemap.xml",
-  "destination": "/api/sitemap"
-    },
-    {
-      "source": "/privacy",
-      "destination": "/privacy.html"
-    },
-    {
-      "source": "/terms",
-      "destination": "/terms.html"
-    },
-    {
-      "source": "/trip/(.*)",
-      "destination": "/trip.html"
-    },
-    {
-      "source": "/plan/:dest",
-      "destination": "/api/plan?dest=:dest"
-    },
-    {
-      "source": "/blog",
-      "destination": "/api/blog?slug=index"
-    },
-    {
-      "source": "/blog/:slug",
-      "destination": "/api/blog?slug=:slug"
-    },
-    {
-      "source": "/admin",
-      "destination": "/api/admin"
-    },
-    {
-      "source": "/((?!_vercel).*)",
-      "destination": "/index.html"
-    }
-  ],
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
   "headers": [
     {
-  "source": "/sitemap.xml",
-  "headers": [
-    {
-      "key": "Cache-Control",
-      "value": "no-store"
-    }
-  ]
-  },
-    {
-      "source": "/api/(.*)",
+      "source": "/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     },
     {
-      "source": "/",
+      "source": "/sitemap.xml",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, stale-while-revalidate=86400"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "index, follow"
-        }
-      ]
-    },
-    {
-      "source": "/(.*\\.html)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "index, follow"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
       ]
     }
   ]
