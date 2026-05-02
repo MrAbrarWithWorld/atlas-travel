@@ -1,6 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import WriteStoryForm from "./WriteStoryForm";
+import AtlasLogo from "../components/AtlasLogo";
+import MobileNav from "../components/MobileNav";
+import { MEGA_COLS } from "../lib/megaCols";
 
 export const revalidate = 60;
 
@@ -17,16 +20,6 @@ interface UserPost {
   photos: { url: string; caption?: string }[] | null;
 }
 
-const MEGA_COLS = [
-  { heading: "SOUTH ASIA", links: [["🇧🇩 Bangladesh","bangladesh"],["↳ 🏖 Cox's Bazar","coxs-bazar"],["🇲🇻 Maldives","maldives"],["🇳🇵 Nepal","nepal"],["🇮🇳 India","india"],["🇮🇩 Bali","bali"],["🇱🇰 Sri Lanka","sri-lanka"]], seeAll: ["ALL SOUTH ASIA","south-asia"] },
-  { heading: "EAST ASIA", links: [["🇯🇵 Japan","japan"],["🇸🇬 Singapore","singapore"],["🇹🇭 Thailand","thailand"],["🇰🇷 South Korea","south-korea"],["🇻🇳 Vietnam","vietnam"]], seeAll: ["ALL EAST ASIA","east-asia"] },
-  { heading: "EUROPE", links: [["🇫🇷 France","france"],["🇮🇹 Italy","italy"],["🇪🇸 Spain","spain"],["🇬🇧 UK","uk"],["🇳🇱 Netherlands","netherlands"]], seeAll: ["ALL EUROPE","europe"] },
-  { heading: "MIDDLE EAST", links: [["🇦🇪 Dubai","dubai"],["🇹🇷 Turkey","turkey"],["🇯🇴 Jordan","jordan"],["🇶🇦 Qatar","qatar"],["🇸🇦 Saudi Arabia","saudi-arabia"]], seeAll: ["ALL MIDDLE EAST","middle-east"] },
-  { heading: "AMERICAS", links: [["🇨🇦 Canada / Banff","canada"],["🗽 New York","new-york"],["🌆 Los Angeles","los-angeles"],["🇲🇽 Mexico","mexico"],["🇧🇷 Brazil","brazil"],["🇨🇴 Colombia","colombia"]], seeAll: ["ALL AMERICAS","americas"] },
-  { heading: "AFRICA", links: [["🇲🇦 Morocco","morocco"],["🇪🇬 Egypt","egypt"],["🇿🇦 South Africa","south-africa"],["🇹🇿 Tanzania","tanzania"],["🇰🇪 Kenya","kenya"]], seeAll: ["ALL AFRICA","africa"] },
-  { heading: "OCEANIA", links: [["🇦🇺 Australia","australia"],["🇳🇿 New Zealand","new-zealand"],["🇫🇯 Fiji","fiji"]], seeAll: ["ALL OCEANIA","oceania"] },
-];
-
 function fmt(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" });
 }
@@ -38,11 +31,13 @@ function CommunityNav() {
         .dest-item:hover .mega-wrap { display: grid; }
         .mega-wrap { display: none; }
         .nav-link:hover { color: #c9a96e !important; }
+        @media (max-width: 768px) { .desktop-nav { display: none !important; } }
+        @media (min-width: 769px) { .mobile-menu-btn { display: none !important; } }
       `}</style>
       <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background:"rgba(28,25,20,0.97)", borderBottom:"1px solid #3a3228", backdropFilter:"blur(8px)" }}>
-        <div style={{ maxWidth:1280, margin:"0 auto", padding:"0 24px", height:60, display:"flex", alignItems:"center", gap:36 }}>
-          <Link href="/" style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:22, fontWeight:600, color:"#c9a96e", textDecoration:"none", letterSpacing:"0.04em", marginRight:8 }}>Atlas</Link>
-          <div style={{ display:"flex", alignItems:"center", gap:28, flex:1 }}>
+        <div style={{ maxWidth:1280, margin:"0 auto", padding:"0 24px", height:60, display:"flex", alignItems:"center", gap:24 }}>
+          <AtlasLogo />
+          <div className="desktop-nav" style={{ display:"flex", alignItems:"center", gap:28, flex:1 }}>
             <Link href="/blog" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>ALL</Link>
             <div className="dest-item" style={{ position:"relative" }}>
               <button style={{ background:"none", border:"none", fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", cursor:"pointer", display:"flex", alignItems:"center", gap:4, padding:0 }} className="nav-link">DESTINATIONS ▾</button>
@@ -61,8 +56,9 @@ function CommunityNav() {
             <Link href="/blog?cat=visa" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>TIPS & VISA</Link>
             <Link href="/community" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#c9a96e", textDecoration:"none" }}>COMMUNITY ✍️</Link>
           </div>
-          <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-            <Link href="https://app.getatlas.ca" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:6, padding:"8px 18px", color:"#c9a96e", fontSize:12, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Plan Free →</Link>
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <Link href="https://app.getatlas.ca" className="desktop-nav" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:6, padding:"8px 18px", color:"#c9a96e", fontSize:12, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Plan Free →</Link>
+            <MobileNav />
           </div>
         </div>
       </nav>
@@ -71,19 +67,23 @@ function CommunityNav() {
 }
 
 export default async function CommunityPage() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://prffhhkemxibujjjiyhg.supabase.co',
-    process.env.SUPABASE_SERVICE_KEY || ''
-  );
-
-  const { data: posts } = await supabase
-    .from("user_posts")
-    .select("id,user_name,title,excerpt,cover_photo,destination,slug,created_at,photos")
-    .eq("status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(20);
-
-  const userPosts: UserPost[] = (posts ?? []) as UserPost[];
+  let userPosts: UserPost[] = [];
+  try {
+    const key = process.env.SUPABASE_SERVICE_KEY;
+    if (key) {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://prffhhkemxibujjjiyhg.supabase.co',
+        key
+      );
+      const { data: posts } = await supabase
+        .from("user_posts")
+        .select("id,user_name,title,excerpt,cover_photo,destination,slug,created_at,photos")
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      userPosts = (posts ?? []) as UserPost[];
+    }
+  } catch { /* fallback to empty */ }
 
   return (
     <div style={{ background:"#1c1914", minHeight:"100vh", color:"#ede5d5", fontFamily:"var(--font-dm-sans),sans-serif" }}>
