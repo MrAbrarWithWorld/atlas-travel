@@ -7,11 +7,16 @@ export const revalidate = 60;
 
 interface RelatedPost {
   id: string; title: string; slug: string; description: string;
-  cover_image_url: string; category: string; read_time: number; date_published: string;
+  cover_image_url: string; category: string; read_time: string; date_published: string;
 }
 
 function fmt(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" });
+}
+
+function extractDestination(title: string): string {
+  const m = title.match(/^(.+?)\s+(?:Travel Guide|Guide)/i);
+  return m ? m[1].replace(/[:\-()"]/g, '').trim() : title.split(' ')[0];
 }
 
 function BlogNav() {
@@ -32,7 +37,6 @@ function BlogNav() {
             <Link href="/community" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>COMMUNITY ✍️</Link>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-            <button style={{ background:"none", border:"1px solid #3a3228", borderRadius:6, padding:"6px 12px", color:"#a09070", fontSize:12, cursor:"pointer" }}>🌐 EN</button>
             <Link href="https://app.getatlas.ca" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:6, padding:"8px 18px", color:"#c9a96e", fontSize:12, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Plan Free →</Link>
           </div>
         </div>
@@ -40,7 +44,6 @@ function BlogNav() {
     </>
   );
 }
-
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -62,10 +65,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     .neq("slug", slug).order("date_published", { ascending: false }).limit(4);
 
   const relatedPosts: RelatedPost[] = related ?? [];
+  const highlights: string[] = post.highlights ?? [];
+  const keyFacts: Record<string, string> = post.key_facts ?? {};
+  const destination = extractDestination(post.title);
 
   return (
     <div style={{ background:"#1c1914", minHeight:"100vh", color:"#ede5d5", fontFamily:"var(--font-dm-sans),sans-serif" }}>
       <BlogNav />
+
+      {/* Hero */}
       {post.cover_image_url && (
         <div style={{ position:"relative", height:"60vh", minHeight:380, overflow:"hidden", marginTop:60 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -73,7 +81,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(28,25,20,0.9) 0%,rgba(28,25,20,0.2) 100%)" }} />
         </div>
       )}
+
+      {/* Article content */}
       <div style={{ maxWidth:780, margin:"0 auto", padding:"48px 24px" }}>
+
+        {/* Meta */}
         <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:20 }}>
           <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.18em", color:"#c9a96e", textTransform:"uppercase" }}>{post.category}</span>
           <span style={{ color:"#3a3228" }}>·</span>
@@ -81,24 +93,120 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <span style={{ color:"#3a3228" }}>·</span>
           <span style={{ fontSize:12, color:"#a09070" }}>{fmt(post.date_published)}</span>
         </div>
+
+        {/* Title */}
         <h1 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:"clamp(32px,5vw,52px)", fontWeight:600, lineHeight:1.15, color:"#ede5d5", marginBottom:20 }}>{post.title}</h1>
-        {post.description && <p style={{ fontSize:18, color:"#a09070", lineHeight:1.7, marginBottom:24, borderLeft:"3px solid #c9a96e", paddingLeft:16 }}>{post.description}</p>}
+
+        {/* Highlights pills */}
+        {highlights.length > 0 && (
+          <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:28 }}>
+            {highlights.map((tag: string, i: number) => (
+              <span key={i} style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"6px 14px", background:"#231f18", border:"1px solid #3a3228", borderRadius:20, fontSize:12, color:"#a09070", fontWeight:500 }}>{tag}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Key facts card */}
+        {Object.keys(keyFacts).length > 0 && (
+          <div style={{ background:"#231f18", border:"1px solid #3a3228", borderRadius:12, padding:"24px", marginBottom:28 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))", gap:"18px 24px" }}>
+              {Object.entries(keyFacts).map(([label, value]) => (
+                <div key={label}>
+                  <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.14em", color:"#a09070", textTransform:"uppercase", marginBottom:4 }}>{label}</div>
+                  <div style={{ fontSize:14, color:"#ede5d5", fontWeight:500 }}>{String(value)}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop:16, paddingTop:14, borderTop:"1px solid #3a3228", display:"flex", gap:10, alignItems:"flex-start" }}>
+              <span style={{ fontSize:14 }}>⚠️</span>
+              <p style={{ fontSize:12, color:"#a09070", margin:0, lineHeight:1.6 }}>
+                Visa rules vary by passport. The info above is a general overview — requirements differ by nationality.
+                Use{" "}<Link href="https://app.getatlas.ca" style={{ color:"#c9a96e", textDecoration:"underline" }}>Atlas AI</Link>{" "}to get accurate visa rules for your specific passport.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Description */}
+        {post.description && (
+          <p style={{ fontSize:18, color:"#a09070", lineHeight:1.7, marginBottom:24, borderLeft:"3px solid #c9a96e", paddingLeft:16 }}>{post.description}</p>
+        )}
+
+        {/* Share (top) */}
         <div style={{ marginBottom:40, paddingBottom:32, borderBottom:"1px solid #3a3228" }}>
           <ShareButtons title={post.title} slug={post.slug} />
         </div>
+
+        {/* Article body */}
         {post.content ? (
           <div style={{ lineHeight:1.8, fontSize:16, color:"#ede5d5" }} className="article-body" dangerouslySetInnerHTML={{ __html: post.content }} />
         ) : (
           <p style={{ color:"#a09070", fontStyle:"italic" }}>Content coming soon.</p>
         )}
+
+        {/* Share (bottom) */}
         <div style={{ marginTop:48, paddingTop:32, borderTop:"1px solid #3a3228" }}>
           <p style={{ fontSize:13, color:"#a09070", marginBottom:16 }}>Enjoyed this guide? Share it with a fellow traveller:</p>
           <ShareButtons title={post.title} slug={post.slug} />
         </div>
+
+        {/* Back link */}
         <div style={{ marginTop:40, paddingTop:24, borderTop:"1px solid #3a3228" }}>
           <Link href="/blog" className="nav-link" style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:13, fontWeight:600, letterSpacing:"0.1em", color:"#a09070", textDecoration:"none" }}>← BACK TO ALL ARTICLES</Link>
         </div>
       </div>
+
+      {/* ── Plan with Atlas CTA ── */}
+      <div style={{ maxWidth:780, margin:"0 auto", padding:"0 24px 28px" }}>
+        <div style={{ background:"#231f18", border:"1px solid #3a3228", borderRadius:12, padding:"32px", textAlign:"center" }}>
+          <p style={{ fontSize:11, fontWeight:700, letterSpacing:"0.14em", color:"#c9a96e", marginBottom:12, textTransform:"uppercase" }}>✈️ Plan your trip</p>
+          <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:28, fontWeight:600, color:"#ede5d5", marginBottom:12 }}>Ready to plan your trip to {destination}?</h3>
+          <p style={{ fontSize:14, color:"#a09070", lineHeight:1.7, marginBottom:24 }}>Atlas builds your full itinerary in seconds — day-by-day schedule, visa info, hotel picks, and budget estimate. Free to use.</p>
+          <Link href="https://app.getatlas.ca" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"12px 28px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.1em", textDecoration:"none" }}>PLAN WITH ATLAS — IT&apos;S FREE →</Link>
+        </div>
+      </div>
+
+      {/* ── GetYourGuide ── */}
+      <div style={{ maxWidth:780, margin:"0 auto", padding:"0 24px 28px" }}>
+        <div style={{ background:"#231f18", border:"1px solid #3a3228", borderRadius:12, padding:"28px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
+            <span style={{ fontSize:18 }}>📍</span>
+            <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:22, fontWeight:600, color:"#ede5d5", margin:0 }}>Book Tours & Activities</h3>
+          </div>
+          <p style={{ fontSize:14, color:"#a09070", lineHeight:1.7, marginBottom:20 }}>Skip the queue and book the best experiences in {destination} — guided tours, day trips, transfers, and more.</p>
+          <a href={`https://www.getyourguide.com/s/?q=${encodeURIComponent(destination)}`} target="_blank" rel="noopener noreferrer" style={{ display:"inline-flex", alignItems:"center", padding:"10px 20px", background:"none", border:"1px solid #3a3228", borderRadius:8, color:"#ede5d5", fontSize:12, fontWeight:600, letterSpacing:"0.1em", textDecoration:"none" }}>BROWSE ACTIVITIES ON GETYOURGUIDE →</a>
+        </div>
+      </div>
+
+      {/* ── Newsletter subscribe ── */}
+      <div style={{ maxWidth:780, margin:"0 auto", padding:"0 24px 48px" }}>
+        <div style={{ background:"#231f18", border:"1px solid #3a3228", borderRadius:12, padding:"32px", textAlign:"center" }}>
+          <div style={{ fontSize:24, marginBottom:12 }}>✉️</div>
+          <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:24, fontWeight:600, color:"#ede5d5", marginBottom:10 }}>Discover the world — one destination at a time</h3>
+          <p style={{ fontSize:14, color:"#a09070", lineHeight:1.7, marginBottom:24 }}>Hidden gems, budget routes, and travel inspiration from across the globe — straight to your inbox. No spam, unsubscribe anytime.</p>
+          <div style={{ display:"flex", gap:10, maxWidth:400, margin:"0 auto" }}>
+            <input type="email" placeholder="your@email.com" style={{ flex:1, background:"#1c1914", border:"1px solid #3a3228", borderRadius:8, padding:"11px 16px", color:"#ede5d5", fontSize:14, outline:"none" }} />
+            <button type="button" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"11px 20px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.06em", cursor:"pointer", whiteSpace:"nowrap" }}>Subscribe →</button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Quick trip links ── */}
+      {relatedPosts.length > 0 && (
+        <div style={{ maxWidth:780, margin:"0 auto", padding:"0 24px 56px" }}>
+          <p style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", color:"#a09070", textTransform:"uppercase", marginBottom:12 }}>PLAN A TRIP</p>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+            {relatedPosts.map(rp => {
+              const dest = extractDestination(rp.title);
+              return (
+                <Link key={rp.slug} href="https://app.getatlas.ca" style={{ display:"inline-flex", alignItems:"center", padding:"8px 16px", background:"#231f18", border:"1px solid #3a3228", borderRadius:20, fontSize:12, color:"#a09070", textDecoration:"none", fontWeight:500 }}>Plan trip to {dest}</Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Comment form ── */}
       <div style={{ background:"#231f18", borderTop:"1px solid #3a3228", borderBottom:"1px solid #3a3228", padding:"56px 24px" }}>
         <div style={{ maxWidth:780, margin:"0 auto" }}>
           <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:28, fontWeight:600, color:"#ede5d5", marginBottom:8 }}>Join the conversation</h3>
@@ -115,6 +223,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
         </div>
       </div>
+
+      {/* ── Related posts ── */}
       {relatedPosts.length > 0 && (
         <div style={{ maxWidth:1280, margin:"0 auto", padding:"64px 24px" }}>
           <h2 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:32, fontWeight:600, color:"#ede5d5", marginBottom:32 }}>More from Atlas</h2>
@@ -122,7 +232,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             {relatedPosts.map((rp) => (
               <Link key={rp.id} href={`/blog/${rp.slug}`} style={{ textDecoration:"none" }}>
                 <article style={{ background:"#231f18", borderRadius:12, overflow:"hidden", border:"1px solid #3a3228" }}>
-                  {rp.cover_image_url && <div style={{ height:160, overflow:"hidden" }}><img src={rp.cover_image_url} alt={rp.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} /></div>}
+                  {rp.cover_image_url && (
+                    <div style={{ height:160, overflow:"hidden" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={rp.cover_image_url} alt={rp.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                    </div>
+                  )}
                   <div style={{ padding:"18px" }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:6, textTransform:"uppercase" }}>{rp.category}</div>
                     <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:18, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:6 }}>{rp.title}</h3>
@@ -134,9 +249,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
         </div>
       )}
+
       <footer style={{ background:"#1c1914", borderTop:"1px solid #3a3228", padding:"32px 24px", textAlign:"center" }}>
         <p style={{ fontSize:12, color:"#a09070" }}>© {new Date().getFullYear()} Atlas Travel · All rights reserved</p>
       </footer>
+
       <style>{`
         .article-body h1,.article-body h2,.article-body h3 { font-family:var(--font-cormorant-garamond),serif; color:#ede5d5; margin-top:2em; margin-bottom:0.6em; }
         .article-body h2 { font-size:30px; font-weight:600; border-bottom:1px solid #3a3228; padding-bottom:8px; }
