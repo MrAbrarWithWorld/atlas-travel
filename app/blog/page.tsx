@@ -115,7 +115,7 @@ export default async function BlogPage() {
                   <div style={{ padding:"20px" }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:8, textTransform:"uppercase" }}>{post.category}</div>
                     <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:20, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:8 }}>{post.title}</h3>
-                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time} min</span><span>·</span><span>{fmt(post.date_published)}</span></div>
+                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time}</span><span>·</span><span>{fmt(post.date_published)}</span></div>
                   </div>
                 </article>
               </Link>
@@ -136,7 +136,7 @@ export default async function BlogPage() {
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:4, textTransform:"uppercase" }}>{post.category}</div>
                     <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:18, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:4 }}>{post.title}</h3>
-                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time} min</span><span>·</span><span>{fmt(post.date_published)}</span></div>
+                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time}</span><span>·</span><span>{fmt(post.date_published)}</span></div>
                   </div>
                 </article>
               </Link>

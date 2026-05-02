@@ -77,7 +77,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:20 }}>
           <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.18em", color:"#c9a96e", textTransform:"uppercase" }}>{post.category}</span>
           <span style={{ color:"#3a3228" }}>·</span>
-          <span style={{ fontSize:12, color:"#a09070" }}>{post.read_time} min read</span>
+          <span style={{ fontSize:12, color:"#a09070" }}>{post.read_time}</span>
           <span style={{ color:"#3a3228" }}>·</span>
           <span style={{ fontSize:12, color:"#a09070" }}>{fmt(post.date_published)}</span>
         </div>
@@ -126,7 +126,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   <div style={{ padding:"18px" }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:6, textTransform:"uppercase" }}>{rp.category}</div>
                     <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:18, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:6 }}>{rp.title}</h3>
-                    <div style={{ fontSize:11, color:"#a09070" }}>{rp.read_time} min read</div>
+                    <div style={{ fontSize:11, color:"#a09070" }}>{rp.read_time}</div>
                   </div>
                 </article>
               </Link>
