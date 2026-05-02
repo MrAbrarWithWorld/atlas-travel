@@ -4,11 +4,6 @@ import NewsletterForm from "./NewsletterForm";
 
 export const revalidate = 60;
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://prffhhkemxibujjjiyhg.supabase.co',
-  process.env.SUPABASE_SERVICE_KEY || ''
-);
-
 interface Post {
   id: string;
   title: string;
@@ -22,13 +17,13 @@ interface Post {
 }
 
 const MEGA_COLS = [
-  { heading: "SOUTH ASIA", links: [["ð§ð© Bangladesh","bangladesh"],["ð Cox's Bazar","coxs-bazar"],["ð²ð» Maldives","maldives"],["ð³ðµ Nepal","nepal"],["ð®ð³ India","india"],["ð®ð© Bali","bali"],["ð±ð° Sri Lanka","sri-lanka"]], seeAll: ["ALL SOUTH ASIA","south-asia"] },
-  { heading: "EAST ASIA", links: [["ð¯ðµ Japan","japan"],["ð¸ð¬ Singapore","singapore"],["ð¹ð­ Thailand","thailand"],["ð°ð· South Korea","south-korea"],["ð»ð³ Vietnam","vietnam"]], seeAll: ["ALL EAST ASIA","east-asia"] },
-  { heading: "EUROPE", links: [["ð«ð· France","france"],["ð®ð¹ Italy","italy"],["ðªð¸ Spain","spain"],["ð¬ð§ UK","uk"],["ð³ð± Netherlands","netherlands"]], seeAll: ["ALL EUROPE","europe"] },
-  { heading: "MIDDLE EAST", links: [["ð¦ðª Dubai","dubai"],["ð¹ð· Turkey","turkey"],["ð¯ð´ Jordan","jordan"],["ð¶ð¦ Qatar","qatar"],["ð¸ð¦ Saudi Arabia","saudi-arabia"]], seeAll: ["ALL MIDDLE EAST","middle-east"] },
-  { heading: "AMERICAS", links: [["ð¨ð¦ Canada / Banff","canada"],["ð½ New York","new-york"],["ð Los Angeles","los-angeles"],["ð²ð½ Mexico","mexico"],["ð§ð· Brazil","brazil"],["ð¨ð´ Colombia","colombia"]], seeAll: ["ALL AMERICAS","americas"] },
-  { heading: "AFRICA", links: [["ð²ð¦ Morocco","morocco"],["ðªð¬ Egypt","egypt"],["ð¿ð¦ South Africa","south-africa"],["ð¹ð¿ Tanzania","tanzania"],["ð°ðª Kenya","kenya"]], seeAll: ["ALL AFRICA","africa"] },
-  { heading: "OCEANIA", links: [["ð¦ðº Australia","australia"],["ð³ð¿ New Zealand","new-zealand"],["ð«ð¯ Fiji","fiji"]], seeAll: ["ALL OCEANIA","oceania"] },
+  { heading: "SOUTH ASIA", links: [["🇧🇩 Bangladesh","bangladesh"],["🏖 Cox's Bazar","coxs-bazar"],["🇲🇻 Maldives","maldives"],["🇳🇵 Nepal","nepal"],["🇮🇳 India","india"],["🇮🇩 Bali","bali"],["🇱🇰 Sri Lanka","sri-lanka"]], seeAll: ["ALL SOUTH ASIA","south-asia"] },
+  { heading: "EAST ASIA", links: [["🇯🇵 Japan","japan"],["🇸🇬 Singapore","singapore"],["🇹🇭 Thailand","thailand"],["🇰🇷 South Korea","south-korea"],["🇻🇳 Vietnam","vietnam"]], seeAll: ["ALL EAST ASIA","east-asia"] },
+  { heading: "EUROPE", links: [["🇫🇷 France","france"],["🇮🇹 Italy","italy"],["🇪🇸 Spain","spain"],["🇬🇧 UK","uk"],["🇳🇱 Netherlands","netherlands"]], seeAll: ["ALL EUROPE","europe"] },
+  { heading: "MIDDLE EAST", links: [["🇦🇪 Dubai","dubai"],["🇹🇷 Turkey","turkey"],["🇯🇴 Jordan","jordan"],["🇶🇦 Qatar","qatar"],["🇸🇦 Saudi Arabia","saudi-arabia"]], seeAll: ["ALL MIDDLE EAST","middle-east"] },
+  { heading: "AMERICAS", links: [["🇨🇦 Canada / Banff","canada"],["🗽 New York","new-york"],["🌆 Los Angeles","los-angeles"],["🇲🇽 Mexico","mexico"],["🇧🇷 Brazil","brazil"],["🇨🇴 Colombia","colombia"]], seeAll: ["ALL AMERICAS","americas"] },
+  { heading: "AFRICA", links: [["🇲🇦 Morocco","morocco"],["🇪🇬 Egypt","egypt"],["🇿🇦 South Africa","south-africa"],["🇹🇿 Tanzania","tanzania"],["🇰🇪 Kenya","kenya"]], seeAll: ["ALL AFRICA","africa"] },
+  { heading: "OCEANIA", links: [["🇦🇺 Australia","australia"],["🇳🇿 New Zealand","new-zealand"],["🇫🇯 Fiji","fiji"]], seeAll: ["ALL OCEANIA","oceania"] },
 ];
 
 function fmt(iso: string) {
@@ -49,7 +44,7 @@ function BlogNav() {
           <div style={{ display:"flex", alignItems:"center", gap:28, flex:1 }}>
             <Link href="/blog" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none", transition:"color 0.2s" }}>ALL</Link>
             <div className="dest-item" style={{ position:"relative" }}>
-              <button style={{ background:"none", border:"none", fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", cursor:"pointer", display:"flex", alignItems:"center", gap:4, padding:0 }} className="nav-link">DESTINATIONS â¾</button>
+              <button style={{ background:"none", border:"none", fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", cursor:"pointer", display:"flex", alignItems:"center", gap:4, padding:0 }} className="nav-link">DESTINATIONS ▾</button>
               <div className="mega-wrap" style={{ position:"absolute", top:"100%", left:-200, marginTop:8, background:"#1c1914", border:"1px solid #3a3228", borderRadius:8, padding:"24px", gridTemplateColumns:"repeat(7,160px)", gap:0, boxShadow:"0 20px 60px rgba(0,0,0,0.6)", width:"max-content" }}>
                 {MEGA_COLS.map((col) => (
                   <div key={col.heading} style={{ padding:"0 16px" }}>
@@ -57,17 +52,17 @@ function BlogNav() {
                     {col.links.map(([label,slug]) => (
                       <Link key={slug} href={`/destinations/${slug}`} className="nav-link" style={{ display:"block", fontSize:12, color:"#a09070", textDecoration:"none", padding:"4px 0", transition:"color 0.15s", whiteSpace:"nowrap" }}>{label}</Link>
                     ))}
-                    <Link href={`/destinations/${col.seeAll[1]}`} style={{ display:"block", fontSize:10, color:"#c9a96e", textDecoration:"none", marginTop:8, fontWeight:600, letterSpacing:"0.08em" }}>{col.seeAll[0]} â</Link>
+                    <Link href={`/destinations/${col.seeAll[1]}`} style={{ display:"block", fontSize:10, color:"#c9a96e", textDecoration:"none", marginTop:8, fontWeight:600, letterSpacing:"0.08em" }}>{col.seeAll[0]} →</Link>
                   </div>
                 ))}
               </div>
             </div>
             <Link href="/blog?cat=visa" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>TIPS & VISA</Link>
-            <Link href="/community" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>COMMUNITY âï¸</Link>
+            <Link href="/community" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>COMMUNITY ✍️</Link>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-            <button style={{ background:"none", border:"1px solid #3a3228", borderRadius:6, padding:"6px 12px", color:"#a09070", fontSize:12, cursor:"pointer" }}>ð EN</button>
-            <Link href="https://app.getatlas.ca" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:6, padding:"8px 18px", color:"#c9a96e", fontSize:12, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Plan Free â</Link>
+            <button style={{ background:"none", border:"1px solid #3a3228", borderRadius:6, padding:"6px 12px", color:"#a09070", fontSize:12, cursor:"pointer" }}>🌐 EN</button>
+            <Link href="https://app.getatlas.ca" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:6, padding:"8px 18px", color:"#c9a96e", fontSize:12, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Plan Free →</Link>
           </div>
         </div>
       </nav>
@@ -76,6 +71,10 @@ function BlogNav() {
 }
 
 export default async function BlogPage() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://prffhhkemxibujjjiyhg.supabase.co',
+    process.env.SUPABASE_SERVICE_KEY || ''
+  );
   const { data: posts } = await supabase
     .from("blog_posts")
     .select("id,title,slug,excerpt,cover_image_url,category,read_time_minutes,published_at,language")
@@ -100,11 +99,11 @@ export default async function BlogPage() {
           <div style={{ position:"absolute", bottom:64, left:48, right:48, maxWidth:780 }}>
             <div style={{ fontSize:11, fontWeight:700, letterSpacing:"0.18em", color:"#c9a96e", marginBottom:14, display:"flex", alignItems:"center", gap:10 }}>
               <span style={{ display:"inline-block", width:32, height:1, background:"#c9a96e" }} />
-              FEATURED STORY Â· {featured.category?.toUpperCase()}
+              FEATURED STORY · {featured.category?.toUpperCase()}
             </div>
             <h1 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:"clamp(36px,5vw,68px)", fontWeight:600, lineHeight:1.1, color:"#ede5d5", marginBottom:18 }}>{featured.title}</h1>
             {featured.excerpt && <p style={{ fontSize:16, color:"#a09070", lineHeight:1.6, marginBottom:24, maxWidth:600 }}>{featured.excerpt}</p>}
-            <Link href={`/blog/${featured.slug}`} style={{ fontSize:13, fontWeight:600, letterSpacing:"0.1em", color:"#c9a96e", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:8, borderBottom:"1px solid #c9a96e", paddingBottom:2 }}>READ THE STORY â</Link>
+            <Link href={`/blog/${featured.slug}`} style={{ fontSize:13, fontWeight:600, letterSpacing:"0.1em", color:"#c9a96e", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:8, borderBottom:"1px solid #c9a96e", paddingBottom:2 }}>READ THE STORY →</Link>
           </div>
         </div>
       )}
@@ -118,7 +117,7 @@ export default async function BlogPage() {
                   <div style={{ padding:"20px" }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:8, textTransform:"uppercase" }}>{post.category}</div>
                     <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:20, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:8 }}>{post.title}</h3>
-                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time_minutes} min read</span><span>Â·</span><span>{fmt(post.published_at)}</span></div>
+                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time_minutes} min read</span><span>·</span><span>{fmt(post.published_at)}</span></div>
                   </div>
                 </article>
               </Link>
@@ -139,7 +138,7 @@ export default async function BlogPage() {
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:4, textTransform:"uppercase" }}>{post.category}</div>
                     <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:18, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:4 }}>{post.title}</h3>
-                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time_minutes} min read</span><span>Â·</span><span>{fmt(post.published_at)}</span></div>
+                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time_minutes} min read</span><span>·</span><span>{fmt(post.published_at)}</span></div>
                   </div>
                 </article>
               </Link>
@@ -150,7 +149,7 @@ export default async function BlogPage() {
       <div style={{ background:"#231f18", borderTop:"1px solid #3a3228", borderBottom:"1px solid #3a3228", padding:"80px 24px" }}>
         <div style={{ maxWidth:600, margin:"0 auto", textAlign:"center" }}>
           <h2 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:42, fontWeight:600, color:"#ede5d5", marginBottom:16 }}>The Atlas Dispatch</h2>
-          <p style={{ fontSize:15, color:"#a09070", lineHeight:1.7, marginBottom:32 }}>Hidden gems, budget routes, and destination inspiration from across the globe â delivered to your inbox every week. No spam, just stories worth reading.</p>
+          <p style={{ fontSize:15, color:"#a09070", lineHeight:1.7, marginBottom:32 }}>Hidden gems, budget routes, and destination inspiration from across the globe — delivered to your inbox every week. No spam, just stories worth reading.</p>
           <NewsletterForm />
         </div>
       </div>
@@ -161,12 +160,12 @@ export default async function BlogPage() {
         <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", paddingLeft:64 }}>
           <div>
             <h2 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:"clamp(36px,5vw,64px)", fontWeight:600, color:"#ede5d5", lineHeight:1.15, marginBottom:24 }}>Discover the world<br /><em>with us.</em></h2>
-            <Link href="https://app.getatlas.ca" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"12px 24px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Start Planning Free â</Link>
+            <Link href="https://app.getatlas.ca" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"12px 24px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Start Planning Free →</Link>
           </div>
         </div>
       </div>
       <footer style={{ background:"#1c1914", borderTop:"1px solid #3a3228", padding:"32px 24px", textAlign:"center" }}>
-        <p style={{ fontSize:12, color:"#a09070" }}>Â© {new Date().getFullYear()} Atlas Travel Â· All rights reserved</p>
+        <p style={{ fontSize:12, color:"#a09070" }}>© {new Date().getFullYear()} Atlas Travel · All rights reserved</p>
       </footer>
     </div>
   );

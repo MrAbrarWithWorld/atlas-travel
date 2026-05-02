@@ -5,11 +5,6 @@ import ShareButtons from "./ShareButtons";
 
 export const revalidate = 60;
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://prffhhkemxibujjjiyhg.supabase.co',
-  process.env.SUPABASE_SERVICE_KEY || ''
-);
-
 interface RelatedPost {
   id: string; title: string; slug: string; excerpt: string;
   cover_image_url: string; category: string; read_time_minutes: number; published_at: string;
@@ -32,13 +27,13 @@ function BlogNav() {
           <Link href="/" style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:22, fontWeight:600, color:"#c9a96e", textDecoration:"none", letterSpacing:"0.04em" }}>Atlas</Link>
           <div style={{ display:"flex", alignItems:"center", gap:28, flex:1 }}>
             <Link href="/blog" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>ALL</Link>
-            <Link href="/blog" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>DESTINATIONS â¾</Link>
+            <Link href="/blog" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>DESTINATIONS ▾</Link>
             <Link href="/blog?cat=visa" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>TIPS & VISA</Link>
-            <Link href="/community" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>COMMUNITY âï¸</Link>
+            <Link href="/community" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>COMMUNITY ✍️</Link>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-            <button style={{ background:"none", border:"1px solid #3a3228", borderRadius:6, padding:"6px 12px", color:"#a09070", fontSize:12, cursor:"pointer" }}>ð EN</button>
-            <Link href="https://app.getatlas.ca" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:6, padding:"8px 18px", color:"#c9a96e", fontSize:12, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Plan Free â</Link>
+            <button style={{ background:"none", border:"1px solid #3a3228", borderRadius:6, padding:"6px 12px", color:"#a09070", fontSize:12, cursor:"pointer" }}>🌐 EN</button>
+            <Link href="https://app.getatlas.ca" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:6, padding:"8px 18px", color:"#c9a96e", fontSize:12, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Plan Free →</Link>
           </div>
         </div>
       </nav>
@@ -49,6 +44,11 @@ function BlogNav() {
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://prffhhkemxibujjjiyhg.supabase.co',
+    process.env.SUPABASE_SERVICE_KEY || ''
+  );
 
   const { data: post } = await supabase
     .from("blog_posts").select("*").eq("slug", slug).eq("is_published", true).single();
@@ -76,9 +76,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <div style={{ maxWidth:780, margin:"0 auto", padding:"48px 24px" }}>
         <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:20 }}>
           <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.18em", color:"#c9a96e", textTransform:"uppercase" }}>{post.category}</span>
-          <span style={{ color:"#3a3228" }}>Â·</span>
+          <span style={{ color:"#3a3228" }}>·</span>
           <span style={{ fontSize:12, color:"#a09070" }}>{post.read_time_minutes} min read</span>
-          <span style={{ color:"#3a3228" }}>Â·</span>
+          <span style={{ color:"#3a3228" }}>·</span>
           <span style={{ fontSize:12, color:"#a09070" }}>{fmt(post.published_at)}</span>
         </div>
         <h1 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:"clamp(32px,5vw,52px)", fontWeight:600, lineHeight:1.15, color:"#ede5d5", marginBottom:20 }}>{post.title}</h1>
@@ -96,7 +96,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <ShareButtons title={post.title} slug={post.slug} />
         </div>
         <div style={{ marginTop:40, paddingTop:24, borderTop:"1px solid #3a3228" }}>
-          <Link href="/blog" className="nav-link" style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:13, fontWeight:600, letterSpacing:"0.1em", color:"#a09070", textDecoration:"none" }}>â BACK TO ALL ARTICLES</Link>
+          <Link href="/blog" className="nav-link" style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:13, fontWeight:600, letterSpacing:"0.1em", color:"#a09070", textDecoration:"none" }}>← BACK TO ALL ARTICLES</Link>
         </div>
       </div>
       <div style={{ background:"#231f18", borderTop:"1px solid #3a3228", borderBottom:"1px solid #3a3228", padding:"56px 24px" }}>
@@ -110,7 +110,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             </div>
             <textarea placeholder="Your comment or tip..." rows={4} style={{ background:"#1c1914", border:"1px solid #3a3228", borderRadius:8, padding:"12px 16px", color:"#ede5d5", fontSize:14, outline:"none", resize:"vertical", fontFamily:"var(--font-dm-sans),sans-serif" }} />
             <div>
-              <button style={{ background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"12px 24px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.08em", cursor:"pointer" }}>Post Comment â</button>
+              <button style={{ background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"12px 24px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.08em", cursor:"pointer" }}>Post Comment →</button>
             </div>
           </div>
         </div>
@@ -135,7 +135,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
       )}
       <footer style={{ background:"#1c1914", borderTop:"1px solid #3a3228", padding:"32px 24px", textAlign:"center" }}>
-        <p style={{ fontSize:12, color:"#a09070" }}>Â© {new Date().getFullYear()} Atlas Travel Â· All rights reserved</p>
+        <p style={{ fontSize:12, color:"#a09070" }}>© {new Date().getFullYear()} Atlas Travel · All rights reserved</p>
       </footer>
       <style>{`
         .article-body h1,.article-body h2,.article-body h3 { font-family:var(--font-cormorant-garamond),serif; color:#ede5d5; margin-top:2em; margin-bottom:0.6em; }
