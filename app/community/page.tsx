@@ -3,6 +3,7 @@ import Link from "next/link";
 import WriteStoryForm from "./WriteStoryForm";
 import AtlasLogo from "../components/AtlasLogo";
 import MobileNav from "../components/MobileNav";
+import WriteButton from "../components/WriteButton";
 import { MEGA_COLS } from "../lib/megaCols";
 
 export const revalidate = 60;
@@ -56,7 +57,8 @@ function CommunityNav() {
             <Link href="/blog?cat=visa" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>TIPS & VISA</Link>
             <Link href="/community" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#c9a96e", textDecoration:"none" }}>COMMUNITY ✍️</Link>
           </div>
-          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <WriteButton />
             <Link href="https://app.getatlas.ca" className="desktop-nav" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:6, padding:"8px 18px", color:"#c9a96e", fontSize:12, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Plan Free →</Link>
             <MobileNav />
           </div>
