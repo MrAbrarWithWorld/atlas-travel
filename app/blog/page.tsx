@@ -1,233 +1,174 @@
-import type { Metadata } from "next";
+import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
-import Image from "next/image";
-import { supabase } from "@/lib/supabase";
-import type { BlogPost } from "@/lib/types";
-
-export const metadata: Metadata = {
-  title: "Travel Blog â Guides, Visa Tips & Destination Deep-Dives | ATLAS",
-  description: "Destination guides, visa tips, budget breakdowns, and destination deep-dives.",
-  openGraph: {
-    title: "Travel Blog | Atlas",
-    description: "Discover travel guides, destination insights, and expert tips.",
-    url: "https://getatlas.ca/blog",
-  },
-};
 
 export const revalidate = 60;
 
-async function getBlogPosts(): Promise<BlogPost[]> {
-  const { data, error } = await supabase
-    .from("blog_posts")
-    .select("slug, title, description, category, date_published, read_time, hero_emoji, cover_image_url, is_published")
-    .eq("is_published", true)
-    .order("date_published", { ascending: false });
-  if (error) { console.error("Error fetching blog posts:", error); return []; }
-  return data as BlogPost[];
-}
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+);
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-CA", { month: "long", year: "numeric" });
-}
-
-function catLabel(cat: string): string {
-  const map: Record<string, string> = {
-    "destination guides": "Destination Guides",
-    "destination guide": "Destination Guide",
-    "travel tips": "Travel Tips",
-    "visa guides": "Visa Guides",
-    "budget travel": "Budget Travel",
-    "food & culture": "Food & Culture",
-    "adventure travel": "Adventure Travel",
-    "travel planning": "Travel Planning",
-    "community stories": "Community Stories",
-    "americas": "Americas",
-    "europe": "Europe",
-    "asia": "Asia",
-    "middle east": "Middle East",
-    "africa": "Africa",
-    "oceania": "Oceania",
-  };
-  return map[cat?.toLowerCase()] ?? cat ?? "Article";
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  cover_image_url: string;
+  category: string;
+  read_time_minutes: number;
+  published_at: string;
+  language: string;
 }
 
 const MEGA_COLS = [
-  { icon: "ð", name: "Asia", links: [["ð§ð© Bangladesh","bangladesh"],["ð²ð» Maldives","maldives"],["ð³ðµ Nepal","nepal"],["ð¯ðµ Japan","japan"],["ð®ð© Bali","bali"],["ð¸ð¬ Singapore","singapore"],["ð¹ð­ Thailand","thailand"]] },
-  { icon: "ð", name: "Europe", links: [["ð«ð· France","france"],["ð®ð¹ Italy","italy"],["ðªð¸ Spain","spain"],["ð¬ð§ UK","uk"],["ð³ð± Netherlands","netherlands"]] },
-  { icon: "ð", name: "Middle East", links: [["ð¦ðª Dubai","dubai"],["ð¹ð· Turkey","turkey"],["ð¯ð´ Jordan","jordan"],["ð¶ð¦ Qatar","qatar"]] },
-  { icon: "ð", name: "Americas", links: [["ð¨ð¦ Canada","canada"],["ðºð¸ New York","new-york"],["ð²ð½ Mexico","mexico"],["ð§ð· Brazil","brazil"]] },
-  { icon: "ð", name: "Africa", links: [["ð²ð¦ Morocco","morocco"],["ðªð¬ Egypt","egypt"],["ð¿ð¦ South Africa","south-africa"],["ð°ðª Kenya","kenya"]] },
-  { icon: "ð", name: "Oceania", links: [["ð¦ðº Australia","australia"],["ð³ð¿ New Zealand","new-zealand"],["ð«ð¯ Fiji","fiji"]] },
+  { heading: "SOUTH ASIA", links: [["🇧🇩 Bangladesh","bangladesh"],["🏖 Cox's Bazar","coxs-bazar"],["🇲🇻 Maldives","maldives"],["🇳🇵 Nepal","nepal"],["🇮🇳 India","india"],["🇮🇩 Bali","bali"],["🇱🇰 Sri Lanka","sri-lanka"]], seeAll: ["ALL SOUTH ASIA","south-asia"] },
+  { heading: "EAST ASIA", links: [["🇯🇵 Japan","japan"],["🇸🇬 Singapore","singapore"],["🇹🇭 Thailand","thailand"],["🇰🇷 South Korea","south-korea"],["🇻🇳 Vietnam","vietnam"]], seeAll: ["ALL EAST ASIA","east-asia"] },
+  { heading: "EUROPE", links: [["🇫🇷 France","france"],["🇮🇹 Italy","italy"],["🇪🇸 Spain","spain"],["🇬🇧 UK","uk"],["🇳🇱 Netherlands","netherlands"]], seeAll: ["ALL EUROPE","europe"] },
+  { heading: "MIDDLE EAST", links: [["🇦🇪 Dubai","dubai"],["🇹🇷 Turkey","turkey"],["🇯🇴 Jordan","jordan"],["🇶🇦 Qatar","qatar"],["🇸🇦 Saudi Arabia","saudi-arabia"]], seeAll: ["ALL MIDDLE EAST","middle-east"] },
+  { heading: "AMERICAS", links: [["🇨🇦 Canada / Banff","canada"],["🗽 New York","new-york"],["🌆 Los Angeles","los-angeles"],["🇲🇽 Mexico","mexico"],["🇧🇷 Brazil","brazil"],["🇨🇴 Colombia","colombia"]], seeAll: ["ALL AMERICAS","americas"] },
+  { heading: "AFRICA", links: [["🇲🇦 Morocco","morocco"],["🇪🇬 Egypt","egypt"],["🇿🇦 South Africa","south-africa"],["🇹🇿 Tanzania","tanzania"],["🇰🇪 Kenya","kenya"]], seeAll: ["ALL AFRICA","africa"] },
+  { heading: "OCEANIA", links: [["🇦🇺 Australia","australia"],["🇳🇿 New Zealand","new-zealand"],["🇫🇯 Fiji","fiji"]], seeAll: ["ALL OCEANIA","oceania"] },
 ];
 
-export default async function BlogListingPage() {
-  const posts = await getBlogPosts();
-  const featured = posts[0];
-  const rest = posts.slice(1);
+function fmt(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+function BlogNav() {
+  return (
+    <>
+      <style>{`
+        .dest-item:hover .mega-wrap { display: grid; }
+        .mega-wrap { display: none; }
+        .nav-link:hover { color: #c9a96e !important; }
+      `}</style>
+      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background:"rgba(28,25,20,0.97)", borderBottom:"1px solid #3a3228", backdropFilter:"blur(8px)" }}>
+        <div style={{ maxWidth:1280, margin:"0 auto", padding:"0 24px", height:60, display:"flex", alignItems:"center", gap:36 }}>
+          <Link href="/" style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:22, fontWeight:600, color:"#c9a96e", textDecoration:"none", letterSpacing:"0.04em", marginRight:8 }}>Atlas</Link>
+          <div style={{ display:"flex", alignItems:"center", gap:28, flex:1 }}>
+            <Link href="/blog" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none", transition:"color 0.2s" }}>ALL</Link>
+            <div className="dest-item" style={{ position:"relative" }}>
+              <button style={{ background:"none", border:"none", fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", cursor:"pointer", display:"flex", alignItems:"center", gap:4, padding:0 }} className="nav-link">DESTINATIONS ▾</button>
+              <div className="mega-wrap" style={{ position:"absolute", top:"100%", left:-200, marginTop:8, background:"#1c1914", border:"1px solid #3a3228", borderRadius:8, padding:"24px", gridTemplateColumns:"repeat(7,160px)", gap:0, boxShadow:"0 20px 60px rgba(0,0,0,0.6)", width:"max-content" }}>
+                {MEGA_COLS.map((col) => (
+                  <div key={col.heading} style={{ padding:"0 16px" }}>
+                    <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:12, borderBottom:"1px solid #3a3228", paddingBottom:8 }}>{col.heading}</div>
+                    {col.links.map(([label,slug]) => (
+                      <Link key={slug} href={`/destinations/${slug}`} className="nav-link" style={{ display:"block", fontSize:12, color:"#a09070", textDecoration:"none", padding:"4px 0", transition:"color 0.15s", whiteSpace:"nowrap" }}>{label}</Link>
+                    ))}
+                    <Link href={`/destinations/${col.seeAll[1]}`} style={{ display:"block", fontSize:10, color:"#c9a96e", textDecoration:"none", marginTop:8, fontWeight:600, letterSpacing:"0.08em" }}>{col.seeAll[0]} →</Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <Link href="/blog?cat=visa" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>TIPS & VISA</Link>
+            <Link href="/community" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>COMMUNITY ✍️</Link>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+            <button style={{ background:"none", border:"1px solid #3a3228", borderRadius:6, padding:"6px 12px", color:"#a09070", fontSize:12, cursor:"pointer" }}>🌐 EN</button>
+            <Link href="https://app.getatlas.ca" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:6, padding:"8px 18px", color:"#c9a96e", fontSize:12, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Plan Free →</Link>
+          </div>
+        </div>
+      </nav>
+    </>
+  );
+}
+
+export default async function BlogPage() {
+  const { data: posts } = await supabase
+    .from("blog_posts")
+    .select("id,title,slug,excerpt,cover_image_url,category,read_time_minutes,published_at,language")
+    .eq("is_published", true)
+    .eq("language", "en")
+    .order("published_at", { ascending: false })
+    .limit(30);
+
+  const allPosts: Post[] = posts ?? [];
+  const featured = allPosts[0];
+  const topPosts = allPosts.slice(1, 5);
+  const restPosts = allPosts.slice(5);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#1c1914", color: "#ede5d5", fontFamily: "DM Sans, sans-serif" }}>
-      <style>{`
-        .mega-wrap { display: none; }
-        .dest-item:hover .mega-wrap { display: grid; }
-        .blog-card:hover { border-color: rgba(201,169,110,0.4) !important; }
-        @media (max-width: 900px) { .nav-center { display: none !important; } }
-        @media (max-width: 900px) { .hero-text { padding: 2rem !important; } }
-        @media (max-width: 768px) { .grid-2col { grid-template-columns: 1fr !important; } }
-        @media (max-width: 768px) { .grid-4col { grid-template-columns: 1fr 1fr !important; } }
-      `}</style>
-
-      {/* NAVBAR */}
-      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "#1c1914", borderBottom: "1px solid #3a3228", height: "56px", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 2rem" }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "5px", textDecoration: "none" }}>
-          <span style={{ color: "#c9a96e", fontSize: "8px" }}>â</span>
-          <span style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "1.3rem", color: "#e8c994", fontWeight: 500, letterSpacing: "0.05em" }}>Atlas</span>
-        </Link>
-
-        <div className="nav-center" style={{ display: "flex", alignItems: "center", height: "100%" }}>
-          <Link href="/blog" style={{ padding: "0 1rem", height: "56px", display: "flex", alignItems: "center", color: "#ede5d5", textDecoration: "none", fontSize: "0.78rem", fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase" }}>All</Link>
-
-          <div className="dest-item" style={{ position: "relative", height: "56px", display: "flex", alignItems: "center" }}>
-            <button style={{ padding: "0 1rem", height: "56px", background: "none", border: "none", color: "#ede5d5", cursor: "pointer", fontSize: "0.78rem", fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "4px" }}>
-              Destinations <span style={{ fontSize: "0.55rem", opacity: 0.7 }}>â¾</span>
-            </button>
-            <div className="mega-wrap" style={{ position: "absolute", top: "56px", left: "50%", transform: "translateX(-50%)", background: "#231f18", border: "1px solid #3a3228", borderRadius: "8px", padding: "1.5rem", gridTemplateColumns: "repeat(6, 1fr)", gap: "0 1.5rem", minWidth: "780px", boxShadow: "0 20px 60px rgba(0,0,0,0.6)", zIndex: 200 }}>
-              {MEGA_COLS.map(col => (
-                <div key={col.name}>
-                  <div style={{ color: "#c9a96e", fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.6rem", whiteSpace: "nowrap" }}>{col.icon} {col.name}</div>
-                  {col.links.map(([label, slug]) => (
-                    <Link key={slug} href={`/blog?destination=${slug}`} style={{ display: "block", color: "#a09070", fontSize: "0.75rem", padding: "0.15rem 0", textDecoration: "none", whiteSpace: "nowrap" }}>{label}</Link>
-                  ))}
-                </div>
-              ))}
+    <div style={{ background:"#1c1914", minHeight:"100vh", color:"#ede5d5", fontFamily:"var(--font-dm-sans),sans-serif" }}>
+      <BlogNav />
+      {featured && (
+        <div style={{ position:"relative", height:"100vh", overflow:"hidden" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={featured.cover_image_url} alt={featured.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />
+          <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(28,25,20,0.95) 0%,rgba(28,25,20,0.4) 50%,rgba(28,25,20,0.15) 100%)" }} />
+          <div style={{ position:"absolute", bottom:64, left:48, right:48, maxWidth:780 }}>
+            <div style={{ fontSize:11, fontWeight:700, letterSpacing:"0.18em", color:"#c9a96e", marginBottom:14, display:"flex", alignItems:"center", gap:10 }}>
+              <span style={{ display:"inline-block", width:32, height:1, background:"#c9a96e" }} />
+              FEATURED STORY · {featured.category?.toUpperCase()}
             </div>
+            <h1 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:"clamp(36px,5vw,68px)", fontWeight:600, lineHeight:1.1, color:"#ede5d5", marginBottom:18 }}>{featured.title}</h1>
+            {featured.excerpt && <p style={{ fontSize:16, color:"#a09070", lineHeight:1.6, marginBottom:24, maxWidth:600 }}>{featured.excerpt}</p>}
+            <Link href={`/blog/${featured.slug}`} style={{ fontSize:13, fontWeight:600, letterSpacing:"0.1em", color:"#c9a96e", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:8, borderBottom:"1px solid #c9a96e", paddingBottom:2 }}>READ THE STORY →</Link>
           </div>
-
-          <Link href="/blog?category=tips-visa" style={{ padding: "0 1rem", height: "56px", display: "flex", alignItems: "center", color: "#ede5d5", textDecoration: "none", fontSize: "0.78rem", fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase" }}>Tips & Visa</Link>
-          <Link href="/blog?category=community" style={{ padding: "0 1rem", height: "56px", display: "flex", alignItems: "center", gap: "4px", color: "#ede5d5", textDecoration: "none", fontSize: "0.78rem", fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase" }}>Community <span>âï¸</span></Link>
         </div>
-
-        <Link href="https://getatlas.ca" style={{ padding: "0.4rem 1.1rem", border: "1px solid #c9a96e", borderRadius: "20px", color: "#c9a96e", textDecoration: "none", fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.03em", whiteSpace: "nowrap" }}>Plan Free â</Link>
-      </nav>
-
-      {/* FEATURED HERO */}
-      {featured ? (
-        <Link href={`/blog/${featured.slug}`} style={{ display: "block", textDecoration: "none" }}>
-          <section style={{ position: "relative", height: "100vh", minHeight: "600px", overflow: "hidden" }}>
-            {featured.cover_image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={featured.cover_image_url} alt={featured.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-            ) : (
-              <div style={{ position: "absolute", inset: 0, background: "#231f18", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8rem" }}>{featured.hero_emoji ?? "âï¸"}</div>
-            )}
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.06) 100%)" }} />
-            <div className="hero-text" style={{ position: "absolute", bottom: 0, left: 0, padding: "3.5rem 4rem", maxWidth: "820px" }}>
-              <p style={{ color: "#c9a96e", fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.1rem" }}>
-                <span style={{ display: "inline-block", width: "2rem", height: "1px", background: "#c9a96e" }} />
-                Featured Story Â· {catLabel(featured.category)}
-              </p>
-              <h1 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "clamp(2.4rem, 5vw, 4.2rem)", fontWeight: 300, color: "#fff", lineHeight: 1.1, marginBottom: "1rem" }}>{featured.title}</h1>
-              <p style={{ color: "rgba(255,255,255,0.72)", fontSize: "1rem", lineHeight: 1.65, marginBottom: "1.5rem" }}>{featured.description}</p>
-              <span style={{ color: "#c9a96e", fontSize: "0.8rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "1rem" }}>
-                Read the story <span style={{ display: "inline-block", width: "3rem", height: "1px", background: "#c9a96e" }} />
-              </span>
-            </div>
-          </section>
-        </Link>
-      ) : (
-        <div style={{ height: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#a09070", fontSize: "1.2rem" }}>No posts yet âï¸</div>
       )}
-
-      {/* LATEST STORIES */}
-      {rest.length > 0 && (
-        <main style={{ maxWidth: "1280px", margin: "0 auto", padding: "5rem 2rem 4rem" }}>
-          <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "2rem", fontWeight: 400, color: "#e8c994", marginBottom: "2.5rem" }}>Latest Stories</h2>
-
-          <div className="grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
-            {rest.slice(0, 2).map(post => (
-              <Link key={post.slug} href={`/blog/${post.slug}`} style={{ textDecoration: "none" }}>
-                <article className="blog-card" style={{ background: "#231f18", border: "1px solid #3a3228", borderRadius: "12px", overflow: "hidden", transition: "border-color 0.2s" }}>
-                  {post.cover_image_url ? (
-                    <div style={{ position: "relative", height: "220px" }}>
-                      <Image src={post.cover_image_url} alt={post.title} fill style={{ objectFit: "cover" }} />
-                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 55%, rgba(0,0,0,0.5))" }} />
-                    </div>
-                  ) : (
-                    <div style={{ height: "140px", background: "#2a251d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "4rem" }}>{post.hero_emoji ?? "âï¸"}</div>
-                  )}
-                  <div style={{ padding: "1.25rem 1.5rem 1.5rem" }}>
-                    <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.6rem" }}>
-                      <span style={{ fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#c9a96e", background: "rgba(201,169,110,0.12)", padding: "0.15rem 0.55rem", borderRadius: "20px", border: "1px solid rgba(201,169,110,0.2)" }}>New</span>
-                      <span style={{ fontSize: "0.65rem", color: "#a09070", textTransform: "uppercase", letterSpacing: "0.08em" }}>{catLabel(post.category)}</span>
-                    </div>
-                    <h3 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "1.4rem", fontWeight: 600, color: "#ede5d5", lineHeight: 1.25, marginBottom: "0.5rem" }}>{post.hero_emoji} {post.title}</h3>
-                    <p style={{ color: "#a09070", fontSize: "0.85rem", lineHeight: 1.6, marginBottom: "0.75rem" }}>{post.description?.slice(0, 110)}{(post.description?.length ?? 0) > 110 ? "â¦" : ""}</p>
-                    <div style={{ fontSize: "0.72rem", color: "#a09070" }}>{post.read_time} Â· {formatDate(post.date_published)}</div>
+      {topPosts.length > 0 && (
+        <div style={{ maxWidth:1280, margin:"0 auto", padding:"64px 24px 40px" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:24 }}>
+            {topPosts.map((post) => (
+              <Link key={post.id} href={`/blog/${post.slug}`} style={{ textDecoration:"none" }}>
+                <article style={{ background:"#231f18", borderRadius:12, overflow:"hidden", border:"1px solid #3a3228" }}>
+                  {post.cover_image_url && <div style={{ height:180 }}><img src={post.cover_image_url} alt={post.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} /></div>}
+                  <div style={{ padding:"20px" }}>
+                    <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:8, textTransform:"uppercase" }}>{post.category}</div>
+                    <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:20, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:8 }}>{post.title}</h3>
+                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time_minutes} min read</span><span>·</span><span>{fmt(post.published_at)}</span></div>
                   </div>
                 </article>
               </Link>
             ))}
           </div>
-
-          {rest.slice(2, 6).length > 0 && (
-            <div className="grid-4col" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem", marginBottom: "4rem" }}>
-              {rest.slice(2, 6).map(post => (
-                <Link key={post.slug} href={`/blog/${post.slug}`} style={{ textDecoration: "none" }}>
-                  <article className="blog-card" style={{ background: "#231f18", border: "1px solid #3a3228", borderRadius: "10px", overflow: "hidden", height: "100%", display: "flex", flexDirection: "column", transition: "border-color 0.2s" }}>
-                    {post.cover_image_url ? (
-                      <div style={{ position: "relative", height: "130px" }}>
-                        <Image src={post.cover_image_url} alt={post.title} fill style={{ objectFit: "cover" }} />
-                      </div>
-                    ) : (
-                      <div style={{ height: "90px", background: "#2a251d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2.5rem" }}>{post.hero_emoji ?? "âï¸"}</div>
-                    )}
-                    <div style={{ padding: "0.9rem 1rem 1rem", flex: 1, display: "flex", flexDirection: "column" }}>
-                      <div style={{ fontSize: "0.6rem", color: "#c9a96e", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.4rem" }}>{catLabel(post.category)}</div>
-                      <h3 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "1rem", fontWeight: 600, color: "#ede5d5", lineHeight: 1.3, flex: 1, marginBottom: "0.5rem" }}>{post.hero_emoji} {post.title}</h3>
-                      <div style={{ fontSize: "0.7rem", color: "#a09070" }}>{post.read_time} Â· {formatDate(post.date_published)}</div>
-                    </div>
-                  </article>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {rest.slice(6).length > 0 && (
-            <>
-              <h2 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "1.6rem", fontWeight: 400, color: "#e8c994", marginBottom: "1.5rem" }}>
-                All Articles <span style={{ color: "#a09070", fontSize: "1rem", fontFamily: "DM Sans, sans-serif" }}>{posts.length} total</span>
-              </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "0.75rem" }}>
-                {rest.slice(6).map(post => (
-                  <Link key={post.slug} href={`/blog/${post.slug}`} style={{ textDecoration: "none" }}>
-                    <article className="blog-card" style={{ display: "flex", gap: "0.75rem", padding: "0.75rem", borderRadius: "8px", background: "#231f18", border: "1px solid #3a3228", transition: "border-color 0.2s" }}>
-                      {post.cover_image_url ? (
-                        <div style={{ position: "relative", width: "64px", height: "64px", flexShrink: 0, borderRadius: "6px", overflow: "hidden" }}>
-                          <Image src={post.cover_image_url} alt={post.title} fill style={{ objectFit: "cover" }} />
-                        </div>
-                      ) : (
-                        <div style={{ width: "64px", height: "64px", flexShrink: 0, borderRadius: "6px", background: "#2a251d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.8rem" }}>{post.hero_emoji ?? "âï¸"}</div>
-                      )}
-                      <div>
-                        <div style={{ fontSize: "0.6rem", color: "#a09070", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.2rem" }}>{catLabel(post.category)}</div>
-                        <h3 style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "0.92rem", fontWeight: 600, color: "#ede5d5", lineHeight: 1.3, marginBottom: "0.2rem" }}>{post.hero_emoji} {post.title}</h3>
-                        <div style={{ fontSize: "0.68rem", color: "#a09070" }}>{post.read_time} Â· {formatDate(post.date_published)}</div>
-                      </div>
-                    </article>
-                  </Link>
-                ))}
-              </div>
-            </>
-          )}
-        </main>
+        </div>
       )}
-
-      <footer style={{ borderTop: "1px solid #3a3228", marginTop: "3rem", padding: "3rem 2rem", textAlign: "center" }}>
-        <p style={{ fontFamily: "Cormorant Garamond, serif", fontSize: "1.3rem", color: "#e8c994", marginBottom: "0.5rem" }}>Discover the world with us.</p>
-        <p style={{ color: "#a09070", fontSize: "0.85rem", marginBottom: "1.5rem" }}>Hidden gems, budget routes, and destination inspiration â delivered to your inbox every week.</p>
-        <Link href="https://getatlas.ca" style={{ display: "inline-block", padding: "0.6rem 1.5rem", background: "#c9a96e", color: "#1c1914", borderRadius: "20px", textDecoration: "none", fontSize: "0.85rem", fontWeight: 700 }}>Plan Free â</Link>
-        <p style={{ marginTop: "2rem", color: "#3a3228", fontSize: "0.72rem" }}>Â© {new Date().getFullYear()} Atlas Travel. All rights reserved.</p>
+      {restPosts.length > 0 && (
+        <div style={{ maxWidth:1280, margin:"0 auto", padding:"0 24px 64px" }}>
+          <h2 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:32, fontWeight:600, color:"#ede5d5", marginBottom:32, borderBottom:"1px solid #3a3228", paddingBottom:16 }}>
+            All Articles <span style={{ fontSize:18, color:"#a09070", fontWeight:400 }}>{allPosts.length} total</span>
+          </h2>
+          <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
+            {restPosts.map((post) => (
+              <Link key={post.id} href={`/blog/${post.slug}`} style={{ textDecoration:"none" }}>
+                <article style={{ display:"flex", gap:20, padding:"20px 0", borderBottom:"1px solid #3a3228", alignItems:"center" }}>
+                  {post.cover_image_url && <div style={{ width:100, height:72, flexShrink:0, borderRadius:8, overflow:"hidden" }}><img src={post.cover_image_url} alt={post.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} /></div>}
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:4, textTransform:"uppercase" }}>{post.category}</div>
+                    <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:18, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:4 }}>{post.title}</h3>
+                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time_minutes} min read</span><span>·</span><span>{fmt(post.published_at)}</span></div>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+      <div style={{ background:"#231f18", borderTop:"1px solid #3a3228", borderBottom:"1px solid #3a3228", padding:"80px 24px" }}>
+        <div style={{ maxWidth:600, margin:"0 auto", textAlign:"center" }}>
+          <h2 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:42, fontWeight:600, color:"#ede5d5", marginBottom:16 }}>The Atlas Dispatch</h2>
+          <p style={{ fontSize:15, color:"#a09070", lineHeight:1.7, marginBottom:32 }}>Hidden gems, budget routes, and destination inspiration from across the globe — delivered to your inbox every week. No spam, just stories worth reading.</p>
+          <form style={{ display:"flex", gap:12, maxWidth:440, margin:"0 auto" }} onSubmit={(e)=>e.preventDefault()}>
+            <input type="email" placeholder="your@email.com" style={{ flex:1, background:"#1c1914", border:"1px solid #3a3228", borderRadius:8, padding:"12px 16px", color:"#ede5d5", fontSize:14, outline:"none" }} />
+            <button type="submit" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"12px 20px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.06em", cursor:"pointer", whiteSpace:"nowrap" }}>Subscribe → It&apos;s Free</button>
+          </form>
+        </div>
+      </div>
+      <div style={{ position:"relative", height:420, overflow:"hidden" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1600&h=600&fit=crop&q=80" alt="Discover the world" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to right,rgba(28,25,20,0.75) 0%,rgba(28,25,20,0.3) 60%,rgba(28,25,20,0.1) 100%)" }} />
+        <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", paddingLeft:64 }}>
+          <div>
+            <h2 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:"clamp(36px,5vw,64px)", fontWeight:600, color:"#ede5d5", lineHeight:1.15, marginBottom:24 }}>Discover the world<br /><em>with us.</em></h2>
+            <Link href="https://app.getatlas.ca" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"12px 24px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Start Planning Free →</Link>
+          </div>
+        </div>
+      </div>
+      <footer style={{ background:"#1c1914", borderTop:"1px solid #3a3228", padding:"32px 24px", textAlign:"center" }}>
+        <p style={{ fontSize:12, color:"#a09070" }}>© {new Date().getFullYear()} Atlas Travel · All rights reserved</p>
       </footer>
     </div>
   );
