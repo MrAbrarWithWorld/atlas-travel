@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
@@ -15,10 +16,14 @@ type ModalState = 'auth' | 'magic_sent' | 'no_subscription' | 'loading';
 
 export default function WriteButton() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [modalState, setModalState] = useState<ModalState>('auth');
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // Enable portal after hydration
+  useEffect(() => { setMounted(true); }, []);
 
   // Close on Escape
   useEffect(() => {
@@ -113,8 +118,8 @@ export default function WriteButton() {
         ✍️ Write
       </button>
 
-      {/* Modal overlay */}
-      {open && (
+      {/* Modal overlay — portalled to document.body to escape nav stacking context */}
+      {mounted && open && createPortal(
         <div
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
           style={{
@@ -266,7 +271,8 @@ export default function WriteButton() {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
