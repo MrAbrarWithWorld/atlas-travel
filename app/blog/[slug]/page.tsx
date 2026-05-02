@@ -1,339 +1,171 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
-import Image from "next/image";
-import { supabase } from "@/lib/supabase";
-import type { BlogPost } from "@/lib/types";
-import ReadingProgress from "./ReadingProgress";
-import TableOfContents from "./TableOfContents";
-import BackToTop from "./BackToTop";
+import { notFound } from "next/navigation";
 
 export const revalidate = 60;
 
-interface Props {
-  params: Promise<{ slug: string }>;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+);
+
+interface RelatedPost {
+  id: string; title: string; slug: string; excerpt: string;
+  cover_image_url: string; category: string; read_time_minutes: number; published_at: string;
 }
 
-async function getPost(slug: string): Promise<BlogPost | null> {
-  const { data, error } = await supabase
-    .from("blog_posts")
-    .select("*")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .single();
-
-  if (error || !data) return null;
-  return data as BlogPost;
+function fmt(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" });
 }
 
-async function getAllPublishedSlugs(): Promise<string[]> {
-  const { data } = await supabase
-    .from("blog_posts")
-    .select("slug")
-    .eq("is_published", true);
-  return (data ?? []).map((r) => r.slug);
+function BlogNav() {
+  return (
+    <>
+      <style>{`
+        .nav-link:hover { color: #c9a96e !important; }
+        .share-btn:hover { border-color: #c9a96e !important; color: #c9a96e !important; }
+        .share-btn { transition: all 0.2s; }
+      `}</style>
+      <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, background:"rgba(28,25,20,0.97)", borderBottom:"1px solid #3a3228", backdropFilter:"blur(8px)" }}>
+        <div style={{ maxWidth:1280, margin:"0 auto", padding:"0 24px", height:60, display:"flex", alignItems:"center", gap:36 }}>
+          <Link href="/" style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:22, fontWeight:600, color:"#c9a96e", textDecoration:"none", letterSpacing:"0.04em" }}>Atlas</Link>
+          <div style={{ display:"flex", alignItems:"center", gap:28, flex:1 }}>
+            <Link href="/blog" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>ALL</Link>
+            <Link href="/blog" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>DESTINATIONS ▾</Link>
+            <Link href="/blog?cat=visa" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>TIPS & VISA</Link>
+            <Link href="/community" className="nav-link" style={{ fontSize:12, fontWeight:600, letterSpacing:"0.1em", color:"#ede5d5", textDecoration:"none" }}>COMMUNITY ✍️</Link>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+            <button style={{ background:"none", border:"1px solid #3a3228", borderRadius:6, padding:"6px 12px", color:"#a09070", fontSize:12, cursor:"pointer" }}>🌐 EN</button>
+            <Link href="https://app.getatlas.ca" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:6, padding:"8px 18px", color:"#c9a96e", fontSize:12, fontWeight:600, letterSpacing:"0.08em", textDecoration:"none" }}>Plan Free →</Link>
+          </div>
+        </div>
+      </nav>
+    </>
+  );
 }
 
-export async function generateStaticParams() {
-  const slugs = await getAllPublishedSlugs();
-  return slugs.map((slug) => ({ slug }));
+function ShareButtons({ title, slug }: { title: string; slug: string }) {
+  const url = `https://getatlas.ca/blog/${slug}`;
+  const eu = encodeURIComponent(url);
+  const et = encodeURIComponent(title);
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
+      <span style={{ fontSize:12, color:"#a09070", fontWeight:600, letterSpacing:"0.1em" }}>SHARE:</span>
+      <a href={`https://wa.me/?text=${et}%20${eu}`} target="_blank" rel="noopener noreferrer" className="share-btn" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", border:"1px solid #3a3228", borderRadius:6, color:"#ede5d5", fontSize:12, textDecoration:"none", fontWeight:500 }}>💬 WhatsApp</a>
+      <a href={`https://www.facebook.com/sharer/sharer.php?u=${eu}`} target="_blank" rel="noopener noreferrer" className="share-btn" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", border:"1px solid #3a3228", borderRadius:6, color:"#ede5d5", fontSize:12, textDecoration:"none", fontWeight:500 }}>📘 Facebook</a>
+      <a href={`https://twitter.com/intent/tweet?text=${et}&url=${eu}`} target="_blank" rel="noopener noreferrer" className="share-btn" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", border:"1px solid #3a3228", borderRadius:6, color:"#ede5d5", fontSize:12, textDecoration:"none", fontWeight:500 }}>𝕏 Twitter</a>
+      <button onClick={()=>navigator.clipboard.writeText(url)} className="share-btn" style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"7px 14px", border:"1px solid #3a3228", borderRadius:6, color:"#ede5d5", fontSize:12, background:"none", cursor:"pointer", fontWeight:500 }}>🔗 Copy Link</button>
+    </div>
+  );
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const post = await getPost(slug);
 
-  if (!post) {
-    return { title: "Post Not Found" };
-  }
-
-  const url = `https://getatlas.ca/blog/${post.slug}`;
-
-  return {
-    title: post.title,
-    description: post.description,
-    keywords: [
-      post.category,
-      ...(post.related_destinations ?? []),
-      "travel guide",
-      "Atlas travel",
-    ],
-    openGraph: {
-      title: post.title,
-      description: post.description,
-      url,
-      type: "article",
-      publishedTime: post.date_published,
-      images: post.cover_image_url
-        ? [{ url: post.cover_image_url, width: 1200, height: 630, alt: post.title }]
-        : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: post.title,
-      description: post.description,
-      images: post.cover_image_url ? [post.cover_image_url] : undefined,
-    },
-    alternates: {
-      canonical: url,
-    },
-  };
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-CA", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-const CATEGORY_COLORS: Record<string, string> = {
-  "destination guide": "bg-blue-900/40 text-blue-300 border-blue-700/40",
-  "travel tips": "bg-green-900/40 text-green-300 border-green-700/40",
-  "food & culture": "bg-orange-900/40 text-orange-300 border-orange-700/40",
-  adventure: "bg-purple-900/40 text-purple-300 border-purple-700/40",
-  budget: "bg-yellow-900/40 text-yellow-300 border-yellow-700/40",
-  default: "bg-atlas-bg-card text-atlas-text-muted border-atlas-border",
-};
-
-function getCategoryColor(category: string): string {
-  return CATEGORY_COLORS[category?.toLowerCase()] ?? CATEGORY_COLORS.default;
-}
-
-export default async function BlogPostPage({ params }: Props) {
-  const { slug } = await params;
-  const post = await getPost(slug);
+  const { data: post } = await supabase
+    .from("blog_posts").select("*").eq("slug", slug).eq("is_published", true).single();
 
   if (!post) notFound();
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: post.title,
-    description: post.description,
-    image: post.cover_image_url ?? undefined,
-    datePublished: post.date_published,
-    publisher: {
-      "@type": "Organization",
-      name: "Atlas Travel",
-      url: "https://getatlas.ca",
-    },
-    url: `https://getatlas.ca/blog/${post.slug}`,
-  };
+  const { data: related } = await supabase
+    .from("blog_posts")
+    .select("id,title,slug,excerpt,cover_image_url,category,read_time_minutes,published_at")
+    .eq("is_published", true).eq("language", post.language || "en")
+    .neq("slug", slug).order("published_at", { ascending: false }).limit(4);
+
+  const relatedPosts: RelatedPost[] = related ?? [];
 
   return (
-    <>
-      {/* JSON-LD structured data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-
-      {/* Reading progress bar */}
-      <ReadingProgress />
-
-      <div className="min-h-screen bg-atlas-bg">
-        {/* Navigation */}
-        <nav className="border-b border-atlas-border/50 px-6 py-4 sticky top-0 z-40 bg-atlas-bg/95 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl font-serif text-atlas-gold-light font-semibold tracking-wide">
-                Atlas
-              </span>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/blog"
-                className="text-atlas-text-muted hover:text-atlas-text transition-colors text-sm font-medium"
-              >
-                ← All Articles
-              </Link>
-              <Link
-                href="https://app.getatlas.ca"
-                className="px-4 py-2 rounded-full bg-atlas-gold text-atlas-bg text-sm font-semibold hover:bg-atlas-gold-light transition-colors"
-              >
-                Plan a Trip
-              </Link>
+    <div style={{ background:"#1c1914", minHeight:"100vh", color:"#ede5d5", fontFamily:"var(--font-dm-sans),sans-serif" }}>
+      <BlogNav />
+      {post.cover_image_url && (
+        <div style={{ position:"relative", height:"60vh", minHeight:380, overflow:"hidden", marginTop:60 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={post.cover_image_url} alt={post.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />
+          <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(28,25,20,0.9) 0%,rgba(28,25,20,0.2) 100%)" }} />
+        </div>
+      )}
+      <div style={{ maxWidth:780, margin:"0 auto", padding:"48px 24px" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:20 }}>
+          <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.18em", color:"#c9a96e", textTransform:"uppercase" }}>{post.category}</span>
+          <span style={{ color:"#3a3228" }}>·</span>
+          <span style={{ fontSize:12, color:"#a09070" }}>{post.read_time_minutes} min read</span>
+          <span style={{ color:"#3a3228" }}>·</span>
+          <span style={{ fontSize:12, color:"#a09070" }}>{fmt(post.published_at)}</span>
+        </div>
+        <h1 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:"clamp(32px,5vw,52px)", fontWeight:600, lineHeight:1.15, color:"#ede5d5", marginBottom:20 }}>{post.title}</h1>
+        {post.excerpt && <p style={{ fontSize:18, color:"#a09070", lineHeight:1.7, marginBottom:24, borderLeft:"3px solid #c9a96e", paddingLeft:16 }}>{post.excerpt}</p>}
+        <div style={{ marginBottom:40, paddingBottom:32, borderBottom:"1px solid #3a3228" }}>
+          <ShareButtons title={post.title} slug={post.slug} />
+        </div>
+        {post.content_html ? (
+          <div style={{ lineHeight:1.8, fontSize:16, color:"#ede5d5" }} className="article-body" dangerouslySetInnerHTML={{ __html: post.content_html }} />
+        ) : (
+          <p style={{ color:"#a09070", fontStyle:"italic" }}>Content coming soon.</p>
+        )}
+        <div style={{ marginTop:48, paddingTop:32, borderTop:"1px solid #3a3228" }}>
+          <p style={{ fontSize:13, color:"#a09070", marginBottom:16 }}>Enjoyed this guide? Share it with a fellow traveller:</p>
+          <ShareButtons title={post.title} slug={post.slug} />
+        </div>
+        <div style={{ marginTop:40, paddingTop:24, borderTop:"1px solid #3a3228" }}>
+          <Link href="/blog" className="nav-link" style={{ display:"inline-flex", alignItems:"center", gap:8, fontSize:13, fontWeight:600, letterSpacing:"0.1em", color:"#a09070", textDecoration:"none" }}>← BACK TO ALL ARTICLES</Link>
+        </div>
+      </div>
+      <div style={{ background:"#231f18", borderTop:"1px solid #3a3228", borderBottom:"1px solid #3a3228", padding:"56px 24px" }}>
+        <div style={{ maxWidth:780, margin:"0 auto" }}>
+          <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:28, fontWeight:600, color:"#ede5d5", marginBottom:8 }}>Join the conversation</h3>
+          <p style={{ fontSize:14, color:"#a09070", marginBottom:28 }}>Have a tip, a question, or visited this destination? Share your experience below.</p>
+          <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+              <input type="text" placeholder="Your name" style={{ background:"#1c1914", border:"1px solid #3a3228", borderRadius:8, padding:"12px 16px", color:"#ede5d5", fontSize:14, outline:"none", fontFamily:"var(--font-dm-sans),sans-serif" }} />
+              <input type="email" placeholder="Email (not published)" style={{ background:"#1c1914", border:"1px solid #3a3228", borderRadius:8, padding:"12px 16px", color:"#ede5d5", fontSize:14, outline:"none", fontFamily:"var(--font-dm-sans),sans-serif" }} />
             </div>
-          </div>
-        </nav>
-
-        {/* Hero */}
-        <header className="relative">
-          {post.cover_image_url ? (
-            <div className="relative h-[500px] md:h-[600px]">
-              <Image
-                src={post.cover_image_url}
-                alt={post.title}
-                fill
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-atlas-bg via-atlas-bg/50 to-atlas-bg/10" />
+            <textarea placeholder="Your comment or tip..." rows={4} style={{ background:"#1c1914", border:"1px solid #3a3228", borderRadius:8, padding:"12px 16px", color:"#ede5d5", fontSize:14, outline:"none", resize:"vertical", fontFamily:"var(--font-dm-sans),sans-serif" }} />
+            <div>
+              <button style={{ background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"12px 24px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.08em", cursor:"pointer" }}>Post Comment →</button>
             </div>
-          ) : (
-            <div className="h-64 md:h-80 flex items-center justify-center bg-gradient-to-br from-atlas-bg-card to-atlas-bg text-9xl">
-              {post.hero_emoji || "✈️"}
-            </div>
-          )}
-
-          {/* Hero content overlay */}
-          <div className="absolute bottom-0 left-0 right-0 px-6 pb-10">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex flex-wrap items-center gap-3 mb-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold border uppercase tracking-wider ${getCategoryColor(post.category)}`}
-                >
-                  {post.category}
-                </span>
-                <span className="text-atlas-text-muted text-sm">
-                  {formatDate(post.date_published)}
-                </span>
-                <span className="text-atlas-text-muted text-sm">· {post.read_time}</span>
-              </div>
-
-              <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl text-atlas-text font-semibold leading-tight">
-                {post.hero_emoji && (
-                  <span className="mr-3">{post.hero_emoji}</span>
-                )}
-                {post.title}
-              </h1>
-
-              {post.description && (
-                <p className="mt-4 text-atlas-text-muted text-lg max-w-2xl leading-relaxed">
-                  {post.description}
-                </p>
-              )}
-            </div>
-          </div>
-        </header>
-
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex gap-12 relative">
-            {/* Main content */}
-            <article className="flex-1 min-w-0 max-w-3xl" id="article-content">
-
-              {/* Key facts */}
-              {post.key_facts && post.key_facts.length > 0 && (
-                <div className="mb-10 p-6 rounded-2xl border border-atlas-border bg-atlas-bg-card">
-                  <h2 className="font-serif text-xl text-atlas-gold-light font-semibold mb-4">
-                    Quick Facts
-                  </h2>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {post.key_facts.map((fact, i) => (
-                      <div key={i} className="flex flex-col gap-1">
-                        <span className="text-atlas-text-muted text-xs uppercase tracking-wider font-semibold">
-                          {fact.icon && <span className="mr-1">{fact.icon}</span>}
-                          {fact.label}
-                        </span>
-                        <span className="text-atlas-text font-medium text-sm">
-                          {fact.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Highlights */}
-              {post.highlights && post.highlights.length > 0 && (
-                <div className="mb-10 p-6 rounded-2xl border border-atlas-gold/20 bg-gradient-to-br from-atlas-gold/5 to-transparent">
-                  <h2 className="font-serif text-xl text-atlas-gold-light font-semibold mb-4">
-                    ✨ Highlights
-                  </h2>
-                  <ul className="space-y-2">
-                    {post.highlights.map((h, i) => (
-                      <li key={i} className="flex items-start gap-3 text-atlas-text text-sm">
-                        <span className="text-atlas-gold mt-0.5 flex-shrink-0">◆</span>
-                        <span>{h}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Blog content */}
-              <div
-                className="blog-content"
-                dangerouslySetInnerHTML={{ __html: post.content }}
-              />
-
-              {/* Related destinations */}
-              {post.related_destinations && post.related_destinations.length > 0 && (
-                <div className="mt-12 pt-8 border-t border-atlas-border">
-                  <h3 className="font-serif text-xl text-atlas-gold-light font-semibold mb-4">
-                    Related Destinations
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {post.related_destinations.map((dest) => (
-                      <span
-                        key={dest}
-                        className="px-4 py-2 rounded-full border border-atlas-border bg-atlas-bg-card text-atlas-text-muted text-sm hover:border-atlas-gold/40 hover:text-atlas-gold transition-colors cursor-default"
-                      >
-                        📍 {dest}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* CTA */}
-              <div className="mt-12 p-8 rounded-2xl border border-atlas-gold/30 bg-gradient-to-br from-atlas-gold/10 to-atlas-bg-card text-center">
-                <p className="font-serif text-2xl text-atlas-gold-light font-semibold mb-2">
-                  Ready to plan your trip?
-                </p>
-                <p className="text-atlas-text-muted text-sm mb-6">
-                  Let Atlas AI build you a personalized itinerary in minutes.
-                </p>
-                <Link
-                  href="https://app.getatlas.ca"
-                  className="inline-block px-8 py-3 rounded-full bg-atlas-gold text-atlas-bg font-semibold hover:bg-atlas-gold-light transition-colors"
-                >
-                  Start Planning →
-                </Link>
-              </div>
-
-              {/* Back to blog */}
-              <div className="mt-10 text-center">
-                <Link
-                  href="/blog"
-                  className="inline-flex items-center gap-2 text-atlas-text-muted hover:text-atlas-gold transition-colors text-sm"
-                >
-                  ← Back to all articles
-                </Link>
-              </div>
-            </article>
-
-            {/* Desktop TOC Sidebar */}
-            <aside className="hidden xl:block w-64 flex-shrink-0">
-              <div className="sticky top-24">
-                <TableOfContents content={post.content} />
-              </div>
-            </aside>
           </div>
         </div>
-
-        {/* Footer */}
-        <footer className="border-t border-atlas-border/50 mt-24 py-12 px-6">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <span className="font-serif text-xl text-atlas-gold-light">Atlas</span>
-            <p className="text-atlas-text-muted text-sm">
-              © {new Date().getFullYear()} Atlas Travel. All rights reserved.
-            </p>
-            <Link
-              href="https://app.getatlas.ca"
-              className="text-atlas-gold text-sm hover:text-atlas-gold-light transition-colors font-medium"
-            >
-              Plan your trip →
-            </Link>
-          </div>
-        </footer>
-
-        {/* Back to top button */}
-        <BackToTop />
       </div>
-    </>
+      {relatedPosts.length > 0 && (
+        <div style={{ maxWidth:1280, margin:"0 auto", padding:"64px 24px" }}>
+          <h2 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:32, fontWeight:600, color:"#ede5d5", marginBottom:32 }}>More from Atlas</h2>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))", gap:24 }}>
+            {relatedPosts.map((rp) => (
+              <Link key={rp.id} href={`/blog/${rp.slug}`} style={{ textDecoration:"none" }}>
+                <article style={{ background:"#231f18", borderRadius:12, overflow:"hidden", border:"1px solid #3a3228" }}>
+                  {rp.cover_image_url && <div style={{ height:160, overflow:"hidden" }}><img src={rp.cover_image_url} alt={rp.title} style={{ width:"100%", height:"100%", objectFit:"cover" }} /></div>}
+                  <div style={{ padding:"18px" }}>
+                    <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:6, textTransform:"uppercase" }}>{rp.category}</div>
+                    <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:18, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:6 }}>{rp.title}</h3>
+                    <div style={{ fontSize:11, color:"#a09070" }}>{rp.read_time_minutes} min read</div>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+      <footer style={{ background:"#1c1914", borderTop:"1px solid #3a3228", padding:"32px 24px", textAlign:"center" }}>
+        <p style={{ fontSize:12, color:"#a09070" }}>© {new Date().getFullYear()} Atlas Travel · All rights reserved</p>
+      </footer>
+      <style>{`
+        .article-body h1,.article-body h2,.article-body h3 { font-family:var(--font-cormorant-garamond),serif; color:#ede5d5; margin-top:2em; margin-bottom:0.6em; }
+        .article-body h2 { font-size:30px; font-weight:600; border-bottom:1px solid #3a3228; padding-bottom:8px; }
+        .article-body h3 { font-size:22px; font-weight:600; }
+        .article-body p { margin-bottom:1.4em; }
+        .article-body a { color:#c9a96e; text-decoration:underline; text-underline-offset:3px; }
+        .article-body ul,.article-body ol { margin-bottom:1.4em; padding-left:24px; }
+        .article-body li { margin-bottom:0.4em; }
+        .article-body img { width:100%; border-radius:12px; margin:24px 0; }
+        .article-body blockquote { border-left:3px solid #c9a96e; padding-left:20px; margin:24px 0; font-style:italic; color:#a09070; }
+        .article-body table { width:100%; border-collapse:collapse; margin-bottom:1.4em; }
+        .article-body th,.article-body td { padding:10px 14px; border:1px solid #3a3228; text-align:left; }
+        .article-body th { background:#231f18; color:#c9a96e; font-size:12px; letter-spacing:0.1em; }
+        .article-body strong { color:#c9a96e; }
+        .article-body code { background:#231f18; padding:2px 8px; border-radius:4px; font-size:14px; color:#c9a96e; }
+      `}</style>
+    </div>
   );
 }
