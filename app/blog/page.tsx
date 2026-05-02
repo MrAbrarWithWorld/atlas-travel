@@ -61,9 +61,9 @@ function BlogNav() {
                   <div key={col.heading} style={{ padding:"0 16px" }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:12, borderBottom:"1px solid #3a3228", paddingBottom:8 }}>{col.heading}</div>
                     {col.links.map(([label,slug]) => (
-                      <Link key={slug} href={`/destinations/${slug}`} className="nav-link" style={{ display:"block", fontSize:12, color:"#a09070", textDecoration:"none", padding:"4px 0", transition:"color 0.15s", whiteSpace:"nowrap" }}>{label}</Link>
+                      <Link key={slug} href={`/blog?q=${encodeURIComponent(slug)}`} className="nav-link" style={{ display:"block", fontSize:12, color:"#a09070", textDecoration:"none", padding:"4px 0", transition:"color 0.15s", whiteSpace:"nowrap" }}>{label}</Link>
                     ))}
-                    <Link href={`/destinations/${col.seeAll[1]}`} style={{ display:"block", fontSize:10, color:"#c9a96e", textDecoration:"none", marginTop:8, fontWeight:600, letterSpacing:"0.08em" }}>{col.seeAll[0]} →</Link>
+                    <Link href={`/blog?q=${encodeURIComponent(col.seeAll[1])}`} style={{ display:"block", fontSize:10, color:"#c9a96e", textDecoration:"none", marginTop:8, fontWeight:600, letterSpacing:"0.08em" }}>{col.seeAll[0]} →</Link>
                   </div>
                 ))}
               </div>
@@ -82,7 +82,11 @@ function BlogNav() {
   );
 }
 
-export default async function BlogPage() {
+export default async function BlogPage({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string }> }) {
+  const sp = await searchParams;
+  const initialSearch = sp.q ? decodeURIComponent(sp.q.replace(/-/g, ' ')) : '';
+  const initialCategory = sp.cat ? decodeURIComponent(sp.cat) : '';
+
   let allPosts: Post[] = [];
   try {
     const key = process.env.SUPABASE_SERVICE_KEY;
@@ -105,7 +109,7 @@ export default async function BlogPage() {
     <div style={{ background:"#1c1914", minHeight:"100vh", color:"#ede5d5", fontFamily:"var(--font-dm-sans),sans-serif" }}>
       <BlogNav />
       <div style={{ paddingTop:60 }}>
-        <BlogClient allPosts={allPosts} />
+        <BlogClient allPosts={allPosts} initialSearch={initialSearch} initialCategory={initialCategory} />
       </div>
 
       {/* Newsletter */}
