@@ -1,0 +1,4 @@
+# Exclude old Vercel serverless functions — Next.js handles routing
+api/
+index.html
+public/
