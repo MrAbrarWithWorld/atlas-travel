@@ -6,8 +6,8 @@ import ShareButtons from "./ShareButtons";
 export const revalidate = 60;
 
 interface RelatedPost {
-  id: string; title: string; slug: string; excerpt: string;
-  cover_image_url: string; category: string; read_time_minutes: number; published_at: string;
+  id: string; title: string; slug: string; description: string;
+  cover_image_url: string; category: string; read_time: number; date_published: string;
 }
 
 function fmt(iso: string) {
@@ -57,9 +57,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const { data: related } = await supabase
     .from("blog_posts")
-    .select("id,title,slug,excerpt,cover_image_url,category,read_time_minutes,published_at")
-    .eq("is_published", true).eq("language", post.language || "en")
-    .neq("slug", slug).order("published_at", { ascending: false }).limit(4);
+    .select("id,title,slug,description,cover_image_url,category,read_time,date_published")
+    .eq("is_published", true)
+    .neq("slug", slug).order("date_published", { ascending: false }).limit(4);
 
   const relatedPosts: RelatedPost[] = related ?? [];
 
@@ -77,17 +77,17 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:20 }}>
           <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.18em", color:"#c9a96e", textTransform:"uppercase" }}>{post.category}</span>
           <span style={{ color:"#3a3228" }}>·</span>
-          <span style={{ fontSize:12, color:"#a09070" }}>{post.read_time_minutes} min read</span>
+          <span style={{ fontSize:12, color:"#a09070" }}>{post.read_time} min read</span>
           <span style={{ color:"#3a3228" }}>·</span>
-          <span style={{ fontSize:12, color:"#a09070" }}>{fmt(post.published_at)}</span>
+          <span style={{ fontSize:12, color:"#a09070" }}>{fmt(post.date_published)}</span>
         </div>
         <h1 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:"clamp(32px,5vw,52px)", fontWeight:600, lineHeight:1.15, color:"#ede5d5", marginBottom:20 }}>{post.title}</h1>
-        {post.excerpt && <p style={{ fontSize:18, color:"#a09070", lineHeight:1.7, marginBottom:24, borderLeft:"3px solid #c9a96e", paddingLeft:16 }}>{post.excerpt}</p>}
+        {post.description && <p style={{ fontSize:18, color:"#a09070", lineHeight:1.7, marginBottom:24, borderLeft:"3px solid #c9a96e", paddingLeft:16 }}>{post.description}</p>}
         <div style={{ marginBottom:40, paddingBottom:32, borderBottom:"1px solid #3a3228" }}>
           <ShareButtons title={post.title} slug={post.slug} />
         </div>
-        {post.content_html ? (
-          <div style={{ lineHeight:1.8, fontSize:16, color:"#ede5d5" }} className="article-body" dangerouslySetInnerHTML={{ __html: post.content_html }} />
+        {post.content ? (
+          <div style={{ lineHeight:1.8, fontSize:16, color:"#ede5d5" }} className="article-body" dangerouslySetInnerHTML={{ __html: post.content }} />
         ) : (
           <p style={{ color:"#a09070", fontStyle:"italic" }}>Content coming soon.</p>
         )}
@@ -126,7 +126,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   <div style={{ padding:"18px" }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:6, textTransform:"uppercase" }}>{rp.category}</div>
                     <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:18, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:6 }}>{rp.title}</h3>
-                    <div style={{ fontSize:11, color:"#a09070" }}>{rp.read_time_minutes} min read</div>
+                    <div style={{ fontSize:11, color:"#a09070" }}>{rp.read_time} min read</div>
                   </div>
                 </article>
               </Link>

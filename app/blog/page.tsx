@@ -8,12 +8,11 @@ interface Post {
   id: string;
   title: string;
   slug: string;
-  excerpt: string;
+  description: string;
   cover_image_url: string;
   category: string;
-  read_time_minutes: number;
-  published_at: string;
-  language: string;
+  read_time: number;
+  date_published: string;
 }
 
 const MEGA_COLS = [
@@ -77,10 +76,9 @@ export default async function BlogPage() {
   );
   const { data: posts } = await supabase
     .from("blog_posts")
-    .select("id,title,slug,excerpt,cover_image_url,category,read_time_minutes,published_at,language")
+    .select("id,title,slug,description,cover_image_url,category,read_time,date_published")
     .eq("is_published", true)
-    .eq("language", "en")
-    .order("published_at", { ascending: false })
+    .order("date_published", { ascending: false })
     .limit(30);
 
   const allPosts: Post[] = posts ?? [];
@@ -102,7 +100,7 @@ export default async function BlogPage() {
               FEATURED STORY · {featured.category?.toUpperCase()}
             </div>
             <h1 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:"clamp(36px,5vw,68px)", fontWeight:600, lineHeight:1.1, color:"#ede5d5", marginBottom:18 }}>{featured.title}</h1>
-            {featured.excerpt && <p style={{ fontSize:16, color:"#a09070", lineHeight:1.6, marginBottom:24, maxWidth:600 }}>{featured.excerpt}</p>}
+            {featured.description && <p style={{ fontSize:16, color:"#a09070", lineHeight:1.6, marginBottom:24, maxWidth:600 }}>{featured.description}</p>}
             <Link href={`/blog/${featured.slug}`} style={{ fontSize:13, fontWeight:600, letterSpacing:"0.1em", color:"#c9a96e", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:8, borderBottom:"1px solid #c9a96e", paddingBottom:2 }}>READ THE STORY →</Link>
           </div>
         </div>
@@ -117,7 +115,7 @@ export default async function BlogPage() {
                   <div style={{ padding:"20px" }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:8, textTransform:"uppercase" }}>{post.category}</div>
                     <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:20, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:8 }}>{post.title}</h3>
-                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time_minutes} min read</span><span>·</span><span>{fmt(post.published_at)}</span></div>
+                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time} min</span><span>·</span><span>{fmt(post.date_published)}</span></div>
                   </div>
                 </article>
               </Link>
@@ -138,7 +136,7 @@ export default async function BlogPage() {
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", color:"#c9a96e", marginBottom:4, textTransform:"uppercase" }}>{post.category}</div>
                     <h3 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:18, fontWeight:600, color:"#ede5d5", lineHeight:1.3, marginBottom:4 }}>{post.title}</h3>
-                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time_minutes} min read</span><span>·</span><span>{fmt(post.published_at)}</span></div>
+                    <div style={{ fontSize:11, color:"#a09070", display:"flex", gap:12 }}><span>{post.read_time} min</span><span>·</span><span>{fmt(post.date_published)}</span></div>
                   </div>
                 </article>
               </Link>
