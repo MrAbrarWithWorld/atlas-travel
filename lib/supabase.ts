@@ -1,14 +1,10 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = "https://prffhhkemxibujjjiyhg.supabase.co";
-const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByZmZoaGtlbXhpYnVqamppeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2MzM4NzMsImV4cCI6MjA1OTIwOTg3M30.pPFBIdXzXGNkIKK_bVOQjWyJQBFHILnX2tB0I8Tg5Rw";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://prffhhkemxibujjjiyhg.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY || '';
 
-// Server-side Supabase client (no cookies needed for public data)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: false,
-  },
-});
+if (!supabaseKey) {
+  console.warn('Supabase key not set — blog data will be empty');
+}
 
-export type { BlogPost, PublicTrip, KeyFact } from "./types";
+export const supabase = createClient(supabaseUrl, supabaseKey);
