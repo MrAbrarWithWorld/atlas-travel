@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 
 interface Post {
@@ -56,6 +56,16 @@ export default function BlogClient({
 }) {
   const [activeCategory, setActiveCategory] = useState(initialCategory || 'ALL');
   const [search, setSearch] = useState(initialSearch);
+
+  // Sync state when server re-renders with new searchParams (client-side navigation)
+  // useState only reads the initial value on mount — useEffect handles subsequent prop changes
+  useEffect(() => {
+    setSearch(initialSearch || '');
+  }, [initialSearch]);
+
+  useEffect(() => {
+    setActiveCategory(initialCategory || 'ALL');
+  }, [initialCategory]);
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(allPosts.map(p => p.category).filter(Boolean)));
