@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import NewsletterForm from "./NewsletterForm";
 
 export const revalidate = 60;
 
@@ -150,10 +151,7 @@ export default async function BlogPage() {
         <div style={{ maxWidth:600, margin:"0 auto", textAlign:"center" }}>
           <h2 style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:42, fontWeight:600, color:"#ede5d5", marginBottom:16 }}>The Atlas Dispatch</h2>
           <p style={{ fontSize:15, color:"#a09070", lineHeight:1.7, marginBottom:32 }}>Hidden gems, budget routes, and destination inspiration from across the globe â delivered to your inbox every week. No spam, just stories worth reading.</p>
-          <form style={{ display:"flex", gap:12, maxWidth:440, margin:"0 auto" }} onSubmit={(e)=>e.preventDefault()}>
-            <input type="email" placeholder="your@email.com" style={{ flex:1, background:"#1c1914", border:"1px solid #3a3228", borderRadius:8, padding:"12px 16px", color:"#ede5d5", fontSize:14, outline:"none" }} />
-            <button type="submit" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"12px 20px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.06em", cursor:"pointer", whiteSpace:"nowrap" }}>Subscribe â It&apos;s Free</button>
-          </form>
+          <NewsletterForm />
         </div>
       </div>
       <div style={{ position:"relative", height:420, overflow:"hidden" }}>
