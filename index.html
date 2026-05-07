@@ -646,21 +646,21 @@ const [hotels,setHotels]=React.useState(()=>{
   lines.push("END:VCALENDAR");
   const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;a.click();
+  const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast('📅 Calendar file downloaded! Open it to add to your calendar.');
   onClose();
 },style:{width:"100%",marginTop:"1.25rem",padding:"0.85rem",background:"linear-gradient(135deg,rgba(201,169,110,0.2),rgba(201,169,110,0.1))",border:"1px solid rgba(201,169,110,0.4)",borderRadius:10,color:"#c9a96e",cursor:"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500}},"📅 Download Calendar File")
 ,React.createElement("button",{onClick:()=>{
-    const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Atlas AI//EN"];
+    const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Atlas AI//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
     const addEvent=(title,start,end,desc)=>{lines.push("BEGIN:VEVENT",`DTSTART;VALUE=DATE:${start.replace(/-/g,'')}`,`DTEND;VALUE=DATE:${end.replace(/-/g,'')}`,`SUMMARY:${title}`,`DESCRIPTION:${desc||'Atlas AI Travel Planner - getatlas.ca'}`,`UID:${Date.now()}@getatlas.ca`,"END:VEVENT");};
     addEvent(`✈️ ${tripName}`,startDate,endDate,`Trip planned by Atlas AI\ngetatlas.ca`);
     for(const f of flights){if(f.from&&f.to&&f.date)addEvent(`✈️ Flight: ${f.from} → ${f.to}`,f.date,f.date,`Flight planned by Atlas AI`);}
     for(const h of hotels){if(h.name&&h.checkIn&&h.checkOut)addEvent(`🏨 ${h.name}${h.city?' - '+h.city:''}`,h.checkIn,h.checkOut,`Hotel stay - Atlas AI`);}
     lines.push("END:VCALENDAR");
-    const blob=new Blob([lines.join('\r\n')],{type:'text/calendar'});
+    const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
     const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;a.click();
+    const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;document.body.appendChild(a);a.click();document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('📥 Calendar file downloaded!');
   },
@@ -2207,8 +2207,9 @@ function App(){
   const [plansLeft,setPlansLeft]=useState(null);
   const [showReviewPrompt,setShowReviewPrompt]=useState(false);
   const [showOnboarding,setShowOnboarding]=useState(()=>!localStorage.getItem('atlas_onboarded')&&!loadLocal());
+  const [showScrollBtn,setShowScrollBtn]=useState(false);
   const hist=useRef(saved?.hist||[...defaultHist]);
-  const endRef=useRef(null);
+  const endRef=useRef(null);const chatContainerRef=useRef(null);const userScrolledUpRef=useRef(false);
   const taRef=useRef(null);
   const editRef=useRef(null);
   const recognitionRef=useRef(null);
@@ -2502,7 +2503,8 @@ async function setPlanTag(id,tag){
     setLoadingPlans(false);
   }
 
-  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs,busy]);
+  useEffect(()=>{if(!userScrolledUpRef.current){endRef.current?.scrollIntoView({behavior:"smooth"});setShowScrollBtn(false);}else if(busy){setShowScrollBtn(true);}},[msgs,busy]);
+  useEffect(()=>{const el=chatContainerRef.current;if(!el)return;const onScroll=()=>{const atBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;if(atBottom){userScrolledUpRef.current=false;setShowScrollBtn(false);}else{userScrolledUpRef.current=true;}};el.addEventListener('scroll',onScroll,{passive:true});return()=>el.removeEventListener('scroll',onScroll);},[]);
 
   useEffect(()=>{
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -2660,7 +2662,7 @@ async function setPlanTag(id,tag){
     ),
 
     // Messages
-    React.createElement("div",{style:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",display:"flex",flexDirection:"column"}},
+    React.createElement("div",{ref:chatContainerRef,style:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",display:"flex",flexDirection:"column",position:"relative"}},
       msgs.length===0&&React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center"}},
         React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.2rem",fontWeight:300,color:"rgba(201,169,110,0.18)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"0.4rem"}},"ATLAS"),
         React.createElement("p",{style:{fontSize:"0.62rem",color:"rgba(201,169,110,0.3)",letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:"2rem"}},"AI Travel Planner"),
@@ -2716,6 +2718,7 @@ async function setPlanTag(id,tag){
         React.createElement("div",{ref:endRef,style:{height:"0.5rem"}})
       )
     ),
+    showScrollBtn&&React.createElement("button",{onClick:()=>{userScrolledUpRef.current=false;setShowScrollBtn(false);endRef.current?.scrollIntoView({behavior:"smooth"});},style:{position:"fixed",bottom:"90px",right:"20px",background:"rgba(28,25,20,0.85)",border:"1px solid rgba(201,169,110,0.4)",borderRadius:"50%",width:40,height:40,cursor:"pointer",color:"#c9a96e",fontSize:"1.2rem",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(4px)",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"},title:"Scroll to bottom"},"↓"),
 
     holdActive&&React.createElement("div",{style:{textAlign:"center",padding:"0.35rem",fontSize:"0.62rem",color:"#c9a96e",letterSpacing:"0.1em",background:"rgba(201,169,110,0.06)",borderTop:"1px solid rgba(201,169,110,0.1)",animation:"fadeIn 0.2s ease"}},
       "✋ Paused — add more text, then tap send"
