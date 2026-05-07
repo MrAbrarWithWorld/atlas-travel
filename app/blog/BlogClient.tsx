@@ -67,6 +67,16 @@ export default function BlogClient({
     setActiveCategory(initialCategory || 'ALL');
   }, [initialCategory]);
 
+  // Strip apostrophes/special chars so "coxs-bazar" matches "Cox's Bazar", etc.
+  function normalizeText(s: string) {
+    return s.toLowerCase().replace(/[''''`]/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  function formatCat(cat: string) {
+    if (cat === 'ALL') return 'All Articles';
+    return cat.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+  }
+
   const categories = useMemo(() => {
     const cats = Array.from(new Set(allPosts.map(p => p.category).filter(Boolean)));
     return ['ALL', ...cats];
@@ -75,14 +85,19 @@ export default function BlogClient({
   const filtered = useMemo(() => {
     let posts = allPosts;
     if (activeCategory !== 'ALL') {
-      posts = posts.filter(p => p.category === activeCategory);
+      // Partial match: ?cat=visa matches "visa-tips", "budget-visa", etc.
+      const filterLower = activeCategory.toLowerCase();
+      posts = posts.filter(p => {
+        const cat = (p.category ?? '').toLowerCase();
+        return cat === filterLower || cat.includes(filterLower) || filterLower.includes(cat);
+      });
     }
     if (search.trim()) {
-      const q = search.toLowerCase();
+      const q = normalizeText(search);
       posts = posts.filter(p =>
-        p.title.toLowerCase().includes(q) ||
-        (p.description ?? '').toLowerCase().includes(q) ||
-        (p.category ?? '').toLowerCase().includes(q)
+        normalizeText(p.title).includes(q) ||
+        normalizeText(p.description ?? '').includes(q) ||
+        normalizeText(p.category ?? '').includes(q)
       );
     }
     return posts;
@@ -90,8 +105,8 @@ export default function BlogClient({
 
   const isDefaultView = activeCategory === 'ALL' && !search.trim();
   const featured = isDefaultView && filtered.length > 0 ? filtered[0] : null;
-  const editorialPosts = isDefaultView && filtered.length > 1 ? filtered.slice(1, 3) : [];
-  const gridPosts = isDefaultView ? filtered.slice(3) : filtered;
+  const editorialPosts = isDefaultView && filtered.length > 1 ? filtered.slice(1, 5) : [];
+  const gridPosts = isDefaultView ? filtered.slice(5) : filtered;
   const allFiltered = !isDefaultView ? filtered : [];
 
   return (
@@ -136,20 +151,21 @@ export default function BlogClient({
               key={cat}
               onClick={() => setActiveCategory(cat)}
               style={{
-                background: "none",
+                background: activeCategory === cat ? "rgba(201,169,110,0.1)" : "none",
                 border: activeCategory === cat ? "1px solid #c9a96e" : "1px solid #3a3228",
                 borderRadius: 20,
                 padding: "6px 16px",
                 fontSize: 11,
                 fontWeight: 600,
-                letterSpacing: "0.1em",
+                letterSpacing: "0.08em",
                 color: activeCategory === cat ? "#c9a96e" : "#a09070",
                 cursor: "pointer",
                 textTransform: "uppercase",
                 transition: "all 0.15s",
+                whiteSpace: "nowrap",
               }}
             >
-              {cat}
+              {formatCat(cat)}
             </button>
           ))}
         </div>
@@ -157,7 +173,7 @@ export default function BlogClient({
           <div style={{ marginTop: 8, marginBottom: 4, display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 12, color: "#a09070" }}>
               {filtered.length} article{filtered.length !== 1 ? 's' : ''} found
-              {activeCategory !== 'ALL' && ` in ${activeCategory}`}
+              {activeCategory !== 'ALL' && ` in ${formatCat(activeCategory)}`}
               {search && ` matching "${search}"`}
             </span>
             <button onClick={() => { setSearch(''); setActiveCategory('ALL'); }} style={{ background: "none", border: "none", color: "#c9a96e", fontSize: 11, cursor: "pointer", fontWeight: 600, letterSpacing: "0.06em" }}>CLEAR ✕</button>
@@ -259,7 +275,7 @@ export default function BlogClient({
                     <div className="edit-content" style={{ direction: "ltr", background: "#1e1a12", padding: "56px 64px", display: "flex", flexDirection: "column", justifyContent: "center", transition: "background 0.25s" }}>
                       <div style={{ fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#c9a96e", marginBottom: 20, display: "flex", alignItems: "center", gap: 10, fontWeight: 600 }}>
                         <span style={{ display: "inline-block", width: 20, height: 1, background: "#c9a96e" }} />
-                        {post.category}
+                        {formatCat(post.category)}
                       </div>
                       <h2 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: "clamp(22px,2.8vw,38px)", fontWeight: 600, color: "#ede5d5", lineHeight: 1.15, letterSpacing: "-0.01em", marginBottom: 16 }}>{post.title}</h2>
                       {post.description && (
@@ -301,7 +317,7 @@ export default function BlogClient({
                         </div>
                       )}
                       <div style={{ padding: "20px 20px 24px" }}>
-                        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", color: "#c9a96e", marginBottom: 10, textTransform: "uppercase" }}>{post.category}</div>
+                        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", color: "#c9a96e", marginBottom: 10, textTransform: "uppercase" }}>{formatCat(post.category)}</div>
                         <h3 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: 19, fontWeight: 600, color: "#ede5d5", lineHeight: 1.3, marginBottom: 12 }}>{post.title}</h3>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 11, color: "#a09070" }}>
                           <span>{post.read_time}</span>
@@ -330,7 +346,7 @@ export default function BlogClient({
                     </div>
                   )}
                   <div style={{ padding: "20px 20px 24px" }}>
-                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", color: "#c9a96e", marginBottom: 10, textTransform: "uppercase" }}>{post.category}</div>
+                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", color: "#c9a96e", marginBottom: 10, textTransform: "uppercase" }}>{formatCat(post.category)}</div>
                     <h3 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: 19, fontWeight: 600, color: "#ede5d5", lineHeight: 1.3, marginBottom: 12 }}>{post.title}</h3>
                     {post.description && <p style={{ fontSize: 12, color: "#a09070", lineHeight: 1.6, marginBottom: 12 }}>{post.description}</p>}
                     <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 11, color: "#a09070" }}>

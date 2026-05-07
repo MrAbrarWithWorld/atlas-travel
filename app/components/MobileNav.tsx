@@ -50,7 +50,7 @@ export default function MobileNav() {
 
         {/* Nav links */}
         <Link href="/blog" onClick={() => setOpen(false)} style={{ display:"block", fontSize:12, fontWeight:600, letterSpacing:"0.12em", color:"#ede5d5", textDecoration:"none", padding:"14px 0", borderBottom:"1px solid #3a3228" }}>ALL ARTICLES</Link>
-        <Link href="/blog?cat=visa" onClick={() => setOpen(false)} style={{ display:"block", fontSize:12, fontWeight:600, letterSpacing:"0.12em", color:"#ede5d5", textDecoration:"none", padding:"14px 0", borderBottom:"1px solid #3a3228" }}>TIPS & VISA</Link>
+        <Link href="/blog?q=visa" onClick={() => setOpen(false)} style={{ display:"block", fontSize:12, fontWeight:600, letterSpacing:"0.12em", color:"#ede5d5", textDecoration:"none", padding:"14px 0", borderBottom:"1px solid #3a3228" }}>TIPS & VISA</Link>
         <Link href="/community" onClick={() => setOpen(false)} style={{ display:"block", fontSize:12, fontWeight:600, letterSpacing:"0.12em", color:"#c9a96e", textDecoration:"none", padding:"14px 0", borderBottom:"1px solid #3a3228" }}>COMMUNITY ✍️</Link>
 
         {/* Destinations */}
