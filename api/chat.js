@@ -99,6 +99,27 @@ async function getYouTubeVideos(destination) {
   }
 }
 
+async function getYouTubeForAllDests(messages, primaryDest) {
+  const text = messages.filter(m => m.role === 'user').slice(-2).map(m =>
+    typeof m.content === 'string' ? m.content
+    : Array.isArray(m.content) ? (m.content.find(c => c.type === 'text')?.text || '') : ''
+  ).join(' ').replace(/\[Current date[\s\S]*$/i, '').trim();
+
+  const SKIP = new Set(['I','My','The','This','That','What','How','When','Where','Why','Can','Could','Please','Thanks','Yes','No','Ok','Sure','Great','Hello','Hi','And','But','Or','Then','Also','Plan','Days','Day','Night','Trip','Back','Full','Solo','Couple','Family','Friends']);
+
+  const multiMatch = text.match(
+    /([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)[\s\S]{0,50}?\b(?:and|then|plus|also|\+|&)\b[\s\S]{0,50}?([A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)/
+  );
+  if (multiMatch) {
+    const d1 = multiMatch[1].trim(), d2 = multiMatch[2].trim();
+    if (!SKIP.has(d1) && !SKIP.has(d2) && d1.toLowerCase() !== d2.toLowerCase()) {
+      const [v1, v2] = await Promise.all([getYouTubeVideos(d1), getYouTubeVideos(d2)]);
+      return `**${d1}:**\n${v1}\n\n**${d2}:**\n${v2}`;
+    }
+  }
+  return getYouTubeVideos(primaryDest);
+}
+
 async function getWeather(destination) {
   try {
     if (!process.env.GOOGLE_MAPS_API_KEY) return '';
@@ -187,7 +208,7 @@ async function getTravelContext(messages) {
 
  const [results, videos, hotels, weather] = await Promise.all([
     Promise.all(queries.map(q => searchWeb(q))),
-    getYouTubeVideos(searchQuery),
+    getYouTubeForAllDests(messages, searchQuery),
     getPlacesNearby(searchQuery + ' city center', 'lodging'),
     getWeather(searchQuery),
 ]);
@@ -613,7 +634,7 @@ const travelContext = await getTravelContext(messages);
         },
         body: JSON.stringify({
           model: "meta-llama/llama-4-scout-17b-16e-instruct",
-          max_tokens: Math.min(tokensLeft, 4000),
+          max_tokens: Math.min(tokensLeft, 8000),
           stream: true,
           messages: [
             { role: "system", content: SYSTEM_MSG + (travelContext ? travelContext : '') },
@@ -667,7 +688,7 @@ const travelContext = await getTravelContext(messages);
         body: JSON.stringify({
           system_instruction: { parts: [{ text: SYSTEM_MSG + (travelContext ? travelContext : '') }] },
           contents: geminiMessages,
-          generationConfig: { maxOutputTokens: 4000, temperature: 0.7 }
+          generationConfig: { maxOutputTokens: 8000, temperature: 0.7 }
         }),
       });
       const geminiData = await geminiRes.json();
@@ -749,7 +770,7 @@ const travelContext = await getTravelContext(messages);
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: Math.min(tokensLeft, 4000),
+        max_tokens: Math.min(tokensLeft, 8000),
         stream: true,
         system: systemWithPrefs,
         messages: messages.filter(m => m.role !== "system"),
