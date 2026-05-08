@@ -2038,19 +2038,29 @@ function TripDocument({text,msgs}){
   const clean=stripMapData(text);
   const lines=clean.split('\n');
   // Parse into pre-content + day sections
-  const sections=[];let curDay=null;const prelines=[];
+  const sections=[];let curDay=null;let curWatch=null;const prelines=[];
   for(const line of lines){
     const t=line.trim();if(!t)continue;
     const dm=t.match(/^\*{0,2}(Day\s+\d+)[:\*\s\—\–]+([^\n]*)/i);
+    const yw=/^#{1,3}\s*(📺\s*)?watch\s+before\s+you\s+go/i.test(t);
     if(dm){
+      if(curWatch){sections.push(curWatch);curWatch=null;}
       if(curDay)sections.push(curDay);
       else if(prelines.length){sections.push({type:'pre',content:prelines.join('\n')});prelines.length=0;}
       curDay={type:'day',label:dm[1],title:dm[2].replace(/\*+/g,'').trim(),items:[]};
+    }else if(yw){
+      if(curDay){sections.push(curDay);curDay=null;}
+      else if(prelines.length){sections.push({type:'pre',content:prelines.join('\n')});prelines.length=0;}
+      curWatch={type:'watch',items:[]};
+    }else if(curWatch){
+      if(t.startsWith('- ')||t.startsWith('* '))curWatch.items.push(t.slice(2));
+      else if(t.startsWith('[')||t.includes('youtube.com')||t.includes('youtu.be'))curWatch.items.push(t);
     }else if(curDay){
       if(t.startsWith('- ')||t.startsWith('* '))curDay.items.push(t.slice(2).replace(/\*\*/g,''));
       else if(!t.startsWith('##')&&!t.startsWith('**Day'))curDay.items.push(t.replace(/\*\*/g,''));
     }else{prelines.push(line);}
   }
+  if(curWatch)sections.push(curWatch);
   if(curDay)sections.push(curDay);
   const dayCount=sections.filter(s=>s.type==='day').length;
   return React.createElement('div',{style:{width:'100%'}},
@@ -2090,6 +2100,22 @@ function TripDocument({text,msgs}){
               React.createElement('span',null,item)
             )
           )
+        )
+      )
+    ),
+    // Watch Before You Go section
+    ...sections.filter(s=>s.type==='watch').map((ws,i)=>
+      ws.items.length>0&&React.createElement('div',{key:'watch'+i,style:{background:'rgba(201,169,110,0.03)',border:'1px solid rgba(201,169,110,0.15)',borderRadius:10,padding:'0.65rem 0.85rem',marginTop:'0.55rem'}},
+        React.createElement('div',{style:{fontSize:'0.55rem',color:'#c9a96e',letterSpacing:'0.14em',textTransform:'uppercase',fontWeight:600,marginBottom:'0.45rem'}},'📺 Watch Before You Go'),
+        React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.35rem'}},
+          ...ws.items.filter(Boolean).map((item,j)=>{
+            const m=item.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);
+            if(m)return React.createElement('a',{key:j,href:m[2],target:'_blank',rel:'noopener noreferrer',style:{display:'flex',alignItems:'center',gap:'0.4rem',fontSize:'0.75rem',color:'#c9a96e',textDecoration:'none',lineHeight:1.55}},
+              React.createElement('span',{style:{flexShrink:0}},'▶'),
+              React.createElement('span',{style:{textDecoration:'underline',textDecorationColor:'rgba(201,169,110,0.4)'}},m[1])
+            );
+            return React.createElement('p',{key:j,style:{fontSize:'0.75rem',color:'#7a6a45',lineHeight:1.55}},item);
+          })
         )
       )
     )
