@@ -630,7 +630,7 @@ const travelContext = await getTravelContext(messages);
         },
         body: JSON.stringify({
           model: "meta-llama/llama-4-scout-17b-16e-instruct",
-          max_tokens: Math.min(tokensLeft, 4000),
+          max_tokens: Math.min(tokensLeft, 8000),
           stream: true,
           messages: [
             { role: "system", content: SYSTEM_MSG + (travelContext ? travelContext : '') },
@@ -766,7 +766,7 @@ const travelContext = await getTravelContext(messages);
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: Math.min(tokensLeft, 4000),
+        max_tokens: Math.min(tokensLeft, 8000),
         stream: true,
         system: systemWithPrefs,
         messages: messages.filter(m => m.role !== "system"),

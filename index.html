@@ -188,10 +188,9 @@
 <link rel="preconnect" href="https://maps.googleapis.com"/>
 <link rel="preconnect" href="https://prffhhkemxibujjjiyhg.supabase.co"/>
 <link rel="dns-prefetch" href="https://api.anthropic.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <!-- Google Maps loaded dynamically after fetching key from /api/map-config -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body,#root{height:100%;}
@@ -352,6 +351,14 @@ const {useState,useRef,useEffect}=React;
 function saveLocal(msgs,hist){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({msgs,hist,t:Date.now()}));}catch{}}
 function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!d||Date.now()-d.t>24*60*60*1000)return null;return d;}catch{return null;}}
 const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}];
+
+// ===================== GLOBAL TOAST =====================
+function showToast(msg){
+  const toast=document.createElement('div');
+  toast.textContent=msg;
+  toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.5rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:9999;letter-spacing:0.08em;white-space:nowrap;';
+  document.body.appendChild(toast);setTimeout(()=>toast.remove(),2500);
+}
 
   // ===================== GOOGLE CALENDAR SYNC =====================
 async function addToGoogleCalendar(events){
@@ -1893,7 +1900,7 @@ function Modal({hours,plansLeft,onClose,onLogin,onUpgrade}){
 }
 
 // ===================== PROSE =====================
-function isItinerary(text){if(!text)return false;const m=text.match(/\bDay\s+\d+/gi);return m&&m.length>=2;}
+function isItinerary(text){if(!text)return false;const m=text.match(/^[\*\-#\s]*Day\s+\d+[\s:\-—]/gim);return m&&m.length>=2;}
 function isComparison(text){
   if(!text)return null;
   const clean=stripMapData(text);
@@ -2384,13 +2391,6 @@ async function deleteProject(id){
     }catch{}setSavingPlan(false);
   }
 
-  function showToast(msg){
-    const toast=document.createElement('div');
-    toast.textContent=msg;
-    toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.5rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:999;letter-spacing:0.08em;';
-    document.body.appendChild(toast);setTimeout(()=>toast.remove(),2500);
-  }
-  
   function generatePDF(){
   if(!msgs||msgs.length===0){showToast('No trip to export!');return;}
   const{jsPDF}=window.jspdf;
@@ -2661,7 +2661,7 @@ async function setPlanTag(id,tag){
             sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null,is_draft:true}).select('id,share_id').single().then(({data})=>{
               if(data?.id){
                 setActivePlanId(data.id);loadPlans();
-                if(!localStorage.getItem('atlas_review_shown')&&plans.length+1>=3){setTimeout(()=>setShowReviewPrompt(true),2500);}
+                const _convCount=parseInt(localStorage.getItem('atlas_conv_count')||'0')+1;localStorage.setItem('atlas_conv_count',_convCount);if(!localStorage.getItem('atlas_review_shown')&&_convCount>=3){setTimeout(()=>setShowReviewPrompt(true),2500);}
               }
             });
           }
