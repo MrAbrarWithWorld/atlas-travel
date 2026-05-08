@@ -190,7 +190,8 @@
 <link rel="dns-prefetch" href="https://api.anthropic.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap&display=swap" rel="stylesheet"/>
 <!-- Google Maps loaded dynamically after fetching key from /api/map-config -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body,#root{height:100%;}
@@ -235,6 +236,18 @@ button{-webkit-tap-highlight-color:transparent;}
 .plan-tag-picker{position:absolute;right:2.2rem;top:0;background:#1e1a12;border:1px solid rgba(201,169,110,0.25);border-radius:8px;padding:0.4rem;z-index:100;display:flex;flex-wrap:wrap;gap:0.25rem;width:160px;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
 .plan-tag-opt{font-size:0.55rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:3px;cursor:pointer;border:none;line-height:1.5;transition:opacity 0.15s;}
 .plan-tag-opt:hover{opacity:0.8;}
+.ai-message h1,.ai-message h2,.ai-message h3{font-family:'Cormorant Garamond',serif;color:#c9a96e;margin:16px 0 8px;}
+.ai-message h2{font-size:1.1em;}.ai-message h3{font-size:1em;}
+.ai-message strong{color:#ede5d5;}
+.ai-message a{color:#c9a96e;text-decoration:underline;}
+.ai-message ul,.ai-message ol{padding-left:20px;margin:8px 0;}
+.ai-message li{margin:4px 0;font-size:0.81rem;color:#b8b0a0;line-height:1.85;}
+.ai-message p{font-size:0.81rem;color:#b8b0a0;line-height:1.85;margin:0.08rem 0;}
+.ai-message code{background:rgba(201,169,110,0.1);padding:2px 5px;border-radius:3px;font-size:0.9em;}
+.ai-message pre code{background:none;padding:0;}
+.ai-message pre{background:rgba(201,169,110,0.07);border:1px solid rgba(201,169,110,0.15);border-radius:6px;padding:0.6rem 0.9rem;overflow-x:auto;margin:8px 0;}
+.ai-message hr{border:none;border-top:1px solid #3a3228;margin:16px 0;}
+.ai-message blockquote{border-left:2px solid rgba(201,169,110,0.4);padding-left:0.75rem;color:#8a7a50;margin:8px 0;}
 </style>
 <!-- Google Analytics GA4 — replace G-5CT9JK05WL with your Measurement ID -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-5CT9JK05WL"></script>
@@ -2098,20 +2111,8 @@ function TripDocument({text,msgs}){
 
 function Prose({text}){
   const clean=stripMapData(text);
-  return React.createElement("div",null,clean.split("\n").map((line,i)=>{
-    if(!line.trim())return React.createElement("div",{key:i,style:{height:"0.35rem"}});
-    if(line.startsWith("## "))return React.createElement("div",{key:i,style:{fontSize:"0.68rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.2)"}},line.slice(3));
-    if(/^DAYS?\s+\d+/.test(line)||/^Day\s+\d+\s*\(/.test(line))return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.88rem",fontWeight:700,color:"#b8b0a0",margin:"0.75rem 0 0.1rem"}},line.replace(/\*\*/g,""));
-    if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line))return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.9rem",fontWeight:700,color:"#b8b0a0",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
-    if(line.startsWith("- ")||line.startsWith("* ")){
-      const bparts=[];let brem=line.slice(2),bk=0;
-      while(brem){const bl=brem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);const bb=brem.match(/\*\*(.+?)\*\*/);if(!bl&&!bb){bparts.push(React.createElement("span",{key:bk++},brem));break;}const bli=bl?brem.indexOf(bl[0]):Infinity;const bbi=bb?brem.indexOf(bb[0]):Infinity;if(bl&&bli<=bbi){if(bli>0)bparts.push(React.createElement("span",{key:bk++},brem.slice(0,bli)));bparts.push(React.createElement("a",{key:bk++,href:bl[2],target:"_blank",rel:"noopener noreferrer",style:{color:"#c9a96e",textDecoration:"underline",textDecorationColor:"rgba(201,169,110,0.4)"}},bl[1]));brem=brem.slice(bli+bl[0].length);}else{if(bbi>0)bparts.push(React.createElement("span",{key:bk++},brem.slice(0,bbi)));bparts.push(React.createElement("span",{key:bk++,style:{color:"#e8dcc8",fontWeight:600}},bb[1]));brem=brem.slice(bbi+bb[0].length);}}
-      return React.createElement("div",{key:i,style:{display:"flex",gap:"0.4rem",margin:"0.12rem 0",fontSize:"0.81rem",color:"#b8b0a0"}},React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.48rem",marginTop:"5px",flexShrink:0}},"◆"),React.createElement("span",null,...bparts));
-    }
-    const parts=[];let rem=line,k=0;
-    while(rem){const link=rem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);const bold=rem.match(/\*\*(.+?)\*\*/);if(!link&&!bold){parts.push(React.createElement("span",{key:k++},rem));break;}const li=link?rem.indexOf(link[0]):Infinity;const bi=bold?rem.indexOf(bold[0]):Infinity;if(link&&li<=bi){if(li>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,li)));parts.push(React.createElement("a",{key:k++,href:link[2],target:"_blank",rel:"noopener noreferrer",style:{color:"#c9a96e",textDecoration:"underline",textDecorationColor:"rgba(201,169,110,0.4)"}},link[1]));rem=rem.slice(li+link[0].length);}else{if(bi>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,bi)));parts.push(React.createElement("span",{key:k++,style:{color:"#e8dcc8",fontWeight:600}},bold[1]));rem=rem.slice(bi+bold[0].length);}}
-    return React.createElement("p",{key:i,style:{margin:"0.08rem 0",fontSize:"0.81rem",color:"#b8b0a0",lineHeight:1.85}},...parts);
-  }));
+  const html=marked.parse(clean,{breaks:true,gfm:true});
+  return React.createElement("div",{className:"ai-message",dangerouslySetInnerHTML:{__html:html}});
 }
 
 function Dots(){return React.createElement("div",{style:{display:"flex",gap:6}},[0,1,2].map(i=>React.createElement("span",{key:i,style:{width:5,height:5,borderRadius:"50%",background:"#c9a96e",display:"inline-block",animation:`pulse 1.4s ${i*0.2}s ease-in-out infinite`}})));}
@@ -2697,7 +2698,7 @@ async function setPlanTag(id,tag){
                   )
               :React.createElement("div",null,
                   _streaming
-                    ?React.createElement("div",{style:{fontSize:"0.81rem",color:"#b8b0a0",lineHeight:1.85,whiteSpace:"pre-wrap",wordBreak:"break-word"}},msg.text,React.createElement("span",{className:"typing-cursor"}))
+                    ?React.createElement("div",null,React.createElement("div",{className:"ai-message",style:{wordBreak:"break-word"},dangerouslySetInnerHTML:{__html:marked.parse(msg.text||"",{breaks:true,gfm:true})}}),React.createElement("span",{className:"typing-cursor"}))
                     :(_isMulti?React.createElement(MultiDestDocument,{text:msg.text,msgs,destinations:_multiDests}):_isItin?React.createElement(TripDocument,{text:msg.text,msgs}):_isCmp?React.createElement(ComparisonCard,{text:msg.text,destinations:_cmpDests}):React.createElement(Prose,{text:msg.text})),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
                   React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.5rem",flexWrap:"wrap"}},
@@ -2711,7 +2712,7 @@ async function setPlanTag(id,tag){
                 )
               )
             )}),
-        busy&&React.createElement("div",{className:"msg",style:{display:"flex",gap:"0.75rem",alignItems:"center"}},
+        busy&&!msgs.some(m=>m.streaming)&&React.createElement("div",{className:"msg",style:{display:"flex",gap:"0.75rem",alignItems:"center"}},
           React.createElement("div",{style:{width:24,height:24,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.5)",background:"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:"0.46rem",color:"#c9a96e"}},"A")),
           React.createElement(Dots)
         ),
