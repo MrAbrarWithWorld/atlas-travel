@@ -2052,15 +2052,27 @@ function TripDocument({text,msgs}){
   const lines=clean.split('\n');
   // Parse into pre-content + day sections
   const sections=[];let curDay=null;let curWatch=null;const prelines=[];
+  function _isDayHeader(t){
+    return /^(Day|DAY)\s+\d+/i.test(t)||
+           /^\*\*Day\s+\d+/i.test(t)||
+           /^#{1,3}\s*(Day|DAY)\s+\d+/i.test(t)||
+           /^-\s*\*\*Day\s+\d+/i.test(t);
+  }
+  function _parseDayLine(t){
+    const cleaned=t.replace(/^#{1,3}\s*/,'').replace(/^-\s*/,'').replace(/^\*\*/,'').replace(/\*\*$/,'').trim();
+    const m=cleaned.match(/^(Day\s+\d+(?:\s*[\-–]\s*\d+)?)[:\s\—\–]*(.*)/i);
+    if(m)return{label:m[1].trim(),title:m[2].replace(/\*+/g,'').trim()};
+    return{label:cleaned,title:''};
+  }
   for(const line of lines){
     const t=line.trim();if(!t)continue;
-    const dm=t.match(/^\*{0,2}(Day\s+\d+)[:\*\s\—\–]+([^\n]*)/i);
     const yw=/^#{1,3}\s*(📺\s*)?watch\s+before\s+you\s+go/i.test(t);
-    if(dm){
+    if(_isDayHeader(t)){
       if(curWatch){sections.push(curWatch);curWatch=null;}
       if(curDay)sections.push(curDay);
       else if(prelines.length){sections.push({type:'pre',content:prelines.join('\n')});prelines.length=0;}
-      curDay={type:'day',label:dm[1],title:dm[2].replace(/\*+/g,'').trim(),items:[]};
+      const parsed=_parseDayLine(t);
+      curDay={type:'day',label:parsed.label,title:parsed.title,items:[]};
     }else if(yw){
       if(curDay){sections.push(curDay);curDay=null;}
       else if(prelines.length){sections.push({type:'pre',content:prelines.join('\n')});prelines.length=0;}
@@ -2070,7 +2082,7 @@ function TripDocument({text,msgs}){
       else if(t.startsWith('[')||t.includes('youtube.com')||t.includes('youtu.be'))curWatch.items.push(t);
     }else if(curDay){
       if(t.startsWith('- ')||t.startsWith('* '))curDay.items.push(t.slice(2).replace(/\*\*/g,''));
-      else if(!t.startsWith('##')&&!t.startsWith('**Day'))curDay.items.push(t.replace(/\*\*/g,''));
+      else if(!t.startsWith('##')&&!_isDayHeader(t))curDay.items.push(t.replace(/\*\*/g,''));
     }else{prelines.push(line);}
   }
   if(curWatch)sections.push(curWatch);
@@ -2101,10 +2113,9 @@ function TripDocument({text,msgs}){
     prelines.length>0&&React.createElement('div',{style:{fontSize:'0.8rem',color:'#8a7a55',lineHeight:1.8,marginBottom:'0.75rem',padding:'0 0.25rem'}},React.createElement(Prose,{text:prelines.join('\n')})),
     // Day cards
     ...sections.filter(s=>s.type==='day').map((day,i)=>
-      React.createElement('div',{key:i,style:{background:'rgba(201,169,110,0.025)',border:'1px solid rgba(201,169,110,0.1)',borderLeft:'3px solid rgba(201,169,110,0.45)',borderRadius:'0 10px 10px 0',padding:'0.65rem 0.85rem',marginBottom:'0.45rem'}},
-        React.createElement('div',{style:{display:'flex',alignItems:'baseline',gap:'0.5rem',marginBottom:day.items.length?'0.35rem':0}},
-          React.createElement('span',{style:{fontSize:'0.55rem',color:'#c9a96e',letterSpacing:'0.14em',textTransform:'uppercase',fontWeight:600,flexShrink:0}},day.label),
-          day.title&&React.createElement('span',{style:{fontSize:'0.88rem',color:'#d4c8a8',fontFamily:"'Cormorant Garamond',serif",lineHeight:1.3}},day.title)
+      React.createElement('div',{key:i,style:{background:'rgba(201,169,110,0.04)',border:'1px solid rgba(201,169,110,0.15)',borderLeft:'3px solid rgba(201,169,110,0.5)',borderRadius:'10px',padding:'0.75rem 1rem',margin:'0.5rem 0'}},
+        React.createElement('div',{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:'0.95rem',fontWeight:700,color:'#c9a96e',marginBottom:'0.4rem'}},
+          day.label+(day.title?' — '+day.title:'')
         ),
         day.items.length>0&&React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.18rem'}},
           ...day.items.filter(Boolean).map((item,j)=>
@@ -2135,10 +2146,45 @@ function TripDocument({text,msgs}){
   );
 }
 
+function _renderInline(text,keyBase){
+  const parts=[];let lastIdx=0;let k=0;
+  const pat=/\*\*(.+?)\*\*|\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
+  let m;
+  while((m=pat.exec(text))!==null){
+    if(m.index>lastIdx)parts.push(text.slice(lastIdx,m.index));
+    if(m[0].startsWith('**')){
+      parts.push(React.createElement('strong',{key:(keyBase||'')+'-b'+(k++),style:{color:'#c9a96e',fontWeight:600}},m[1]));
+    }else{
+      parts.push(React.createElement('a',{key:(keyBase||'')+'-l'+(k++),href:m[3],target:'_blank',rel:'noopener noreferrer',style:{color:'#c9a96e',textDecoration:'underline',wordBreak:'break-all'}},m[2]));
+    }
+    lastIdx=m.index+m[0].length;
+  }
+  if(lastIdx<text.length)parts.push(text.slice(lastIdx));
+  return parts;
+}
 function Prose({text}){
   const clean=stripMapData(text);
-  const html=marked.parse(clean,{breaks:true,gfm:true});
-  return React.createElement("div",{className:"ai-message",dangerouslySetInnerHTML:{__html:html}});
+  const lines=clean.split('\n');
+  const els=[];let k=0;
+  for(const line of lines){
+    const t=line.trim();
+    if(!t){els.push(React.createElement('div',{key:k++,style:{height:'0.35rem'}}));continue;}
+    if(/^#{1,3}\s/.test(t)){
+      const ht=t.replace(/^#{1,3}\s*/,'').replace(/\*\*/g,'');
+      els.push(React.createElement('p',{key:k++,style:{fontSize:'0.62rem',color:'#c9a96e',letterSpacing:'0.13em',textTransform:'uppercase',fontWeight:700,marginTop:'0.7rem',marginBottom:'0.25rem',fontFamily:"'DM Sans',sans-serif"}},ht));
+      continue;
+    }
+    if(t.startsWith('- ')||t.startsWith('* ')){
+      const ct=t.slice(2);
+      els.push(React.createElement('div',{key:k++,style:{display:'flex',gap:'0.4rem',fontSize:'0.82rem',color:'#ede5d5',lineHeight:1.72,marginBottom:'0.18rem'}},
+        React.createElement('span',{style:{color:'rgba(201,169,110,0.5)',fontSize:'0.4rem',marginTop:'6px',flexShrink:0}},'◆'),
+        React.createElement('span',null,..._renderInline(ct,k))
+      ));
+      continue;
+    }
+    els.push(React.createElement('p',{key:k++,style:{fontSize:'0.82rem',color:'#ede5d5',lineHeight:1.75,marginBottom:'0.22rem'}},..._renderInline(t,k)));
+  }
+  return React.createElement('div',null,...els);
 }
 
 function Dots(){return React.createElement("div",{style:{display:"flex",gap:6}},[0,1,2].map(i=>React.createElement("span",{key:i,style:{width:5,height:5,borderRadius:"50%",background:"#c9a96e",display:"inline-block",animation:`pulse 1.4s ${i*0.2}s ease-in-out infinite`}})));}
@@ -2242,6 +2288,7 @@ function App(){
   const recognitionRef=useRef(null);
   const photoRef=useRef(null);
   const holdTimerRef=useRef(null);
+  const lastSendRef=useRef({text:'',newMsgs:[]});
 
   // Tier check helper — polls subscriptions table and updates userTier state
   async function checkTier(uid,email){
@@ -2581,6 +2628,7 @@ async function setPlanTag(id,tag){
       const customPrompt=localStorage.getItem('atlas_custom_prompt');
       if(customPrompt&&customPrompt.trim())headers['x-custom-prompt']=encodeURIComponent(customPrompt.trim());
       if(user){const{data:{session}}=await sb.auth.getSession();if(session?.access_token)headers["Authorization"]=`Bearer ${session.access_token}`;}
+      lastSendRef.current={text:t,newMsgs};
       const controller=new AbortController();const fetchTimeout=setTimeout(()=>controller.abort(),55000);
       let res;try{res=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-14)]}),signal:controller.signal});}finally{clearTimeout(fetchTimeout);}
       if(res.status===429){
@@ -2636,13 +2684,7 @@ async function setPlanTag(id,tag){
       }
       if(streamErr)throw streamErr;
     }catch(e){
-      const msg=e.message?.toLowerCase()||"";
-      const friendly=msg.includes("load failed")||msg.includes("network")||msg.includes("fetch")
-        ?"Connection issue — please try again 🔄"
-        :msg.includes("timeout")
-        ?"Request timed out — please try again 🔄"
-        :`Something went wrong — please try again`;
-      setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:friendly}]);setBusy(false);
+      setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",isConnectionError:true,retryText:lastSendRef.current.text,text:""}]);setBusy(false);
     }
   }
 
@@ -2723,8 +2765,14 @@ async function setPlanTag(id,tag){
                     !busy&&React.createElement("button",{className:"edit-btn",onClick:()=>startEdit(msg),style:{position:"absolute",top:-8,left:-8,background:"#252018",border:"1px solid rgba(201,169,110,0.2)",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#8a7a50"}},React.createElement(EditIcon))
                   )
               :React.createElement("div",null,
-                  _streaming
-                    ?React.createElement("div",null,React.createElement("div",{className:"ai-message",style:{wordBreak:"break-word"},dangerouslySetInnerHTML:{__html:marked.parse(msg.text||"",{breaks:true,gfm:true})}}),React.createElement("span",{className:"typing-cursor"}))
+                  msg.isConnectionError
+                    ?React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:10,padding:"0.75rem 1rem"}},
+                        React.createElement("p",{style:{fontSize:"0.82rem",color:"#8a7a50",marginBottom:"0.3rem",fontWeight:600}},"📶 Connection lost"),
+                        React.createElement("p",{style:{fontSize:"0.76rem",color:"#8a7a50",marginBottom:"0.65rem",lineHeight:1.6}},"Your trip request timed out — tap to retry"),
+                        React.createElement("button",{onClick:()=>send(msg.retryText),style:{background:"none",border:"1px solid rgba(201,169,110,0.4)",borderRadius:6,padding:"0.35rem 0.9rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"↩ Retry")
+                      )
+                    :_streaming
+                    ?React.createElement("div",null,React.createElement(Prose,{text:msg.text||""}),React.createElement("span",{className:"typing-cursor"}))
                     :(_isMulti?React.createElement(MultiDestDocument,{text:msg.text,msgs,destinations:_multiDests}):_isItin?React.createElement(TripDocument,{text:msg.text,msgs}):_isCmp?React.createElement(ComparisonCard,{text:msg.text,destinations:_cmpDests}):React.createElement(Prose,{text:msg.text})),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
                   React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.5rem",flexWrap:"wrap"}},
