@@ -17,6 +17,9 @@
     },
     "api/subscribe.js": {
       "maxDuration": 10
+    },
+    "api/newsletter.js": {
+      "maxDuration": 60
     }
   },
   "crons": [
