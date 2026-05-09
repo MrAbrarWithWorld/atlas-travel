@@ -749,7 +749,26 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
   const [pushEnabled, setPushEnabled] = React.useState(()=>localStorage.getItem('atlas_push_enabled')==='true');
   const [pushLoading, setPushLoading] = React.useState(false);
   const [pushStatus, setPushStatus] = React.useState('');
+  const [notifPrefs, setNotifPrefs] = React.useState(()=>{
+    try{return JSON.parse(localStorage.getItem('atlas_notif_prefs')||'{}');}catch{return {};}
+  });
   const VAPID_PUBLIC_KEY = 'BGptz3aIXzAwHRW37OhPoRetGGR9GtHE-RprbaEnn351x2BgT0_0MiUrI-PJ1Q2Vr3JtOPtB5GyQPSkJ_3pAeEE';
+  // Permissions tab state
+  const [calendarConnected, setCalendarConnected] = React.useState(()=>localStorage.getItem('atlas_gcal_connected')==='true');
+  const [calendarLoading, setCalendarLoading] = React.useState(false);
+  const [locationPerm, setLocationPerm] = React.useState('unknown');
+  // General tab toggles
+  const [autocomplete, setAutocomplete] = React.useState(()=>localStorage.getItem('atlas_autocomplete')!=='false');
+  const [trending, setTrending] = React.useState(()=>localStorage.getItem('atlas_trending')!=='false');
+
+  React.useEffect(()=>{
+    if(navigator.permissions){
+      navigator.permissions.query({name:'geolocation'}).then(r=>{
+        setLocationPerm(r.state);
+        r.onchange=()=>setLocationPerm(r.state);
+      }).catch(()=>{});
+    }
+  },[]);
 
   function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -824,6 +843,43 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
       setPushStatus('Error: ' + e.message);
     }
     setPushLoading(false);
+  }
+
+  function updateNotifPref(key,val){
+    const next={...notifPrefs,[key]:val};
+    setNotifPrefs(next);
+    localStorage.setItem('atlas_notif_prefs',JSON.stringify(next));
+  }
+
+  async function connectGoogleCalendar(){
+    setCalendarLoading(true);
+    try{
+      await new Promise((resolve,reject)=>{
+        if(window.google?.accounts?.oauth2){resolve();return;}
+        const s=document.createElement('script');
+        s.src='https://accounts.google.com/gsi/client';
+        s.onload=resolve;s.onerror=reject;
+        document.head.appendChild(s);
+      });
+      await new Promise((resolve,reject)=>{
+        const client=google.accounts.oauth2.initTokenClient({
+          client_id:GOOGLE_CLIENT_ID,
+          scope:GOOGLE_CALENDAR_SCOPE,
+          callback:(resp)=>{if(resp.error)reject(new Error('Calendar access denied'));else resolve(resp.access_token);}
+        });
+        client.requestAccessToken({prompt:'consent'});
+      });
+      localStorage.setItem('atlas_gcal_connected','true');
+      setCalendarConnected(true);
+    }catch(e){
+      alert('Could not connect Google Calendar: '+e.message);
+    }
+    setCalendarLoading(false);
+  }
+
+  function disconnectGoogleCalendar(){
+    localStorage.removeItem('atlas_gcal_connected');
+    setCalendarConnected(false);
   }
 
   async function sendTestNotification() {
@@ -964,6 +1020,7 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
           React.createElement("button",{style:tabStyle('personalization'),onClick:()=>setTab('personalization')},"✦","Preferences"),
           React.createElement("button",{style:tabStyle('appearance'),onClick:()=>setTab('appearance')},"◈","Appearance"),
           userTier==='explorer'&&React.createElement("button",{style:tabStyle('ai'),onClick:()=>setTab('ai')},"💎","AI Prompt"),
+          React.createElement("button",{style:tabStyle('permissions'),onClick:()=>setTab('permissions')},"🔑","Permissions"),
           React.createElement("button",{style:tabStyle('notifications'),onClick:()=>setTab('notifications')},"🔔","Notifications"),
           React.createElement("button",{style:tabStyle('account'),onClick:()=>setTab('account')},"◎","Account"),
           React.createElement("button",{style:tabStyle('security'),onClick:()=>setTab('security')},"🔒","Security")
@@ -1054,6 +1111,33 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
               rows:4,
               style:{...inputStyle,resize:"vertical",lineHeight:1.7}
             }),
+
+            React.createElement("p",{style:{...sectionTitle,marginTop:"1.5rem"}},"Interface"),
+            [
+              {key:'autocomplete',val:autocomplete,set:v=>{setAutocomplete(v);localStorage.setItem('atlas_autocomplete',v);},label:'Autocomplete suggestions',desc:'Show destination suggestions as you type'},
+              {key:'trending',val:trending,set:v=>{setTrending(v);localStorage.setItem('atlas_trending',v);},label:'Trending destinations',desc:'Show trending destinations on the home screen'},
+            ].map(({key,val,set,label,desc})=>
+              React.createElement("div",{key,style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.6rem 0",borderBottom:"1px solid rgba(201,169,110,0.07)"}},
+                React.createElement("div",null,
+                  React.createElement("p",{style:{fontSize:"0.75rem",color:"#e0d8c8",marginBottom:"0.1rem"}},label),
+                  React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",lineHeight:1.5}},desc)
+                ),
+                React.createElement("button",{
+                  onClick:()=>set(!val),
+                  style:{
+                    width:38,height:22,borderRadius:11,flexShrink:0,
+                    background:val?"rgba(201,169,110,0.5)":"rgba(100,90,70,0.2)",
+                    border:"none",cursor:"pointer",position:"relative",transition:"all 0.2s"
+                  }
+                },
+                  React.createElement("span",{style:{
+                    position:"absolute",top:2,left:val?18:2,width:18,height:18,
+                    borderRadius:"50%",background:val?"#c9a96e":"#6a5a3a",
+                    transition:"all 0.2s"
+                  }})
+                )
+              )
+            ),
 
             React.createElement("div",{style:{display:"flex",gap:"0.5rem",marginTop:"1.25rem"}},
               React.createElement("button",{onClick:save,style:{flex:1,padding:"0.6rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:8,color:saved?"#6abf6a":"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},saving?"Saving...":saved?"✓ Saved":"Save"),
@@ -1152,15 +1236,60 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
             )
           ),
 
+          // ---- PERMISSIONS ----
+          tab==='permissions'&&React.createElement("div",null,
+            React.createElement("p",{style:sectionTitle},"Permissions"),
+
+            // Google Calendar
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"0.75rem"}},
+              React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},
+                React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem"}},
+                  React.createElement("span",{style:{fontSize:"1.2rem"}},"📅"),
+                  React.createElement("div",null,
+                    React.createElement("p",{style:{fontSize:"0.78rem",color:"#e0d8c8",marginBottom:"0.1rem"}},"Google Calendar"),
+                    React.createElement("p",{style:{fontSize:"0.6rem",color:calendarConnected?"#6abf6a":"#6a5a3a",lineHeight:1.5}},calendarConnected?"Connected ✓":"Not connected")
+                  )
+                ),
+                calendarConnected
+                  ?React.createElement("button",{
+                      onClick:disconnectGoogleCalendar,
+                      style:{padding:"0.3rem 0.75rem",background:"rgba(180,60,60,0.1)",border:"1px solid rgba(180,60,60,0.25)",borderRadius:7,color:"#c07070",cursor:"pointer",fontSize:"0.62rem",letterSpacing:"0.06em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}
+                    },"Disconnect")
+                  :React.createElement("button",{
+                      onClick:connectGoogleCalendar,
+                      disabled:calendarLoading,
+                      style:{padding:"0.3rem 0.75rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:7,color:"#c9a96e",cursor:calendarLoading?"wait":"pointer",fontSize:"0.62rem",letterSpacing:"0.06em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}
+                    },calendarLoading?"Connecting...":"Connect")
+              )
+            ),
+
+            // Location
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem"}},
+              React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},
+                React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem"}},
+                  React.createElement("span",{style:{fontSize:"1.2rem"}},"📍"),
+                  React.createElement("div",null,
+                    React.createElement("p",{style:{fontSize:"0.78rem",color:"#e0d8c8",marginBottom:"0.1rem"}},"Location"),
+                    React.createElement("p",{style:{fontSize:"0.6rem",color:locationPerm==='granted'?"#6abf6a":locationPerm==='denied'?"#c07070":"#6a5a3a",lineHeight:1.5}},
+                      locationPerm==='granted'?"Allowed":locationPerm==='denied'?"Denied — change in browser settings":"Not set"
+                    )
+                  )
+                ),
+                React.createElement("span",{style:{fontSize:"0.6rem",color:"#4a3a22",fontStyle:"italic"}},"Read-only")
+              )
+            )
+          ),
+
           // ---- NOTIFICATIONS ----
           tab==='notifications'&&React.createElement("div",null,
             React.createElement("p",{style:sectionTitle},"Notifications"),
 
+            // Master push toggle
             React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"1rem"}},
               React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}},
                 React.createElement("div",null,
-                  React.createElement("p",{style:{fontSize:"0.8rem",color:"#e0d8c8",marginBottom:"0.15rem"}},"Trip Reminders"),
-                  React.createElement("p",{style:{fontSize:"0.62rem",color:"#6a5a3a",lineHeight:1.6}},"Get notified before your trips and for travel deals")
+                  React.createElement("p",{style:{fontSize:"0.8rem",color:"#e0d8c8",marginBottom:"0.15rem"}},"Push Notifications"),
+                  React.createElement("p",{style:{fontSize:"0.62rem",color:"#6a5a3a",lineHeight:1.6}},"Master on/off for all Atlas notifications")
                 ),
                 React.createElement("button",{
                   onClick:pushEnabled?disablePushNotifications:enablePushNotifications,
@@ -1182,17 +1311,45 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
               pushStatus&&React.createElement("p",{style:{fontSize:"0.65rem",color:pushStatus.startsWith('✓')?"#6abf6a":"#8a7a60",marginTop:"0.5rem",lineHeight:1.5}},pushStatus)
             ),
 
+            // Individual toggles (only when push enabled)
+            pushEnabled&&React.createElement("div",{style:{background:"rgba(201,169,110,0.03)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:10,padding:"0.75rem",marginBottom:"1rem"}},
+              React.createElement("p",{style:{fontSize:"0.58rem",color:"#4a3a22",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"0.75rem"}},"Notification Types"),
+              [
+                {key:'tripReady',emoji:'🗺️',label:'Trip plan ready',desc:'Get notified when your itinerary is generated'},
+                {key:'deals',emoji:'✈️',label:'Travel deals & tips',desc:'New destination guides and travel tips'},
+                {key:'reminders',emoji:'📅',label:'Trip reminders',desc:'Reminders about your saved trips'},
+                {key:'features',emoji:'🚀',label:'New features',desc:'Updates when Atlas adds new features'},
+              ].map(({key,emoji,label,desc})=>
+                React.createElement("div",{key,style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.55rem 0",borderBottom:"1px solid rgba(201,169,110,0.07)"}},
+                  React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
+                    React.createElement("span",{style:{fontSize:"1rem",flexShrink:0}},emoji),
+                    React.createElement("div",null,
+                      React.createElement("p",{style:{fontSize:"0.72rem",color:"#e0d8c8",marginBottom:"0.1rem"}},label),
+                      React.createElement("p",{style:{fontSize:"0.58rem",color:"#6a5a3a",lineHeight:1.5}},desc)
+                    )
+                  ),
+                  React.createElement("button",{
+                    onClick:()=>updateNotifPref(key,notifPrefs[key]===false?true:false),
+                    style:{
+                      width:38,height:22,borderRadius:11,flexShrink:0,
+                      background:notifPrefs[key]===false?"rgba(100,90,70,0.2)":"rgba(201,169,110,0.5)",
+                      border:"none",cursor:"pointer",position:"relative",transition:"all 0.2s"
+                    }
+                  },
+                    React.createElement("span",{style:{
+                      position:"absolute",top:2,left:notifPrefs[key]===false?2:18,width:18,height:18,
+                      borderRadius:"50%",background:notifPrefs[key]===false?"#6a5a3a":"#c9a96e",
+                      transition:"all 0.2s"
+                    }})
+                  )
+                )
+              )
+            ),
+
             pushEnabled&&React.createElement("button",{
               onClick:sendTestNotification,
               style:{width:"100%",padding:"0.55rem",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",marginBottom:"1rem"}
             },"🔔 Send Test Notification"),
-
-            React.createElement("div",{style:{background:"rgba(201,169,110,0.03)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:10,padding:"1rem"}},
-              React.createElement("p",{style:{fontSize:"0.72rem",color:"#6a5a3a",marginBottom:"0.5rem"}},"📋 What you'll receive:"),
-              ["✈️ Trip reminders — 1 day before departure","💰 Price drop alerts (coming soon)","📍 Destination tips when you're near a saved location (coming soon)"].map((item,i)=>
-                React.createElement("p",{key:i,style:{fontSize:"0.65rem",color:"#4a3a22",lineHeight:1.7}},item)
-              )
-            ),
 
             !('Notification' in window)&&React.createElement("div",{style:{background:"rgba(180,60,60,0.06)",border:"1px solid rgba(180,60,60,0.15)",borderRadius:8,padding:"0.75rem",marginTop:"0.75rem"}},
               React.createElement("p",{style:{fontSize:"0.65rem",color:"#8a5050",lineHeight:1.6}},"⚠️ Push notifications are not supported in your current browser. Try Chrome or Firefox on desktop, or use the app on your phone.")
