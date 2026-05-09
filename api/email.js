@@ -3,7 +3,7 @@ import { sendEmail } from '../lib/send-email.js';
 
 const SUPABASE_URL = 'https://prffhhkemxibujjjiyhg.supabase.co';
 
-function welcomeHtml(displayName) {
+function welcomeHtml(displayName, email) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,7 +75,7 @@ function welcomeHtml(displayName) {
         <div style="border-top:1px solid #2e2519;margin-bottom:24px;"></div>
         <p style="color:#4a3f30;font-size:12px;line-height:1.7;margin:0;">
           You're receiving this because you created an Atlas account.<br>
-          <a href="https://getatlas.ca/api/subscribe?email=${encodeURIComponent(displayName)}" style="color:#6a5a40;text-decoration:underline;">Unsubscribe</a> &nbsp;·&nbsp;
+          <a href="https://getatlas.ca/api/subscribe?email=${encodeURIComponent(email)}" style="color:#6a5a40;text-decoration:underline;">Unsubscribe</a> &nbsp;·&nbsp;
           <a href="https://getatlas.ca" style="color:#6a5a40;text-decoration:underline;">getatlas.ca</a>
         </p>
       </td></tr>
@@ -96,7 +96,7 @@ async function handleWelcome(req, res) {
   await sendEmail({
     to: email,
     subject: `Welcome to Atlas, ${displayName}! 🌍`,
-    html: welcomeHtml(displayName),
+    html: welcomeHtml(displayName, email),
   });
   return res.status(200).json({ ok: true });
 }
