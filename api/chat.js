@@ -520,6 +520,9 @@ export default async function handler(req, res) {
       const { data: { user }, error } = await sb.auth.getUser(token);
       if (!error && user) {
         userId = user.id;
+        // WELCOME EMAIL HOOK: on user's first-ever message, call POST /api/welcome-email
+        // with { email: user.email, name: user.user_metadata?.full_name || user.email }
+        // Track with a `welcome_email_sent` column in a `user_profiles` table (check+set atomically).
         const { data: allowed } = await sb.from('allowed_users').select('email').eq('email', user.email).single();
         if (allowed) {
           userTier = 'explorer';
