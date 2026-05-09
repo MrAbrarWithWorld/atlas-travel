@@ -102,14 +102,25 @@ async function handleWelcome(req, res) {
 }
 
 // POST /api/email?action=newsletter  — { subject, html }  (requires x-admin-key)
+// Test mode: ?test=1 with { subject, html, to } — skips auth and sends only to `to`
 async function handleNewsletter(req, res) {
-  const adminKey = req.headers['x-admin-key'];
-  if (!adminKey || adminKey !== process.env.ADMIN_SECRET_KEY) {
-    return res.status(403).json({ error: 'Forbidden' });
+  const isTest = req.query?.test === '1';
+
+  if (!isTest) {
+    const adminKey = req.headers['x-admin-key'];
+    if (!adminKey || adminKey !== process.env.ADMIN_SECRET_KEY) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
   }
 
-  const { subject, html } = req.body || {};
+  const { subject, html, to } = req.body || {};
   if (!subject || !html) return res.status(400).json({ error: 'Missing subject/html' });
+
+  if (isTest) {
+    if (!to || !to.includes('@')) return res.status(400).json({ error: 'Missing/invalid to for test mode' });
+    await sendEmail({ to, subject, html });
+    return res.status(200).json({ ok: true, test: true, to });
+  }
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
   if (!serviceKey) return res.status(500).json({ error: 'Missing Supabase service key' });
