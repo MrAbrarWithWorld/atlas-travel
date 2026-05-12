@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import ShareButtons from "./ShareButtons";
@@ -167,6 +168,29 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <p style={{ color: "#a09070", fontStyle: "italic" }}>Content coming soon.</p>
           )}
 
+          {/* Inline photos gallery */}
+          {Array.isArray(post.inline_photos) && post.inline_photos.filter((url: string) => typeof url === "string" && url.trim() !== "").length > 0 && (() => {
+            const photos: string[] = post.inline_photos.filter((url: string) => typeof url === "string" && url.trim() !== "");
+            return (
+              <div style={{ marginTop: 48 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: "#a09070", textTransform: "uppercase", marginBottom: 16 }}>Photos</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }} className="photo-gallery">
+                  {photos.map((url: string, i: number) => (
+                    <div key={i} style={{ position: "relative", aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "1px solid #3a3228" }}>
+                      <Image
+                        src={url}
+                        alt={`${post.title} — photo ${i + 1}`}
+                        fill
+                        style={{ objectFit: "cover" }}
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Share (bottom) */}
           <div style={{ marginTop: 48, paddingTop: 32, borderTop: "1px solid #3a3228" }}>
             <p style={{ fontSize: 13, color: "#a09070", marginBottom: 16 }}>Enjoyed this guide? Share it with a fellow traveller:</p>
@@ -290,6 +314,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         .article-body th { background:#231f18; color:#c9a96e; font-size:12px; letter-spacing:0.1em; }
         .article-body strong { color:#c9a96e; }
         .article-body code { background:#231f18; padding:2px 8px; border-radius:4px; font-size:14px; color:#c9a96e; }
+        @media (min-width: 640px) { .photo-gallery { grid-template-columns: repeat(3, 1fr) !important; } }
       `}</style>
 
       <BackToTop />
