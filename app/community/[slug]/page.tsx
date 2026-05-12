@@ -19,6 +19,21 @@ interface UserPost {
   photos: { url: string; caption?: string }[] | null;
 }
 
+function sanitizeHtml(html: string): string {
+  return html
+    // Remove script tags and content
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    // Remove event handlers (onclick, onload, onerror, etc)
+    .replace(/\s+on\w+="[^"]*"/gi, '')
+    .replace(/\s+on\w+='[^']*'/gi, '')
+    // Remove javascript: URLs
+    .replace(/href\s*=\s*["']javascript:[^"']*["']/gi, 'href="#"')
+    // Remove style tags
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    // Remove iframes
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
+}
+
 function fmt(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
@@ -129,7 +144,7 @@ export default async function CommunityStoryPage({ params }: { params: Promise<{
             <div
               style={{ lineHeight: 1.8, fontSize: 16, color: "#ede5d5" }}
               className="article-body"
-              dangerouslySetInnerHTML={{ __html: story.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(story.content || '') }}
             />
           ) : (
             <p style={{ color: "#a09070", fontStyle: "italic" }}>No content available.</p>

@@ -38,7 +38,7 @@ interface Post {
 
 export default async function BlogPage({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string }> }) {
   const sp = await searchParams;
-  const initialSearch = sp.q ? decodeURIComponent(sp.q.replace(/-/g, ' ')) : '';
+  const initialSearch = sp.q ? sp.q.replace(/-/g, ' ') : '';
   const initialCategory = sp.cat ? decodeURIComponent(sp.cat) : '';
 
   let allPosts: Post[] = [];
