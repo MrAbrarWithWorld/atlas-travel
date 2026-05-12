@@ -129,7 +129,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const relatedPosts: RelatedPost[] = related ?? [];
   const highlights: string[] = post.highlights ?? [];
-  const keyFacts: Record<string, string> = post.key_facts ?? {};
+  const keyFactsRaw = post.key_facts ?? {};
+  const keyFactsEntries: [string, string][] = Array.isArray(keyFactsRaw)
+    ? keyFactsRaw.map((f: any) => [f.label || f.key || '', f.value || ''])
+    : Object.entries(keyFactsRaw);
   const destination = extractDestination(post.title);
 
   return (
@@ -178,10 +181,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           )}
 
           {/* Key facts card */}
-          {Object.keys(keyFacts).length > 0 && (
+          {keyFactsEntries.length > 0 && (
             <div style={{ background: "#231f18", border: "1px solid #3a3228", borderRadius: 12, padding: "24px", marginBottom: 28 }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: "18px 24px" }}>
-                {Object.entries(keyFacts).map(([label, value]) => (
+                {keyFactsEntries.map(([label, value]) => (
                   <div key={label}>
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#a09070", textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
                     <div style={{ fontSize: 14, color: "#ede5d5", fontWeight: 500 }}>{String(value)}</div>

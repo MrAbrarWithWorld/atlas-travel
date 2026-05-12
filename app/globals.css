@@ -14,6 +14,8 @@
   --atlas-gold-light: #e8c994;
   --atlas-gold-dark: #9a7840;
   --atlas-border: #3a3228;
+  --font-dm-sans: 'DM Sans', sans-serif;
+  --font-cormorant-garamond: 'Cormorant Garamond', serif;
 }
 
 * {

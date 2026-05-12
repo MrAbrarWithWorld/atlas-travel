@@ -5,6 +5,7 @@ import { useState } from 'react';
 export default function WriteStoryForm() {
   const [open, setOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', title: '', destination: '', excerpt: '', content: '' });
 
   if (submitted) {
@@ -32,16 +33,20 @@ export default function WriteStoryForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       const res = await fetch('/api/community/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      if (res.ok) setSubmitted(true);
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        setError('Submission failed. Please try again later.');
+      }
     } catch {
-      // Fallback: just show success for preview
-      setSubmitted(true);
+      setError('Could not reach the server. Please check your connection and try again.');
     }
   };
 
@@ -81,6 +86,9 @@ export default function WriteStoryForm() {
           <label style={labelStyle}>Your full story *</label>
           <textarea name="content" value={form.content} onChange={handleChange} required rows={10} placeholder="Write your travel experience here — tips, places you loved, hidden gems, budget breakdown, what to avoid..." style={{ ...inputStyle, resize:"vertical" }} />
         </div>
+        {error && (
+          <p style={{ fontSize:13, color:"#e07070", margin:0 }}>{error}</p>
+        )}
         <div style={{ display:"flex", gap:12, justifyContent:"flex-end" }}>
           <button type="button" onClick={() => setOpen(false)} style={{ background:"none", border:"1px solid #3a3228", borderRadius:8, padding:"12px 24px", color:"#a09070", fontSize:13, cursor:"pointer" }}>Cancel</button>
           <button type="submit" style={{ background:"none", border:"1px solid #c9a96e", borderRadius:8, padding:"12px 28px", color:"#c9a96e", fontSize:13, fontWeight:600, letterSpacing:"0.08em", cursor:"pointer" }}>Submit story →</button>
