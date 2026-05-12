@@ -7,6 +7,7 @@ import ReadingProgress from "./ReadingProgress";
 import BackToTop from "./BackToTop";
 import TableOfContents from "./TableOfContents";
 import BlogNav from "../components/BlogNav";
+import NewsletterForm from "../NewsletterForm";
 
 export const revalidate = 60;
 
@@ -207,10 +208,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <div style={{ fontSize: 24, marginBottom: 12 }}>✉️</div>
           <h3 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: 24, fontWeight: 600, color: "#ede5d5", marginBottom: 10 }}>Discover the world — one destination at a time</h3>
           <p style={{ fontSize: 14, color: "#a09070", lineHeight: 1.7, marginBottom: 24 }}>Hidden gems, budget routes, and travel inspiration from across the globe — straight to your inbox. No spam, unsubscribe anytime.</p>
-          <div style={{ display: "flex", gap: 10, maxWidth: 400, margin: "0 auto" }}>
-            <input type="email" placeholder="your@email.com" style={{ flex: 1, background: "#1c1914", border: "1px solid #3a3228", borderRadius: 8, padding: "11px 16px", color: "#ede5d5", fontSize: 14, outline: "none" }} />
-            <button type="button" style={{ background: "none", border: "1px solid #c9a96e", borderRadius: 8, padding: "11px 20px", color: "#c9a96e", fontSize: 13, fontWeight: 600, letterSpacing: "0.06em", cursor: "pointer", whiteSpace: "nowrap" }}>Subscribe →</button>
-          </div>
+          <NewsletterForm />
         </div>
       </div>
 
