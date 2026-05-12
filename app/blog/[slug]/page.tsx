@@ -26,6 +26,53 @@ function extractDestination(title: string): string {
   return m ? m[1].replace(/[:\-()"]/g, '').trim() : title.split(' ')[0];
 }
 
+function injectInlinePhotos(html: string, photos: string[] | null | undefined): string {
+  if (!html) return html;
+  const validPhotos = Array.isArray(photos)
+    ? photos.filter((url) => typeof url === "string" && url.trim() !== "")
+    : [];
+  if (validPhotos.length === 0) return html;
+
+  const makeImgTag = (url: string) =>
+    `<div style="margin:24px 0;"><img src="${url}" alt="" style="width:100%;border-radius:10px;margin:0;" /></div>`;
+
+  // Mode 1: marker mode — replace [photo-1], [photo-2], ... [photo-5]
+  const hasMarkers = /\[photo-[1-5]\]/.test(html);
+  if (hasMarkers) {
+    return html.replace(/\[photo-([1-5])\]/g, (_match: string, num: string) => {
+      const idx = parseInt(num, 10) - 1;
+      if (idx >= 0 && idx < validPhotos.length) {
+        return makeImgTag(validPhotos[idx]);
+      }
+      return "";
+    });
+  }
+
+  // Mode 2: auto-distribute after every Nth </h2>
+  const h2Matches = html.match(/<\/h2>/gi);
+  const h2Count = h2Matches ? h2Matches.length : 0;
+
+  if (h2Count === 0) {
+    // No H2s — prepend all photos at the top
+    return validPhotos.map(makeImgTag).join("") + html;
+  }
+
+  const photoCount = validPhotos.length;
+  const n = Math.floor(h2Count / photoCount) || 1;
+
+  let photoIndex = 0;
+  let h2Seen = 0;
+  return html.replace(/<\/h2>/gi, (match: string) => {
+    h2Seen++;
+    if (photoIndex < photoCount && h2Seen % n === 0) {
+      const imgTag = makeImgTag(validPhotos[photoIndex]);
+      photoIndex++;
+      return match + imgTag;
+    }
+    return match;
+  });
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const key = process.env.SUPABASE_SERVICE_KEY;
@@ -163,33 +210,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
           {/* Article body */}
           {post.content ? (
-            <div style={{ lineHeight: 1.8, fontSize: 16, color: "#ede5d5" }} className="article-body" dangerouslySetInnerHTML={{ __html: post.content }} />
+            <div style={{ lineHeight: 1.8, fontSize: 16, color: "#ede5d5" }} className="article-body" dangerouslySetInnerHTML={{ __html: injectInlinePhotos(post.content, post.inline_photos) }} />
           ) : (
             <p style={{ color: "#a09070", fontStyle: "italic" }}>Content coming soon.</p>
           )}
-
-          {/* Inline photos gallery */}
-          {Array.isArray(post.inline_photos) && post.inline_photos.filter((url: string) => typeof url === "string" && url.trim() !== "").length > 0 && (() => {
-            const photos: string[] = post.inline_photos.filter((url: string) => typeof url === "string" && url.trim() !== "");
-            return (
-              <div style={{ marginTop: 48 }}>
-                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: "#a09070", textTransform: "uppercase", marginBottom: 16 }}>Photos</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }} className="photo-gallery">
-                  {photos.map((url: string, i: number) => (
-                    <div key={i} style={{ position: "relative", aspectRatio: "4/3", borderRadius: 10, overflow: "hidden", border: "1px solid #3a3228" }}>
-                      <Image
-                        src={url}
-                        alt={`${post.title} — photo ${i + 1}`}
-                        fill
-                        style={{ objectFit: "cover" }}
-                        sizes="(max-width: 768px) 50vw, 33vw"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
 
           {/* Share (bottom) */}
           <div style={{ marginTop: 48, paddingTop: 32, borderTop: "1px solid #3a3228" }}>
@@ -242,7 +266,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: "#a09070", textTransform: "uppercase", marginBottom: 12 }}>PLAN A TRIP</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {relatedPosts.map(rp => {
-              const dest = extractDestination(rp.title);
+              const dest = extractDestination( rp.title);
               return (
                 <Link key={rp.slug} href="https://app.getatlas.ca" style={{ display: "inline-flex", alignItems: "center", padding: "8px 16px", background: "#231f18", border: "1px solid #3a3228", borderRadius: 20, fontSize: 12, color: "#a09070", textDecoration: "none", fontWeight: 500 }}>Plan trip to {dest}</Link>
               );
@@ -300,7 +324,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       </footer>
 
       <style>{`
-        .article-body h1,.article-body h2,.article-body h3 { font-family:var(--font-cormorant-garamond),serif; color:#ede5d5; margin-top:2em; margin-bottom:0.6em; }
+        .article-body h1,.article-body h2,.article-body h3 { font-family:var(--font-cormorant-garamond),serif; color:#ede5d5; margin-top:2rem; margin-bottom:0.6em; }
         .article-body h2 { font-size:30px; font-weight:600; border-bottom:1px solid #3a3228; padding-bottom:8px; }
         .article-body h3 { font-size:22px; font-weight:600; }
         .article-body p { margin-bottom:1.4em; }
@@ -314,7 +338,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         .article-body th { background:#231f18; color:#c9a96e; font-size:12px; letter-spacing:0.1em; }
         .article-body strong { color:#c9a96e; }
         .article-body code { background:#231f18; padding:2px 8px; border-radius:4px; font-size:14px; color:#c9a96e; }
-        @media (min-width: 640px) { .photo-gallery { grid-template-columns: repeat(3, 1fr) !important; } }
       `}</style>
 
       <BackToTop />
