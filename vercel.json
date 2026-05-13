@@ -1,4 +1,10 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
   "functions": {
     "api/chat.js": {
       "maxDuration": 60
@@ -34,8 +40,8 @@
       "destination": "/api/$1"
     },
     {
-  "source": "/sitemap.xml",
-  "destination": "/api/sitemap"
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
     },
     {
       "source": "/privacy",
@@ -64,22 +70,39 @@
     {
       "source": "/admin",
       "destination": "/api/admin"
-    },
-    {
-      "source": "/((?!_vercel).*)",
-      "destination": "/index.html"
     }
   ],
   "headers": [
     {
-  "source": "/sitemap.xml",
-  "headers": [
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
     {
-      "key": "Cache-Control",
-      "value": "no-store"
-    }
-  ]
-  },
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
     {
       "source": "/api/(.*)",
       "headers": [
