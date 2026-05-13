@@ -17,6 +17,13 @@ const nextConfig: NextConfig = {
   experimental: {
     // Enable PPR when stable
   },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: '/', destination: '/index.html' }
+      ]
+    };
+  },
 };
 
 export default nextConfig;
