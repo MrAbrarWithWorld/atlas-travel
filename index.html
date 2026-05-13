@@ -188,9 +188,9 @@
 <link rel="preconnect" href="https://maps.googleapis.com"/>
 <link rel="preconnect" href="https://prffhhkemxibujjjiyhg.supabase.co"/>
 <link rel="dns-prefetch" href="https://api.anthropic.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <!-- Google Maps loaded dynamically after fetching key from /api/map-config -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body,#root{height:100%;}
@@ -235,6 +235,18 @@ button{-webkit-tap-highlight-color:transparent;}
 .plan-tag-picker{position:absolute;right:2.2rem;top:0;background:#1e1a12;border:1px solid rgba(201,169,110,0.25);border-radius:8px;padding:0.4rem;z-index:100;display:flex;flex-wrap:wrap;gap:0.25rem;width:160px;box-shadow:0 4px 16px rgba(0,0,0,0.5);}
 .plan-tag-opt{font-size:0.55rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:3px;cursor:pointer;border:none;line-height:1.5;transition:opacity 0.15s;}
 .plan-tag-opt:hover{opacity:0.8;}
+.ai-message h1,.ai-message h2,.ai-message h3{font-family:'Cormorant Garamond',serif;color:#c9a96e;margin:16px 0 8px;}
+.ai-message h2{font-size:1.1em;}.ai-message h3{font-size:1em;}
+.ai-message strong{color:#ede5d5;}
+.ai-message a{color:#c9a96e;text-decoration:underline;}
+.ai-message ul,.ai-message ol{padding-left:20px;margin:8px 0;}
+.ai-message li{margin:4px 0;font-size:0.81rem;color:#b8b0a0;line-height:1.85;}
+.ai-message p{font-size:0.81rem;color:#b8b0a0;line-height:1.85;margin:0.08rem 0;}
+.ai-message code{background:rgba(201,169,110,0.1);padding:2px 5px;border-radius:3px;font-size:0.9em;}
+.ai-message pre code{background:none;padding:0;}
+.ai-message pre{background:rgba(201,169,110,0.07);border:1px solid rgba(201,169,110,0.15);border-radius:6px;padding:0.6rem 0.9rem;overflow-x:auto;margin:8px 0;}
+.ai-message hr{border:none;border-top:1px solid #3a3228;margin:16px 0;}
+.ai-message blockquote{border-left:2px solid rgba(201,169,110,0.4);padding-left:0.75rem;color:#8a7a50;margin:8px 0;}
 </style>
 <!-- Google Analytics GA4 — replace G-5CT9JK05WL with your Measurement ID -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-5CT9JK05WL"></script>
@@ -339,6 +351,14 @@ const {useState,useRef,useEffect}=React;
 function saveLocal(msgs,hist){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({msgs,hist,t:Date.now()}));}catch{}}
 function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!d||Date.now()-d.t>24*60*60*1000)return null;return d;}catch{return null;}}
 const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}];
+
+// ===================== GLOBAL TOAST =====================
+function showToast(msg){
+  const toast=document.createElement('div');
+  toast.textContent=msg;
+  toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.5rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:9999;letter-spacing:0.08em;white-space:nowrap;';
+  document.body.appendChild(toast);setTimeout(()=>toast.remove(),2500);
+}
 
   // ===================== GOOGLE CALENDAR SYNC =====================
 async function addToGoogleCalendar(events){
@@ -646,21 +666,21 @@ const [hotels,setHotels]=React.useState(()=>{
   lines.push("END:VCALENDAR");
   const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;a.click();
+  const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast('📅 Calendar file downloaded! Open it to add to your calendar.');
   onClose();
 },style:{width:"100%",marginTop:"1.25rem",padding:"0.85rem",background:"linear-gradient(135deg,rgba(201,169,110,0.2),rgba(201,169,110,0.1))",border:"1px solid rgba(201,169,110,0.4)",borderRadius:10,color:"#c9a96e",cursor:"pointer",fontSize:"0.75rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",fontWeight:500}},"📅 Download Calendar File")
 ,React.createElement("button",{onClick:()=>{
-    const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Atlas AI//EN"];
+    const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Atlas AI//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
     const addEvent=(title,start,end,desc)=>{lines.push("BEGIN:VEVENT",`DTSTART;VALUE=DATE:${start.replace(/-/g,'')}`,`DTEND;VALUE=DATE:${end.replace(/-/g,'')}`,`SUMMARY:${title}`,`DESCRIPTION:${desc||'Atlas AI Travel Planner - getatlas.ca'}`,`UID:${Date.now()}@getatlas.ca`,"END:VEVENT");};
     addEvent(`✈️ ${tripName}`,startDate,endDate,`Trip planned by Atlas AI\ngetatlas.ca`);
     for(const f of flights){if(f.from&&f.to&&f.date)addEvent(`✈️ Flight: ${f.from} → ${f.to}`,f.date,f.date,`Flight planned by Atlas AI`);}
     for(const h of hotels){if(h.name&&h.checkIn&&h.checkOut)addEvent(`🏨 ${h.name}${h.city?' - '+h.city:''}`,h.checkIn,h.checkOut,`Hotel stay - Atlas AI`);}
     lines.push("END:VCALENDAR");
-    const blob=new Blob([lines.join('\r\n')],{type:'text/calendar'});
+    const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
     const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;a.click();
+    const a=document.createElement('a');a.href=url;a.download=`${tripName.replace(/[^a-z0-9]/gi,'_')}_atlas.ics`;document.body.appendChild(a);a.click();document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('📥 Calendar file downloaded!');
   },
@@ -736,7 +756,26 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
   const [pushEnabled, setPushEnabled] = React.useState(()=>localStorage.getItem('atlas_push_enabled')==='true');
   const [pushLoading, setPushLoading] = React.useState(false);
   const [pushStatus, setPushStatus] = React.useState('');
+  const [notifPrefs, setNotifPrefs] = React.useState(()=>{
+    try{return JSON.parse(localStorage.getItem('atlas_notif_prefs')||'{}');}catch{return {};}
+  });
   const VAPID_PUBLIC_KEY = 'BGptz3aIXzAwHRW37OhPoRetGGR9GtHE-RprbaEnn351x2BgT0_0MiUrI-PJ1Q2Vr3JtOPtB5GyQPSkJ_3pAeEE';
+  // Permissions tab state
+  const [calendarConnected, setCalendarConnected] = React.useState(()=>localStorage.getItem('atlas_gcal_connected')==='true');
+  const [calendarLoading, setCalendarLoading] = React.useState(false);
+  const [locationPerm, setLocationPerm] = React.useState('unknown');
+  // General tab toggles
+  const [autocomplete, setAutocomplete] = React.useState(()=>localStorage.getItem('atlas_autocomplete')!=='false');
+  const [trending, setTrending] = React.useState(()=>localStorage.getItem('atlas_trending')!=='false');
+
+  React.useEffect(()=>{
+    if(navigator.permissions){
+      navigator.permissions.query({name:'geolocation'}).then(r=>{
+        setLocationPerm(r.state);
+        r.onchange=()=>setLocationPerm(r.state);
+      }).catch(()=>{});
+    }
+  },[]);
 
   function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -811,6 +850,43 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
       setPushStatus('Error: ' + e.message);
     }
     setPushLoading(false);
+  }
+
+  function updateNotifPref(key,val){
+    const next={...notifPrefs,[key]:val};
+    setNotifPrefs(next);
+    localStorage.setItem('atlas_notif_prefs',JSON.stringify(next));
+  }
+
+  async function connectGoogleCalendar(){
+    setCalendarLoading(true);
+    try{
+      await new Promise((resolve,reject)=>{
+        if(window.google?.accounts?.oauth2){resolve();return;}
+        const s=document.createElement('script');
+        s.src='https://accounts.google.com/gsi/client';
+        s.onload=resolve;s.onerror=reject;
+        document.head.appendChild(s);
+      });
+      await new Promise((resolve,reject)=>{
+        const client=google.accounts.oauth2.initTokenClient({
+          client_id:GOOGLE_CLIENT_ID,
+          scope:GOOGLE_CALENDAR_SCOPE,
+          callback:(resp)=>{if(resp.error)reject(new Error('Calendar access denied'));else resolve(resp.access_token);}
+        });
+        client.requestAccessToken({prompt:'consent'});
+      });
+      localStorage.setItem('atlas_gcal_connected','true');
+      setCalendarConnected(true);
+    }catch(e){
+      alert('Could not connect Google Calendar: '+e.message);
+    }
+    setCalendarLoading(false);
+  }
+
+  function disconnectGoogleCalendar(){
+    localStorage.removeItem('atlas_gcal_connected');
+    setCalendarConnected(false);
   }
 
   async function sendTestNotification() {
@@ -951,6 +1027,7 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
           React.createElement("button",{style:tabStyle('personalization'),onClick:()=>setTab('personalization')},"✦","Preferences"),
           React.createElement("button",{style:tabStyle('appearance'),onClick:()=>setTab('appearance')},"◈","Appearance"),
           userTier==='explorer'&&React.createElement("button",{style:tabStyle('ai'),onClick:()=>setTab('ai')},"💎","AI Prompt"),
+          React.createElement("button",{style:tabStyle('permissions'),onClick:()=>setTab('permissions')},"🔑","Permissions"),
           React.createElement("button",{style:tabStyle('notifications'),onClick:()=>setTab('notifications')},"🔔","Notifications"),
           React.createElement("button",{style:tabStyle('account'),onClick:()=>setTab('account')},"◎","Account"),
           React.createElement("button",{style:tabStyle('security'),onClick:()=>setTab('security')},"🔒","Security")
@@ -1041,6 +1118,33 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
               rows:4,
               style:{...inputStyle,resize:"vertical",lineHeight:1.7}
             }),
+
+            React.createElement("p",{style:{...sectionTitle,marginTop:"1.5rem"}},"Interface"),
+            [
+              {key:'autocomplete',val:autocomplete,set:v=>{setAutocomplete(v);localStorage.setItem('atlas_autocomplete',v);},label:'Autocomplete suggestions',desc:'Show destination suggestions as you type'},
+              {key:'trending',val:trending,set:v=>{setTrending(v);localStorage.setItem('atlas_trending',v);},label:'Trending destinations',desc:'Show trending destinations on the home screen'},
+            ].map(({key,val,set,label,desc})=>
+              React.createElement("div",{key,style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.6rem 0",borderBottom:"1px solid rgba(201,169,110,0.07)"}},
+                React.createElement("div",null,
+                  React.createElement("p",{style:{fontSize:"0.75rem",color:"#e0d8c8",marginBottom:"0.1rem"}},label),
+                  React.createElement("p",{style:{fontSize:"0.6rem",color:"#6a5a3a",lineHeight:1.5}},desc)
+                ),
+                React.createElement("button",{
+                  onClick:()=>set(!val),
+                  style:{
+                    width:38,height:22,borderRadius:11,flexShrink:0,
+                    background:val?"rgba(201,169,110,0.5)":"rgba(100,90,70,0.2)",
+                    border:"none",cursor:"pointer",position:"relative",transition:"all 0.2s"
+                  }
+                },
+                  React.createElement("span",{style:{
+                    position:"absolute",top:2,left:val?18:2,width:18,height:18,
+                    borderRadius:"50%",background:val?"#c9a96e":"#6a5a3a",
+                    transition:"all 0.2s"
+                  }})
+                )
+              )
+            ),
 
             React.createElement("div",{style:{display:"flex",gap:"0.5rem",marginTop:"1.25rem"}},
               React.createElement("button",{onClick:save,style:{flex:1,padding:"0.6rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:8,color:saved?"#6abf6a":"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}},saving?"Saving...":saved?"✓ Saved":"Save"),
@@ -1139,15 +1243,60 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
             )
           ),
 
+          // ---- PERMISSIONS ----
+          tab==='permissions'&&React.createElement("div",null,
+            React.createElement("p",{style:sectionTitle},"Permissions"),
+
+            // Google Calendar
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"0.75rem"}},
+              React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},
+                React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem"}},
+                  React.createElement("span",{style:{fontSize:"1.2rem"}},"📅"),
+                  React.createElement("div",null,
+                    React.createElement("p",{style:{fontSize:"0.78rem",color:"#e0d8c8",marginBottom:"0.1rem"}},"Google Calendar"),
+                    React.createElement("p",{style:{fontSize:"0.6rem",color:calendarConnected?"#6abf6a":"#6a5a3a",lineHeight:1.5}},calendarConnected?"Connected ✓":"Not connected")
+                  )
+                ),
+                calendarConnected
+                  ?React.createElement("button",{
+                      onClick:disconnectGoogleCalendar,
+                      style:{padding:"0.3rem 0.75rem",background:"rgba(180,60,60,0.1)",border:"1px solid rgba(180,60,60,0.25)",borderRadius:7,color:"#c07070",cursor:"pointer",fontSize:"0.62rem",letterSpacing:"0.06em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}
+                    },"Disconnect")
+                  :React.createElement("button",{
+                      onClick:connectGoogleCalendar,
+                      disabled:calendarLoading,
+                      style:{padding:"0.3rem 0.75rem",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.35)",borderRadius:7,color:"#c9a96e",cursor:calendarLoading?"wait":"pointer",fontSize:"0.62rem",letterSpacing:"0.06em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}
+                    },calendarLoading?"Connecting...":"Connect")
+              )
+            ),
+
+            // Location
+            React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem"}},
+              React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between"}},
+                React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem"}},
+                  React.createElement("span",{style:{fontSize:"1.2rem"}},"📍"),
+                  React.createElement("div",null,
+                    React.createElement("p",{style:{fontSize:"0.78rem",color:"#e0d8c8",marginBottom:"0.1rem"}},"Location"),
+                    React.createElement("p",{style:{fontSize:"0.6rem",color:locationPerm==='granted'?"#6abf6a":locationPerm==='denied'?"#c07070":"#6a5a3a",lineHeight:1.5}},
+                      locationPerm==='granted'?"Allowed":locationPerm==='denied'?"Denied — change in browser settings":"Not set"
+                    )
+                  )
+                ),
+                React.createElement("span",{style:{fontSize:"0.6rem",color:"#4a3a22",fontStyle:"italic"}},"Read-only")
+              )
+            )
+          ),
+
           // ---- NOTIFICATIONS ----
           tab==='notifications'&&React.createElement("div",null,
             React.createElement("p",{style:sectionTitle},"Notifications"),
 
+            // Master push toggle
             React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,padding:"1rem",marginBottom:"1rem"}},
               React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}},
                 React.createElement("div",null,
-                  React.createElement("p",{style:{fontSize:"0.8rem",color:"#e0d8c8",marginBottom:"0.15rem"}},"Trip Reminders"),
-                  React.createElement("p",{style:{fontSize:"0.62rem",color:"#6a5a3a",lineHeight:1.6}},"Get notified before your trips and for travel deals")
+                  React.createElement("p",{style:{fontSize:"0.8rem",color:"#e0d8c8",marginBottom:"0.15rem"}},"Push Notifications"),
+                  React.createElement("p",{style:{fontSize:"0.62rem",color:"#6a5a3a",lineHeight:1.6}},"Master on/off for all Atlas notifications")
                 ),
                 React.createElement("button",{
                   onClick:pushEnabled?disablePushNotifications:enablePushNotifications,
@@ -1169,17 +1318,45 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
               pushStatus&&React.createElement("p",{style:{fontSize:"0.65rem",color:pushStatus.startsWith('✓')?"#6abf6a":"#8a7a60",marginTop:"0.5rem",lineHeight:1.5}},pushStatus)
             ),
 
+            // Individual toggles (only when push enabled)
+            pushEnabled&&React.createElement("div",{style:{background:"rgba(201,169,110,0.03)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:10,padding:"0.75rem",marginBottom:"1rem"}},
+              React.createElement("p",{style:{fontSize:"0.58rem",color:"#4a3a22",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"0.75rem"}},"Notification Types"),
+              [
+                {key:'tripReady',emoji:'🗺️',label:'Trip plan ready',desc:'Get notified when your itinerary is generated'},
+                {key:'deals',emoji:'✈️',label:'Travel deals & tips',desc:'New destination guides and travel tips'},
+                {key:'reminders',emoji:'📅',label:'Trip reminders',desc:'Reminders about your saved trips'},
+                {key:'features',emoji:'🚀',label:'New features',desc:'Updates when Atlas adds new features'},
+              ].map(({key,emoji,label,desc})=>
+                React.createElement("div",{key,style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.55rem 0",borderBottom:"1px solid rgba(201,169,110,0.07)"}},
+                  React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
+                    React.createElement("span",{style:{fontSize:"1rem",flexShrink:0}},emoji),
+                    React.createElement("div",null,
+                      React.createElement("p",{style:{fontSize:"0.72rem",color:"#e0d8c8",marginBottom:"0.1rem"}},label),
+                      React.createElement("p",{style:{fontSize:"0.58rem",color:"#6a5a3a",lineHeight:1.5}},desc)
+                    )
+                  ),
+                  React.createElement("button",{
+                    onClick:()=>updateNotifPref(key,notifPrefs[key]===false?true:false),
+                    style:{
+                      width:38,height:22,borderRadius:11,flexShrink:0,
+                      background:notifPrefs[key]===false?"rgba(100,90,70,0.2)":"rgba(201,169,110,0.5)",
+                      border:"none",cursor:"pointer",position:"relative",transition:"all 0.2s"
+                    }
+                  },
+                    React.createElement("span",{style:{
+                      position:"absolute",top:2,left:notifPrefs[key]===false?2:18,width:18,height:18,
+                      borderRadius:"50%",background:notifPrefs[key]===false?"#6a5a3a":"#c9a96e",
+                      transition:"all 0.2s"
+                    }})
+                  )
+                )
+              )
+            ),
+
             pushEnabled&&React.createElement("button",{
               onClick:sendTestNotification,
               style:{width:"100%",padding:"0.55rem",background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:8,color:"#c9a96e",cursor:"pointer",fontSize:"0.68rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif",marginBottom:"1rem"}
             },"🔔 Send Test Notification"),
-
-            React.createElement("div",{style:{background:"rgba(201,169,110,0.03)",border:"1px solid rgba(201,169,110,0.1)",borderRadius:10,padding:"1rem"}},
-              React.createElement("p",{style:{fontSize:"0.72rem",color:"#6a5a3a",marginBottom:"0.5rem"}},"📋 What you'll receive:"),
-              ["✈️ Trip reminders — 1 day before departure","💰 Price drop alerts (coming soon)","📍 Destination tips when you're near a saved location (coming soon)"].map((item,i)=>
-                React.createElement("p",{key:i,style:{fontSize:"0.65rem",color:"#4a3a22",lineHeight:1.7}},item)
-              )
-            ),
 
             !('Notification' in window)&&React.createElement("div",{style:{background:"rgba(180,60,60,0.06)",border:"1px solid rgba(180,60,60,0.15)",borderRadius:8,padding:"0.75rem",marginTop:"0.75rem"}},
               React.createElement("p",{style:{fontSize:"0.65rem",color:"#8a5050",lineHeight:1.6}},"⚠️ Push notifications are not supported in your current browser. Try Chrome or Firefox on desktop, or use the app on your phone.")
@@ -1880,7 +2057,7 @@ function Modal({hours,plansLeft,onClose,onLogin,onUpgrade}){
 }
 
 // ===================== PROSE =====================
-function isItinerary(text){if(!text)return false;const m=text.match(/\bDay\s+\d+/gi);return m&&m.length>=2;}
+function isItinerary(text){if(!text)return false;const m=text.match(/^[\*\-#\s]*Day\s+\d+[\s:\-—]/gim);return m&&m.length>=2;}
 function isComparison(text){
   if(!text)return null;
   const clean=stripMapData(text);
@@ -2038,19 +2215,41 @@ function TripDocument({text,msgs}){
   const clean=stripMapData(text);
   const lines=clean.split('\n');
   // Parse into pre-content + day sections
-  const sections=[];let curDay=null;const prelines=[];
+  const sections=[];let curDay=null;let curWatch=null;const prelines=[];
+  function _isDayHeader(t){
+    return /^(Day|DAY)\s+\d+/i.test(t)||
+           /^\*\*Day\s+\d+/i.test(t)||
+           /^#{1,3}\s*(Day|DAY)\s+\d+/i.test(t)||
+           /^-\s*\*\*Day\s+\d+/i.test(t);
+  }
+  function _parseDayLine(t){
+    const cleaned=t.replace(/^#{1,3}\s*/,'').replace(/^-\s*/,'').replace(/^\*\*/,'').replace(/\*\*$/,'').trim();
+    const m=cleaned.match(/^(Day\s+\d+(?:\s*[\-–]\s*\d+)?)[:\s\—\–]*(.*)/i);
+    if(m)return{label:m[1].trim(),title:m[2].replace(/\*+/g,'').trim()};
+    return{label:cleaned,title:''};
+  }
   for(const line of lines){
     const t=line.trim();if(!t)continue;
-    const dm=t.match(/^\*{0,2}(Day\s+\d+)[:\*\s\—\–]+([^\n]*)/i);
-    if(dm){
+    const yw=/^#{1,3}\s*(📺\s*)?watch\s+before\s+you\s+go/i.test(t);
+    if(_isDayHeader(t)){
+      if(curWatch){sections.push(curWatch);curWatch=null;}
       if(curDay)sections.push(curDay);
       else if(prelines.length){sections.push({type:'pre',content:prelines.join('\n')});prelines.length=0;}
-      curDay={type:'day',label:dm[1],title:dm[2].replace(/\*+/g,'').trim(),items:[]};
+      const parsed=_parseDayLine(t);
+      curDay={type:'day',label:parsed.label,title:parsed.title,items:[]};
+    }else if(yw){
+      if(curDay){sections.push(curDay);curDay=null;}
+      else if(prelines.length){sections.push({type:'pre',content:prelines.join('\n')});prelines.length=0;}
+      curWatch={type:'watch',items:[]};
+    }else if(curWatch){
+      if(t.startsWith('- ')||t.startsWith('* '))curWatch.items.push(t.slice(2));
+      else if(t.startsWith('[')||t.includes('youtube.com')||t.includes('youtu.be'))curWatch.items.push(t);
     }else if(curDay){
       if(t.startsWith('- ')||t.startsWith('* '))curDay.items.push(t.slice(2).replace(/\*\*/g,''));
-      else if(!t.startsWith('##')&&!t.startsWith('**Day'))curDay.items.push(t.replace(/\*\*/g,''));
+      else if(!t.startsWith('##')&&!_isDayHeader(t))curDay.items.push(t.replace(/\*\*/g,''));
     }else{prelines.push(line);}
   }
+  if(curWatch)sections.push(curWatch);
   if(curDay)sections.push(curDay);
   const dayCount=sections.filter(s=>s.type==='day').length;
   return React.createElement('div',{style:{width:'100%'}},
@@ -2078,10 +2277,9 @@ function TripDocument({text,msgs}){
     prelines.length>0&&React.createElement('div',{style:{fontSize:'0.8rem',color:'#8a7a55',lineHeight:1.8,marginBottom:'0.75rem',padding:'0 0.25rem'}},React.createElement(Prose,{text:prelines.join('\n')})),
     // Day cards
     ...sections.filter(s=>s.type==='day').map((day,i)=>
-      React.createElement('div',{key:i,style:{background:'rgba(201,169,110,0.025)',border:'1px solid rgba(201,169,110,0.1)',borderLeft:'3px solid rgba(201,169,110,0.45)',borderRadius:'0 10px 10px 0',padding:'0.65rem 0.85rem',marginBottom:'0.45rem'}},
-        React.createElement('div',{style:{display:'flex',alignItems:'baseline',gap:'0.5rem',marginBottom:day.items.length?'0.35rem':0}},
-          React.createElement('span',{style:{fontSize:'0.55rem',color:'#c9a96e',letterSpacing:'0.14em',textTransform:'uppercase',fontWeight:600,flexShrink:0}},day.label),
-          day.title&&React.createElement('span',{style:{fontSize:'0.88rem',color:'#d4c8a8',fontFamily:"'Cormorant Garamond',serif",lineHeight:1.3}},day.title)
+      React.createElement('div',{key:i,style:{background:'rgba(201,169,110,0.04)',border:'1px solid rgba(201,169,110,0.15)',borderLeft:'3px solid rgba(201,169,110,0.5)',borderRadius:'10px',padding:'0.75rem 1rem',margin:'0.5rem 0'}},
+        React.createElement('div',{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:'0.95rem',fontWeight:700,color:'#c9a96e',marginBottom:'0.4rem'}},
+          day.label+(day.title?' — '+day.title:'')
         ),
         day.items.length>0&&React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.18rem'}},
           ...day.items.filter(Boolean).map((item,j)=>
@@ -2092,26 +2290,65 @@ function TripDocument({text,msgs}){
           )
         )
       )
+    ),
+    // Watch Before You Go section
+    ...sections.filter(s=>s.type==='watch').map((ws,i)=>
+      ws.items.length>0&&React.createElement('div',{key:'watch'+i,style:{background:'rgba(201,169,110,0.03)',border:'1px solid rgba(201,169,110,0.15)',borderRadius:10,padding:'0.65rem 0.85rem',marginTop:'0.55rem'}},
+        React.createElement('div',{style:{fontSize:'0.55rem',color:'#c9a96e',letterSpacing:'0.14em',textTransform:'uppercase',fontWeight:600,marginBottom:'0.45rem'}},'📺 Watch Before You Go'),
+        React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.35rem'}},
+          ...ws.items.filter(Boolean).map((item,j)=>{
+            const m=item.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);
+            if(m)return React.createElement('a',{key:j,href:m[2],target:'_blank',rel:'noopener noreferrer',style:{display:'flex',alignItems:'center',gap:'0.4rem',fontSize:'0.75rem',color:'#c9a96e',textDecoration:'none',lineHeight:1.55}},
+              React.createElement('span',{style:{flexShrink:0}},'▶'),
+              React.createElement('span',{style:{textDecoration:'underline',textDecorationColor:'rgba(201,169,110,0.4)'}},m[1])
+            );
+            return React.createElement('p',{key:j,style:{fontSize:'0.75rem',color:'#7a6a45',lineHeight:1.55}},item);
+          })
+        )
+      )
     )
   );
 }
 
+function _renderInline(text,keyBase){
+  const parts=[];let lastIdx=0;let k=0;
+  const pat=/\*\*(.+?)\*\*|\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
+  let m;
+  while((m=pat.exec(text))!==null){
+    if(m.index>lastIdx)parts.push(text.slice(lastIdx,m.index));
+    if(m[0].startsWith('**')){
+      parts.push(React.createElement('strong',{key:(keyBase||'')+'-b'+(k++),style:{color:'#c9a96e',fontWeight:600}},m[1]));
+    }else{
+      parts.push(React.createElement('a',{key:(keyBase||'')+'-l'+(k++),href:m[3],target:'_blank',rel:'noopener noreferrer',style:{color:'#c9a96e',textDecoration:'underline',wordBreak:'break-all'}},m[2]));
+    }
+    lastIdx=m.index+m[0].length;
+  }
+  if(lastIdx<text.length)parts.push(text.slice(lastIdx));
+  return parts;
+}
 function Prose({text}){
   const clean=stripMapData(text);
-  return React.createElement("div",null,clean.split("\n").map((line,i)=>{
-    if(!line.trim())return React.createElement("div",{key:i,style:{height:"0.35rem"}});
-    if(line.startsWith("## "))return React.createElement("div",{key:i,style:{fontSize:"0.68rem",fontWeight:600,color:"#c9a96e",letterSpacing:"0.14em",textTransform:"uppercase",margin:"1rem 0 0.35rem",paddingBottom:"0.25rem",borderBottom:"1px solid rgba(201,169,110,0.2)"}},line.slice(3));
-    if(/^DAYS?\s+\d+/.test(line)||/^Day\s+\d+\s*\(/.test(line))return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.88rem",fontWeight:700,color:"#b8b0a0",margin:"0.75rem 0 0.1rem"}},line.replace(/\*\*/g,""));
-    if(/^\*\*Day\s+\d+/.test(line)||/^###/.test(line))return React.createElement("div",{key:i,style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"0.9rem",fontWeight:700,color:"#b8b0a0",margin:"0.65rem 0 0.1rem"}},line.replace(/^###\s*/,"").replace(/\*\*/g,""));
-    if(line.startsWith("- ")||line.startsWith("* ")){
-      const bparts=[];let brem=line.slice(2),bk=0;
-      while(brem){const bl=brem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);const bb=brem.match(/\*\*(.+?)\*\*/);if(!bl&&!bb){bparts.push(React.createElement("span",{key:bk++},brem));break;}const bli=bl?brem.indexOf(bl[0]):Infinity;const bbi=bb?brem.indexOf(bb[0]):Infinity;if(bl&&bli<=bbi){if(bli>0)bparts.push(React.createElement("span",{key:bk++},brem.slice(0,bli)));bparts.push(React.createElement("a",{key:bk++,href:bl[2],target:"_blank",rel:"noopener noreferrer",style:{color:"#c9a96e",textDecoration:"underline",textDecorationColor:"rgba(201,169,110,0.4)"}},bl[1]));brem=brem.slice(bli+bl[0].length);}else{if(bbi>0)bparts.push(React.createElement("span",{key:bk++},brem.slice(0,bbi)));bparts.push(React.createElement("span",{key:bk++,style:{color:"#e8dcc8",fontWeight:600}},bb[1]));brem=brem.slice(bbi+bb[0].length);}}
-      return React.createElement("div",{key:i,style:{display:"flex",gap:"0.4rem",margin:"0.12rem 0",fontSize:"0.81rem",color:"#b8b0a0"}},React.createElement("span",{style:{color:"#c9a96e",fontSize:"0.48rem",marginTop:"5px",flexShrink:0}},"◆"),React.createElement("span",null,...bparts));
+  const lines=clean.split('\n');
+  const els=[];let k=0;
+  for(const line of lines){
+    const t=line.trim();
+    if(!t){els.push(React.createElement('div',{key:k++,style:{height:'0.35rem'}}));continue;}
+    if(/^#{1,3}\s/.test(t)){
+      const ht=t.replace(/^#{1,3}\s*/,'').replace(/\*\*/g,'');
+      els.push(React.createElement('p',{key:k++,style:{fontSize:'0.62rem',color:'#c9a96e',letterSpacing:'0.13em',textTransform:'uppercase',fontWeight:700,marginTop:'0.7rem',marginBottom:'0.25rem',fontFamily:"'DM Sans',sans-serif"}},ht));
+      continue;
     }
-    const parts=[];let rem=line,k=0;
-    while(rem){const link=rem.match(/\[(.+?)\]\((https?:\/\/[^\)]+)\)/);const bold=rem.match(/\*\*(.+?)\*\*/);if(!link&&!bold){parts.push(React.createElement("span",{key:k++},rem));break;}const li=link?rem.indexOf(link[0]):Infinity;const bi=bold?rem.indexOf(bold[0]):Infinity;if(link&&li<=bi){if(li>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,li)));parts.push(React.createElement("a",{key:k++,href:link[2],target:"_blank",rel:"noopener noreferrer",style:{color:"#c9a96e",textDecoration:"underline",textDecorationColor:"rgba(201,169,110,0.4)"}},link[1]));rem=rem.slice(li+link[0].length);}else{if(bi>0)parts.push(React.createElement("span",{key:k++},rem.slice(0,bi)));parts.push(React.createElement("span",{key:k++,style:{color:"#e8dcc8",fontWeight:600}},bold[1]));rem=rem.slice(bi+bold[0].length);}}
-    return React.createElement("p",{key:i,style:{margin:"0.08rem 0",fontSize:"0.81rem",color:"#b8b0a0",lineHeight:1.85}},...parts);
-  }));
+    if(t.startsWith('- ')||t.startsWith('* ')){
+      const ct=t.slice(2);
+      els.push(React.createElement('div',{key:k++,style:{display:'flex',gap:'0.4rem',fontSize:'0.82rem',color:'#ede5d5',lineHeight:1.72,marginBottom:'0.18rem'}},
+        React.createElement('span',{style:{color:'rgba(201,169,110,0.5)',fontSize:'0.4rem',marginTop:'6px',flexShrink:0}},'◆'),
+        React.createElement('span',null,..._renderInline(ct,k))
+      ));
+      continue;
+    }
+    els.push(React.createElement('p',{key:k++,style:{fontSize:'0.82rem',color:'#ede5d5',lineHeight:1.75,marginBottom:'0.22rem'}},..._renderInline(t,k)));
+  }
+  return React.createElement('div',null,...els);
 }
 
 function Dots(){return React.createElement("div",{style:{display:"flex",gap:6}},[0,1,2].map(i=>React.createElement("span",{key:i,style:{width:5,height:5,borderRadius:"50%",background:"#c9a96e",display:"inline-block",animation:`pulse 1.4s ${i*0.2}s ease-in-out infinite`}})));}
@@ -2207,13 +2444,15 @@ function App(){
   const [plansLeft,setPlansLeft]=useState(null);
   const [showReviewPrompt,setShowReviewPrompt]=useState(false);
   const [showOnboarding,setShowOnboarding]=useState(()=>!localStorage.getItem('atlas_onboarded')&&!loadLocal());
+  const [showScrollBtn,setShowScrollBtn]=useState(false);
   const hist=useRef(saved?.hist||[...defaultHist]);
-  const endRef=useRef(null);
+  const endRef=useRef(null);const chatContainerRef=useRef(null);const userScrolledUpRef=useRef(false);
   const taRef=useRef(null);
   const editRef=useRef(null);
   const recognitionRef=useRef(null);
   const photoRef=useRef(null);
   const holdTimerRef=useRef(null);
+  const lastSendRef=useRef({text:'',newMsgs:[]});
 
   // Tier check helper — polls subscriptions table and updates userTier state
   async function checkTier(uid,email){
@@ -2309,13 +2548,6 @@ async function deleteProject(id){
     }catch{}setSavingPlan(false);
   }
 
-  function showToast(msg){
-    const toast=document.createElement('div');
-    toast.textContent=msg;
-    toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#252018;border:1px solid rgba(201,169,110,0.4);color:#c9a96e;padding:0.5rem 1rem;border-radius:8px;font-size:0.72rem;font-family:DM Sans,sans-serif;z-index:999;letter-spacing:0.08em;';
-    document.body.appendChild(toast);setTimeout(()=>toast.remove(),2500);
-  }
-  
   function generatePDF(){
   if(!msgs||msgs.length===0){showToast('No trip to export!');return;}
   const{jsPDF}=window.jspdf;
@@ -2502,7 +2734,8 @@ async function setPlanTag(id,tag){
     setLoadingPlans(false);
   }
 
-  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs,busy]);
+  useEffect(()=>{if(!userScrolledUpRef.current){endRef.current?.scrollIntoView({behavior:"smooth"});setShowScrollBtn(false);}else if(busy){setShowScrollBtn(true);}},[msgs,busy]);
+  useEffect(()=>{const el=chatContainerRef.current;if(!el)return;const onScroll=()=>{const atBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;if(atBottom){userScrolledUpRef.current=false;setShowScrollBtn(false);}else{userScrolledUpRef.current=true;}};el.addEventListener('scroll',onScroll,{passive:true});return()=>el.removeEventListener('scroll',onScroll);},[]);
 
   useEffect(()=>{
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -2552,6 +2785,7 @@ async function setPlanTag(id,tag){
       const customPrompt=localStorage.getItem('atlas_custom_prompt');
       if(customPrompt&&customPrompt.trim())headers['x-custom-prompt']=encodeURIComponent(customPrompt.trim());
       if(user){const{data:{session}}=await sb.auth.getSession();if(session?.access_token)headers["Authorization"]=`Bearer ${session.access_token}`;}
+      lastSendRef.current={text:t,newMsgs};
       const controller=new AbortController();const fetchTimeout=setTimeout(()=>controller.abort(),55000);
       let res;try{res=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-14)]}),signal:controller.signal});}finally{clearTimeout(fetchTimeout);}
       if(res.status===429){
@@ -2584,7 +2818,7 @@ async function setPlanTag(id,tag){
             sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null,is_draft:true}).select('id,share_id').single().then(({data})=>{
               if(data?.id){
                 setActivePlanId(data.id);loadPlans();
-                if(!localStorage.getItem('atlas_review_shown')&&plans.length+1>=3){setTimeout(()=>setShowReviewPrompt(true),2500);}
+                const _convCount=parseInt(localStorage.getItem('atlas_conv_count')||'0')+1;localStorage.setItem('atlas_conv_count',_convCount);if(!localStorage.getItem('atlas_review_shown')&&_convCount>=3){setTimeout(()=>setShowReviewPrompt(true),2500);}
               }
             });
           }
@@ -2607,13 +2841,7 @@ async function setPlanTag(id,tag){
       }
       if(streamErr)throw streamErr;
     }catch(e){
-      const msg=e.message?.toLowerCase()||"";
-      const friendly=msg.includes("load failed")||msg.includes("network")||msg.includes("fetch")
-        ?"Connection issue — please try again 🔄"
-        :msg.includes("timeout")
-        ?"Request timed out — please try again 🔄"
-        :`Something went wrong — please try again`;
-      setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",text:friendly}]);setBusy(false);
+      setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",isConnectionError:true,retryText:lastSendRef.current.text,text:""}]);setBusy(false);
     }
   }
 
@@ -2660,7 +2888,7 @@ async function setPlanTag(id,tag){
     ),
 
     // Messages
-    React.createElement("div",{style:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",display:"flex",flexDirection:"column"}},
+    React.createElement("div",{ref:chatContainerRef,style:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",display:"flex",flexDirection:"column",position:"relative"}},
       msgs.length===0&&React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center"}},
         React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.2rem",fontWeight:300,color:"rgba(201,169,110,0.18)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"0.4rem"}},"ATLAS"),
         React.createElement("p",{style:{fontSize:"0.62rem",color:"rgba(201,169,110,0.3)",letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:"2rem"}},"AI Travel Planner"),
@@ -2694,8 +2922,14 @@ async function setPlanTag(id,tag){
                     !busy&&React.createElement("button",{className:"edit-btn",onClick:()=>startEdit(msg),style:{position:"absolute",top:-8,left:-8,background:"#252018",border:"1px solid rgba(201,169,110,0.2)",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#8a7a50"}},React.createElement(EditIcon))
                   )
               :React.createElement("div",null,
-                  _streaming
-                    ?React.createElement("div",{style:{fontSize:"0.81rem",color:"#b8b0a0",lineHeight:1.85,whiteSpace:"pre-wrap",wordBreak:"break-word"}},msg.text,React.createElement("span",{className:"typing-cursor"}))
+                  msg.isConnectionError
+                    ?React.createElement("div",{style:{background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:10,padding:"0.75rem 1rem"}},
+                        React.createElement("p",{style:{fontSize:"0.82rem",color:"#8a7a50",marginBottom:"0.3rem",fontWeight:600}},"📶 Connection lost"),
+                        React.createElement("p",{style:{fontSize:"0.76rem",color:"#8a7a50",marginBottom:"0.65rem",lineHeight:1.6}},"Your trip request timed out — tap to retry"),
+                        React.createElement("button",{onClick:()=>send(msg.retryText),style:{background:"none",border:"1px solid rgba(201,169,110,0.4)",borderRadius:6,padding:"0.35rem 0.9rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.7rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"↩ Retry")
+                      )
+                    :_streaming
+                    ?React.createElement("div",null,React.createElement(Prose,{text:msg.text||""}),React.createElement("span",{className:"typing-cursor"}))
                     :(_isMulti?React.createElement(MultiDestDocument,{text:msg.text,msgs,destinations:_multiDests}):_isItin?React.createElement(TripDocument,{text:msg.text,msgs}):_isCmp?React.createElement(ComparisonCard,{text:msg.text,destinations:_cmpDests}):React.createElement(Prose,{text:msg.text})),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
                   React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.5rem",flexWrap:"wrap"}},
@@ -2709,13 +2943,14 @@ async function setPlanTag(id,tag){
                 )
               )
             )}),
-        busy&&React.createElement("div",{className:"msg",style:{display:"flex",gap:"0.75rem",alignItems:"center"}},
+        busy&&!msgs.some(m=>m.streaming)&&React.createElement("div",{className:"msg",style:{display:"flex",gap:"0.75rem",alignItems:"center"}},
           React.createElement("div",{style:{width:24,height:24,borderRadius:"50%",border:"1px solid rgba(201,169,110,0.5)",background:"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center"}},React.createElement("span",{style:{fontSize:"0.46rem",color:"#c9a96e"}},"A")),
           React.createElement(Dots)
         ),
         React.createElement("div",{ref:endRef,style:{height:"0.5rem"}})
       )
     ),
+    showScrollBtn&&React.createElement("button",{onClick:()=>{userScrolledUpRef.current=false;setShowScrollBtn(false);endRef.current?.scrollIntoView({behavior:"smooth"});},style:{position:"fixed",bottom:"90px",right:"20px",background:"rgba(28,25,20,0.85)",border:"1px solid rgba(201,169,110,0.4)",borderRadius:"50%",width:40,height:40,cursor:"pointer",color:"#c9a96e",fontSize:"1.2rem",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(4px)",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"},title:"Scroll to bottom"},"↓"),
 
     holdActive&&React.createElement("div",{style:{textAlign:"center",padding:"0.35rem",fontSize:"0.62rem",color:"#c9a96e",letterSpacing:"0.1em",background:"rgba(201,169,110,0.06)",borderTop:"1px solid rgba(201,169,110,0.1)",animation:"fadeIn 0.2s ease"}},
       "✋ Paused — add more text, then tap send"

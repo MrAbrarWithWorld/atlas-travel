@@ -79,11 +79,11 @@ async function searchWeb(query) {
 }
 
 async function getYouTubeVideos(destination) {
-  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(destination + ' travel guide')}`;
+  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(destination + ' travel vlog 2024')}`;
   const fallback = `[📺 Watch ${destination} travel videos on YouTube →](${searchUrl})`;
   try {
     if (!process.env.YOUTUBE_API_KEY) return fallback;
-    const query = encodeURIComponent(`${destination} travel guide`);
+    const query = encodeURIComponent(`${destination} travel vlog 2024`);
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=2&key=${process.env.YOUTUBE_API_KEY}`;
     const res = await fetch(url);
     const data = await res.json();
@@ -161,17 +161,34 @@ async function getTravelContext(messages) {
     if (d) { searchQuery = d; break; }
   }
 
-  // Final fallback: first latin words of last user message
+  // Final fallback: first latin words of last user message, with origin stripping + multi-dest
+  let videoDestinations = [];
   if (!searchQuery) {
     const userMsgs = messages.filter(m => m.role === 'user');
     const last = userMsgs[userMsgs.length - 1]?.content;
     const text = typeof last === 'string' ? last
       : Array.isArray(last) ? (last.find(c => c.type === 'text')?.text || '') : '';
-    const cleanText = text.replace(/\[Current date.*$/s, '').trim();
+    let cleanText = text.replace(/\[Current date.*$/s, '').trim();
+
+    // Strip origin/departure city: "Canada to", "from UK", "I'm in Toronto", "Toronto to"
+    cleanText = cleanText
+      .replace(/\bI(?:'m| am)\s+(?:from|in|based in)\s+[a-zA-Z\s,]{2,25}?(?=\s+(?:to|visit|travel)|$)/gi, '')
+      .replace(/\bfrom\s+(?:canada|usa|uk|us|australia|india|pakistan|bangladesh|nigeria|germany|france|europe|america)\b\s*/gi, '')
+      .replace(/^[a-zA-Z][a-zA-Z\s]{1,22}\s+to\s+/i, '') // "Canada to ", "Toronto to "
+      .trim();
+
     const destMatch = cleanText.match(/^([a-zA-Z\s]+?)(?:\s+for|\s+\d|\s+solo|\s+budget|,|$)/i);
-    searchQuery = destMatch ? destMatch[1].trim() : cleanText.slice(0, 30);
+    const rawDests = destMatch ? destMatch[1].trim() : cleanText.slice(0, 50);
+
+    // Split on "and", "&", "+", "/" to support multi-destination
+    const destList = rawDests.split(/\s+(?:and|&|\+|\/)\s+/i)
+      .map(d => d.trim()).filter(d => d.length > 2);
+
+    searchQuery = destList[0] || rawDests;
+    videoDestinations = destList.slice(0, 2); // max 2 destinations for YouTube
   }
 
+  if (!videoDestinations.length) videoDestinations = [searchQuery];
   if (!searchQuery || searchQuery.length < 3) return '';
 
   // passport detection across all user messages
@@ -187,7 +204,7 @@ async function getTravelContext(messages) {
 
  const [results, videos, hotels, weather] = await Promise.all([
     Promise.all(queries.map(q => searchWeb(q))),
-    getYouTubeVideos(searchQuery),
+    Promise.all(videoDestinations.map(d => getYouTubeVideos(d))).then(r => r.filter(Boolean).join('\n')),
     getPlacesNearby(searchQuery + ' city center', 'lodging'),
     getWeather(searchQuery),
 ]);
@@ -520,6 +537,9 @@ export default async function handler(req, res) {
       const { data: { user }, error } = await sb.auth.getUser(token);
       if (!error && user) {
         userId = user.id;
+        // WELCOME EMAIL HOOK: on user's first-ever message, call POST /api/welcome-email
+        // with { email: user.email, name: user.user_metadata?.full_name || user.email }
+        // Track with a `welcome_email_sent` column in a `user_profiles` table (check+set atomically).
         const { data: allowed } = await sb.from('allowed_users').select('email').eq('email', user.email).single();
         if (allowed) {
           userTier = 'explorer';
@@ -613,7 +633,7 @@ const travelContext = await getTravelContext(messages);
         },
         body: JSON.stringify({
           model: "meta-llama/llama-4-scout-17b-16e-instruct",
-          max_tokens: Math.min(tokensLeft, 4000),
+          max_tokens: Math.min(tokensLeft, 8000),
           stream: true,
           messages: [
             { role: "system", content: SYSTEM_MSG + (travelContext ? travelContext : '') },
@@ -749,7 +769,7 @@ const travelContext = await getTravelContext(messages);
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: Math.min(tokensLeft, 4000),
+        max_tokens: Math.min(tokensLeft, 8000),
         stream: true,
         system: systemWithPrefs,
         messages: messages.filter(m => m.role !== "system"),

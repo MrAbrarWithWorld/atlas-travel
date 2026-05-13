@@ -5,6 +5,29 @@
   "devCommand": "next dev",
   "installCommand": "npm install",
   "outputDirectory": ".next",
+  "functions": {
+    "api/chat.js": {
+      "maxDuration": 60
+    },
+    "api/admin.js": {
+      "maxDuration": 30
+    },
+"api/create-checkout.js": {
+      "maxDuration": 30
+    },
+    "api/webhook.js": {
+      "maxDuration": 30
+    },
+    "api/cron-report.js": {
+      "maxDuration": 30
+    },
+    "api/subscribe.js": {
+      "maxDuration": 10
+    },
+    "api/email.js": {
+      "maxDuration": 60
+    }
+  },
   "crons": [
     {
       "path": "/api/cron-report",
