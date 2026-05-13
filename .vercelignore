@@ -1,1 +1,7 @@
 api/blog.js
+api/admin.js
+api/cron-report.js
+api/push-subscribe.js
+api/routes.js
+api/sitemap.js
+api/send-email.js
