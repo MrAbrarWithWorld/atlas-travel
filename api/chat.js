@@ -157,6 +157,7 @@ async function getTravelContext(messages) {
   let searchQuery = '';
   const recent = [...messages].slice(-6).reverse();
   for (const msg of recent) {
+    if (msg.role !== 'user') continue; // Only check user messages for destination
     const d = extractDest(msg.content);
     if (d) { searchQuery = d; break; }
   }
