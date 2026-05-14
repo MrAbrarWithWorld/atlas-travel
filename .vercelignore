@@ -1,5 +1,4 @@
 api/blog.js
-api/admin.js
 api/cron-report.js
 api/push-subscribe.js
 api/routes.js
