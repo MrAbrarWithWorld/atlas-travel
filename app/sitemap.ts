@@ -10,6 +10,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: BASE_URL, lastModified: new Date(), changeFrequency: "weekly", priority: 1.0 },
     { url: `${BASE_URL}/blog`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/community`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
+    { url: `${BASE_URL}/privacy`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+    { url: `${BASE_URL}/terms`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
   ];
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -34,7 +36,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-    return [...staticRoutes, ...blogRoutes];
+    const { data: trips } = await supabase
+      .from("saved_plans")
+      .select("share_id, updated_at")
+      .eq("is_public", true)
+      .not("share_id", "is", null)
+      .limit(1000);
+
+    const tripRoutes: MetadataRoute.Sitemap = (trips ?? []).map((trip) => ({
+      url: `${BASE_URL}/trip/${trip.share_id}`,
+      lastModified: trip.updated_at ? new Date(trip.updated_at) : new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
+
+    return [...staticRoutes, ...blogRoutes, ...tripRoutes];
   } catch {
     return staticRoutes;
   }
