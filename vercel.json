@@ -17,10 +17,6 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/sitemap.xml",
-      "destination": "/api/sitemap"
-    },
-    {
       "source": "/privacy",
       "destination": "/privacy.html"
     },
