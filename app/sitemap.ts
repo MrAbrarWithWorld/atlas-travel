@@ -10,8 +10,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: BASE_URL, lastModified: new Date(), changeFrequency: "weekly", priority: 1.0 },
     { url: `${BASE_URL}/blog`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/community`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
-    { url: `${BASE_URL}/privacy`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
-    { url: `${BASE_URL}/terms`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+    { url: `${BASE_URL}/privacy`, lastModified: new Date("2026-04-13"), changeFrequency: "monthly", priority: 0.3 },
+    { url: `${BASE_URL}/terms`, lastModified: new Date("2026-04-13"), changeFrequency: "monthly", priority: 0.3 },
   ];
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -23,11 +23,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data: posts } = await supabase
-      .from("blog_posts")
-      .select("slug, date_published")
-      .eq("is_published", true)
-      .order("date_published", { ascending: false });
+
+    const [{ data: posts }, { data: trips }, { data: communityPosts }] = await Promise.all([
+      supabase
+        .from("blog_posts")
+        .select("slug, date_published")
+        .eq("is_published", true)
+        .order("date_published", { ascending: false }),
+      supabase
+        .from("saved_plans")
+        .select("share_id, updated_at")
+        .eq("is_public", true)
+        .not("share_id", "is", null)
+        .limit(1000),
+      supabase
+        .from("user_posts")
+        .select("slug, created_at")
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(500),
+    ]);
 
     const blogRoutes: MetadataRoute.Sitemap = (posts ?? []).map((post) => ({
       url: `${BASE_URL}/blog/${post.slug}`,
@@ -36,21 +51,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-    const { data: trips } = await supabase
-      .from("saved_plans")
-      .select("share_id, created_at")
-      .eq("is_public", true)
-      .not("share_id", "is", null)
-      .limit(1000);
-
     const tripRoutes: MetadataRoute.Sitemap = (trips ?? []).map((trip) => ({
       url: `${BASE_URL}/trip/${trip.share_id}`,
-      lastModified: trip.created_at ? new Date(trip.created_at) : new Date(),
+      lastModified: trip.updated_at ? new Date(trip.updated_at) : new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.6,
     }));
 
-    return [...staticRoutes, ...blogRoutes, ...tripRoutes];
+    const communityRoutes: MetadataRoute.Sitemap = (communityPosts ?? [])
+      .filter((p) => p.slug)
+      .map((post) => ({
+        url: `${BASE_URL}/community/${post.slug}`,
+        lastModified: post.created_at ? new Date(post.created_at) : new Date(),
+        changeFrequency: "monthly" as const,
+        priority: 0.6,
+      }));
+
+    return [...staticRoutes, ...blogRoutes, ...tripRoutes, ...communityRoutes];
   } catch {
     return staticRoutes;
   }
