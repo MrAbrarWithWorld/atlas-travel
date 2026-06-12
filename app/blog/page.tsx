@@ -127,10 +127,10 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
               <div style={{ fontSize: 10, color: "#5a5248", letterSpacing: "0.14em", marginTop: 2 }}>AI TRAVEL PLANNER</div>
             </div>
             <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-              <a href="/" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Home</a>
-              <a href="/blog" style={{ fontSize: 12, color: "#c9a96e", textDecoration: "none", letterSpacing: "0.06em" }}>Blog</a>
-              <a href="/privacy" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Privacy</a>
-              <a href="/terms" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Terms</a>
+              <Link href="/" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Home</Link>
+              <Link href="/blog" style={{ fontSize: 12, color: "#c9a96e", textDecoration: "none", letterSpacing: "0.06em" }}>Blog</Link>
+              <Link href="/privacy" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Privacy</Link>
+              <Link href="/terms" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Terms</Link>
               <a href="https://app.getatlas.ca" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>App</a>
             </div>
           </div>
