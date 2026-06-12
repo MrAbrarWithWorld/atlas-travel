@@ -385,7 +385,10 @@ async function blogListPage() {
   </tr>`).join('');
 
   return shell('blog', 'Blog Articles', `
-    <h1>Blog Articles</h1>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:0.5rem;">
+      <h1>Blog Articles</h1>
+      <a href="/admin?section=blog&edit=new" class="btn" style="font-size:0.78rem;">+ New Article</a>
+    </div>
     <table>
       <thead><tr><th>Title</th><th>Category</th><th>Date</th><th>Status</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
@@ -776,6 +779,62 @@ async function schedulePage(msg) {
   `);
 }
 
+// ─── New post helpers ──────────────────────────────────────────────────────────
+
+function titleToSlug(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+async function createPost(body) {
+  const title = (body.title || 'untitled').trim();
+  const base = titleToSlug(title) || 'untitled';
+  // Ensure slug uniqueness by checking for existing
+  const { data: existing } = await sb.from('blog_posts').select('slug').ilike('slug', `${base}%`);
+  const taken = new Set((existing || []).map(r => r.slug));
+  let slug = base;
+  let i = 2;
+  while (taken.has(slug)) { slug = `${base}-${i++}`; }
+
+  const content = (body.content || '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+
+  await sb.from('blog_posts').insert({
+    slug,
+    title,
+    description: body.description || '',
+    category: body.category || '',
+    read_time: body.read_time || '',
+    date_published: body.date_published || new Date().toISOString().slice(0, 10),
+    is_published: false,
+    cover_image_url: body.cover_image_url || '',
+    content,
+    inline_photos: [],
+  });
+
+  return slug;
+}
+
+function newPostPage() {
+  const today = new Date().toISOString().slice(0, 10);
+  return shell('blog', 'New Article', `
+    <a class="back-link" href="/admin?section=blog">← Back to articles</a>
+    <h1>New Article</h1>
+    <form method="POST" action="/admin?section=blog&edit=new">
+      <input type="hidden" name="action" value="create_post"/>
+      <div class="field"><label>Title</label><input type="text" name="title" placeholder="Enter article title" autofocus required/></div>
+      <div class="field"><label>Description</label><textarea name="description" rows="3" placeholder="Short description / SEO excerpt"></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+        <div class="field"><label>Category</label><input type="text" name="category" placeholder="e.g. americas, southasia, tips"/></div>
+        <div class="field"><label>Publish Date</label><input type="date" name="date_published" value="${today}"/></div>
+        <div class="field"><label>Read Time</label><input type="text" name="read_time" placeholder="e.g. 12 min"/></div>
+      </div>
+      <div class="field"><label>Cover Image URL</label><input type="text" name="cover_image_url" placeholder="https://..."/></div>
+      <h2>Content HTML</h2>
+      <div class="field"><textarea name="content" rows="18" style="font-size:0.72rem;font-family:monospace" placeholder="<p>Article content here...</p>"></textarea></div>
+      <button type="submit" class="btn">Create Draft →</button>
+    </form>
+  `);
+}
+
 // ─── Save article ──────────────────────────────────────────────────────────────
 
 async function saveArticle(slug, body) {
@@ -880,6 +939,13 @@ export default async function handler(req, res) {
       return res.status(302).end();
     }
 
+    // Create new post
+    if (editSlug === 'new' || body.action === 'create_post') {
+      const newSlug = await createPost(body);
+      res.setHeader('Location', `/admin?section=blog&edit=${encodeURIComponent(newSlug)}&saved=1`);
+      return res.status(302).end();
+    }
+
     // Save article — check if newly publishing to trigger push notifications
     const wasPublished = await (async () => {
       const { data } = await sb.from('blog_posts').select('is_published').eq('slug', editSlug).single();
@@ -906,6 +972,7 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
 
   if (section === 'blog') {
+    if (editSlug === 'new') return res.status(200).send(newPostPage());
     if (editSlug) return res.status(200).send(await blogEditorPage(editSlug, saved));
     return res.status(200).send(await blogListPage());
   }
