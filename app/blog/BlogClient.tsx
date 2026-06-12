@@ -82,6 +82,14 @@ export default function BlogClient({
     return ['ALL', ...cats];
   }, [allPosts]);
 
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { ALL: allPosts.length };
+    allPosts.forEach(p => {
+      if (p.category) counts[p.category] = (counts[p.category] || 0) + 1;
+    });
+    return counts;
+  }, [allPosts]);
+
   const filtered = useMemo(() => {
     let posts = allPosts;
     if (activeCategory !== 'ALL') {
@@ -119,8 +127,8 @@ export default function BlogClient({
         .edit-row:hover .edit-img img { transform: scale(1.04); }
         .edit-img img { transition: transform 0.5s ease; }
         .edit-row:hover .edit-content { background: #252019 !important; }
-        .article-card:hover { border-color: #c9a96e !important; }
-        .article-card { transition: border-color 0.2s; }
+        .article-card:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 32px rgba(0,0,0,0.4) !important; border-color: #c9a96e !important; }
+        .article-card:hover .card-img { transform: scale(1.05); }
         @media (max-width: 768px) {
           .dest-grid { grid-template-columns: 1fr 1fr !important; }
           .dest-card { height: 160px !important; }
@@ -165,7 +173,7 @@ export default function BlogClient({
                 whiteSpace: "nowrap",
               }}
             >
-              {formatCat(cat)}
+              {formatCat(cat)} <span style={{ fontSize: 9, opacity: 0.6, marginLeft: 3 }}>{categoryCounts[cat] || ''}</span>
             </button>
           ))}
         </div>
@@ -309,20 +317,51 @@ export default function BlogClient({
               <div className="grid-3col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
                 {gridPosts.map(post => (
                   <Link key={post.id} href={`/blog/${post.slug}`} style={{ textDecoration: "none" }}>
-                    <article className="article-card" style={{ background: "#1e1a12", borderRadius: 10, overflow: "hidden", border: "1px solid #3a3228", height: "100%" }}>
+                    <article className="article-card" style={{
+                      background: "#1e1a12",
+                      borderRadius: 12,
+                      overflow: "hidden",
+                      border: "1px solid #3a3228",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      transition: "transform 0.25s ease, border-color 0.2s, box-shadow 0.25s ease",
+                    }}>
                       {post.cover_image_url && (
-                        <div style={{ height: 180, overflow: "hidden" }}>
+                        <div style={{ height: 200, overflow: "hidden", position: "relative" }}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={post.cover_image_url} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <img
+                            src={post.cover_image_url}
+                            alt={post.title}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }}
+                            className="card-img"
+                          />
+                          {(() => {
+                            const daysSince = (Date.now() - new Date(post.date_published).getTime()) / (1000 * 60 * 60 * 24);
+                            return daysSince < 30 ? (
+                              <span style={{
+                                position: "absolute", top: 12, left: 12,
+                                background: "#c9a96e", color: "#1c1914",
+                                fontSize: 9, fontWeight: 800, letterSpacing: "0.14em",
+                                padding: "3px 8px", borderRadius: 4, textTransform: "uppercase"
+                              }}>New</span>
+                            ) : null;
+                          })()}
                         </div>
                       )}
-                      <div style={{ padding: "20px 20px 24px" }}>
+                      <div style={{ padding: "20px 20px 24px", flex: 1, display: "flex", flexDirection: "column" }}>
                         <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", color: "#c9a96e", marginBottom: 10, textTransform: "uppercase" }}>{formatCat(post.category)}</div>
-                        <h3 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: 19, fontWeight: 600, color: "#ede5d5", lineHeight: 1.3, marginBottom: 12 }}>{post.title}</h3>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 11, color: "#a09070" }}>
-                          <span>{post.read_time}</span>
-                          <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#3a3228", display: "inline-block" }} />
-                          <span>{fmt(post.date_published)}</span>
+                        <h3 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: 20, fontWeight: 600, color: "#ede5d5", lineHeight: 1.25, marginBottom: 10, flex: 1 }}>{post.title}</h3>
+                        {post.description && (
+                          <p style={{ fontSize: 12, color: "#8a8070", lineHeight: 1.65, marginBottom: 14, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{post.description}</p>
+                        )}
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "#6a6258" }}>
+                            <span>{fmt(post.date_published)}</span>
+                            <span style={{ width: 2, height: 2, borderRadius: "50%", background: "#3a3228", display: "inline-block" }} />
+                            <span>{post.read_time}</span>
+                          </div>
+                          <span style={{ fontSize: 11, color: "#c9a96e", fontWeight: 600, letterSpacing: "0.06em" }}>Read →</span>
                         </div>
                       </div>
                     </article>
@@ -338,21 +377,51 @@ export default function BlogClient({
           <div className="grid-3col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
             {allFiltered.map(post => (
               <Link key={post.id} href={`/blog/${post.slug}`} style={{ textDecoration: "none" }}>
-                <article className="article-card" style={{ background: "#1e1a12", borderRadius: 10, overflow: "hidden", border: "1px solid #3a3228", height: "100%" }}>
+                <article className="article-card" style={{
+                  background: "#1e1a12",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  border: "1px solid #3a3228",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "transform 0.25s ease, border-color 0.2s, box-shadow 0.25s ease",
+                }}>
                   {post.cover_image_url && (
-                    <div style={{ height: 180, overflow: "hidden" }}>
+                    <div style={{ height: 200, overflow: "hidden", position: "relative" }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={post.cover_image_url} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img
+                        src={post.cover_image_url}
+                        alt={post.title}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.5s ease" }}
+                        className="card-img"
+                      />
+                      {(() => {
+                        const daysSince = (Date.now() - new Date(post.date_published).getTime()) / (1000 * 60 * 60 * 24);
+                        return daysSince < 30 ? (
+                          <span style={{
+                            position: "absolute", top: 12, left: 12,
+                            background: "#c9a96e", color: "#1c1914",
+                            fontSize: 9, fontWeight: 800, letterSpacing: "0.14em",
+                            padding: "3px 8px", borderRadius: 4, textTransform: "uppercase"
+                          }}>New</span>
+                        ) : null;
+                      })()}
                     </div>
                   )}
-                  <div style={{ padding: "20px 20px 24px" }}>
+                  <div style={{ padding: "20px 20px 24px", flex: 1, display: "flex", flexDirection: "column" }}>
                     <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", color: "#c9a96e", marginBottom: 10, textTransform: "uppercase" }}>{formatCat(post.category)}</div>
-                    <h3 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: 19, fontWeight: 600, color: "#ede5d5", lineHeight: 1.3, marginBottom: 12 }}>{post.title}</h3>
-                    {post.description && <p style={{ fontSize: 12, color: "#a09070", lineHeight: 1.6, marginBottom: 12 }}>{post.description}</p>}
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 11, color: "#a09070" }}>
-                      <span>{post.read_time}</span>
-                      <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#3a3228", display: "inline-block" }} />
-                      <span>{fmt(post.date_published)}</span>
+                    <h3 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: 20, fontWeight: 600, color: "#ede5d5", lineHeight: 1.25, marginBottom: 10, flex: 1 }}>{post.title}</h3>
+                    {post.description && (
+                      <p style={{ fontSize: 12, color: "#8a8070", lineHeight: 1.65, marginBottom: 14, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{post.description}</p>
+                    )}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "#6a6258" }}>
+                        <span>{fmt(post.date_published)}</span>
+                        <span style={{ width: 2, height: 2, borderRadius: "50%", background: "#3a3228", display: "inline-block" }} />
+                        <span>{post.read_time}</span>
+                      </div>
+                      <span style={{ fontSize: 11, color: "#c9a96e", fontWeight: 600, letterSpacing: "0.06em" }}>Read →</span>
                     </div>
                   </div>
                 </article>

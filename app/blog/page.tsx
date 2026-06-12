@@ -63,15 +63,46 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
     <div style={{ background: "#1c1914", minHeight: "100vh", color: "#ede5d5", fontFamily: "var(--font-dm-sans),sans-serif" }}>
       <BlogNav activePath="/blog" />
       <div style={{ paddingTop: 60 }}>
+        {/* Blog Hero */}
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "48px 24px 0", borderBottom: "1px solid #3a3228", paddingBottom: 40 }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", color: "#c9a96e", textTransform: "uppercase", marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ display: "inline-block", width: 24, height: 1, background: "#c9a96e" }} />
+                Atlas Travel
+              </div>
+              <h1 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: "clamp(40px,6vw,80px)", fontWeight: 300, color: "#ede5d5", lineHeight: 0.95, letterSpacing: "-0.02em" }}>
+                The<br /><em style={{ fontStyle: "italic", color: "#c9a96e" }}>Journal</em>
+              </h1>
+            </div>
+            <p style={{ fontSize: 13, color: "#8a8070", lineHeight: 1.8, maxWidth: 340, marginBottom: 8 }}>
+              Destination guides, visa deep-dives, budget routes, and stories from every corner of the world.
+            </p>
+          </div>
+        </div>
         <BlogClient allPosts={allPosts} initialSearch={initialSearch} initialCategory={initialCategory} />
       </div>
 
       {/* Newsletter */}
-      <div style={{ background: "#231f18", borderTop: "1px solid #3a3228", borderBottom: "1px solid #3a3228", padding: "80px 24px" }}>
-        <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: 42, fontWeight: 600, color: "#ede5d5", marginBottom: 16 }}>The Atlas Dispatch</h2>
-          <p style={{ fontSize: 15, color: "#a09070", lineHeight: 1.7, marginBottom: 32 }}>Hidden gems, budget routes, and destination inspiration from across the globe — delivered to your inbox every week. No spam, just stories worth reading.</p>
+      <div style={{ background: "linear-gradient(135deg, #231f18 0%, #1c1914 50%, #231f18 100%)", borderTop: "1px solid #3a3228", borderBottom: "1px solid #3a3228", padding: "80px 24px", position: "relative", overflow: "hidden" }}>
+        {/* Decorative background text */}
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", fontSize: "clamp(80px,18vw,220px)", fontFamily: "var(--font-cormorant-garamond),serif", fontWeight: 600, color: "rgba(201,169,110,0.04)", letterSpacing: "-0.04em", whiteSpace: "nowrap", pointerEvents: "none", userSelect: "none" }}>
+          DISPATCH
+        </div>
+        <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center", position: "relative" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", color: "#c9a96e", textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+            <span style={{ display: "inline-block", width: 32, height: 1, background: "rgba(201,169,110,0.4)" }} />
+            Weekly Newsletter
+            <span style={{ display: "inline-block", width: 32, height: 1, background: "rgba(201,169,110,0.4)" }} />
+          </div>
+          <h2 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: "clamp(36px,5vw,56px)", fontWeight: 300, color: "#ede5d5", marginBottom: 8, lineHeight: 1.1 }}>
+            The Atlas <em style={{ fontStyle: "italic", color: "#c9a96e" }}>Dispatch</em>
+          </h2>
+          <p style={{ fontSize: 14, color: "#8a8070", lineHeight: 1.8, marginBottom: 40, maxWidth: 460, margin: "16px auto 40px" }}>
+            Hidden gems, budget routes, and destination inspiration — delivered to your inbox every week. No spam, just stories worth reading.
+          </p>
           <NewsletterForm />
+          <p style={{ fontSize: 11, color: "#5a5248", marginTop: 16 }}>Join 2,000+ travellers already subscribed · Unsubscribe anytime</p>
         </div>
       </div>
 
@@ -88,8 +119,23 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
         </div>
       </div>
 
-      <footer style={{ background: "#1c1914", borderTop: "1px solid #3a3228", padding: "32px 24px", textAlign: "center" }}>
-        <p style={{ fontSize: 12, color: "#a09070" }}>© {new Date().getFullYear()} Atlas Travel · All rights reserved</p>
+      <footer style={{ background: "#17140f", borderTop: "1px solid #2a2520", padding: "48px 24px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 24, marginBottom: 32, paddingBottom: 32, borderBottom: "1px solid #2a2520" }}>
+            <div>
+              <div style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: 24, fontWeight: 300, color: "#c9a96e", letterSpacing: "0.1em" }}>ATLAS</div>
+              <div style={{ fontSize: 10, color: "#5a5248", letterSpacing: "0.14em", marginTop: 2 }}>AI TRAVEL PLANNER</div>
+            </div>
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+              <a href="/" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Home</a>
+              <a href="/blog" style={{ fontSize: 12, color: "#c9a96e", textDecoration: "none", letterSpacing: "0.06em" }}>Blog</a>
+              <a href="/privacy" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Privacy</a>
+              <a href="/terms" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Terms</a>
+              <a href="https://app.getatlas.ca" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>App</a>
+            </div>
+          </div>
+          <p style={{ fontSize: 11, color: "#3a3228", textAlign: "center" }}>© {new Date().getFullYear()} Atlas Travel Inc. · All rights reserved · getatlas.ca</p>
+        </div>
       </footer>
     </div>
   );
