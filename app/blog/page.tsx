@@ -10,6 +10,9 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Atlas Travel Blog — Destination Guides, Visa Tips & Itineraries",
   description: "Explore expert travel guides, visa tips, budget breakdowns, and hidden gems from around the world.",
+  alternates: {
+    canonical: "https://getatlas.ca/blog",
+  },
   openGraph: {
     title: "Atlas Travel Blog",
     description: "Expert travel guides and destination inspiration from around the world.",

@@ -92,6 +92,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: post.title + " | Atlas Travel",
     description: post.description,
+    alternates: {
+      canonical: "https://getatlas.ca/blog/" + post.slug,
+    },
     openGraph: {
       title: post.title,
       description: post.description,
@@ -136,8 +139,40 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     : Object.entries(keyFactsRaw);
   const destination = extractDestination(post.title);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": post.description ?? "",
+    "image": post.cover_image_url ? [post.cover_image_url] : [],
+    "datePublished": post.date_published ?? post.created_at ?? new Date().toISOString(),
+    "dateModified": post.updated_at ?? post.date_published ?? new Date().toISOString(),
+    "author": {
+      "@type": "Organization",
+      "name": "Atlas Travel",
+      "url": "https://getatlas.ca"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Atlas Travel",
+      "url": "https://getatlas.ca",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://getatlas.ca/icon.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://getatlas.ca/blog/${post.slug}`
+    }
+  };
+
   return (
     <div style={{ background: "#1c1914", minHeight: "100vh", color: "#ede5d5", fontFamily: "var(--font-dm-sans),sans-serif" }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ReadingProgress />
       <BlogNav extraStyles=".share-btn:hover { border-color: #c9a96e !important; color: #c9a96e !important; } .share-btn { transition: all 0.2s; } @media (min-width: 1100px) { .toc-sidebar { display: block !important; } }" />
 

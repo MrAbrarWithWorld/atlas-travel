@@ -63,6 +63,38 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "name": "Atlas Travel",
+                "url": "https://getatlas.ca",
+                "logo": "https://getatlas.ca/icon.png",
+                "sameAs": [
+                  "https://play.google.com/store/apps/details?id=ca.getatlas.app"
+                ],
+                "description": "Atlas is an AI-powered travel planner that creates personalized itineraries, discovers hidden gems, and makes travel planning effortless."
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": "Atlas Travel",
+                "url": "https://getatlas.ca",
+                "potentialAction": {
+                  "@type": "SearchAction",
+                  "target": {
+                    "@type": "EntryPoint",
+                    "urlTemplate": "https://getatlas.ca/blog?q={search_term_string}"
+                  },
+                  "query-input": "required name=search_term_string"
+                }
+              }
+            ])
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
