@@ -32,8 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .order("date_published", { ascending: false }),
       supabase
         .from("saved_plans")
-        .select("share_id, updated_at")
-        .eq("is_public", true)
+        .select("share_id, created_at")
         .not("share_id", "is", null)
         .limit(1000),
       supabase
@@ -53,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const tripRoutes: MetadataRoute.Sitemap = (trips ?? []).map((trip) => ({
       url: `${BASE_URL}/trip/${trip.share_id}`,
-      lastModified: trip.updated_at ? new Date(trip.updated_at) : new Date(),
+      lastModified: trip.created_at ? new Date(trip.created_at) : new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.6,
     }));
