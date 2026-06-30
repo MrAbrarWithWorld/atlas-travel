@@ -2,31 +2,21 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-const ADMIN_HASH = '621aad9d761eb91c182b6e3ae030df560a38e806a43e7308ffe11564422b7c1a';
-const LS_KEY = 'atlas_admin_auth';
-const API = '/api/admin-crud';
-
-// ─── Types ─────────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type Post = {
-  id: string;
   slug: string;
   title: string;
   category: string;
   is_published: boolean;
   date_published: string;
-  description: string;
-  cover_image_url: string;
-  read_time: string;
-  hero_emoji: string;
-  content?: string;
 };
 
 type Stats = {
-  newsletter: number;
-  push: number;
-  total_posts: number;
-  published_posts: number;
+  newsletter: number | null;
+  push: number | null;
+  users: number | null;
+  posts: number | null;
 };
 
 type PostForm = {
@@ -42,54 +32,23 @@ type PostForm = {
   is_published: boolean;
 };
 
-type View =
-  | { type: 'overview' }
-  | { type: 'posts' }
-  | { type: 'edit'; slug: string }
-  | { type: 'create' };
+// ─── API helper ───────────────────────────────────────────────────────────────
 
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-async function sha256(text: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-function apiFetch(token: string, url: string, opts?: RequestInit) {
-  return fetch(url, {
-    ...opts,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...(opts?.headers ?? {}),
-    },
+async function api(action: string, data: Record<string, unknown> = {}) {
+  const res = await fetch('/api/admin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify({ action, ...data }),
   });
+  const json = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, data: json };
 }
 
-function toSlug(t: string) {
-  return t
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-const EMPTY_FORM: PostForm = {
-  title: '',
-  slug: '',
-  description: '',
-  content: '',
-  category: '',
-  cover_image_url: '',
-  read_time: '',
-  hero_emoji: '✈️',
-  date_published: new Date().toISOString().slice(0, 10),
-  is_published: false,
-};
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
-  { value: '', label: 'Select category...' },
+  { value: '', label: 'Select category…' },
   { value: 'americas', label: 'Americas' },
   { value: 'europe', label: 'Europe' },
   { value: 'asia', label: 'Asia' },
@@ -98,26 +57,36 @@ const CATEGORIES = [
   { value: 'middleeast', label: 'Middle East' },
   { value: 'oceania', label: 'Oceania' },
   { value: 'tips', label: 'Tips & Guides' },
-  { value: 'culture', label: 'Culture' },
   { value: 'food', label: 'Food & Drink' },
+  { value: 'adventure', label: 'Adventure' },
+  { value: 'culture', label: 'Culture' },
 ];
 
-// ─── Shared UI atoms ───────────────────────────────────────────────────────────
+function toSlug(t: string) {
+  return t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+const EMPTY_FORM: PostForm = {
+  title: '', slug: '', description: '', content: '', category: '',
+  cover_image_url: '', read_time: '', hero_emoji: '✈️',
+  date_published: new Date().toISOString().slice(0, 10),
+  is_published: false,
+};
+
+// ─── Shared styles ────────────────────────────────────────────────────────────
 
 const INPUT =
   'w-full bg-white/[0.04] border border-[rgba(201,169,110,0.18)] rounded-lg px-3 py-2 text-[#ede5d5] text-sm focus:outline-none focus:border-[rgba(201,169,110,0.45)] transition-colors';
 const LABEL =
   'block text-[0.62rem] tracking-[0.1em] uppercase text-[#5a4a2a] mb-1.5';
-const BTN_PRIMARY =
+const BTN =
   'bg-[#c9a96e] text-[#1c1914] px-5 py-2 rounded-lg text-sm font-semibold tracking-wide hover:bg-[#e0c080] transition-colors disabled:opacity-50 cursor-pointer';
 const BTN_GHOST =
   'border border-[rgba(201,169,110,0.25)] text-[#c9a96e] px-4 py-2 rounded-lg text-sm hover:bg-[rgba(201,169,110,0.08)] transition-colors cursor-pointer';
-const BTN_DANGER =
-  'border border-[rgba(200,80,80,0.25)] text-[#c06050] px-3 py-1.5 rounded-md text-[0.7rem] hover:bg-[rgba(200,80,80,0.08)] transition-colors cursor-pointer';
 
-// ─── Login ─────────────────────────────────────────────────────────────────────
+// ─── Login screen ────────────────────────────────────────────────────────────
 
-function LoginScreen({ onLogin }: { onLogin: (t: string) => void }) {
+function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [pwd, setPwd] = useState('');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
@@ -126,23 +95,16 @@ function LoginScreen({ onLogin }: { onLogin: (t: string) => void }) {
     e.preventDefault();
     setBusy(true);
     setErr('');
-    try {
-      const h = await sha256(pwd);
-      if (h === ADMIN_HASH) {
-        localStorage.setItem(LS_KEY, h);
-        onLogin(h);
-      } else {
-        setErr('Wrong password — try again.');
-      }
-    } finally {
-      setBusy(false);
-    }
+    const { ok } = await api('login', { password: pwd });
+    setBusy(false);
+    if (ok) onLogin();
+    else setErr('Wrong password — try again.');
   };
 
   return (
     <div className="min-h-screen bg-[#111009] flex items-center justify-center px-4">
       <div className="w-72 text-center">
-        <div className="font-[Cormorant_Garamond,serif] text-[2.2rem] font-light tracking-[0.4em] text-[#d4aa6e] uppercase mb-1">
+        <div className="font-serif text-[2.2rem] font-light tracking-[0.4em] text-[#d4aa6e] uppercase mb-1">
           Atlas
         </div>
         <div className="text-[0.6rem] tracking-[0.15em] uppercase text-[#4a3a1a] mb-8">
@@ -157,8 +119,8 @@ function LoginScreen({ onLogin }: { onLogin: (t: string) => void }) {
             autoFocus
             className="w-full bg-white/[0.04] border border-[rgba(201,169,110,0.2)] rounded-lg px-4 py-3 text-[#ede5d5] text-sm text-center tracking-widest focus:outline-none focus:border-[rgba(201,169,110,0.45)] transition-colors"
           />
-          <button type="submit" disabled={busy} className={BTN_PRIMARY + ' w-full py-3'}>
-            {busy ? '...' : 'Enter →'}
+          <button type="submit" disabled={busy} className={BTN + ' w-full py-3'}>
+            {busy ? '…' : 'Enter →'}
           </button>
           {err && <p className="text-[#c06050] text-xs">{err}</p>}
         </form>
@@ -167,182 +129,66 @@ function LoginScreen({ onLogin }: { onLogin: (t: string) => void }) {
   );
 }
 
-// ─── Sidebar ───────────────────────────────────────────────────────────────────
+// ─── Stats cards ─────────────────────────────────────────────────────────────
 
-function Sidebar({
-  view,
-  onNav,
-  onLogout,
-}: {
-  view: View;
-  onNav: (v: View) => void;
-  onLogout: () => void;
-}) {
-  type NavItem = { v: View; icon: string; label: string; activeOn: View['type'][] };
-  const items: NavItem[] = [
-    { v: { type: 'overview' }, icon: '◈', label: 'Overview', activeOn: ['overview'] },
-    { v: { type: 'posts' }, icon: '◻', label: 'Blog Posts', activeOn: ['posts', 'edit'] },
-    { v: { type: 'create' }, icon: '+', label: 'New Post', activeOn: ['create'] },
+function StatCards({ stats }: { stats: Stats | null }) {
+  const items: [string, number | null | undefined, string][] = [
+    ['Newsletter Subs', stats?.newsletter, 'active'],
+    ['Push Subs', stats?.push, 'subscribed'],
+    ['Registered Users', stats?.users, 'total'],
+    ['Published Posts', stats?.posts, 'live'],
   ];
-
   return (
-    <aside className="w-52 min-h-screen bg-[#0e0c08] border-r border-[rgba(201,169,110,0.1)] flex flex-col flex-shrink-0 sticky top-0 h-screen">
-      <div className="px-5 py-6 border-b border-[rgba(201,169,110,0.1)]">
-        <div className="font-[Cormorant_Garamond,serif] text-xl font-light tracking-[0.35em] text-[#d4aa6e] uppercase">
-          Atlas
-        </div>
-        <div className="text-[0.58rem] tracking-[0.15em] uppercase text-[#4a3a1a] mt-0.5">
-          Admin Panel
-        </div>
-      </div>
-
-      <nav className="flex-1 py-3">
-        <div className="text-[0.58rem] tracking-[0.15em] uppercase text-[#3a2a0a] px-5 py-2">
-          Dashboard
-        </div>
-        {items.map((item) => {
-          const isActive = item.activeOn.includes(view.type);
-          return (
-            <button
-              key={item.label}
-              onClick={() => onNav(item.v)}
-              className={`flex items-center gap-2.5 w-full px-5 py-2.5 text-left text-[0.78rem] transition-all border-l-2 ${
-                isActive
-                  ? 'text-[#c9a96e] bg-[rgba(201,169,110,0.06)] border-l-[#c9a96e]'
-                  : 'text-[#6a5a3a] hover:text-[#c9a96e] hover:bg-[rgba(201,169,110,0.04)] border-l-transparent'
-              }`}
-            >
-              <span className="text-xs w-4 text-center font-mono">{item.icon}</span>
-              {item.label}
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className="px-5 py-4 border-t border-[rgba(201,169,110,0.1)]">
-        <button
-          onClick={onLogout}
-          className="text-[0.7rem] text-[#4a3a1a] hover:text-[#c9a96e] transition-colors"
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      {items.map(([label, value, sub]) => (
+        <div
+          key={label}
+          className="bg-[rgba(201,169,110,0.04)] border border-[rgba(201,169,110,0.12)] rounded-xl p-4"
         >
-          ← Logout
-        </button>
-      </div>
-    </aside>
-  );
-}
-
-// ─── Overview ──────────────────────────────────────────────────────────────────
-
-function Overview({ token }: { token: string }) {
-  const [stats, setStats] = useState<Stats | null>(null);
-
-  useEffect(() => {
-    apiFetch(token, `${API}?action=get_stats`)
-      .then((r) => r.json())
-      .then((d) => setStats(d));
-  }, [token]);
-
-  return (
-    <div>
-      <h1 className="font-[Cormorant_Garamond,serif] text-3xl font-light text-[#e8dcc8] mb-6">
-        Overview
-      </h1>
-
-      {stats ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {(
-            [
-              ['Total Posts', stats.total_posts],
-              ['Published', stats.published_posts],
-              ['Newsletter Subs', stats.newsletter ?? '—'],
-              ['Push Subs', stats.push ?? '—'],
-            ] as [string, number | string][]
-          ).map(([label, value]) => (
-            <div
-              key={label}
-              className="bg-[rgba(201,169,110,0.04)] border border-[rgba(201,169,110,0.12)] rounded-xl p-5"
-            >
-              <div className="text-[0.6rem] tracking-[0.12em] uppercase text-[#5a4a2a] mb-1">
-                {label}
-              </div>
-              <div className="font-[Cormorant_Garamond,serif] text-4xl font-light text-[#e8dcc8]">
-                {value}
-              </div>
-            </div>
-          ))}
+          <div className="text-[0.58rem] tracking-[0.12em] uppercase text-[#5a4a2a] mb-1">{label}</div>
+          <div className="font-serif text-[2rem] font-light text-[#e8dcc8] leading-tight">
+            {stats === null ? '…' : (value ?? '—')}
+          </div>
+          <div className="text-[0.65rem] text-[#6a5a3a] mt-1">{sub}</div>
         </div>
-      ) : (
-        <div className="text-[#4a3a1a] text-sm mb-8">Loading stats...</div>
-      )}
-
-      <div className="border border-[rgba(201,169,110,0.1)] rounded-xl p-5 text-sm text-[#6a5a3a] space-y-2">
-        <p className="font-[Cormorant_Garamond,serif] text-[#c9a96e] text-base font-light mb-3">
-          Quick links
-        </p>
-        <a href="/blog" target="_blank" className="block hover:text-[#c9a96e] transition-colors">
-          → getatlas.ca/blog
-        </a>
-        <a href="/api/admin" target="_blank" className="block hover:text-[#c9a96e] transition-colors">
-          → Legacy admin panel (/api/admin)
-        </a>
-      </div>
+      ))}
     </div>
   );
 }
 
-// ─── Posts List ────────────────────────────────────────────────────────────────
+// ─── Posts table ──────────────────────────────────────────────────────────────
 
-function PostsList({
-  token,
+function PostsTable({
+  posts,
+  loading,
   onEdit,
-  onCreate,
+  onDelete,
+  onNew,
 }: {
-  token: string;
+  posts: Post[];
+  loading: boolean;
   onEdit: (slug: string) => void;
-  onCreate: () => void;
+  onDelete: (slug: string, title: string) => void;
+  onNew: () => void;
 }) {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState<string | null>(null);
-
-  const load = useCallback(() => {
-    setLoading(true);
-    apiFetch(token, `${API}?action=list_posts`)
-      .then((r) => r.json())
-      .then((d) => {
-        setPosts(d.posts || []);
-        setLoading(false);
-      });
-  }, [token]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  const del = async (slug: string, title: string) => {
-    if (!confirm(`Delete "${title}"?\n\nThis cannot be undone.`)) return;
-    setDeleting(slug);
-    await apiFetch(token, API, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'delete_post', slug }),
-    });
-    setDeleting(null);
-    load();
-  };
-
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-[Cormorant_Garamond,serif] text-3xl font-light text-[#e8dcc8]">
-          Blog Posts
-        </h1>
-        <button onClick={onCreate} className={BTN_PRIMARY}>
+      <div className="flex items-baseline justify-between mb-5">
+        <h2 className="font-serif text-xl font-light text-[#c9a96e]">
+          Blog Posts{' '}
+          {!loading && (
+            <span className="font-sans text-sm text-[#5a4a2a] font-normal">
+              ({posts.length})
+            </span>
+          )}
+        </h2>
+        <button onClick={onNew} className={BTN + ' text-xs px-4 py-1.5'}>
           + New Post
         </button>
       </div>
 
       {loading ? (
-        <div className="text-[#4a3a1a] text-sm py-4">Loading...</div>
+        <div className="text-[#4a3a1a] text-sm py-6">Loading posts…</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
@@ -351,7 +197,7 @@ function PostsList({
                 {['Title', 'Category', 'Date', 'Status', ''].map((h) => (
                   <th
                     key={h}
-                    className="text-left py-2 px-3 text-[0.62rem] tracking-[0.1em] uppercase text-[#7a6a50] font-normal"
+                    className="text-left py-2 px-3 text-[0.6rem] tracking-[0.1em] uppercase text-[#7a6a50] font-normal"
                   >
                     {h}
                   </th>
@@ -362,7 +208,7 @@ function PostsList({
               {posts.map((p) => (
                 <tr
                   key={p.slug}
-                  className="border-b border-[rgba(201,169,110,0.06)] hover:bg-[rgba(201,169,110,0.02)] transition-colors"
+                  className="border-b border-[rgba(201,169,110,0.06)] hover:bg-[rgba(201,169,110,0.02)] transition-colors group"
                 >
                   <td className="py-2.5 px-3 max-w-xs">
                     <button
@@ -371,16 +217,17 @@ function PostsList({
                     >
                       {p.title}
                     </button>
+                    <div className="text-[0.62rem] text-[#3a2a0a] font-mono mt-0.5">{p.slug}</div>
                   </td>
                   <td className="py-2.5 px-3 text-[#5a4a2a] text-xs whitespace-nowrap">
                     {p.category || '—'}
                   </td>
-                  <td className="py-2.5 px-3 text-[#9a8a70] text-xs whitespace-nowrap">
+                  <td className="py-2.5 px-3 text-[#7a6a50] text-xs whitespace-nowrap">
                     {p.date_published || '—'}
                   </td>
                   <td className="py-2.5 px-3">
                     <span
-                      className={`text-[0.6rem] tracking-[0.06em] uppercase px-2 py-0.5 rounded ${
+                      className={`text-[0.6rem] tracking-wide uppercase px-2 py-0.5 rounded ${
                         p.is_published
                           ? 'bg-[rgba(80,200,80,0.1)] text-[#70c070]'
                           : 'bg-white/[0.04] text-[#5a4a2a]'
@@ -390,19 +237,18 @@ function PostsList({
                     </span>
                   </td>
                   <td className="py-2.5 px-3">
-                    <div className="flex gap-2 items-center">
+                    <div className="flex gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => onEdit(p.slug)}
-                        className={BTN_GHOST + ' text-[0.7rem] px-3 py-1.5'}
+                        className="text-[0.7rem] border border-[rgba(201,169,110,0.25)] text-[#c9a96e] px-3 py-1 rounded hover:bg-[rgba(201,169,110,0.08)] transition-colors"
                       >
                         Edit →
                       </button>
                       <button
-                        onClick={() => del(p.slug, p.title)}
-                        disabled={deleting === p.slug}
-                        className={BTN_DANGER}
+                        onClick={() => onDelete(p.slug, p.title)}
+                        className="text-[0.7rem] border border-[rgba(200,80,80,0.2)] text-[#c06050] px-3 py-1 rounded hover:bg-[rgba(200,80,80,0.06)] transition-colors"
                       >
-                        {deleting === p.slug ? '...' : 'Delete'}
+                        Delete
                       </button>
                     </div>
                   </td>
@@ -411,8 +257,8 @@ function PostsList({
             </tbody>
           </table>
           {posts.length === 0 && (
-            <p className="text-[#4a3a1a] text-sm mt-6 text-center py-8 border border-dashed border-[rgba(201,169,110,0.12)] rounded-xl">
-              No posts yet — create your first one.
+            <p className="text-[#4a3a1a] text-sm text-center py-10 border border-dashed border-[rgba(201,169,110,0.12)] rounded-xl mt-2">
+              No posts yet — create the first one.
             </p>
           )}
         </div>
@@ -421,134 +267,123 @@ function PostsList({
   );
 }
 
-// ─── Post Editor ───────────────────────────────────────────────────────────────
+// ─── Post editor ──────────────────────────────────────────────────────────────
 
 function PostEditor({
-  token,
-  slug,
-  isNew,
-  onBack,
-  onCreated,
+  editSlug,
+  onDone,
+  onCancel,
 }: {
-  token: string;
-  slug?: string;
-  isNew: boolean;
-  onBack: () => void;
-  onCreated: (newSlug: string) => void;
+  editSlug: string | null;
+  onDone: () => void;
+  onCancel: () => void;
 }) {
+  const isNew = editSlug === null;
   const [form, setForm] = useState<PostForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState('');
-  const [err, setErr] = useState('');
+  const [flash, setFlash] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
   useEffect(() => {
-    if (isNew || !slug) return;
-    apiFetch(token, `${API}?action=get_post&slug=${encodeURIComponent(slug)}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.post) {
-          const p = d.post;
-          setForm({
-            title: p.title || '',
-            slug: p.slug || '',
-            description: p.description || '',
-            content: p.content || '',
-            category: p.category || '',
-            cover_image_url: p.cover_image_url || '',
-            read_time: p.read_time || '',
-            hero_emoji: p.hero_emoji || '✈️',
-            date_published: p.date_published || '',
-            is_published: p.is_published || false,
-          });
-        }
-        setLoading(false);
-      });
-  }, [token, slug, isNew]);
+    if (isNew) return;
+    api('get_post', { slug: editSlug }).then(({ data }) => {
+      if (data.post) {
+        const p = data.post;
+        setForm({
+          title: p.title || '',
+          slug: p.slug || '',
+          description: p.description || '',
+          content: p.content || '',
+          category: p.category || '',
+          cover_image_url: p.cover_image_url || '',
+          read_time: p.read_time || '',
+          hero_emoji: p.hero_emoji || '✈️',
+          date_published: p.date_published || '',
+          is_published: !!p.is_published,
+        });
+      }
+      setLoading(false);
+    });
+  }, [isNew, editSlug]);
 
-  const set = <K extends keyof PostForm>(k: K, v: PostForm[K]) =>
+  function set<K extends keyof PostForm>(k: K, v: PostForm[K]) {
     setForm((f) => ({ ...f, [k]: v }));
+  }
 
-  const handleTitle = (t: string) => {
+  const handleTitle = (t: string) =>
     setForm((f) => ({ ...f, title: t, ...(isNew ? { slug: toSlug(t) } : {}) }));
-  };
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setMsg('');
-    setErr('');
-    try {
-      const action = isNew ? 'create_post' : 'update_post';
-      const payload = { action, ...form };
-      const res = await apiFetch(token, API, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      const d = await res.json();
-      if (!res.ok || d.error) throw new Error(d.error || 'Save failed');
-      if (isNew && d.slug) {
-        onCreated(d.slug);
+    setFlash(null);
+    const { ok, data } = await api(isNew ? 'create_post' : 'update_post', form);
+    setSaving(false);
+    if (ok) {
+      if (isNew && data.slug) {
+        setFlash({ type: 'ok', text: `Created — slug: ${data.slug}` });
+        setTimeout(onDone, 1200);
       } else {
-        setMsg('Saved ✓');
+        setFlash({ type: 'ok', text: 'Saved successfully.' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Unknown error');
-    } finally {
-      setSaving(false);
+    } else {
+      setFlash({ type: 'err', text: data.error || 'Save failed — try again.' });
     }
   };
 
-  if (loading) return <div className="text-[#4a3a1a] text-sm py-4">Loading post...</div>;
+  if (loading) {
+    return <div className="text-[#4a3a1a] text-sm py-8">Loading post…</div>;
+  }
 
   return (
     <div>
-      <button onClick={onBack} className="text-[0.72rem] text-[#5a4a2a] hover:text-[#c9a96e] mb-4 transition-colors block">
+      <button
+        onClick={onCancel}
+        className="text-[0.72rem] text-[#5a4a2a] hover:text-[#c9a96e] mb-4 transition-colors block"
+      >
         ← Back to posts
       </button>
 
-      <h1 className="font-[Cormorant_Garamond,serif] text-3xl font-light text-[#e8dcc8] mb-6">
+      <h1 className="font-serif text-3xl font-light text-[#e8dcc8] mb-6">
         {isNew ? 'New Post' : 'Edit Post'}
       </h1>
 
-      {msg && (
-        <div className="bg-[rgba(80,200,80,0.08)] border border-[rgba(80,200,80,0.2)] rounded-lg px-4 py-2.5 mb-5 text-[#70c070] text-sm">
-          {msg}
-        </div>
-      )}
-      {err && (
-        <div className="bg-[rgba(200,80,80,0.08)] border border-[rgba(200,80,80,0.2)] rounded-lg px-4 py-2.5 mb-5 text-[#c06050] text-sm">
-          Error: {err}
+      {flash && (
+        <div
+          className={`rounded-lg px-4 py-2.5 mb-5 text-sm ${
+            flash.type === 'ok'
+              ? 'bg-[rgba(80,200,80,0.08)] border border-[rgba(80,200,80,0.2)] text-[#70c070]'
+              : 'bg-[rgba(200,80,80,0.08)] border border-[rgba(200,80,80,0.2)] text-[#c06050]'
+          }`}
+        >
+          {flash.text}
         </div>
       )}
 
       <form onSubmit={save} className="space-y-5">
-        {/* Title */}
-        <div>
-          <label className={LABEL}>Title</label>
-          <input
-            className={INPUT}
-            value={form.title}
-            onChange={(e) => handleTitle(e.target.value)}
-            placeholder="Article title"
-            required
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-5">
+          <div>
+            <label className={LABEL}>Title *</label>
+            <input
+              className={INPUT}
+              value={form.title}
+              onChange={(e) => handleTitle(e.target.value)}
+              placeholder="Article title"
+              required
+            />
+          </div>
+          <div>
+            <label className={LABEL}>Slug (auto-generated)</label>
+            <input
+              className={INPUT + ' font-mono text-xs text-[#9a8a70]'}
+              value={form.slug}
+              onChange={(e) => set('slug', e.target.value)}
+              placeholder="url-friendly-slug"
+            />
+          </div>
         </div>
 
-        {/* Slug */}
-        <div>
-          <label className={LABEL}>Slug</label>
-          <input
-            className={INPUT + ' font-mono text-xs text-[#9a8a70]'}
-            value={form.slug}
-            onChange={(e) => set('slug', e.target.value)}
-            placeholder="url-friendly-slug"
-            required
-          />
-        </div>
-
-        {/* Description */}
         <div>
           <label className={LABEL}>Description / Excerpt</label>
           <textarea
@@ -556,11 +391,10 @@ function PostEditor({
             rows={3}
             value={form.description}
             onChange={(e) => set('description', e.target.value)}
-            placeholder="Short summary for SEO and cards"
+            placeholder="Short summary for SEO and blog cards"
           />
         </div>
 
-        {/* Meta grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <label className={LABEL}>Category</label>
@@ -589,7 +423,7 @@ function PostEditor({
             <label className={LABEL}>Read Time</label>
             <input
               className={INPUT}
-              placeholder="e.g. 8 min read"
+              placeholder="8 min read"
               value={form.read_time}
               onChange={(e) => set('read_time', e.target.value)}
             />
@@ -597,34 +431,34 @@ function PostEditor({
           <div>
             <label className={LABEL}>Hero Emoji</label>
             <input
-              className={INPUT}
+              className={INPUT + ' text-center text-lg'}
               value={form.hero_emoji}
               onChange={(e) => set('hero_emoji', e.target.value)}
               placeholder="✈️"
+              maxLength={4}
             />
           </div>
         </div>
 
-        {/* Cover image */}
         <div>
           <label className={LABEL}>Cover Image URL</label>
           <input
             className={INPUT}
-            placeholder="https://..."
+            placeholder="https://…"
             value={form.cover_image_url}
             onChange={(e) => set('cover_image_url', e.target.value)}
           />
           {form.cover_image_url && (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={form.cover_image_url}
               alt=""
-              className="mt-2 h-28 rounded-lg object-cover opacity-80"
+              className="mt-2 h-28 w-full max-w-sm rounded-lg object-cover opacity-80"
               onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
             />
           )}
         </div>
 
-        {/* Publish toggle */}
         <label className="flex items-center gap-2.5 cursor-pointer select-none">
           <input
             type="checkbox"
@@ -632,13 +466,12 @@ function PostEditor({
             onChange={(e) => set('is_published', e.target.checked)}
             className="w-4 h-4 accent-[#c9a96e] rounded"
           />
-          <span className="text-[#9a8a70] text-sm">
+          <span className="text-sm text-[#9a8a70]">
             Published{' '}
             <span className="text-[#5a4a2a] text-xs">(visible on /blog)</span>
           </span>
         </label>
 
-        {/* Content */}
         <div>
           <label className={LABEL}>Content (HTML)</label>
           <textarea
@@ -646,86 +479,178 @@ function PostEditor({
             rows={22}
             value={form.content}
             onChange={(e) => set('content', e.target.value)}
-            placeholder="<p>Article content here...</p>"
+            placeholder="<p>Article content here…</p>"
           />
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-3 pt-1 pb-8">
-          <button type="submit" disabled={saving} className={BTN_PRIMARY}>
-            {saving ? 'Saving...' : isNew ? 'Create Draft →' : 'Save Changes'}
+        <div className="flex gap-3 pt-2 pb-8 border-t border-[rgba(201,169,110,0.1)]">
+          <button type="submit" disabled={saving} className={BTN}>
+            {saving ? 'Saving…' : isNew ? 'Create Draft →' : 'Save Changes'}
           </button>
-          {!isNew && slug && (
-            <a
-              href={`/blog/${slug}`}
-              target="_blank"
-              className={BTN_GHOST}
-            >
+          {!isNew && editSlug && (
+            <a href={`/blog/${editSlug}`} target="_blank" className={BTN_GHOST}>
               View Live ↗
             </a>
           )}
+          <button type="button" onClick={onCancel} className={BTN_GHOST}>
+            Cancel
+          </button>
         </div>
       </form>
     </div>
   );
 }
 
-// ─── Main ──────────────────────────────────────────────────────────────────────
+// ─── Dashboard ────────────────────────────────────────────────────────────────
 
-export default function AdminPage() {
-  const [token, setToken] = useState<string | null>(null);
-  const [view, setView] = useState<View>({ type: 'overview' });
-  const [mounted, setMounted] = useState(false);
+type Section = 'overview' | 'posts' | 'editor';
 
-  useEffect(() => {
-    setMounted(true);
-    const t = localStorage.getItem(LS_KEY);
-    if (t === ADMIN_HASH) setToken(t);
+function Dashboard({ onLogout }: { onLogout: () => void }) {
+  const [section, setSection] = useState<Section>('overview');
+  const [editSlug, setEditSlug] = useState<string | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+
+  const refresh = useCallback(() => {
+    setLoadingPosts(true);
+    api('list_posts').then(({ data }) => {
+      setPosts(data.posts || []);
+      setLoadingPosts(false);
+    });
+    api('get_stats').then(({ data }) => setStats(data));
   }, []);
 
-  if (!mounted) return null;
-  if (!token) return <LoginScreen onLogin={setToken} />;
+  useEffect(() => { refresh(); }, [refresh]);
 
-  const logout = () => {
-    localStorage.removeItem(LS_KEY);
-    setToken(null);
+  const handleDelete = async (slug: string, title: string) => {
+    if (!confirm(`Delete "${title}"?\n\nThis cannot be undone.`)) return;
+    await api('delete_post', { slug });
+    refresh();
   };
 
-  const renderContent = () => {
-    if (view.type === 'overview') return <Overview token={token} />;
-    if (view.type === 'posts')
-      return (
-        <PostsList
-          token={token}
-          onEdit={(slug) => setView({ type: 'edit', slug })}
-          onCreate={() => setView({ type: 'create' })}
-        />
-      );
-    if (view.type === 'edit')
-      return (
-        <PostEditor
-          token={token}
-          slug={view.slug}
-          isNew={false}
-          onBack={() => setView({ type: 'posts' })}
-          onCreated={() => setView({ type: 'posts' })}
-        />
-      );
-    if (view.type === 'create')
-      return (
-        <PostEditor
-          token={token}
-          isNew
-          onBack={() => setView({ type: 'posts' })}
-          onCreated={(slug) => setView({ type: 'edit', slug })}
-        />
-      );
+  const navBtn = (label: string, s: Section) => {
+    const active = section === s;
+    return (
+      <button
+        onClick={() => setSection(s)}
+        className={`flex items-center gap-2.5 w-full px-5 py-2.5 text-left text-[0.78rem] transition-all border-l-2 ${
+          active
+            ? 'text-[#c9a96e] bg-[rgba(201,169,110,0.06)] border-l-[#c9a96e]'
+            : 'text-[#6a5a3a] hover:text-[#c9a96e] hover:bg-[rgba(201,169,110,0.03)] border-l-transparent'
+        }`}
+      >
+        {label}
+      </button>
+    );
+  };
+
+  const logout = async () => {
+    await api('logout');
+    onLogout();
   };
 
   return (
     <div className="flex bg-[#111009] min-h-screen text-[#ede5d5]">
-      <Sidebar view={view} onNav={setView} onLogout={logout} />
-      <main className="flex-1 px-8 py-8 max-w-4xl overflow-y-auto">{renderContent()}</main>
+      {/* Sidebar */}
+      <aside className="w-52 shrink-0 bg-[#0e0c08] border-r border-[rgba(201,169,110,0.1)] flex flex-col sticky top-0 h-screen overflow-hidden">
+        <div className="px-5 py-6 border-b border-[rgba(201,169,110,0.1)] shrink-0">
+          <div className="font-serif text-xl font-light tracking-[0.35em] text-[#d4aa6e] uppercase">
+            Atlas
+          </div>
+          <div className="text-[0.58rem] tracking-[0.15em] uppercase text-[#4a3a1a] mt-0.5">
+            Admin Panel
+          </div>
+        </div>
+
+        <nav className="flex-1 py-3 overflow-y-auto">
+          <div className="text-[0.55rem] tracking-[0.15em] uppercase text-[#3a2a0a] px-5 pt-3 pb-1.5">
+            Dashboard
+          </div>
+          {navBtn('📊 Overview', 'overview')}
+          <div className="text-[0.55rem] tracking-[0.15em] uppercase text-[#3a2a0a] px-5 pt-4 pb-1.5">
+            Content
+          </div>
+          {navBtn('📝 Blog Posts', 'posts')}
+        </nav>
+
+        <div className="px-5 py-4 border-t border-[rgba(201,169,110,0.1)] shrink-0">
+          <button
+            onClick={logout}
+            className="text-[0.72rem] text-[#4a3a1a] hover:text-[#c9a96e] transition-colors"
+          >
+            ← Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 px-8 py-8 max-w-4xl overflow-y-auto">
+        {section === 'overview' && (
+          <>
+            <h1 className="font-serif text-3xl font-light text-[#e8dcc8] mb-6">Overview</h1>
+            <StatCards stats={stats} />
+            <div className="border-t border-[rgba(201,169,110,0.1)] pt-6">
+              <div className="font-serif text-lg font-light text-[#c9a96e] mb-4">Quick Actions</div>
+              <div className="flex gap-3 flex-wrap">
+                <button
+                  onClick={() => { setEditSlug(null); setSection('editor'); }}
+                  className={BTN}
+                >
+                  + New Post
+                </button>
+                <button onClick={() => setSection('posts')} className={BTN_GHOST}>
+                  View All Posts
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {section === 'posts' && (
+          <>
+            <h1 className="font-serif text-3xl font-light text-[#e8dcc8] mb-6">Blog Posts</h1>
+            <PostsTable
+              posts={posts}
+              loading={loadingPosts}
+              onEdit={(slug) => { setEditSlug(slug); setSection('editor'); }}
+              onDelete={handleDelete}
+              onNew={() => { setEditSlug(null); setSection('editor'); }}
+            />
+          </>
+        )}
+
+        {section === 'editor' && (
+          <PostEditor
+            editSlug={editSlug}
+            onDone={() => { refresh(); setSection('posts'); }}
+            onCancel={() => setSection('posts')}
+          />
+        )}
+      </main>
     </div>
   );
+}
+
+// ─── Root ─────────────────────────────────────────────────────────────────────
+
+export default function AdminPage() {
+  const [authed, setAuthed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    api('check_auth').then(({ ok }) => setAuthed(ok));
+  }, []);
+
+  if (authed === null) {
+    return (
+      <div className="min-h-screen bg-[#111009] flex items-center justify-center">
+        <div className="text-[#4a3a1a] text-xs tracking-widest uppercase animate-pulse">
+          Loading…
+        </div>
+      </div>
+    );
+  }
+
+  if (!authed) return <LoginScreen onLogin={() => setAuthed(true)} />;
+  return <Dashboard onLogout={() => setAuthed(false)} />;
 }

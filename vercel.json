@@ -31,10 +31,6 @@
     {
       "source": "/plan/:dest",
       "destination": "/api/plan?dest=:dest"
-    },
-    {
-      "source": "/admin",
-      "destination": "/api/admin"
     }
   ],
   "headers": [

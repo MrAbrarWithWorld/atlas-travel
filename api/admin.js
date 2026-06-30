@@ -108,7 +108,7 @@ async function sendNewsletterEmails(title, slug, description, heroEmoji) {
   }
 }
 
-const PASSWORD = process.env.ADMIN_PASSWORD || 'Pinuatlas2121@';
+const PASSWORD = process.env.ADMIN_PASSWORD || 'AtlasAdmin2026!';
 const TOKEN = createHash('sha256').update(PASSWORD).digest('hex');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -880,6 +880,101 @@ export default async function handler(req, res) {
     res.setHeader('Set-Cookie', 'atlas_admin=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict');
     res.setHeader('Location', '/admin');
     return res.status(302).end();
+  }
+
+  // ── JSON API mode (React admin frontend) ─────────────────────────────────────
+  if (req.method === 'POST' && section !== 'upload' && (req.headers['content-type'] || '').includes('application/json')) {
+    res.setHeader('Content-Type', 'application/json');
+    let body;
+    try { body = JSON.parse(await readBody(req)); } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
+    const { action } = body;
+
+    if (action === 'login') {
+      if (body.password !== PASSWORD) return res.status(401).json({ error: 'Wrong password' });
+      res.setHeader('Set-Cookie', `atlas_admin=${TOKEN}; Path=/; Max-Age=86400; HttpOnly; SameSite=Strict`);
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'logout') {
+      res.setHeader('Set-Cookie', 'atlas_admin=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict');
+      return res.status(200).json({ ok: true });
+    }
+    if (action === 'check_auth') {
+      if (!isAuthed(req)) return res.status(401).json({ error: 'Not authenticated' });
+      return res.status(200).json({ ok: true });
+    }
+
+    if (!isAuthed(req)) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (action === 'list_posts') {
+      const { data: posts } = await sb.from('blog_posts')
+        .select('slug,title,category,date_published,is_published')
+        .order('date_published', { ascending: false });
+      return res.status(200).json({ posts: posts || [] });
+    }
+
+    if (action === 'get_post') {
+      const { data: post } = await sb.from('blog_posts')
+        .select('slug,title,description,category,read_time,is_published,date_published,cover_image_url,content')
+        .eq('slug', body.slug)
+        .single();
+      return res.status(200).json({ post: post || null });
+    }
+
+    if (action === 'get_stats') {
+      const [
+        { count: newsletter },
+        { count: push },
+        { count: users },
+        { count: posts },
+      ] = await Promise.all([
+        sb.from('newsletter_subscribers').select('*', { count: 'exact', head: true }).eq('unsubscribed', false),
+        sb.from('push_subscriptions').select('*', { count: 'exact', head: true }),
+        sb.from('allowed_users').select('*', { count: 'exact', head: true }),
+        sb.from('blog_posts').select('*', { count: 'exact', head: true }).eq('is_published', true),
+      ]);
+      return res.status(200).json({ newsletter, push, users, posts });
+    }
+
+    if (action === 'create_post') {
+      const { title = 'untitled', description = '', category = '', read_time = '',
+        date_published, cover_image_url = '', content = '' } = body;
+      const base = titleToSlug(title.trim()) || 'untitled';
+      const { data: existing } = await sb.from('blog_posts').select('slug').ilike('slug', `${base}%`);
+      const taken = new Set((existing || []).map(r => r.slug));
+      let slug = base; let i = 2;
+      while (taken.has(slug)) { slug = `${base}-${i++}`; }
+      await sb.from('blog_posts').insert({
+        slug, title: title.trim(), description, category, read_time,
+        date_published: date_published || new Date().toISOString().slice(0, 10),
+        is_published: false, cover_image_url, content, inline_photos: [],
+      });
+      return res.status(200).json({ ok: true, slug });
+    }
+
+    if (action === 'update_post') {
+      const { slug: updateSlug, title, description, category, cover_image_url,
+        read_time, date_published, is_published, content, hero_emoji } = body;
+      const { data: existing } = await sb.from('blog_posts').select('is_published').eq('slug', updateSlug).single();
+      const wasPublished = existing?.is_published ?? false;
+      await sb.from('blog_posts').update({
+        title, description, category, cover_image_url, read_time,
+        date_published: date_published || null,
+        is_published: !!is_published,
+        content: content || '',
+      }).eq('slug', updateSlug);
+      if (!wasPublished && is_published) {
+        sendBlogPushNotifications(title, updateSlug, description).catch(() => {});
+        sendNewsletterEmails(title, updateSlug, description, hero_emoji).catch(() => {});
+      }
+      return res.status(200).json({ ok: true });
+    }
+
+    if (action === 'delete_post') {
+      await sb.from('blog_posts').delete().eq('slug', body.slug);
+      return res.status(200).json({ ok: true });
+    }
+
+    return res.status(400).json({ error: 'Unknown action' });
   }
 
   // ── Upload (base64 JSON body) ──────────────────────────────────────────────
