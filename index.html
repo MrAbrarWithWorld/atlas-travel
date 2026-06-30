@@ -352,6 +352,28 @@ function saveLocal(msgs,hist){try{localStorage.setItem(STORAGE_KEY,JSON.stringif
 function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!d||Date.now()-d.t>24*60*60*1000)return null;return d;}catch{return null;}}
 const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",content:PERSONA+"\n\nI am ATLAS. Tell me where you want to go."}];
 
+// ===================== CROSS-DEVICE CHAT SYNC =====================
+async function loadLatestConversation(userId){
+  try{
+    const{data:conv}=await sb.from('conversations').select('id,title').eq('user_id',userId).order('updated_at',{ascending:false}).limit(1).single();
+    if(!conv)return null;
+    const{data:messages}=await sb.from('chat_messages').select('id,role,content,created_at').eq('conversation_id',conv.id).order('created_at',{ascending:true});
+    return{conversationId:conv.id,messages:messages||[]};
+  }catch{return null;}
+}
+async function createConversation(userId,title){
+  try{
+    const{data}=await sb.from('conversations').insert({user_id:userId,title}).select('id').single();
+    return data?.id||null;
+  }catch{return null;}
+}
+async function saveMessage(userId,conversationId,role,content){
+  try{
+    await sb.from('chat_messages').insert({user_id:userId,conversation_id:conversationId,role,content});
+    await sb.from('conversations').update({updated_at:new Date().toISOString()}).eq('id',conversationId);
+  }catch{}
+}
+
 // ===================== GLOBAL TOAST =====================
 function showToast(msg){
   const toast=document.createElement('div');
@@ -2436,6 +2458,8 @@ function App(){
   const [loadingPlans,setLoadingPlans]=useState(false);
   const [activePlanId,setActivePlanId]=useState(null);
   const [savingPlan,setSavingPlan]=useState(false);
+  const [conversationId,setConversationId]=useState(null);
+  const conversationIdRef=useRef(null);
   const [showSettings,setShowSettings]=useState(false); const [showHelp,setShowHelp]=useState(false);
   const [userTier,setUserTier]=useState('free');
   const [projects,setProjects]=useState([]);
@@ -2504,9 +2528,27 @@ function App(){
     loadPlans();
     loadProjects();
     checkTier(user.id,user.email);
+    // Cross-device sync: load latest conversation if no local messages
+    if(msgs.length===0){
+      loadLatestConversation(user.id).then(result=>{
+        if(!result||result.messages.length===0)return;
+        const{conversationId:cid,messages:dbMsgs}=result;
+        conversationIdRef.current=cid;
+        setConversationId(cid);
+        // Reconstruct msgs and hist from DB
+        const reconstructedMsgs=dbMsgs.map((m,i)=>({id:m.id||Date.now()+i,from:m.role==='user'?'user':'ai',text:m.content||''}));
+        const reconstructedHist=[...defaultHist,...dbMsgs.map(m=>({role:m.role,content:m.content||''}))];
+        setMsgs(reconstructedMsgs);
+        hist.current=reconstructedHist;
+        saveLocal(reconstructedMsgs,reconstructedHist);
+        showToast('✓ Chat history restored');
+      });
+    }
   } else {
     setPlans([]);
     setUserTier('free');
+    setConversationId(null);
+    conversationIdRef.current=null;
   }
 },[user]);
 
@@ -2822,6 +2864,19 @@ async function setPlanTag(id,tag){
               }
             });
           }
+          // Cross-device sync: save to conversations + chat_messages
+          (async()=>{
+            let cid=conversationIdRef.current;
+            if(!cid){
+              const newTitle=extractTitle(hist.current)||'Trip Plan';
+              cid=await createConversation(user.id,newTitle);
+              if(cid){conversationIdRef.current=cid;setConversationId(cid);}
+            }
+            if(cid){
+              await saveMessage(user.id,cid,'user',displayText);
+              await saveMessage(user.id,cid,'assistant',fullText);
+            }
+          })();
         }
       }
       const sseReader=res.body.getReader();const sseDecoder=new TextDecoder();let streamErr=null;
@@ -2845,7 +2900,7 @@ async function setPlanTag(id,tag){
     }
   }
 
-  function reset(){if(!confirm("Start a new journey?"))return;setMsgs([]);setDraft("");setEditingId(null);setPhoto(null);setActivePlanId(null);setHoldActive(false);if(window.speechSynthesis)window.speechSynthesis.cancel();hist.current=[...defaultHist];localStorage.removeItem(STORAGE_KEY);}
+  function reset(){if(!confirm("Start a new journey?"))return;setMsgs([]);setDraft("");setEditingId(null);setPhoto(null);setActivePlanId(null);setConversationId(null);conversationIdRef.current=null;setHoldActive(false);if(window.speechSynthesis)window.speechSynthesis.cancel();hist.current=[...defaultHist];localStorage.removeItem(STORAGE_KEY);}
 
   const hasSpeech=!!window.speechSynthesis;
   const hasVoice=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
