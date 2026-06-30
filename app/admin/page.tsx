@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,6 +30,7 @@ type PostForm = {
   hero_emoji: string;
   date_published: string;
   is_published: boolean;
+  inline_photos: string[];
 };
 
 // ─── API helper ───────────────────────────────────────────────────────────────
@@ -71,7 +72,10 @@ const EMPTY_FORM: PostForm = {
   cover_image_url: '', read_time: '', hero_emoji: '✈️',
   date_published: new Date().toISOString().slice(0, 10),
   is_published: false,
+  inline_photos: ['', '', '', '', ''],
 };
+
+const PHOTO_SLOTS = 5;
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
@@ -267,6 +271,171 @@ function PostsTable({
   );
 }
 
+// ─── Upload helper ───────────────────────────────────────────────────────────
+
+async function uploadPhoto(
+  file: File,
+  onStatus: (s: string, ok: boolean) => void,
+): Promise<string | null> {
+  onStatus('Uploading…', false);
+  try {
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve((e.target?.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const res = await fetch('/api/admin?section=upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base64, filename: file.name, mimeType: file.type, uploadType: 'admin' }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    onStatus('✓ Done!', true);
+    setTimeout(() => onStatus('', true), 3000);
+    return data.url as string;
+  } catch (e) {
+    onStatus(`✗ ${(e as Error).message}`, false);
+    return null;
+  }
+}
+
+// ─── Cover upload button ──────────────────────────────────────────────────────
+
+function CoverUploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const [status, setStatus] = useState('');
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = await uploadPhoto(file, (s) => setStatus(s));
+    if (url) onUploaded(url);
+    e.target.value = '';
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <label className="cursor-pointer">
+        <span className="inline-block bg-[rgba(201,169,110,0.12)] border border-[rgba(201,169,110,0.3)] text-[#c9a96e] px-3 py-1 rounded-md text-[0.72rem] hover:bg-[rgba(201,169,110,0.2)] transition-colors">
+          📁 PC থেকে Upload
+        </span>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleFile}
+        />
+      </label>
+      {status && (
+        <span
+          className={`text-[0.7rem] ${
+            status.startsWith('✓') ? 'text-[#6aaa7a]' : status.startsWith('✗') ? 'text-[#e08060]' : 'text-[#8a7a5a]'
+          }`}
+        >
+          {status}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ─── Inline photo slots ───────────────────────────────────────────────────────
+
+function InlinePhotoSlots({
+  photos,
+  onChange,
+}: {
+  photos: string[];
+  onChange: (idx: number, url: string) => void;
+}) {
+  const [statuses, setStatuses] = React.useState<string[]>(Array(PHOTO_SLOTS).fill(''));
+
+  const setStatus = (idx: number, s: string) =>
+    setStatuses((prev) => { const n = [...prev]; n[idx] = s; return n; });
+
+  const handleFile = async (idx: number, file: File) => {
+    const url = await uploadPhoto(file, (s, ok) => setStatus(idx, ok && s.startsWith('✓') ? s : s));
+    if (url) onChange(idx, url);
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-[#5a4a2a]">
+        Content-এ যেখানে photo দিতে চাও সেখানে{' '}
+        {Array.from({ length: PHOTO_SLOTS }, (_, i) => (
+          <span key={i}>
+            <code className="bg-white/[0.06] px-1 rounded text-[#c9a96e] text-[0.7rem]">
+              [photo-{i + 1}]
+            </code>
+            {i < PHOTO_SLOTS - 1 ? ', ' : ''}
+          </span>
+        ))}{' '}
+        লিখো — ওই জায়গায় ছবি বসবে।
+      </p>
+
+      {Array.from({ length: PHOTO_SLOTS }, (_, i) => {
+        const url = photos[i] || '';
+        return (
+          <div
+            key={i}
+            className="flex gap-3 items-start bg-white/[0.025] border border-[rgba(201,169,110,0.1)] rounded-lg p-3"
+          >
+            {/* Thumbnail */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={url || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}
+              alt=""
+              className="w-[72px] h-[54px] object-cover rounded-md flex-shrink-0 bg-[#1e1a14]"
+              style={{ opacity: url ? 1 : 0.15 }}
+              onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.15'; }}
+            />
+
+            <div className="flex-1 min-w-0">
+              <div className="text-[0.62rem] text-[#5a4a2a] mb-1">
+                Photo {i + 1} — <code className="text-[#c9a96e]">[photo-{i + 1}]</code>
+              </div>
+              <input
+                type="text"
+                className={INPUT + ' text-xs mb-1.5'}
+                value={url}
+                onChange={(e) => onChange(i, e.target.value)}
+                placeholder="URL paste করো অথবা নিচের বাটন দিয়ে upload করো"
+              />
+              <div className="flex items-center gap-2">
+                <label className="cursor-pointer">
+                  <span className="inline-block bg-[rgba(201,169,110,0.12)] border border-[rgba(201,169,110,0.3)] text-[#c9a96e] px-3 py-1 rounded-md text-[0.72rem] hover:bg-[rgba(201,169,110,0.2)] transition-colors">
+                    📁 Upload
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFile(i, file);
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+                {statuses[i] && (
+                  <span
+                    className={`text-[0.7rem] ${
+                      statuses[i].startsWith('✓') ? 'text-[#6aaa7a]' : statuses[i].startsWith('✗') ? 'text-[#e08060]' : 'text-[#8a7a5a]'
+                    }`}
+                  >
+                    {statuses[i]}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Post editor ──────────────────────────────────────────────────────────────
 
 function PostEditor({
@@ -289,6 +458,8 @@ function PostEditor({
     api('get_post', { slug: editSlug }).then(({ data }) => {
       if (data.post) {
         const p = data.post;
+        const savedPhotos: string[] = Array.isArray(p.inline_photos) ? p.inline_photos : [];
+        const photos = Array.from({ length: PHOTO_SLOTS }, (_, i) => savedPhotos[i] || '');
         setForm({
           title: p.title || '',
           slug: p.slug || '',
@@ -300,6 +471,7 @@ function PostEditor({
           hero_emoji: p.hero_emoji || '✈️',
           date_published: p.date_published || '',
           is_published: !!p.is_published,
+          inline_photos: photos,
         });
       }
       setLoading(false);
@@ -310,6 +482,14 @@ function PostEditor({
     setForm((f) => ({ ...f, [k]: v }));
   }
 
+  function setPhoto(idx: number, url: string) {
+    setForm((f) => {
+      const photos = [...f.inline_photos];
+      photos[idx] = url;
+      return { ...f, inline_photos: photos };
+    });
+  }
+
   const handleTitle = (t: string) =>
     setForm((f) => ({ ...f, title: t, ...(isNew ? { slug: toSlug(t) } : {}) }));
 
@@ -317,7 +497,11 @@ function PostEditor({
     e.preventDefault();
     setSaving(true);
     setFlash(null);
-    const { ok, data } = await api(isNew ? 'create_post' : 'update_post', form);
+    const payload = {
+      ...form,
+      inline_photos: form.inline_photos.filter((u) => u.trim()),
+    };
+    const { ok, data } = await api(isNew ? 'create_post' : 'update_post', payload);
     setSaving(false);
     if (ok) {
       if (isNew && data.slug) {
@@ -441,22 +625,28 @@ function PostEditor({
         </div>
 
         <div>
-          <label className={LABEL}>Cover Image URL</label>
-          <input
-            className={INPUT}
-            placeholder="https://…"
-            value={form.cover_image_url}
-            onChange={(e) => set('cover_image_url', e.target.value)}
-          />
-          {form.cover_image_url && (
-            /* eslint-disable-next-line @next/next/no-img-element */
+          <label className={LABEL}>Cover Image</label>
+          <div className="flex gap-3 items-start bg-white/[0.025] border border-[rgba(201,169,110,0.1)] rounded-lg p-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={form.cover_image_url}
+              src={form.cover_image_url || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}
               alt=""
-              className="mt-2 h-28 w-full max-w-sm rounded-lg object-cover opacity-80"
-              onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+              className="w-[90px] h-[67px] object-cover rounded-md flex-shrink-0 bg-[#1e1a14]"
+              style={{ opacity: form.cover_image_url ? 1 : 0.15 }}
+              onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.15'; }}
             />
-          )}
+            <div className="flex-1 min-w-0">
+              <input
+                className={INPUT + ' mb-2'}
+                placeholder="https://… (URL paste করো)"
+                value={form.cover_image_url}
+                onChange={(e) => set('cover_image_url', e.target.value)}
+              />
+              <CoverUploadButton
+                onUploaded={(url) => set('cover_image_url', url)}
+              />
+            </div>
+          </div>
         </div>
 
         <label className="flex items-center gap-2.5 cursor-pointer select-none">
@@ -473,13 +663,21 @@ function PostEditor({
         </label>
 
         <div>
+          <label className={LABEL}>Inline Photos (Article-এ ছড়িয়ে দেওয়া হবে)</label>
+          <InlinePhotoSlots
+            photos={form.inline_photos}
+            onChange={setPhoto}
+          />
+        </div>
+
+        <div>
           <label className={LABEL}>Content (HTML)</label>
           <textarea
             className={INPUT + ' font-mono text-xs leading-relaxed'}
             rows={22}
             value={form.content}
             onChange={(e) => set('content', e.target.value)}
-            placeholder="<p>Article content here…</p>"
+            placeholder="<p>Article content here…</p>&#10;&#10;Use [photo-1], [photo-2] etc. to place inline photos"
           />
         </div>
 

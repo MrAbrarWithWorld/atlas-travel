@@ -914,7 +914,7 @@ export default async function handler(req, res) {
 
     if (action === 'get_post') {
       const { data: post } = await sb.from('blog_posts')
-        .select('slug,title,description,category,read_time,is_published,date_published,cover_image_url,content')
+        .select('slug,title,description,category,read_time,is_published,date_published,cover_image_url,content,inline_photos')
         .eq('slug', body.slug)
         .single();
       return res.status(200).json({ post: post || null });
@@ -937,7 +937,7 @@ export default async function handler(req, res) {
 
     if (action === 'create_post') {
       const { title = 'untitled', description = '', category = '', read_time = '',
-        date_published, cover_image_url = '', content = '' } = body;
+        date_published, cover_image_url = '', content = '', inline_photos = [] } = body;
       const base = titleToSlug(title.trim()) || 'untitled';
       const { data: existing } = await sb.from('blog_posts').select('slug').ilike('slug', `${base}%`);
       const taken = new Set((existing || []).map(r => r.slug));
@@ -946,14 +946,15 @@ export default async function handler(req, res) {
       await sb.from('blog_posts').insert({
         slug, title: title.trim(), description, category, read_time,
         date_published: date_published || new Date().toISOString().slice(0, 10),
-        is_published: false, cover_image_url, content, inline_photos: [],
+        is_published: false, cover_image_url, content,
+        inline_photos: Array.isArray(inline_photos) ? inline_photos : [],
       });
       return res.status(200).json({ ok: true, slug });
     }
 
     if (action === 'update_post') {
       const { slug: updateSlug, title, description, category, cover_image_url,
-        read_time, date_published, is_published, content, hero_emoji } = body;
+        read_time, date_published, is_published, content, hero_emoji, inline_photos } = body;
       const { data: existing } = await sb.from('blog_posts').select('is_published').eq('slug', updateSlug).single();
       const wasPublished = existing?.is_published ?? false;
       await sb.from('blog_posts').update({
@@ -961,6 +962,7 @@ export default async function handler(req, res) {
         date_published: date_published || null,
         is_published: !!is_published,
         content: content || '',
+        inline_photos: Array.isArray(inline_photos) ? inline_photos : [],
       }).eq('slug', updateSlug);
       if (!wasPublished && is_published) {
         sendBlogPushNotifications(title, updateSlug, description).catch(() => {});
