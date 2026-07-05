@@ -769,7 +769,7 @@ const travelContext = await getTravelContext(messages);
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: Math.min(tokensLeft, 8000),
         stream: true,
         system: systemWithPrefs,
