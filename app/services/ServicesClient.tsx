@@ -564,6 +564,15 @@ export default function ServicesClient() {
         .svc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         @media (max-width: 960px) { .svc-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 580px) { .svc-grid { grid-template-columns: 1fr; } }
+        .svc-scroll-wrap { position: relative; }
+        @media (max-width: 700px) {
+          .svc-grid { display: flex !important; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 12px; padding-bottom: 4px; }
+          .svc-grid::-webkit-scrollbar { display: none; }
+          .svc-grid > div { flex-shrink: 0 !important; width: 78vw; max-width: 300px; height: auto !important; scroll-snap-align: start; }
+          .svc-scroll-wrap::before, .svc-scroll-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 44px; z-index: 2; pointer-events: none; }
+          .svc-scroll-wrap::before { left: 0; background: linear-gradient(to right, #1c1914, transparent); }
+          .svc-scroll-wrap::after { right: 0; background: linear-gradient(to left, #1c1914, transparent); }
+        }
         .prod-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         @media (max-width: 580px) { .prod-grid { grid-template-columns: 1fr; } }
         .cap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
@@ -716,12 +725,14 @@ export default function ServicesClient() {
             </div>
           </div>
 
-          <div className="svc-grid">
-            {SERVICES.map((svc, i) => (
-              <RevealSection key={svc.id} delay={i * 70} style={{ height: '100%' }}>
-                <ServiceCard svc={svc} onOpen={() => setOpenSvc(svc)} />
-              </RevealSection>
-            ))}
+          <div className="svc-scroll-wrap">
+            <div className="svc-grid">
+              {SERVICES.map((svc, i) => (
+                <RevealSection key={svc.id} delay={i * 70} style={{ height: '100%' }}>
+                  <ServiceCard svc={svc} onOpen={() => setOpenSvc(svc)} />
+                </RevealSection>
+              ))}
+            </div>
           </div>
         </section>
 
