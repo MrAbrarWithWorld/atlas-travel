@@ -2438,6 +2438,145 @@ function OnboardingModal({onDone}){
   );
 }
 
+// ===================== TOOLS PANEL =====================
+const CURRENCIES=['USD','EUR','GBP','JPY','CAD','AUD','CHF','SGD','AED','THB','INR','KRW','BRL','MXN','IDR','MYR','PHP','HKD','CNY','NZD','SEK','NOK','DKK','TRY','ZAR','EGP','NGN','PKR','BDT'];
+const CURRENCY_NAMES={USD:'US Dollar',EUR:'Euro',GBP:'British Pound',JPY:'Japanese Yen',CAD:'Canadian Dollar',AUD:'Australian Dollar',CHF:'Swiss Franc',SGD:'Singapore Dollar',AED:'UAE Dirham',THB:'Thai Baht',INR:'Indian Rupee',KRW:'Korean Won',BRL:'Brazilian Real',MXN:'Mexican Peso',IDR:'Indonesian Rupiah',MYR:'Malaysian Ringgit',PHP:'Philippine Peso',HKD:'Hong Kong Dollar',CNY:'Chinese Yuan',NZD:'NZ Dollar',SEK:'Swedish Krona',NOK:'Norwegian Krone',DKK:'Danish Krone',TRY:'Turkish Lira',ZAR:'South African Rand',EGP:'Egyptian Pound',NGN:'Nigerian Naira',PKR:'Pakistani Rupee',BDT:'Bangladeshi Taka'};
+const VISA_COUNTRIES=[['US','United States'],['CA','Canada'],['GB','United Kingdom'],['AU','Australia'],['NZ','New Zealand'],['JP','Japan'],['KR','South Korea'],['CN','China'],['IN','India'],['SG','Singapore'],['TH','Thailand'],['ID','Indonesia'],['MY','Malaysia'],['PH','Philippines'],['VN','Vietnam'],['FR','France'],['DE','Germany'],['IT','Italy'],['ES','Spain'],['PT','Portugal'],['NL','Netherlands'],['CH','Switzerland'],['AT','Austria'],['BE','Belgium'],['GR','Greece'],['TR','Turkey'],['AE','UAE'],['SA','Saudi Arabia'],['QA','Qatar'],['EG','Egypt'],['ZA','South Africa'],['KE','Kenya'],['GH','Ghana'],['MA','Morocco'],['TZ','Tanzania'],['BR','Brazil'],['MX','Mexico'],['AR','Argentina'],['CO','Colombia'],['PE','Peru'],['BD','Bangladesh'],['PK','Pakistan'],['LK','Sri Lanka'],['NP','Nepal'],['MM','Myanmar']];
+const VISA_RULES={'US->JP':['free','90 days'],'CA->JP':['free','90 days'],'GB->JP':['free','90 days'],'AU->JP':['free','90 days'],'DE->JP':['free','90 days'],'FR->JP':['free','90 days'],'IN->JP':['required','Apply in advance'],'CN->JP':['required','Apply in advance'],'BD->JP':['required','Apply in advance'],'PK->JP':['required','Apply in advance'],'US->TH':['voa','30 days on arrival'],'CA->TH':['voa','30 days on arrival'],'GB->TH':['voa','30 days on arrival'],'AU->TH':['voa','30 days on arrival'],'IN->TH':['voa','15 days on arrival'],'BD->TH':['voa','15 days on arrival'],'CN->TH':['free','30 days'],'SG->TH':['free','30 days'],'NP->TH':['voa','15 days'],'PK->TH':['voa','15 days'],'US->ID':['free','30 days'],'CA->ID':['free','30 days'],'GB->ID':['free','30 days'],'AU->ID':['free','30 days'],'IN->ID':['voa','30 days'],'CN->ID':['free','30 days'],'SG->ID':['free','30 days'],'BD->ID':['voa','30 days'],'MY->ID':['free','30 days'],'US->VN':['evisa','90 days'],'CA->VN':['evisa','90 days'],'GB->VN':['evisa','90 days'],'AU->VN':['evisa','90 days'],'IN->VN':['evisa','90 days'],'CN->VN':['required','Apply in advance'],'SG->VN':['evisa','90 days'],'BD->VN':['evisa','90 days'],'US->AE':['free','30 days'],'CA->AE':['free','30 days'],'GB->AE':['free','30 days'],'AU->AE':['free','30 days'],'IN->AE':['voa','30 days on arrival'],'BD->AE':['required','Apply in advance'],'PK->AE':['required','Apply in advance'],'CN->AE':['voa','30 days'],'US->IN':['evisa','60 days'],'CA->IN':['evisa','60 days'],'GB->IN':['evisa','60 days'],'AU->IN':['evisa','60 days'],'SG->IN':['evisa','60 days'],'JP->IN':['evisa','60 days'],'CN->IN':['required','Apply in advance'],'US->KE':['evisa','90 days'],'CA->KE':['evisa','90 days'],'GB->KE':['evisa','90 days'],'AU->KE':['evisa','90 days'],'IN->KE':['evisa','90 days'],'BD->KE':['evisa','90 days'],'US->EG':['voa','30 days'],'CA->EG':['voa','30 days'],'GB->EG':['voa','30 days'],'AU->EG':['voa','30 days'],'IN->EG':['voa','30 days'],'BD->EG':['voa','30 days'],'US->TR':['evisa','90 days'],'CA->TR':['evisa','90 days'],'GB->TR':['evisa','90 days'],'AU->TR':['evisa','90 days'],'IN->TR':['evisa','30 days'],'BD->TR':['evisa','30 days'],'US->SG':['free','90 days'],'CA->SG':['free','30 days'],'GB->SG':['free','90 days'],'AU->SG':['free','90 days'],'IN->SG':['required','Apply in advance'],'BD->SG':['required','Apply in advance'],'CN->SG':['free','30 days'],'US->FR':['free','90 days (Schengen)'],'CA->FR':['free','90 days (Schengen)'],'AU->FR':['free','90 days (Schengen)'],'GB->FR':['free','6 months'],'IN->FR':['required','Schengen visa required'],'BD->FR':['required','Schengen visa required'],'US->DE':['free','90 days (Schengen)'],'CA->DE':['free','90 days (Schengen)'],'AU->DE':['free','90 days (Schengen)'],'GB->DE':['free','6 months'],'IN->DE':['required','Schengen visa required'],'BD->DE':['required','Schengen visa required'],'US->IT':['free','90 days (Schengen)'],'CA->IT':['free','90 days (Schengen)'],'AU->IT':['free','90 days (Schengen)'],'GB->IT':['free','6 months'],'IN->IT':['required','Schengen visa required'],'BD->IT':['required','Schengen visa required'],'US->ES':['free','90 days (Schengen)'],'CA->ES':['free','90 days (Schengen)'],'AU->ES':['free','90 days (Schengen)'],'GB->ES':['free','6 months'],'IN->ES':['required','Schengen visa required'],'BD->ES':['required','Schengen visa required'],'US->GR':['free','90 days (Schengen)'],'CA->GR':['free','90 days (Schengen)'],'AU->GR':['free','90 days (Schengen)'],'GB->GR':['free','6 months'],'IN->GR':['required','Schengen visa required'],'US->GB':['free','6 months'],'CA->GB':['free','6 months'],'AU->GB':['free','6 months'],'IN->GB':['required','UK Standard Visitor Visa'],'BD->GB':['required','UK Standard Visitor Visa'],'CN->GB':['required','UK Visitor Visa'],'CA->US':['free','6 months'],'GB->US':['free','90 days (ESTA required)'],'AU->US':['free','90 days (ESTA required)'],'DE->US':['free','90 days (ESTA required)'],'FR->US':['free','90 days (ESTA required)'],'JP->US':['free','90 days (ESTA required)'],'IN->US':['required','Apply B1/B2 visa'],'BD->US':['required','Apply B1/B2 visa'],'CN->US':['required','Apply B1/B2 visa'],'PK->US':['required','Apply B1/B2 visa'],'US->KR':['free','90 days'],'CA->KR':['free','6 months'],'AU->KR':['free','90 days'],'GB->KR':['free','90 days'],'IN->KR':['required','Apply in advance'],'BD->KR':['required','Apply in advance'],'US->MY':['free','90 days'],'CA->MY':['free','90 days'],'AU->MY':['free','90 days'],'GB->MY':['free','90 days'],'IN->MY':['free','30 days'],'BD->MY':['free','30 days'],'CN->MY':['free','30 days'],'US->PH':['free','30 days'],'CA->PH':['free','30 days'],'AU->PH':['free','30 days'],'GB->PH':['free','30 days'],'IN->PH':['free','30 days'],'BD->PH':['free','30 days'],'US->QA':['free','30 days'],'CA->QA':['free','30 days'],'GB->QA':['free','30 days'],'AU->QA':['free','30 days'],'IN->QA':['voa','30 days on arrival'],'BD->QA':['voa','30 days on arrival'],'US->BR':['free','90 days'],'CA->BR':['free','180 days'],'AU->BR':['free','90 days'],'GB->BR':['free','90 days'],'IN->BR':['required','Apply in advance'],'BD->BR':['required','Apply in advance'],'US->ZA':['free','90 days'],'CA->ZA':['free','90 days'],'GB->ZA':['free','90 days'],'AU->ZA':['free','90 days'],'IN->ZA':['required','Apply in advance'],'BD->ZA':['required','Apply in advance'],'US->MA':['free','90 days'],'CA->MA':['free','90 days'],'GB->MA':['free','90 days'],'AU->MA':['free','90 days'],'IN->MA':['required','Apply in advance'],'US->MX':['free','180 days'],'CA->MX':['free','180 days'],'GB->MX':['free','180 days'],'AU->MX':['free','90 days'],'IN->MX':['required','Apply in advance'],'BD->MX':['required','Apply in advance']};
+const PACK_TEMPLATES={beach:['Swimwear (2-3 sets)','Sunscreen SPF 50+','Sunglasses','Beach towel','Flip flops / sandals','Light linen shirt','Shorts','Rashguard','After-sun lotion','Waterproof dry bag','Snorkel gear'],city:['Comfortable walking shoes','Day backpack','Portable charger (20,000mAh)','Offline maps downloaded','Anti-theft crossbody bag','Smart casual outfits','Comfortable jeans','Compact umbrella / raincoat'],cold:['Thermal base layers (top + bottom)','Heavy insulated jacket','Wool / thermal socks (3+ pairs)','Gloves & beanie','Snow-rated waterproof boots','Fleece mid-layer','Waterproof pants','Hand warmers (disposable)','Lip balm','Moisturizer & SPF'],hiking:['Hiking boots (broken in)','Moisture-wicking shirts','Quick-dry pants','Waterproof rain jacket','Trekking poles','First aid kit','Hydration pack / water bottle','High-calorie trail snacks','Headlamp + extra batteries','Gaiters','Blister prevention pads','Insect repellent'],business:['Dress shirts (3-4)','Suit / blazer','Dress pants or skirt','Tie / accessories','Dress shoes (polished)','Business cards','Laptop + charger','Briefcase or laptop bag','Wrinkle-release spray'],universal:['Passport (+ 2 photocopies)','Visa documents / approval letter','Travel insurance documents','Credit card + debit card','Local currency (some cash)','Phone + charging cable','Universal power adapter','Portable charger','Earbuds / headphones','Toiletry bag','Toothbrush & toothpaste','Deodorant','Shampoo & conditioner (travel size)','Razor & shaving cream','Hand sanitizer (100ml)','Face masks (2-3)','Prescription medications','Pain reliever / antihistamine','Reusable water bottle','Snacks for transit','Pen (for customs forms)','Neck pillow (long flights)','Eye mask & earplugs']};
+function ToolsPanel({onClose}){
+  const [tab,setTab]=useState('currency');
+  const [amount,setAmount]=useState('100');
+  const [from,setFrom]=useState('USD');
+  const [to,setTo]=useState('EUR');
+  const [converted,setConverted]=useState(null);
+  const [rateLoading,setRateLoading]=useState(false);
+  const [rateError,setRateError]=useState(null);
+  const [rateTime,setRateTime]=useState(null);
+  const [passport,setPassport]=useState('CA');
+  const [dest,setDest]=useState('JP');
+  const [packTypes,setPackTypes]=useState([]);
+  const [packDays,setPackDays]=useState('7');
+  const [packList,setPackList]=useState(null);
+
+  const fetchRate=async()=>{
+    if(rateLoading)return;
+    setRateLoading(true);setRateError(null);
+    try{
+      const res=await fetch(`https://api.exchangerate-api.com/v4/latest/${from}`);
+      if(!res.ok)throw new Error();
+      const data=await res.json();
+      const r=data.rates[to];
+      if(!r)throw new Error();
+      setConverted((parseFloat(amount)||1)*r);
+      setRateTime(new Date());
+    }catch{setRateError('Could not fetch rate. Check connection and try again.');}
+    finally{setRateLoading(false);}
+  };
+  useEffect(()=>{if(tab==='currency')fetchRate();},[from,to,tab]);
+
+  const visaResult=()=>{
+    if(passport===dest)return{label:'Home Country',note:'This is your home country — no visa needed!',color:'#6a7a5a'};
+    const key=`${passport}->${dest}`;
+    const rule=VISA_RULES[key];
+    if(!rule)return{label:'Check Embassy',note:'No data available for this pair. Please verify requirements with the official embassy, consulate, or government travel advisory.',color:'#8a7a50'};
+    const[type,note]=rule;
+    const cfg={free:{label:'✅ Visa Free',color:'#4a9a6a'},voa:{label:'🛬 Visa on Arrival',color:'#c9a96e'},evisa:{label:'💻 eVisa Available',color:'#5a8aaa'},required:{label:'📋 Visa Required',color:'#c07a5a'}};
+    return{...(cfg[type]||cfg.required),note};
+  };
+
+  const generatePack=()=>{
+    const items=new Set(PACK_TEMPLATES.universal);
+    packTypes.forEach(t=>{if(PACK_TEMPLATES[t])PACK_TEMPLATES[t].forEach(i=>items.add(i));});
+    const days=parseInt(packDays)||7;
+    if(days>7){items.add('Laundry bag');items.add('Travel detergent sheets');}
+    if(days>14){items.add('Sewing kit');items.add('Extra passport photos');}
+    setPackList([...items]);
+  };
+
+  const selSty={background:'#181410',border:'1px solid rgba(201,169,110,0.2)',borderRadius:8,padding:'0.5rem 0.6rem',color:'#e0d8c8',fontSize:'0.78rem',fontFamily:"'DM Sans',sans-serif",outline:'none',cursor:'pointer',width:'100%'};
+  const tabSty=(t)=>({flex:1,background:'none',border:'none',padding:'0.55rem 0.2rem',cursor:'pointer',fontSize:'0.58rem',letterSpacing:'0.08em',textTransform:'uppercase',fontFamily:"'DM Sans',sans-serif",color:tab===t?'#c9a96e':'#5a4a2a',borderBottom:tab===t?'2px solid #c9a96e':'2px solid transparent',transition:'all 0.15s',whiteSpace:'nowrap'});
+
+  const visa=tab==='visa'?visaResult():null;
+
+  return React.createElement('div',{style:{position:'fixed',bottom:0,left:0,right:0,zIndex:200,background:'#1c1914',borderTop:'1px solid rgba(201,169,110,0.25)',borderRadius:'14px 14px 0 0',maxHeight:'72vh',overflowY:'auto',boxShadow:'0 -8px 40px rgba(0,0,0,0.7)',animation:'slideUp 0.3s ease'}},
+    React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0.85rem 1.25rem 0.35rem',borderBottom:'1px solid rgba(201,169,110,0.08)'}},
+      React.createElement('span',{style:{fontSize:'0.6rem',color:'#c9a96e',letterSpacing:'0.15em',textTransform:'uppercase',fontFamily:"'DM Sans',sans-serif"}},'⚡ Travel Tools'),
+      React.createElement('button',{onClick:onClose,style:{background:'none',border:'none',color:'#6a5a3a',cursor:'pointer',fontSize:'1.1rem',lineHeight:1,padding:'0.1rem 0.2rem'}},'✕')
+    ),
+    React.createElement('div',{style:{display:'flex',borderBottom:'1px solid rgba(201,169,110,0.08)'}},
+      React.createElement('button',{onClick:()=>setTab('currency'),style:tabSty('currency')},'💱 Currency'),
+      React.createElement('button',{onClick:()=>setTab('visa'),style:tabSty('visa')},'🛂 Visa Check'),
+      React.createElement('button',{onClick:()=>setTab('pack'),style:tabSty('pack')},'🎒 Packing'),
+    ),
+    React.createElement('div',{style:{padding:'1rem 1.25rem 2rem'}},
+      tab==='currency'&&React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.75rem'}},
+        React.createElement('div',{style:{display:'flex',gap:'0.5rem',alignItems:'stretch'}},
+          React.createElement('input',{type:'number',value:amount,onChange:e=>setAmount(e.target.value),onBlur:fetchRate,min:0,style:{width:90,background:'#181410',border:'1px solid rgba(201,169,110,0.2)',borderRadius:8,padding:'0.5rem 0.6rem',color:'#e0d8c8',fontSize:'1rem',fontFamily:"'DM Sans',sans-serif",outline:'none',flexShrink:0}}),
+          React.createElement('select',{value:from,onChange:e=>{setFrom(e.target.value);setConverted(null);},style:{...selSty,flex:1,width:'auto'}},
+            CURRENCIES.map(c=>React.createElement('option',{key:c,value:c},`${c} — ${CURRENCY_NAMES[c]}`))
+          )
+        ),
+        React.createElement('div',{style:{textAlign:'center',color:'#4a3a22',fontSize:'0.85rem'}},'↕  converts to'),
+        React.createElement('select',{value:to,onChange:e=>{setTo(e.target.value);setConverted(null);},style:selSty},
+          CURRENCIES.map(c=>React.createElement('option',{key:c,value:c},`${c} — ${CURRENCY_NAMES[c]}`))
+        ),
+        React.createElement('button',{onClick:fetchRate,style:{background:'rgba(201,169,110,0.1)',border:'1px solid rgba(201,169,110,0.3)',borderRadius:8,padding:'0.55rem',color:'#c9a96e',cursor:'pointer',fontSize:'0.68rem',letterSpacing:'0.1em',textTransform:'uppercase',fontFamily:"'DM Sans',sans-serif"}},rateLoading?'Fetching…':'Get Exchange Rate'),
+        rateError&&React.createElement('p',{style:{color:'#c07a5a',fontSize:'0.72rem',margin:0}},rateError),
+        converted!==null&&!rateLoading&&React.createElement('div',{style:{background:'rgba(201,169,110,0.06)',border:'1px solid rgba(201,169,110,0.15)',borderRadius:10,padding:'1rem 1.25rem',textAlign:'center'}},
+          React.createElement('p',{style:{fontSize:'0.6rem',color:'#6a5a3a',letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:'0.3rem',fontFamily:"'DM Sans',sans-serif"}},`${amount} ${from} =`),
+          React.createElement('p',{style:{fontSize:'1.7rem',color:'#c9a96e',fontWeight:700,letterSpacing:'-0.01em',lineHeight:1.15,fontFamily:"'DM Sans',sans-serif"}},`${converted.toLocaleString(undefined,{maximumFractionDigits:2})} ${to}`),
+          rateTime&&React.createElement('p',{style:{fontSize:'0.55rem',color:'#3a2a14',marginTop:'0.35rem',fontFamily:"'DM Sans',sans-serif"}},`Rate as of ${rateTime.toLocaleTimeString()}`)
+        )
+      ),
+      tab==='visa'&&React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.75rem'}},
+        React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.35rem'}},
+          React.createElement('label',{style:{fontSize:'0.6rem',color:'#5a4a2a',letterSpacing:'0.1em',textTransform:'uppercase',fontFamily:"'DM Sans',sans-serif"}},'Your Passport'),
+          React.createElement('select',{value:passport,onChange:e=>setPassport(e.target.value),style:selSty},
+            VISA_COUNTRIES.map(([code,name])=>React.createElement('option',{key:code,value:code},name))
+          )
+        ),
+        React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.35rem'}},
+          React.createElement('label',{style:{fontSize:'0.6rem',color:'#5a4a2a',letterSpacing:'0.1em',textTransform:'uppercase',fontFamily:"'DM Sans',sans-serif"}},'Destination Country'),
+          React.createElement('select',{value:dest,onChange:e=>setDest(e.target.value),style:selSty},
+            VISA_COUNTRIES.map(([code,name])=>React.createElement('option',{key:code,value:code},name))
+          )
+        ),
+        visa&&React.createElement('div',{style:{background:'rgba(201,169,110,0.04)',border:`1px solid ${visa.color}55`,borderRadius:10,padding:'1rem 1.1rem',marginTop:'0.25rem'}},
+          React.createElement('p',{style:{color:visa.color,fontSize:'0.82rem',fontWeight:700,letterSpacing:'0.02em',marginBottom:'0.4rem',fontFamily:"'DM Sans',sans-serif"}},visa.label),
+          React.createElement('p',{style:{fontSize:'0.76rem',color:'#a8a090',lineHeight:1.65,fontFamily:"'DM Sans',sans-serif"}},visa.note),
+          React.createElement('p',{style:{fontSize:'0.58rem',color:'#4a3a1a',marginTop:'0.6rem',lineHeight:1.5,fontFamily:"'DM Sans',sans-serif"}},'⚠ Always verify with official government sources or consulate. Rules change frequently.')
+        )
+      ),
+      tab==='pack'&&React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.75rem'}},
+        React.createElement('div',{style:{display:'flex',gap:'0.5rem',alignItems:'center'}},
+          React.createElement('span',{style:{fontSize:'0.6rem',color:'#5a4a2a',letterSpacing:'0.1em',textTransform:'uppercase',fontFamily:"'DM Sans',sans-serif"}},'Trip length:'),
+          React.createElement('input',{type:'number',min:1,max:90,value:packDays,onChange:e=>setPackDays(e.target.value),style:{width:55,background:'#181410',border:'1px solid rgba(201,169,110,0.2)',borderRadius:8,padding:'0.4rem 0.6rem',color:'#e0d8c8',fontSize:'0.85rem',fontFamily:"'DM Sans',sans-serif",outline:'none'}}),
+          React.createElement('span',{style:{fontSize:'0.75rem',color:'#5a4a2a',fontFamily:"'DM Sans',sans-serif"}},'days')
+        ),
+        React.createElement('div',{style:{display:'flex',flexDirection:'column',gap:'0.4rem'}},
+          React.createElement('label',{style:{fontSize:'0.6rem',color:'#5a4a2a',letterSpacing:'0.1em',textTransform:'uppercase',fontFamily:"'DM Sans',sans-serif"}},'Trip type (pick all that apply)'),
+          React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:'0.4rem'}},
+            [['beach','🏖 Beach'],['city','🏙 City'],['cold','❄ Cold'],['hiking','⛰ Hiking'],['business','💼 Business']].map(([key,label])=>
+              React.createElement('button',{key,onClick:()=>setPackTypes(p=>p.includes(key)?p.filter(k=>k!==key):[...p,key]),style:{background:packTypes.includes(key)?'rgba(201,169,110,0.15)':'rgba(201,169,110,0.04)',border:`1px solid ${packTypes.includes(key)?'rgba(201,169,110,0.4)':'rgba(201,169,110,0.12)'}`,borderRadius:20,padding:'0.35rem 0.8rem',color:packTypes.includes(key)?'#c9a96e':'#7a6a45',cursor:'pointer',fontSize:'0.72rem',fontFamily:"'DM Sans',sans-serif",transition:'all 0.15s'}},label)
+            )
+          )
+        ),
+        React.createElement('button',{onClick:generatePack,style:{background:'rgba(201,169,110,0.1)',border:'1px solid rgba(201,169,110,0.3)',borderRadius:8,padding:'0.6rem',color:'#c9a96e',cursor:'pointer',fontSize:'0.68rem',letterSpacing:'0.1em',textTransform:'uppercase',fontFamily:"'DM Sans',sans-serif"}},'🎒 Generate Packing List'),
+        packList&&React.createElement('div',{style:{background:'rgba(201,169,110,0.04)',border:'1px solid rgba(201,169,110,0.1)',borderRadius:10,padding:'0.9rem 1rem'}},
+          React.createElement('p',{style:{fontSize:'0.58rem',color:'#6a5a3a',letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:'0.65rem',fontFamily:"'DM Sans',sans-serif"}},`${packList.length} items · ${packDays}-day trip`),
+          React.createElement('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0.35rem 0.75rem'}},
+            packList.map((item,i)=>React.createElement('div',{key:i,style:{display:'flex',alignItems:'flex-start',gap:'0.4rem',fontSize:'0.72rem',color:'#a8a090',lineHeight:1.4,fontFamily:"'DM Sans',sans-serif"}},
+              React.createElement('span',{style:{color:'#c9a96e',fontSize:'0.55rem',marginTop:'0.22rem',flexShrink:0}},'✦'),
+              item
+            ))
+          )
+        )
+      )
+    )
+  );
+}
+
 // ===================== APP =====================
 function App(){
   const saved=loadLocal();
@@ -2469,6 +2608,7 @@ function App(){
   const [showReviewPrompt,setShowReviewPrompt]=useState(false);
   const [showOnboarding,setShowOnboarding]=useState(()=>!localStorage.getItem('atlas_onboarded')&&!loadLocal());
   const [showScrollBtn,setShowScrollBtn]=useState(false);
+  const [showTools,setShowTools]=useState(false);
   const hist=useRef(saved?.hist||[...defaultHist]);
   const endRef=useRef(null);const chatContainerRef=useRef(null);const userScrolledUpRef=useRef(false);
   const taRef=useRef(null);
@@ -2914,6 +3054,7 @@ async function setPlanTag(id,tag){
     showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false)}),
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
     showCalendar&&React.createElement(CalendarModal,{msgs,onClose:()=>setShowCalendar(false)}),
+  showTools&&React.createElement(ToolsPanel,{onClose:()=>setShowTools(false)}),
   showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject,onSetPlanTag:setPlanTag}),
 
     // Header
@@ -3038,6 +3179,7 @@ async function setPlanTag(id,tag){
         React.createElement("input",{type:"file",accept:"image/*",ref:photoRef,style:{display:"none"},onChange:handlePhotoSelect}),
         React.createElement(PhotoButton,{photo,onClick:()=>photoRef.current?.click()}),
         hasVoice&&React.createElement(MicButton,{listening,onClick:toggleVoice}),
+        React.createElement("button",{onClick:()=>setShowTools(t=>!t),title:"Travel Tools",style:{background:showTools?"rgba(201,169,110,0.15)":"none",border:showTools?"1px solid rgba(201,169,110,0.4)":"1px solid transparent",borderRadius:8,cursor:"pointer",color:showTools?"#c9a96e":"#5a4a2a",fontSize:"1rem",padding:"0.35rem 0.4rem",flexShrink:0,transition:"all 0.15s",lineHeight:1}},"⚡"),
         React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{   const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);   if(e.key==="Enter"&&!e.shiftKey&&!holdActive&&!isMobile){e.preventDefault();send();} },onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";},placeholder:listening?"Listening...":holdActive?"Add more to your message...":photo?"Add a message or just send the photo...":"Where would you like to go?",disabled:busy||listening,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:holdActive?"#e8d890":"#e0d8c8",fontSize:"0.9rem",resize:"none",lineHeight:1.7,maxHeight:100,overflowY:"auto",paddingTop:"0.2rem"}}),
         React.createElement("div",{style:{position:"relative",flexShrink:0}},
           holdActive&&React.createElement("div",{style:{position:"absolute",inset:-4,borderRadius:"50%",border:"2px solid rgba(201,169,110,0.55)",animation:"glow 1s ease-in-out infinite",pointerEvents:"none"}}),
