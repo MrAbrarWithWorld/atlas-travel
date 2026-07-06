@@ -130,8 +130,9 @@ export default function ContactForm() {
             <input className="cf-input" style={inputBase} type="text" placeholder="Company name" value={form.company} onChange={e => set('company', e.target.value)} />
           </div>
           <div>
-            <label style={labelStyle}>Phone</label>
-            <input className="cf-input" style={inputBase} type="tel" placeholder="+1 (555) 000-0000" value={form.phone} onChange={e => set('phone', e.target.value)} />
+            <label style={labelStyle}>Phone / WhatsApp</label>
+            <input className="cf-input" style={inputBase} type="tel" placeholder="+1 416 555 1234 or +880 17 0000 0000" value={form.phone} onChange={e => set('phone', e.target.value)} />
+            <div style={{ fontSize: 11, color: '#6b6050', marginTop: 5 }}>Include country code for international numbers.</div>
           </div>
         </div>
 
