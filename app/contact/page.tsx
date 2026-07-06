@@ -5,10 +5,10 @@ import ContactForm from './ContactForm';
 
 export const metadata: Metadata = {
   title: 'Contact — Get Free Automation Audit | Atlas Technology',
-  description: 'Request a free automation audit from Atlas Technology. We review your business workflow and show you exactly how AI automation can save you time.',
+  description: 'Request a free automation audit from Atlas Technology. Based in Canada, serving clients remotely worldwide. We review your workflow and come back with a clear plan.',
   openGraph: {
     title: 'Contact — Get Free Automation Audit | Atlas Technology',
-    description: 'Request a free automation audit. We review your workflow and come back with a clear plan.',
+    description: 'Request a free automation audit. We review your workflow and come back with a clear plan — no sales pressure.',
     url: 'https://getatlas.ca/contact',
   },
 };
@@ -30,28 +30,35 @@ export default function ContactPage() {
 
           {/* Left: Info */}
           <div className="contact-sidebar">
+            {/* Canada badge */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#231f18', border: '1px solid #3a3228', borderRadius: 100, padding: '5px 14px', marginBottom: 24 }}>
+              <span style={{ fontSize: 13 }}>🍁</span>
+              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: '#a09070', textTransform: 'uppercase' }}>Based in Canada · Remote worldwide</span>
+            </div>
+
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 16 }}>
               Free Audit · No Commitment
             </div>
-            <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(32px,4vw,50px)', fontWeight: 600, color: '#e8c994', lineHeight: 1.15, marginBottom: 20, margin: '0 0 20px' }}>
+            <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(32px,4vw,50px)', fontWeight: 600, color: '#e8c994', lineHeight: 1.15, margin: '0 0 20px' }}>
               Let&apos;s automate your business
             </h1>
-            <p style={{ fontSize: 15, color: '#c5b99a', lineHeight: 1.7, marginBottom: 36, margin: '0 0 36px' }}>
-              Tell us about your business and what you&apos;d like to automate. We&apos;ll review your workflow and come back with a clear plan — no sales pressure.
+            <p style={{ fontSize: 15, color: '#c5b99a', lineHeight: 1.7, margin: '0 0 36px' }}>
+              Tell us about your business and what you&apos;d like to automate. We work with clients across North America, Europe, Asia, and beyond — fully remote, fixed price.
             </p>
 
-            {/* What to expect */}
+            {/* Trust items */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
               {[
-                { icon: '⚡', title: 'Response within 24 hours', desc: 'We review every request personally and get back to you fast.' },
-                { icon: '🔒', title: 'Your data stays private', desc: 'We never share your information with third parties.' },
-                { icon: '🤝', title: 'No commitment required', desc: 'The consultation and audit are completely free.' },
+                { icon: '⚡', title: 'Response within 24 hours', desc: 'We review every request personally and get back to you fast — regardless of your timezone.' },
+                { icon: '🔒', title: 'Your data stays private', desc: 'We never share your information with third parties. Everything stays between us.' },
+                { icon: '🤝', title: 'No commitment required', desc: 'The consultation and audit are completely free. No pressure, no invoice.' },
+                { icon: '🌍', title: 'We work worldwide', desc: 'Remote-first team. We\'ve worked with clients across 4 continents — timezone is never a problem.' },
               ].map(item => (
                 <div key={item.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                  <div style={{ fontSize: 22, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>{item.icon}</div>
+                  <div style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>{item.icon}</div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: '#ede5d5', marginBottom: 3 }}>{item.title}</div>
-                    <div style={{ fontSize: 12, color: '#a09070', lineHeight: 1.5 }}>{item.desc}</div>
+                    <div style={{ fontSize: 12, color: '#a09070', lineHeight: 1.55 }}>{item.desc}</div>
                   </div>
                 </div>
               ))}
