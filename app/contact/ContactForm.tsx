@@ -68,10 +68,10 @@ export default function ContactForm() {
       <div style={{ textAlign: 'center', padding: '40px 0' }}>
         <div style={{ fontSize: 48, marginBottom: 20 }}>✅</div>
         <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 30, color: '#e8c994', marginBottom: 12, margin: '0 0 12px' }}>
-          Message received!
+          Request received!
         </h2>
         <p style={{ color: '#a09070', fontSize: 15, lineHeight: 1.6, marginBottom: 28, margin: '0 0 28px' }}>
-          We&apos;ll review your request and get back to you within 24 hours.
+          We&apos;ll review your workflow and get back to you within 24 hours to schedule the call.
         </p>
         <Link href="/services" style={{ color: '#c9a96e', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
           ← Back to Services
@@ -107,7 +107,7 @@ export default function ContactForm() {
       `}</style>
 
       <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 26, color: '#e8c994', marginBottom: 24, margin: '0 0 24px' }}>
-        Request Free Audit
+        Book a Discovery Call
       </h2>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -174,7 +174,7 @@ export default function ContactForm() {
               fontFamily: 'DM Sans, sans-serif',
             }}
           >
-            {status === 'loading' ? 'Sending...' : 'Request Free Audit →'}
+            {status === 'loading' ? 'Sending...' : 'Book a Discovery Call →'}
           </button>
           <span style={{ fontSize: 12, color: '#a09070' }}>* Required · Response within 24h</span>
         </div>

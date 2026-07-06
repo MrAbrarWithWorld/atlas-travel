@@ -289,6 +289,21 @@ function ServiceIcon({ abbrev }: { abbrev: string }) {
   );
 }
 
+function RevealSection({ children, style: s, delay = 0 }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setTimeout(() => el.classList.add('in'), delay); obs.disconnect(); } },
+      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [delay]);
+  return <div ref={ref} className="reveal-item" style={s}>{children}</div>;
+}
+
 /* ─── DRAWER ────────────────────────────────────────────────────────────────── */
 
 type Service = typeof SERVICES[number];
@@ -424,7 +439,7 @@ function ServiceDrawer({ svc, onClose }: { svc: Service; onClose: () => void }) 
               textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
             }}
           >
-            Get Free Automation Audit →
+            Book a Discovery Call →
           </Link>
         </div>
       </div>
@@ -558,6 +573,16 @@ export default function ServicesClient() {
         @media (max-width: 580px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
         .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         @media (max-width: 760px) { .why-grid { grid-template-columns: 1fr; } }
+        .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        @media (max-width: 760px) { .tier-grid { grid-template-columns: 1fr; } }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .logo-marquee-track { display: flex; gap: 10px; animation: marquee 22s linear infinite; will-change: transform; }
+        .logo-marquee-wrap { overflow: hidden; position: relative; }
+        .logo-marquee-wrap::before, .logo-marquee-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 60px; z-index: 1; pointer-events: none; }
+        .logo-marquee-wrap::before { left: 0; background: linear-gradient(to right, #1c1914, transparent); }
+        .logo-marquee-wrap::after { right: 0; background: linear-gradient(to left, #1c1914, transparent); }
+        .reveal-item { opacity: 0; transform: translateY(24px); }
+        .reveal-item.in { opacity: 1; transform: translateY(0); transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1); }
         :focus-visible { outline: 2px solid #c9a96e; outline-offset: 3px; }
       `}</style>
 
@@ -574,56 +599,93 @@ export default function ServicesClient() {
           }} />
           <div aria-hidden="true" style={{
             position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)',
-            width: 600, height: 300, borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(201,169,110,0.08) 0%, transparent 70%)',
+            width: 640, height: 320, borderRadius: '50%',
+            background: 'radial-gradient(ellipse, rgba(201,169,110,0.09) 0%, transparent 70%)',
             pointerEvents: 'none',
           }} />
 
-          <div style={{ position: 'relative', maxWidth: 760 }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 24 }}>
+          <div style={{ position: 'relative', maxWidth: 780 }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 28 }}>
               Atlas Technology · AI Automation & Web Solutions
             </div>
 
-            <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(36px,5vw,64px)', fontWeight: 600, color: '#e8c994', lineHeight: 1.1, margin: '0 0 24px', letterSpacing: '-0.01em' }}>
-              Build smarter systems for your business with AI automation.
+            <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(38px,5.5vw,72px)', fontWeight: 600, color: '#e8c994', lineHeight: 1.02, margin: '0 0 10px', letterSpacing: '-0.01em' }}>
+              Your workflows automated.
             </h1>
+            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(26px,3.8vw,52px)', fontWeight: 400, color: '#7a6a4a', lineHeight: 1.1, margin: '0 0 32px', letterSpacing: '-0.01em', fontStyle: 'italic' }}>
+              In weeks, not months.
+            </h2>
 
-            <p style={{ fontSize: 'clamp(15px,1.8vw,18px)', color: '#c5b99a', lineHeight: 1.7, margin: '0 0 20px', maxWidth: 640 }}>
-              Atlas helps online businesses capture leads, automate workflows, build websites, and turn manual operations into reliable systems.
+            <p style={{ fontSize: 'clamp(14px,1.6vw,17px)', color: '#c5b99a', lineHeight: 1.75, margin: '0 0 40px', maxWidth: 580 }}>
+              We design and build automation systems, AI integrations, and Next.js products for businesses done doing things manually. Fixed scope. Human approval for every sensitive action. You own everything we build.
             </p>
-
-            <div style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.12em', color: '#6b6050', marginBottom: 36, lineHeight: 1.8 }}>
-              Remote-first&nbsp;&nbsp;·&nbsp;&nbsp;Clear scope&nbsp;&nbsp;·&nbsp;&nbsp;Human approval for sensitive actions&nbsp;&nbsp;·&nbsp;&nbsp;You own your system
-            </div>
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
               <Link
                 href="/contact"
                 style={{
                   background: '#c9a96e', color: '#1c1914',
-                  borderRadius: 8, padding: '13px 28px',
+                  borderRadius: 8, padding: '14px 32px',
                   fontSize: 13, fontWeight: 700, letterSpacing: '0.08em',
                   textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
                   whiteSpace: 'nowrap',
                 }}
               >
-                Get Free Automation Audit →
+                Book a Discovery Call →
               </Link>
               <button
                 onClick={scrollToServices}
                 style={{
                   background: 'transparent', border: '1px solid #3a3228',
-                  borderRadius: 8, padding: '12px 24px',
+                  borderRadius: 8, padding: '13px 24px',
                   fontSize: 13, fontWeight: 600, color: '#a09070',
                   cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
                   letterSpacing: '0.04em', whiteSpace: 'nowrap',
                 }}
               >
-                Explore Services ↓
+                See what we build ↓
               </button>
             </div>
           </div>
         </section>
+
+        {/* ── TRUST BAR ────────────────────────────────────────────────────── */}
+        <RevealSection>
+          <section style={{ paddingBottom: 52 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 40px', alignItems: 'center', padding: '22px 0', borderTop: '1px solid #2e2820', borderBottom: '1px solid #2e2820' }}>
+              {([
+                ['12+', 'systems delivered'],
+                ['~3 wk', 'avg. delivery'],
+                ['4 continents', 'served remotely'],
+                ['100%', 'you own it forever'],
+              ] as [string, string][]).map(([num, label]) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                  <span style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 28, fontWeight: 600, color: '#c9a96e', lineHeight: 1 }}>{num}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', color: '#6b6050', textTransform: 'uppercase' }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        </RevealSection>
+
+        {/* ── TOOL LOGOS ───────────────────────────────────────────────────── */}
+        <RevealSection>
+          <section style={{ paddingBottom: 68 }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 16 }}>
+              Built with
+            </div>
+            <div className="logo-marquee-wrap">
+              <div className="logo-marquee-track">
+                {['n8n', 'Claude', 'GPT-4o', 'Next.js', 'Supabase', 'Vercel', 'Stripe', 'Slack', 'WhatsApp', 'HubSpot', 'Resend', 'PostgreSQL',
+                  'n8n', 'Claude', 'GPT-4o', 'Next.js', 'Supabase', 'Vercel', 'Stripe', 'Slack', 'WhatsApp', 'HubSpot', 'Resend', 'PostgreSQL'].map((tool, i) => (
+                  <div key={i} style={{ flexShrink: 0, background: '#1e1a14', border: '1px solid #2e2820', borderRadius: 6, padding: '7px 16px', fontFamily: 'monospace', fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', color: '#a09070', whiteSpace: 'nowrap' }}>
+                    {tool}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </RevealSection>
 
         {/* ── AUTOMATION FLOW ───────────────────────────────────────────────── */}
         <section style={{ paddingBottom: 80 }}>
@@ -655,8 +717,10 @@ export default function ServicesClient() {
           </div>
 
           <div className="svc-grid">
-            {SERVICES.map(svc => (
-              <ServiceCard key={svc.id} svc={svc} onOpen={() => setOpenSvc(svc)} />
+            {SERVICES.map((svc, i) => (
+              <RevealSection key={svc.id} delay={i * 70} style={{ height: '100%' }}>
+                <ServiceCard svc={svc} onOpen={() => setOpenSvc(svc)} />
+              </RevealSection>
             ))}
           </div>
         </section>
@@ -715,6 +779,86 @@ export default function ServicesClient() {
           </div>
         </section>
 
+        {/* ── ENGAGEMENT TIERS ─────────────────────────────────────────────── */}
+        <RevealSection>
+          <section style={{ paddingBottom: 80 }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
+              Engagement
+            </div>
+            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: '0 0 24px', lineHeight: 1.2 }}>
+              How we work together
+            </h2>
+            <div className="tier-grid">
+              {([
+                {
+                  label: 'Project',
+                  title: 'One-Time Build',
+                  desc: 'Best for teams with a clear problem and a defined scope. We agree on exactly what gets built, build it, and hand it off. Fixed price, fixed timeline.',
+                  items: ['Scoped before we start', 'Fixed price · no surprises', 'Full handoff with docs', 'You own the system forever'],
+                  highlight: false,
+                },
+                {
+                  label: 'Retainer',
+                  title: 'Ongoing Partnership',
+                  desc: 'Best for operators who want systems that grow with their business. Monthly engagement with a defined focus area and continuous iteration.',
+                  items: ['Monthly automation focus', 'Evolving system design', 'Priority turnaround', 'Slack-based async comms'],
+                  highlight: true,
+                },
+                {
+                  label: 'Support',
+                  title: 'System Care',
+                  desc: 'Best for businesses with an existing Atlas-built or custom automation stack that needs monitoring, fixes, or minor changes on an ongoing basis.',
+                  items: ['Bug fixes and edge cases', 'Minor workflow changes', 'Health monitoring', 'Response within 48h'],
+                  highlight: false,
+                },
+              ] as { label: string; title: string; desc: string; items: string[]; highlight: boolean }[]).map(tier => (
+                <div key={tier.label} style={{
+                  background: tier.highlight ? '#1e1b12' : '#1e1a14',
+                  border: `1px solid ${tier.highlight ? 'rgba(201,169,110,0.35)' : '#2e2820'}`,
+                  borderRadius: 10, padding: '28px 24px',
+                  display: 'flex', flexDirection: 'column', gap: 16,
+                  boxShadow: tier.highlight ? '0 0 32px rgba(201,169,110,0.06)' : 'none',
+                }}>
+                  <div>
+                    <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', color: tier.highlight ? '#c9a96e' : '#6b6050', textTransform: 'uppercase', marginBottom: 10 }}>
+                      {tier.label}
+                    </div>
+                    <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 600, color: '#e8c994', lineHeight: 1.2, marginBottom: 12 }}>
+                      {tier.title}
+                    </div>
+                    <p style={{ fontSize: 13, color: '#a09070', lineHeight: 1.65, margin: 0 }}>
+                      {tier.desc}
+                    </p>
+                  </div>
+                  <div style={{ borderTop: '1px solid #2e2820', paddingTop: 16, flex: 1 }}>
+                    {tier.items.map(item => (
+                      <div key={item} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
+                        <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#c9a96e', lineHeight: '20px', flexShrink: 0 }}>▸</span>
+                        <span style={{ fontSize: 12, color: '#c5b99a', lineHeight: 1.55 }}>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Link
+                    href="/contact"
+                    style={{
+                      display: 'block',
+                      background: tier.highlight ? '#c9a96e' : 'transparent',
+                      color: tier.highlight ? '#1c1914' : '#a09070',
+                      border: tier.highlight ? 'none' : '1px solid #3a3228',
+                      borderRadius: 8, padding: '11px 20px',
+                      fontSize: 12, fontWeight: 700, letterSpacing: '0.06em',
+                      textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
+                      textAlign: 'center',
+                    }}
+                  >
+                    Book a Discovery Call →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </section>
+        </RevealSection>
+
         {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
         <section style={{ paddingBottom: 80 }}>
           <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
@@ -763,6 +907,37 @@ export default function ServicesClient() {
           </div>
         </section>
 
+        {/* ── FAQ ─────────────────────────────────────────────────────────── */}
+        <RevealSection>
+          <section style={{ paddingBottom: 80 }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
+              FAQ
+            </div>
+            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: '0 0 28px', lineHeight: 1.2 }}>
+              Common questions
+            </h2>
+            <div style={{ maxWidth: 760, borderBottom: '1px solid #2e2820' }}>
+              {([
+                { q: 'How long does a project actually take?', a: 'Most automation projects ship in 2–4 weeks from scope sign-off. Websites take 3–6 weeks depending on complexity. Everything starts with a written scope document so you know the timeline before any work begins.' },
+                { q: "What if I don't know exactly what I need?", a: "That's the point of the discovery call. We review your current workflow, find the highest-value automation opportunities, and write up a clear plan — no commitment needed. Most clients come in saying the same thing." },
+                { q: 'Do I need technical knowledge to work with you?', a: 'Not at all. You describe the problem in plain language — what takes too long, what breaks, what you do manually every week — and we translate that into a system.' },
+                { q: 'How much does it cost?', a: 'Scope determines price, so we give you an exact number before work begins. Simple automation pipelines start small. Full web products or complex multi-system builds are scoped individually. The discovery call is always free.' },
+                { q: 'What happens after the project is delivered?', a: 'You get full documentation, credentials, and a walkthrough session. You own the system — the code, the workflows, the infrastructure. Nothing is locked to us.' },
+                { q: 'Do you work with businesses outside Canada?', a: 'Yes. Remote-first by design. Current and past clients span North America, Europe, South Asia, and Southeast Asia. Timezone has never been a blocker.' },
+              ] as { q: string; a: string }[]).map((item, i) => (
+                <div key={i} style={{ padding: '22px 0', borderTop: '1px solid #2e2820' }}>
+                  <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 19, fontWeight: 600, color: '#e8c994', marginBottom: 10, lineHeight: 1.25 }}>
+                    {item.q}
+                  </div>
+                  <p style={{ fontSize: 13, color: '#a09070', lineHeight: 1.7, margin: 0 }}>
+                    {item.a}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </RevealSection>
+
         {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
         <section style={{ paddingBottom: 100 }}>
           <div style={{ position: 'relative', background: '#1a1710', border: '1px solid #3a3228', borderRadius: 16, padding: 'clamp(40px,5vw,64px)', textAlign: 'center', overflow: 'hidden' }}>
@@ -772,10 +947,10 @@ export default function ServicesClient() {
                 Free Consultation · No Commitment
               </div>
               <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(28px,4vw,48px)', fontWeight: 600, color: '#e8c994', margin: '0 0 20px', lineHeight: 1.15 }}>
-                Ready to turn manual work into an automated system?
+                Ready to stop doing it manually?
               </h2>
               <p style={{ fontSize: 15, color: '#a09070', lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 520 }}>
-                Tell us what you&apos;re doing manually. We&apos;ll review your workflow and come back with a clear plan — no sales pressure, no commitment.
+                Book a free 30-minute discovery call. We&apos;ll review your workflow and come back with a clear plan — no sales pitch, no commitment.
               </p>
               <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link
@@ -787,7 +962,7 @@ export default function ServicesClient() {
                     textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
                   }}
                 >
-                  Get Free Automation Audit →
+                  Book a Discovery Call →
                 </Link>
                 <button
                   onClick={scrollToServices}
