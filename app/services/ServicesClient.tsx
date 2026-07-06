@@ -1,669 +1,828 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import SiteNav from '../components/SiteNav';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+/* ─── DATA ─────────────────────────────────────────────────────────────────── */
 
-type Service = {
-  id: string;
-  category: string;
-  title: string;
-  tagline: string;
-  desc: string;
-  whoFor: string;
-  problems: string[];
-  whatWeBuild: string[];
-  deliverables: string[];
-  scope: string;
-};
-
-type Product = {
-  label: string;
-  title: string;
-  desc: string;
-  cta: string;
-  href: string;
-  external?: boolean;
-};
-
-// ─── Data ────────────────────────────────────────────────────────────────────
-
-const SERVICES: Service[] = [
+const SERVICES = [
   {
-    id: 'ai-workflow',
+    id: 'workflow-automation',
+    abbrev: 'AI',
     category: 'Automation',
     title: 'AI Workflow Automation',
-    tagline: 'Eliminate manual work with intelligent automation',
-    desc: 'Automate repetitive business processes using n8n, AI agents, and smart triggers — so your team focuses only on work that matters.',
-    whoFor: 'Business owners, operations teams, and solo founders spending hours on repetitive tasks: data entry, email replies, CRM updates, or report generation.',
+    tagline: 'Trigger-based pipelines with human approval gates',
+    scope: '2–4 weeks',
+    overview: 'Replace manual back-and-forth with automated pipelines — lead intake → CRM log → AI-drafted reply → human approval → delivery. Built on n8n with configurable approval checkpoints so nothing sensitive goes out unsupervised.',
+    bestFor: 'Service businesses, agencies, and operators managing high-volume inbound — especially those losing leads to inbox delays or timezone gaps.',
     problems: [
-      'Hours lost copying data between tools every week',
-      'Leads going cold because follow-up was manually forgotten',
-      'Reports that take half a day to compile from scratch',
-      'Human error accumulating in repeated processes',
+      'Leads fall through the cracks during off-hours',
+      'Hours spent drafting the same follow-up emails',
+      'No consistent handoff process between intake and response',
+      'Manual steps that break when someone is unavailable',
     ],
     whatWeBuild: [
-      'n8n automation workflows connecting your existing tools',
-      'AI agent pipelines for complex multi-step decision tasks',
-      'Trigger-based automations (form submit, new email, new row)',
-      'Slack and email notifications for critical business events',
-      'Scheduled automations and batch processing jobs',
+      'n8n trigger workflows (form, webhook, or schedule)',
+      'AI drafting nodes using Claude or GPT-4o',
+      'Human approval gate via Slack message or email',
+      'CRM write step (HubSpot, Notion, or Supabase)',
+      'Notification delivery to Slack, email, or WhatsApp',
     ],
     deliverables: [
-      'Deployed n8n workflow (self-hosted or n8n cloud)',
-      'Written documentation and video walkthrough',
-      'Full ownership — all credentials and source delivered to you',
+      'Live n8n workflow (exported + documented)',
+      'Approval interface configured in your Slack or inbox',
+      'Test suite with sample data walkthroughs',
+      'Written runbook for making changes yourself',
     ],
-    scope: 'Typically 2–4 weeks per workflow. Scope and milestones agreed before work begins.',
   },
   {
-    id: 'crm-lead',
+    id: 'crm-lead-capture',
+    abbrev: 'CRM',
     category: 'CRM',
-    title: 'CRM & Lead Capture Systems',
-    tagline: 'Never miss a lead. Follow up automatically.',
-    desc: 'Custom CRM pipelines built on Supabase and n8n. Capture leads, qualify them automatically, and get approval-gated email drafts ready to send.',
-    whoFor: 'Agencies, consultants, freelancers, and sales teams receiving leads from websites or ads who need a structured pipeline without paying for bloated CRM software.',
+    title: 'CRM & Lead Capture',
+    tagline: 'Full inbound pipeline from form to CRM to notification',
+    scope: '1–2 weeks',
+    overview: 'A complete inbound system: form submission or API call → webhook route → CRM record creation → team notification → AI-drafted first reply ready for approval. No more manually copying leads from email into a spreadsheet.',
+    bestFor: 'Businesses relying on inbound leads with no dedicated ops or sales team — consultants, agencies, B2B service providers.',
     problems: [
-      'Leads fall through the cracks after initial contact',
-      'No clear view of where each lead sits in the pipeline',
-      'Manual CRM data entry eating up sales time daily',
-      'Follow-up emails written from scratch every single time',
+      'No visibility into lead volume or source',
+      'Leads arrive via email and get buried',
+      'No system for routing or follow-up assignment',
+      'CRM feels too complex to actually maintain',
     ],
     whatWeBuild: [
-      'Lead capture form integrated with Supabase database',
-      'Automatic lead scoring, tagging, and qualification',
-      'n8n pipeline: capture → notify → draft follow-up → await approval',
-      'Admin dashboard to view, filter, and manage leads',
-      'Duplicate detection and deduplication logic built in',
+      'Web form or API intake endpoint',
+      'n8n webhook routing and deduplication',
+      'HubSpot, Notion, or custom CRM integration',
+      'Slack and email notification on new lead',
+      'AI-drafted reply queued for human approval',
     ],
     deliverables: [
-      'Working lead capture form embedded on your website',
-      'Supabase database with structured lead records',
-      'n8n workflow with approval-gated email drafts',
-      'Admin view for pipeline management',
+      'Live intake form (embed-ready or standalone)',
+      'Working CRM connection with test records',
+      'Notification setup in your preferred channel',
+      'Lead demo walkthrough showing full journey',
     ],
-    scope: 'Typically 2–4 weeks. Milestones defined upfront. Multi-stage pipelines scoped separately.',
   },
   {
-    id: 'website-dev',
+    id: 'website-development',
+    abbrev: 'WEB',
     category: 'Web',
-    title: 'Website & Landing Page Development',
-    tagline: 'Fast, modern websites that convert visitors into clients.',
-    desc: 'Professional Next.js websites and landing pages hosted on Vercel. SEO-optimized, mobile-first, and built to convert.',
-    whoFor: 'Businesses that need a professional online presence, startups launching a product, or companies with an outdated website that is not converting.',
+    title: 'Website Development',
+    tagline: 'Next.js sites with automation hooks built in from the start',
+    scope: '3–6 weeks',
+    overview: 'Production-grade Next.js websites with fast load times, clean design, and automation infrastructure built in — not bolted on later. Lead capture routes to your CRM on day one. Content is yours to manage without a developer.',
+    bestFor: 'Startups, service businesses, and product studios outgrowing Wix or WordPress and needing a site that can scale with them.',
     problems: [
-      'Slow website losing visitors before they read a single word',
-      'No clear value proposition or call-to-action above the fold',
-      'Looks unprofessional to international or enterprise clients',
-      'No integration between the website and any CRM or email tool',
+      'Slow or outdated site hurting credibility',
+      'No content control without a developer',
+      "Lead capture goes to email — no system behind it",
+      "Can't add features without starting over",
     ],
     whatWeBuild: [
-      'Company sites, product sites, and portfolio sites',
-      'High-converting landing pages for ad campaigns or launches',
-      'Blog systems with CMS (Supabase or headless CMS)',
-      'Contact forms connected to CRM and email automation',
-      'Multi-language support and internationalization',
+      'Next.js App Router site (TypeScript, Tailwind)',
+      'Supabase or headless CMS for content management',
+      'Lead capture connected to CRM via API route',
+      'SEO structure, sitemap, metadata',
+      'Vercel deployment with CI/CD pipeline',
     ],
     deliverables: [
-      'Production-ready Next.js site deployed on Vercel',
-      'Connected domain, SSL, and performance optimization',
-      'Full source code with complete access',
-      'SEO setup — metadata, sitemap, structured data, robots',
+      'Deployed site on your domain',
+      'Admin content panel (no-code edits)',
+      'CI/CD pipeline for future updates',
+      'Handoff guide for making changes yourself',
     ],
-    scope: 'Landing pages: 1–2 weeks. Full company sites: 3–5 weeks. Plan agreed before start.',
   },
   {
-    id: 'email-report',
+    id: 'email-report-automation',
+    abbrev: 'EML',
     category: 'Email',
-    title: 'Email & Report Automation',
-    tagline: 'Reports and emails that send themselves.',
-    desc: 'Automated email sequences, scheduled business reports, and event-triggered notifications — sent from your domain, on your schedule, always under your control.',
-    whoFor: 'Teams that compile recurring reports manually, managers who send status updates by hand, or businesses that need automated sequences for onboarding or retention.',
+    title: 'AI Email & Report Automation',
+    tagline: 'Scheduled AI-generated summaries with human review checkpoint',
+    scope: '1–3 weeks',
+    overview: 'Replace manually-written weekly reports and repetitive email drafting with scheduled AI pipelines. Atlas builds a system that compiles the relevant data, runs it through an AI summarization step, and delivers it for your review before sending.',
+    bestFor: 'Operators who write the same weekly digest, status update, or follow-up email on repeat — and want to reclaim those hours without losing control of what goes out.',
     problems: [
-      'Weekly reports that take hours to pull together manually',
-      'Onboarding emails written and sent one by one',
-      'No follow-up system for inactive users or missed payments',
-      'Inconsistent outreach with no tracking or visibility',
+      'Hours spent writing reports no one reads in full',
+      'Inconsistent follow-up cadence losing deals',
+      'Context lost between messages and meetings',
+      'Manually compiling data from multiple sources',
     ],
     whatWeBuild: [
-      'Scheduled digest emails (daily, weekly, or monthly)',
-      'Event-triggered sequences (signup, purchase, inactivity)',
-      'Automated invoice and payment reminder emails',
-      'Business KPI reports delivered to email or Slack',
-      'Custom branded email templates matching your identity',
+      'Scheduled n8n workflow (daily, weekly, or triggered)',
+      'Data aggregation from your sources (CRM, sheets, API)',
+      'AI summarization node with structured output',
+      'Human review + edit interface before delivery',
+      'Email delivery via SMTP, Gmail API, or Resend',
     ],
     deliverables: [
-      'Configured n8n or email automation workflow',
-      'Branded email templates tested across clients',
-      'Sending domain setup — SPF, DKIM, and DMARC',
-      'Test results, monitoring setup, and error alerting',
+      'Live scheduled workflow with test run',
+      'Review interface (Slack thread or email draft)',
+      'Template for editing output format',
+      'Schedule and delivery configuration',
     ],
-    scope: 'Single sequences: 1–2 weeks. Full email systems with branching: 3–4 weeks.',
   },
   {
-    id: 'biz-process',
+    id: 'process-automation',
+    abbrev: 'OPS',
     category: 'Operations',
     title: 'Business Process Automation',
-    tagline: 'Connect your tools. Cut the manual handoffs.',
-    desc: 'Map and automate your core operational workflows — invoicing, onboarding, approvals, data sync. Reduce errors and free your team from repetitive coordination.',
-    whoFor: 'Operations managers, founders scaling past 5 employees, and teams where manual coordination is a real bottleneck slowing down growth.',
+    tagline: 'Map, eliminate, and systematize your most painful manual work',
+    scope: '2–4 weeks',
+    overview: 'Atlas maps your most time-consuming manual process — approvals, scheduling, data sync, notification chains — and builds an automated system to replace it. Starts with a discovery session to understand the actual pain, not the assumed solution.',
+    bestFor: 'Operations leads, office managers, and solo founders spending more than 3 hours per week on the same repetitive admin tasks.',
     problems: [
-      'Data living in too many tools that do not communicate',
-      'Approval chains that depend on someone remembering to check',
-      'Employee or client onboarding done from memory every time',
-      'Invoices and payments tracked in a shared spreadsheet',
+      'Spreadsheets passed between people as a database',
+      'Approvals that require hunting someone down',
+      'Data in one tool that needs to be in another',
+      'Processes that break whenever someone is out',
     ],
     whatWeBuild: [
-      'Cross-app integrations: Stripe, Notion, Sheets, Slack, Gmail, and more',
-      'Multi-step approval workflows with full audit trails',
-      'Employee and client onboarding automations',
-      'Invoice generation, payment sync, and accounting integration',
-      'Bi-directional data sync between databases and SaaS tools',
+      'Trigger-to-action automation chains (n8n)',
+      'Form or API input layer for structured data entry',
+      'Conditional routing and error handling',
+      'Human-in-loop approval gates for sensitive steps',
+      'Cross-tool data sync (CRM, sheets, Slack, email)',
     ],
     deliverables: [
-      'Fully deployed automation for each agreed workflow',
-      'Process documentation and a walkthrough recording',
-      'Error handling, failure alerts, and retry logic',
+      'Process map document (current vs. automated)',
+      'Live workflow with test results',
+      'Runbook for operating and modifying the system',
+      'Handoff session walking through every step',
     ],
-    scope: 'Typically 2–4 weeks per major workflow. Scope and milestones defined before start.',
   },
   {
-    id: 'travel-tech',
+    id: 'ai-product-integration',
+    abbrev: 'SDK',
     category: 'AI Product',
-    title: 'Travel-Tech & AI Product Development',
-    tagline: 'We build AI products for the travel industry.',
-    desc: 'End-to-end AI product development for travel and hospitality — from itinerary engines and booking assistants to full-stack SaaS platforms deployed at scale.',
-    whoFor: 'Tour operators, travel agencies, hospitality companies, and travel startups that need to build a digital product without maintaining a full in-house engineering team.',
+    title: 'AI Product & API Integration',
+    tagline: 'Add AI capabilities to existing products without a full ML stack',
+    scope: '2–5 weeks',
+    overview: 'Add chat, classification, summarization, or generation to an existing product or internal tool via Claude or GPT-4o API. Atlas handles prompt architecture, output validation, streaming, fallback logic, and integration into your existing codebase.',
+    bestFor: 'Technical founders or product teams with working apps that need intelligent features — without hiring an ML engineer or starting from scratch.',
     problems: [
-      'Generic travel tools do not fit your specific workflows',
-      'Building in-house requires hiring and managing a full dev team',
-      'AI integrations are complex to build, test, and maintain',
-      'No time to ship a product while also running the business',
+      'AI feels too complex to integrate correctly',
+      'Unclear which model or API fits the use case',
+      'No structure for prompts, context, or output validation',
+      "Existing codebase doesn't know where AI fits in",
     ],
     whatWeBuild: [
-      'AI-powered itinerary generators with real-time destination data',
-      'Booking assistants and intelligent recommendation engines',
-      'Travel chatbots for customer support and trip planning',
-      'Visa and travel requirement databases with AI-powered lookup',
-      'Full SaaS platforms with auth, billing, admin, and mobile apps',
+      'API integration layer (server-side, no keys in browser)',
+      'Prompt template system with structured output schemas',
+      'Streaming response support if needed',
+      'Fallback and error handling logic',
+      'Context management for multi-turn conversations',
     ],
     deliverables: [
-      'MVP or full product deployed to production',
-      'Web app (Next.js) and/or mobile app (React Native / Expo)',
-      'Full source code, database, and infrastructure ownership',
-      'Post-launch support, iteration, and performance monitoring',
+      'Working integration in your codebase',
+      'Documented prompt system with examples',
+      'Test harness for regression testing',
+      'Usage guide for extending the integration',
     ],
-    scope: 'MVP: 4–8 weeks. Full product: 8–16 weeks. Ongoing retainers available.',
   },
 ];
 
-const PRODUCTS: Product[] = [
+const PRODUCTS = [
   {
-    label: 'Travel App',
+    id: 'atlas-travel',
+    label: 'Live Product',
     title: 'Atlas AI Travel Planner',
-    desc: 'AI-powered travel planning web and mobile app. Instant itineraries, visa info, hotel suggestions, interactive maps, and trip planning for any destination worldwide.',
+    desc: 'AI-powered itinerary builder for travellers. Plan entire trips in minutes with day-by-day schedules, AI chat, and shareable plans.',
     cta: 'Try Atlas',
     href: '/',
+    external: false,
   },
   {
-    label: 'Content',
-    title: 'Atlas Blog',
-    desc: 'Travel guides, destination inspiration, AI travel updates, and product notes from the Atlas team.',
+    id: 'atlas-blog',
+    label: 'Content Platform',
+    title: 'Atlas Travel Blog',
+    desc: 'Editorial and community platform for travel content. Destination guides, community posts, and SEO-optimised articles.',
     cta: 'Read Blog',
     href: '/blog',
+    external: false,
   },
   {
-    label: 'Media',
-    title: 'Atlas News',
-    desc: 'AI and travel industry updates, ecosystem news, and content from the Atlas network.',
+    id: 'atlas-news',
+    label: 'Media Product',
+    title: 'Atlas Travel News',
+    desc: 'Curated travel news aggregator. Automated summaries and updates from sources across the industry.',
     cta: 'Visit News',
     href: 'https://news.getatlas.ca',
     external: true,
   },
   {
-    label: 'Studio',
+    id: 'atlas-studio',
+    label: 'For Clients',
     title: 'Atlas Product Studio',
-    desc: 'Future AI tools, travel-tech experiments, and automation products built and incubated under the Atlas brand.',
+    desc: 'Custom product development and automation for external clients. Request a free consultation to discuss your system.',
     cta: 'Request a project',
     href: '/contact',
+    external: false,
   },
 ];
 
 const CAPABILITIES = [
-  'Lead capture websites and landing pages',
-  'CRM dashboards and pipeline systems',
-  'AI email drafting and approval workflows',
-  'Multi-step approval and review systems',
-  'Automated business reporting and digests',
-  'Booking, intake, and onboarding forms',
-  'Internal admin tools and dashboards',
-  'AI-powered product MVPs',
+  'n8n automation workflows (self-hosted or cloud)',
+  'Claude / GPT-4o API integration',
+  'Next.js full-stack web applications',
+  'Supabase database and authentication',
+  'Lead capture → CRM pipeline architecture',
+  'Slack / WhatsApp / email notifications',
+  'Human-in-loop approval systems',
+  'Vercel deployment and CI/CD pipelines',
+];
+
+const FLOW_NODES = [
+  { label: 'Website\n/ Form', sub: 'intake' },
+  { label: 'Lead\nCapture', sub: 'webhook' },
+  { label: 'CRM\nLog', sub: 'storage' },
+  { label: 'AI\nDraft', sub: 'claude / gpt' },
+  { label: 'Human\nApproval', sub: 'slack / email' },
+  { label: 'Notification\nSent', sub: 'delivery' },
+  { label: 'Follow-up\nQueued', sub: 'sequence' },
 ];
 
 const STEPS = [
-  { num: '01', title: 'Free Audit', desc: 'We map your current workflow and identify exactly where automation saves the most time.' },
-  { num: '02', title: 'Scoped Plan', desc: 'You receive a clear project plan — milestones, deliverables, and timeline. No surprises.' },
-  { num: '03', title: 'We Build It', desc: 'We build, test, and deploy. You get full access and ownership of everything we create.' },
-  { num: '04', title: 'Automate', desc: 'Systems go live. Your business starts running on automation from day one.' },
-  { num: '05', title: 'Improve', desc: 'We monitor, refine, and expand. Automation compounds — the value keeps growing.' },
+  { num: '01', title: 'Free audit call', desc: 'We review your current workflow, identify the highest-value automation opportunities, and come back with a written scope.' },
+  { num: '02', title: 'Scope & timeline', desc: 'We agree on exactly what gets built, what it connects to, and when it ships — before any work begins.' },
+  { num: '03', title: 'System build', desc: 'Atlas builds and tests your system. You receive updates as each component goes live.' },
+  { num: '04', title: 'Human approval gates', desc: 'Any sensitive action — outbound emails, CRM writes, notifications — requires your explicit approval before executing.' },
+  { num: '05', title: 'Handoff + you own it', desc: 'Full documentation, credentials, and a walkthrough session. You own everything we build — no lock-in.' },
 ];
 
-// ─── Shared styles ────────────────────────────────────────────────────────────
+/* ─── SMALL COMPONENTS ──────────────────────────────────────────────────────── */
 
-const GLOBAL_STYLES = `
-  .svc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; }
-  @media (max-width: 860px) { .svc-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 520px) { .svc-grid { grid-template-columns: 1fr; } }
-
-  .prod-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; }
-  @media (max-width: 620px) { .prod-grid { grid-template-columns: 1fr; } }
-
-  .cap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
-  @media (max-width: 520px) { .cap-grid { grid-template-columns: 1fr; } }
-
-  .steps-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; }
-  @media (max-width: 860px) { .steps-grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 480px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
-
-  .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; }
-  @media (max-width: 640px) { .why-grid { grid-template-columns: 1fr; } }
-
-  .hero-grid-bg {
-    background-image:
-      linear-gradient(rgba(201,169,110,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(201,169,110,0.04) 1px, transparent 1px);
-    background-size: 52px 52px;
-  }
-  .svc-card-btn { transition: background 0.18s; }
-  .svc-card-btn:hover { background: rgba(201,169,110,0.06) !important; }
-  .svc-card-btn:hover .svc-arrow { color: #c9a96e !important; }
-  .svc-arrow { transition: color 0.18s; }
-
-  .prod-card { transition: background 0.18s; }
-  .prod-card:hover { background: rgba(201,169,110,0.04) !important; }
-
-  .atlas-overlay {
-    position: fixed; inset: 0; z-index: 1000;
-    background: rgba(8,6,4,0.85);
-    backdrop-filter: blur(8px);
-    animation: atlasOverlayIn 0.2s ease forwards;
-  }
-  .atlas-drawer {
-    position: fixed; top: 0; right: 0; bottom: 0; z-index: 1001;
-    width: min(520px, 100vw);
-    background: #1a1714;
-    border-left: 1px solid #3a3228;
-    overflow-y: auto;
-    display: flex; flex-direction: column;
-    animation: atlasDrawerIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  }
-  @media (max-width: 767px) {
-    .atlas-drawer {
-      top: auto; left: 0; right: 0; bottom: 0; width: 100%;
-      max-height: 90vh;
-      border-left: none; border-top: 1px solid #3a3228;
-      border-radius: 18px 18px 0 0;
-      animation: atlasSheetIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-  }
-  @keyframes atlasOverlayIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes atlasDrawerIn  { from { transform: translateX(100%); } to { transform: translateX(0); } }
-  @keyframes atlasSheetIn   { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  @media (prefers-reduced-motion: reduce) {
-    .atlas-overlay, .atlas-drawer { animation: none; }
-  }
-  .drawer-close:hover { border-color: #c9a96e !important; color: #c9a96e !important; }
-  .drawer-cta:hover { background: #b8943d !important; }
-  .sec-divider { height: 1px; background: linear-gradient(90deg, transparent, #3a3228 20%, #3a3228 80%, transparent); }
-`;
-
-// ─── Service Drawer ───────────────────────────────────────────────────────────
-
-function Bullet({ text, color = '#c9a96e' }: { text: string; color?: string }) {
+function Bullet({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
-      <span style={{ fontSize: 10, color, marginTop: 5, flexShrink: 0, fontFamily: 'monospace' }}>▸</span>
-      <span style={{ fontSize: 13, color: '#c5b99a', lineHeight: 1.65 }}>{text}</span>
+    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
+      <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#c9a96e', lineHeight: '22px', flexShrink: 0 }}>▸</span>
+      <span style={{ fontSize: 13, color: '#c5b99a', lineHeight: 1.6 }}>{children}</span>
     </div>
   );
 }
 
 function DrawerSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ padding: '20px 28px', borderBottom: '1px solid #2a2520' }}>
-      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.22em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 14, fontFamily: 'monospace' }}>{label}</div>
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ fontSize: 9, fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.2em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid #2e2820' }}>
+        {label}
+      </div>
       {children}
     </div>
   );
 }
 
-function ServiceDrawer({ service, onClose }: { service: Service; onClose: () => void }) {
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handleKey);
-    return () => {
-      document.body.style.overflow = prev;
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [onClose]);
-
+function ServiceIcon({ abbrev }: { abbrev: string }) {
   return (
+    <div style={{
+      width: 36, height: 36, borderRadius: 6,
+      border: '1px solid rgba(201,169,110,0.25)',
+      background: 'rgba(201,169,110,0.05)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: 9, fontWeight: 800, letterSpacing: '0.06em',
+      color: '#c9a96e', fontFamily: 'monospace', flexShrink: 0,
+    }}>
+      {abbrev}
+    </div>
+  );
+}
+
+/* ─── DRAWER ────────────────────────────────────────────────────────────────── */
+
+type Service = typeof SERVICES[number];
+
+function ServiceDrawer({ svc, onClose }: { svc: Service; onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
+  const [reduced, setReduced] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => setVisible(true));
+    return () => { document.body.style.overflow = orig; };
+  }, []);
+
+  const handleClose = useCallback(() => {
+    if (!reduced) {
+      setVisible(false);
+      setTimeout(onClose, 280);
+    } else {
+      onClose();
+    }
+  }, [reduced, onClose]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleClose]);
+
+  if (!mounted) return null;
+
+  const transitionStyle = reduced ? {} : {
+    transition: 'opacity 0.28s ease, transform 0.28s cubic-bezier(0.22,1,0.36,1)',
+  };
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  const panelStyle: React.CSSProperties = isMobile
+    ? {
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        height: '90dvh', background: '#1e1a14',
+        border: '1px solid #3a3228', borderRadius: '16px 16px 0 0',
+        overflowY: 'auto', zIndex: 1001, padding: '28px 22px 40px',
+        transform: visible ? 'translateY(0)' : 'translateY(100%)',
+        opacity: visible ? 1 : 0, ...transitionStyle,
+      }
+    : {
+        position: 'fixed', top: 0, right: 0,
+        width: 520, maxWidth: '92vw', height: '100dvh',
+        background: '#1e1a14', border: '1px solid #3a3228',
+        overflowY: 'auto', zIndex: 1001, padding: '36px 36px 60px',
+        transform: visible ? 'translateX(0)' : 'translateX(100%)',
+        opacity: visible ? 1 : 0, ...transitionStyle,
+      };
+
+  return createPortal(
     <>
-      <div className="atlas-overlay" onClick={onClose} aria-hidden="true" />
-      <div className="atlas-drawer" role="dialog" aria-modal="true" aria-label={service.title}>
+      <div
+        onClick={handleClose}
+        style={{
+          position: 'fixed', inset: 0, background: 'rgba(10,9,7,0.72)',
+          backdropFilter: 'blur(4px)', zIndex: 1000,
+          opacity: visible ? 1 : 0, ...transitionStyle,
+        }}
+        aria-hidden="true"
+      />
+      <div style={panelStyle} role="dialog" aria-modal="true" aria-label={svc.title}>
 
         {/* Header */}
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid #2a2520', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexShrink: 0 }}>
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.22em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 5, fontFamily: 'monospace' }}>{service.category}</div>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 600, color: '#e8c994', margin: 0, lineHeight: 1.2 }}>{service.title}</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <ServiceIcon abbrev={svc.abbrev} />
+            <div>
+              <div style={{ fontSize: 9, fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.18em', color: '#a09070', textTransform: 'uppercase', marginBottom: 4 }}>
+                {svc.category}
+              </div>
+              <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 600, color: '#e8c994', lineHeight: 1.15 }}>
+                {svc.title}
+              </div>
+            </div>
           </div>
           <button
-            className="drawer-close"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close"
-            style={{ background: 'none', border: '1px solid #3a3228', borderRadius: 6, color: '#a09070', fontSize: 16, cursor: 'pointer', padding: '5px 10px', lineHeight: 1, transition: 'border-color 0.15s, color 0.15s', flexShrink: 0, fontFamily: 'monospace' }}
-          >✕</button>
+            style={{ background: 'none', border: '1px solid #3a3228', borderRadius: 6, color: '#a09070', cursor: 'pointer', padding: '6px 10px', fontSize: 14, flexShrink: 0, marginLeft: 12 }}
+          >
+            ✕
+          </button>
         </div>
 
-        {/* Tagline bar */}
-        <div style={{ padding: '14px 24px', background: 'rgba(201,169,110,0.04)', borderBottom: '1px solid #2a2520' }}>
-          <span style={{ fontSize: 14, fontStyle: 'italic', color: '#c9a96e', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>{service.tagline}</span>
+        {/* Scope badge */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,169,110,0.06)', border: '1px solid rgba(201,169,110,0.2)', borderRadius: 100, padding: '4px 14px', marginBottom: 28 }}>
+          <span style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: '#c9a96e', textTransform: 'uppercase' }}>Starting scope</span>
+          <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#ede5d5', fontWeight: 600 }}>{svc.scope}</span>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          <DrawerSection label="Overview">
-            <p style={{ fontSize: 13, color: '#c5b99a', lineHeight: 1.75, margin: 0 }}>{service.desc}</p>
-          </DrawerSection>
+        <DrawerSection label="Overview">
+          <p style={{ fontSize: 14, color: '#c5b99a', lineHeight: 1.7, margin: 0 }}>{svc.overview}</p>
+        </DrawerSection>
 
-          <DrawerSection label="Who this is for">
-            <p style={{ fontSize: 13, color: '#c5b99a', lineHeight: 1.7, margin: 0 }}>{service.whoFor}</p>
-          </DrawerSection>
+        <DrawerSection label="Best for">
+          <p style={{ fontSize: 13, color: '#c5b99a', lineHeight: 1.7, margin: 0 }}>{svc.bestFor}</p>
+        </DrawerSection>
 
-          <DrawerSection label="Problems it solves">
-            {service.problems.map(p => <Bullet key={p} text={p} color='#8a7060' />)}
-          </DrawerSection>
+        <DrawerSection label="Problems solved">
+          {svc.problems.map((p, i) => <Bullet key={i}>{p}</Bullet>)}
+        </DrawerSection>
 
-          <DrawerSection label="What Atlas builds">
-            {service.whatWeBuild.map(w => <Bullet key={w} text={w} color='#c9a96e' />)}
-          </DrawerSection>
+        <DrawerSection label="What Atlas builds">
+          {svc.whatWeBuild.map((w, i) => <Bullet key={i}>{w}</Bullet>)}
+        </DrawerSection>
 
-          <DrawerSection label="Deliverables">
-            {service.deliverables.map(d => (
-              <div key={d} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
-                <span style={{ fontSize: 12, color: '#6b9e6b', marginTop: 3, flexShrink: 0 }}>✓</span>
-                <span style={{ fontSize: 13, color: '#c5b99a', lineHeight: 1.65 }}>{d}</span>
-              </div>
-            ))}
-          </DrawerSection>
+        <DrawerSection label="Example deliverables">
+          {svc.deliverables.map((d, i) => <Bullet key={i}>{d}</Bullet>)}
+        </DrawerSection>
 
-          <DrawerSection label="Estimated scope">
-            <div style={{ background: '#231f18', border: '1px solid #3a3228', borderRadius: 8, padding: '12px 16px' }}>
-              <span style={{ fontSize: 13, color: '#c5b99a', lineHeight: 1.65, fontFamily: 'monospace' }}>{service.scope}</span>
-            </div>
-            <div style={{ fontSize: 11, color: '#4a4038', marginTop: 8 }}>Exact scope and milestones confirmed after audit. No commitment required.</div>
-          </DrawerSection>
-
-          <div style={{ padding: '24px 24px 36px' }}>
-            <Link
-              href="/contact"
-              className="drawer-cta"
-              style={{ display: 'block', textAlign: 'center', background: '#c9a96e', color: '#1c1914', borderRadius: 8, padding: '14px 24px', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textDecoration: 'none', transition: 'background 0.2s' }}
-            >
-              Get a free automation audit →
-            </Link>
-            <div style={{ textAlign: 'center', marginTop: 10, fontSize: 11, color: '#4a4038', fontFamily: 'monospace' }}>No commitment · Response within 24h</div>
-          </div>
+        {/* CTA */}
+        <div style={{ paddingTop: 20, borderTop: '1px solid #2e2820' }}>
+          <p style={{ fontSize: 13, color: '#a09070', lineHeight: 1.6, margin: '0 0 20px' }}>
+            Every engagement starts with a free audit call — no commitment required.
+          </p>
+          <Link
+            href="/contact"
+            style={{
+              display: 'inline-block',
+              background: '#c9a96e', color: '#1c1914',
+              borderRadius: 8, padding: '13px 28px',
+              fontSize: 13, fontWeight: 700, letterSpacing: '0.08em',
+              textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
+            }}
+          >
+            Get Free Automation Audit →
+          </Link>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
 
-// ─── Service Card ─────────────────────────────────────────────────────────────
+/* ─── SERVICE CARD ──────────────────────────────────────────────────────────── */
 
-function ServiceCard({ service, onClick }: { service: Service; onClick: () => void }) {
+function ServiceCard({ svc, onOpen }: { svc: Service; onOpen: () => void }) {
+  const [hov, setHov] = useState(false);
   return (
-    <button
-      className="svc-card-btn"
-      onClick={onClick}
-      style={{ background: '#231f18', border: 'none', borderRadius: 0, padding: '28px 24px', textAlign: 'left', width: '100%', cursor: 'pointer', display: 'flex', flexDirection: 'column', minHeight: 200 }}
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: hov ? '#231f18' : '#1e1a14',
+        border: `1px solid ${hov ? 'rgba(201,169,110,0.3)' : '#2e2820'}`,
+        borderRadius: 10, padding: '22px 20px', cursor: 'pointer',
+        transition: 'background 0.18s, border-color 0.18s, box-shadow 0.18s',
+        boxShadow: hov ? '0 0 24px rgba(201,169,110,0.06)' : 'none',
+        display: 'flex', flexDirection: 'column', gap: 14,
+      }}
+      onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onOpen(); }}
+      aria-label={`Open details for ${svc.title}`}
     >
-      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 14, fontFamily: 'monospace' }}>{service.category}</div>
-      <h3 style={{ fontSize: 16, fontWeight: 600, color: '#ede5d5', margin: '0 0 10px', fontFamily: 'Cormorant Garamond, Georgia, serif', lineHeight: 1.25 }}>{service.title}</h3>
-      <p style={{ fontSize: 13, color: '#a09070', lineHeight: 1.65, margin: '0 0 auto', flex: 1 }}>{service.tagline}</p>
-      <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: '#4a4038', fontFamily: 'monospace' }}>
-        <span>VIEW DETAILS</span>
-        <span className="svc-arrow" style={{ color: '#4a4038' }}>→</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <ServiceIcon abbrev={svc.abbrev} />
+          <span style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: '#a09070', textTransform: 'uppercase' }}>
+            {svc.category}
+          </span>
+        </div>
+        <span style={{ fontFamily: 'monospace', fontSize: 9, color: '#6b6050', letterSpacing: '0.1em' }}>
+          {svc.scope}
+        </span>
       </div>
-    </button>
+
+      <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 20, fontWeight: 600, color: '#e8c994', lineHeight: 1.2 }}>
+        {svc.title}
+      </div>
+
+      <div style={{ fontSize: 12, color: '#a09070', lineHeight: 1.55, flex: 1 }}>
+        {svc.tagline}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: hov ? '#c9a96e' : '#7a6a50', textTransform: 'uppercase', transition: 'color 0.15s' }}>
+          View system details
+        </span>
+        <span style={{ fontFamily: 'monospace', fontSize: 11, color: hov ? '#c9a96e' : '#7a6a50', transition: 'color 0.15s, transform 0.15s', display: 'inline-block', transform: hov ? 'translateX(3px)' : 'none' }}>
+          →
+        </span>
+      </div>
+    </div>
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+/* ─── AUTOMATION FLOW DIAGRAM ───────────────────────────────────────────────── */
+
+function AutoFlowDiagram() {
+  return (
+    <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: 4 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 0, minWidth: 680 }}>
+        {FLOW_NODES.map((node, i) => {
+          const isApproval = node.sub === 'slack / email';
+          return (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i === FLOW_NODES.length - 1 ? 'none' : 1 }}>
+              <div style={{
+                background: isApproval ? 'rgba(201,169,110,0.08)' : '#1e1a14',
+                border: isApproval ? '1px solid rgba(201,169,110,0.35)' : '1px solid #2e2820',
+                borderRadius: 8, padding: '10px 12px', minWidth: 76, flexShrink: 0,
+                textAlign: 'center',
+              }}>
+                {node.label.split('\n').map((line, j) => (
+                  <div key={j} style={{
+                    fontFamily: 'monospace', fontSize: 10, fontWeight: 700,
+                    letterSpacing: '0.04em', color: isApproval ? '#c9a96e' : '#ede5d5',
+                    lineHeight: 1.3, whiteSpace: 'nowrap',
+                  }}>
+                    {line}
+                  </div>
+                ))}
+                <div style={{ fontFamily: 'monospace', fontSize: 8, color: '#6b6050', marginTop: 5, letterSpacing: '0.06em' }}>
+                  {node.sub}
+                </div>
+              </div>
+              {i < FLOW_NODES.length - 1 && (
+                <div style={{ display: 'flex', alignItems: 'center', flex: 1, height: 1, position: 'relative', minWidth: 16 }}>
+                  <div style={{ flex: 1, height: 1, background: '#3a3228' }} />
+                  <div style={{ fontFamily: 'monospace', fontSize: 10, color: '#4a4035', flexShrink: 0, lineHeight: 1 }}>›</div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ─── MAIN COMPONENT ────────────────────────────────────────────────────────── */
 
 export default function ServicesClient() {
-  const [active, setActive] = useState<Service | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [openSvc, setOpenSvc] = useState<Service | null>(null);
+  const svcRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setMounted(true); }, []);
-  const close = useCallback(() => setActive(null), []);
-
-  const gold = '#c9a96e';
-  const border = '#3a3228';
-  const muted = '#a09070';
+  const scrollToServices = () => {
+    svcRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div style={{ background: '#1c1914', minHeight: '100vh', color: '#ede5d5', fontFamily: 'DM Sans, sans-serif' }}>
       <SiteNav activePath="/services" />
-      <style>{GLOBAL_STYLES}</style>
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="hero-grid-bg" style={{ paddingTop: 100, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 900, height: 500, background: 'radial-gradient(ellipse at 50% 0%, rgba(201,169,110,0.09) 0%, transparent 65%)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: 820, margin: '0 auto', padding: '64px 24px 80px', textAlign: 'center', position: 'relative' }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.26em', color: gold, textTransform: 'uppercase', marginBottom: 20, fontFamily: 'monospace' }}>
-            Atlas Technology &nbsp;/&nbsp; AI &amp; Automation
-          </div>
-          <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(38px,5.5vw,70px)', fontWeight: 600, color: '#e8c994', lineHeight: 1.08, margin: '0 0 26px' }}>
-            Turn manual workflows<br />into automated systems.
-          </h1>
-          <p style={{ fontSize: 17, color: '#c5b99a', lineHeight: 1.78, maxWidth: 560, margin: '0 auto 14px' }}>
-            Atlas helps online businesses worldwide automate workflows, capture leads, build websites, and save time with AI.
-          </p>
-          <p style={{ fontSize: 14, color: muted, maxWidth: 440, margin: '0 auto 40px' }}>
-            Transparent project plans. Milestone-based delivery. You own everything we build.
-          </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/contact" style={{ display: 'inline-block', background: gold, color: '#1c1914', borderRadius: 7, padding: '13px 30px', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', textDecoration: 'none' }}>
-              Get Free Automation Audit →
-            </Link>
-            <a href="#services" style={{ display: 'inline-block', background: 'none', border: `1px solid ${border}`, color: muted, borderRadius: 7, padding: '13px 22px', fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>
-              See Services ↓
-            </a>
-          </div>
-          <div style={{ marginTop: 16, fontSize: 11, color: '#4a4038', fontFamily: 'monospace' }}>Free consultation · No commitment · Reply within 24h</div>
-        </div>
+      <style>{`
+        * { box-sizing: border-box; }
+        .svc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        @media (max-width: 960px) { .svc-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 580px) { .svc-grid { grid-template-columns: 1fr; } }
+        .prod-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        @media (max-width: 580px) { .prod-grid { grid-template-columns: 1fr; } }
+        .cap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
+        @media (max-width: 500px) { .cap-grid { grid-template-columns: 1fr; } }
+        .steps-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+        @media (max-width: 900px) { .steps-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 580px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
+        .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        @media (max-width: 760px) { .why-grid { grid-template-columns: 1fr; } }
+        :focus-visible { outline: 2px solid #c9a96e; outline-offset: 3px; }
+      `}</style>
 
-        {/* Flow connector nodes */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, padding: '0 24px 0', maxWidth: 600, margin: '0 auto', opacity: 0.5 }}>
-          {['Capture', 'Process', 'Route', 'Notify', 'Deliver'].map((label, i) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', flex: i < 4 ? 1 : 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-                <div style={{ width: 7, height: 7, borderRadius: '50%', border: `1px solid ${gold}`, background: 'rgba(201,169,110,0.2)' }} />
-                <div style={{ fontSize: 8, color: '#6b6050', letterSpacing: '0.1em', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{label}</div>
-              </div>
-              {i < 4 && <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, rgba(201,169,110,0.3), rgba(201,169,110,0.05))`, margin: '0 6px', marginBottom: 14 }} />}
+      <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
+
+        {/* ── HERO ─────────────────────────────────────────────────────────── */}
+        <section style={{ paddingTop: 120, paddingBottom: 80, position: 'relative' }}>
+          <div aria-hidden="true" style={{
+            position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none',
+            backgroundImage: 'linear-gradient(rgba(201,169,110,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,169,110,0.04) 1px, transparent 1px)',
+            backgroundSize: '64px 64px',
+            WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent)',
+            maskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent)',
+          }} />
+          <div aria-hidden="true" style={{
+            position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)',
+            width: 600, height: 300, borderRadius: '50%',
+            background: 'radial-gradient(ellipse, rgba(201,169,110,0.08) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+
+          <div style={{ position: 'relative', maxWidth: 760 }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 24 }}>
+              Atlas Technology · AI Automation & Web Solutions
             </div>
-          ))}
-        </div>
-        <div style={{ height: 48 }} />
-      </section>
 
-      {/* ── Services ──────────────────────────────────────────────────────── */}
-      <section id="services">
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ padding: '56px 0 32px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+            <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(36px,5vw,64px)', fontWeight: 600, color: '#e8c994', lineHeight: 1.1, margin: '0 0 24px', letterSpacing: '-0.01em' }}>
+              Build smarter systems for your business with AI automation.
+            </h1>
+
+            <p style={{ fontSize: 'clamp(15px,1.8vw,18px)', color: '#c5b99a', lineHeight: 1.7, margin: '0 0 20px', maxWidth: 640 }}>
+              Atlas helps online businesses capture leads, automate workflows, build websites, and turn manual operations into reliable systems.
+            </p>
+
+            <div style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: '0.12em', color: '#6b6050', marginBottom: 36, lineHeight: 1.8 }}>
+              Remote-first&nbsp;&nbsp;·&nbsp;&nbsp;Clear scope&nbsp;&nbsp;·&nbsp;&nbsp;Human approval for sensitive actions&nbsp;&nbsp;·&nbsp;&nbsp;You own your system
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Link
+                href="/contact"
+                style={{
+                  background: '#c9a96e', color: '#1c1914',
+                  borderRadius: 8, padding: '13px 28px',
+                  fontSize: 13, fontWeight: 700, letterSpacing: '0.08em',
+                  textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Get Free Automation Audit →
+              </Link>
+              <button
+                onClick={scrollToServices}
+                style={{
+                  background: 'transparent', border: '1px solid #3a3228',
+                  borderRadius: 8, padding: '12px 24px',
+                  fontSize: 13, fontWeight: 600, color: '#a09070',
+                  cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                  letterSpacing: '0.04em', whiteSpace: 'nowrap',
+                }}
+              >
+                Explore Services ↓
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* ── AUTOMATION FLOW ───────────────────────────────────────────────── */}
+        <section style={{ paddingBottom: 80 }}>
+          <div style={{ background: '#1a1710', border: '1px solid #2e2820', borderRadius: 12, padding: '28px 28px 24px' }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 18 }}>
+              System architecture · Example automation pipeline
+            </div>
+            <AutoFlowDiagram />
+            <div style={{ fontFamily: 'monospace', fontSize: 9, color: '#4a4035', marginTop: 18, letterSpacing: '0.08em' }}>
+              Every sensitive action — AI draft, outbound notification — routes through a human approval gate before executing.
+            </div>
+          </div>
+        </section>
+
+        {/* ── SERVICES ─────────────────────────────────────────────────────── */}
+        <section ref={svcRef} style={{ paddingBottom: 80, scrollMarginTop: 80 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.24em', color: muted, textTransform: 'uppercase', marginBottom: 10, fontFamily: 'monospace' }}>Services</div>
-              <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(26px,3vw,40px)', fontWeight: 600, color: '#e8c994', margin: 0 }}>What we build for clients</h2>
+              <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
+                Services
+              </div>
+              <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: 0, lineHeight: 1.2 }}>
+                What we build
+              </h2>
             </div>
-            <div style={{ fontSize: 12, color: '#4a4038', fontFamily: 'monospace' }}>Click any service for full details</div>
+            <div style={{ fontFamily: 'monospace', fontSize: 10, color: '#6b6050', letterSpacing: '0.08em' }}>
+              Select a card for full system details
+            </div>
           </div>
-        </div>
 
-        {/* Grid with 1px-gap panel look */}
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 0' }}>
-          <div style={{ border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}>
-            <div className="svc-grid" style={{ gap: 0 }}>
-              {SERVICES.map((s, i) => (
-                <div key={s.id} style={{ borderRight: (i + 1) % 3 !== 0 ? `1px solid ${border}` : 'none', borderBottom: i < 3 ? `1px solid ${border}` : 'none' }}>
-                  <ServiceCard service={s} onClick={() => setActive(s)} />
+          <div className="svc-grid">
+            {SERVICES.map(svc => (
+              <ServiceCard key={svc.id} svc={svc} onOpen={() => setOpenSvc(svc)} />
+            ))}
+          </div>
+        </section>
+
+        {/* ── PRODUCTS ─────────────────────────────────────────────────────── */}
+        <section style={{ paddingBottom: 80 }}>
+          <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
+            Products & Platforms
+          </div>
+          <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: '0 0 20px', lineHeight: 1.2 }}>
+            Built by Atlas
+          </h2>
+          <div className="prod-grid">
+            {PRODUCTS.map(p => (
+              <div key={p.id} style={{ background: '#1e1a14', border: '1px solid #2e2820', borderRadius: 10, padding: '20px' }}>
+                <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 10 }}>
+                  {p.label}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div style={{ height: 80 }} />
-      </section>
-
-      {/* ── Our Products ──────────────────────────────────────────────────── */}
-      <section style={{ borderTop: `1px solid ${border}`, padding: '72px 24px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.24em', color: muted, textTransform: 'uppercase', marginBottom: 10, fontFamily: 'monospace' }}>Products &amp; Platforms</div>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(26px,3vw,40px)', fontWeight: 600, color: '#e8c994', margin: 0 }}>Our products</h2>
-          </div>
-          <div style={{ border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}>
-            <div className="prod-grid">
-              {PRODUCTS.map((p, i) => (
-                <div key={p.title} style={{ borderRight: i % 2 === 0 ? `1px solid ${border}` : 'none', borderBottom: i < 2 ? `1px solid ${border}` : 'none' }}>
-                  <div className="prod-card" style={{ padding: '28px 26px', background: '#231f18', height: '100%', boxSizing: 'border-box', transition: 'background 0.18s' }}>
-                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 10, fontFamily: 'monospace' }}>{p.label}</div>
-                    <h3 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 20, fontWeight: 600, color: '#e8c994', margin: '0 0 10px', lineHeight: 1.25 }}>{p.title}</h3>
-                    <p style={{ fontSize: 13, color: muted, lineHeight: 1.68, margin: '0 0 20px' }}>{p.desc}</p>
-                    {p.external ? (
-                      <a href={p.href} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, fontWeight: 600, color: gold, textDecoration: 'none', letterSpacing: '0.06em' }}>{p.cta} →</a>
-                    ) : (
-                      <Link href={p.href} style={{ fontSize: 12, fontWeight: 600, color: gold, textDecoration: 'none', letterSpacing: '0.06em' }}>{p.cta} →</Link>
-                    )}
-                  </div>
+                <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 18, fontWeight: 600, color: '#e8c994', marginBottom: 8, lineHeight: 1.2 }}>
+                  {p.title}
                 </div>
-              ))}
-            </div>
+                <p style={{ fontSize: 12, color: '#a09070', lineHeight: 1.6, margin: '0 0 16px' }}>
+                  {p.desc}
+                </p>
+                {p.external ? (
+                  <a href={p.href} target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: '#c9a96e', textDecoration: 'none', textTransform: 'uppercase' }}>
+                    {p.cta} →
+                  </a>
+                ) : (
+                  <Link href={p.href} style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: '#c9a96e', textDecoration: 'none', textTransform: 'uppercase' }}>
+                    {p.cta} →
+                  </Link>
+                )}
+              </div>
+            ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── What we can build ─────────────────────────────────────────────── */}
-      <section style={{ borderTop: `1px solid ${border}`, padding: '72px 24px', background: '#1a1714' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ marginBottom: 40 }}>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.24em', color: muted, textTransform: 'uppercase', marginBottom: 10, fontFamily: 'monospace' }}>Capabilities</div>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(26px,3vw,40px)', fontWeight: 600, color: '#e8c994', margin: 0 }}>What we can build for your business</h2>
-          </div>
-          <div style={{ border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}>
+        {/* ── CAPABILITIES ─────────────────────────────────────────────────── */}
+        <section style={{ paddingBottom: 80 }}>
+          <div style={{ background: '#1a1710', border: '1px solid #2e2820', borderRadius: 12, padding: '28px' }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 8 }}>
+              Technical Stack
+            </div>
+            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 600, color: '#e8c994', marginBottom: 20, lineHeight: 1.2 }}>
+              What we work with
+            </div>
             <div className="cap-grid">
               {CAPABILITIES.map((cap, i) => (
-                <div key={cap} style={{ padding: '18px 24px', borderRight: i % 2 === 0 ? `1px solid ${border}` : 'none', borderBottom: i < CAPABILITIES.length - 2 ? `1px solid ${border}` : 'none', display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <span style={{ fontSize: 9, color: gold, fontFamily: 'monospace', flexShrink: 0 }}>▸</span>
-                  <span style={{ fontSize: 13, color: '#c5b99a', lineHeight: 1.55 }}>{cap}</span>
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid #231f18' }}>
+                  <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#c9a96e', lineHeight: '20px', flexShrink: 0 }}>▸</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#a09070', letterSpacing: '0.03em', lineHeight: 1.5 }}>{cap}</span>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── How Atlas works ───────────────────────────────────────────────── */}
-      <section style={{ borderTop: `1px solid ${border}`, padding: '72px 24px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ marginBottom: 48, textAlign: 'center' }}>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.24em', color: muted, textTransform: 'uppercase', marginBottom: 10, fontFamily: 'monospace' }}>Process</div>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(26px,3vw,40px)', fontWeight: 600, color: '#e8c994', margin: 0 }}>How Atlas works</h2>
+        {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
+        <section style={{ paddingBottom: 80 }}>
+          <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
+            Process
           </div>
-          <div style={{ border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}>
-            <div className="steps-grid">
-              {STEPS.map((step, i) => (
-                <div key={step.num} style={{ padding: '28px 22px', borderRight: i < STEPS.length - 1 ? `1px solid ${border}` : 'none' }}>
-                  <div style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: gold, marginBottom: 12, letterSpacing: '0.1em' }}>{step.num}</div>
-                  <h3 style={{ fontSize: 14, fontWeight: 600, color: '#ede5d5', margin: '0 0 10px', letterSpacing: '0.02em' }}>{step.title}</h3>
-                  <p style={{ fontSize: 12, color: muted, lineHeight: 1.65, margin: 0 }}>{step.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Why Atlas ─────────────────────────────────────────────────────── */}
-      <section style={{ borderTop: `1px solid ${border}`, padding: '72px 24px', background: '#1a1714' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ marginBottom: 40, textAlign: 'center' }}>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.24em', color: muted, textTransform: 'uppercase', marginBottom: 10, fontFamily: 'monospace' }}>Why Atlas</div>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(26px,3vw,40px)', fontWeight: 600, color: '#e8c994', margin: 0 }}>Built for remote-first businesses</h2>
-          </div>
-          <div style={{ border: `1px solid ${border}`, borderRadius: 12, overflow: 'hidden' }}>
-            <div className="why-grid">
-              {[
-                { label: 'Reach', title: 'Fully Remote', desc: 'We work with clients across North America, Europe, Asia, and beyond. Timezone is never a barrier — all communication is async-friendly.' },
-                { label: 'Clarity', title: 'Clear Scope & Plan', desc: 'Every project starts with a transparent project plan — agreed milestones, deliverables, and timeline. No scope creep, no surprise changes.' },
-                { label: 'Ownership', title: 'You Own Everything', desc: 'Full source code, database access, and all credentials are delivered to you at project close. No vendor lock-in, ever.' },
-              ].map((item, i) => (
-                <div key={item.title} style={{ padding: '28px 24px', borderRight: i < 2 ? `1px solid ${border}` : 'none' }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 12, fontFamily: 'monospace' }}>{item.label}</div>
-                  <h3 style={{ fontSize: 16, fontWeight: 600, color: '#ede5d5', margin: '0 0 10px', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>{item.title}</h3>
-                  <p style={{ fontSize: 13, color: muted, lineHeight: 1.65, margin: 0 }}>{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Final CTA ─────────────────────────────────────────────────────── */}
-      <section style={{ borderTop: `1px solid ${border}`, padding: '88px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 70% 100% at 50% 100%, rgba(201,169,110,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: 560, margin: '0 auto', position: 'relative' }}>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.24em', color: muted, textTransform: 'uppercase', marginBottom: 18, fontFamily: 'monospace' }}>Get started</div>
-          <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(30px,4vw,52px)', fontWeight: 600, color: '#e8c994', margin: '0 0 18px', lineHeight: 1.1 }}>
-            Ready to turn manual work into an automated system?
+          <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: '0 0 20px', lineHeight: 1.2 }}>
+            How Atlas works
           </h2>
-          <p style={{ fontSize: 15, color: muted, lineHeight: 1.75, margin: '0 0 36px' }}>
-            Request a free automation audit. We map your workflow, identify the highest-impact automations, and give you a clear build plan — no commitment required.
-          </p>
-          <Link href="/contact" style={{ display: 'inline-block', background: gold, color: '#1c1914', borderRadius: 7, padding: '15px 40px', fontSize: 14, fontWeight: 700, letterSpacing: '0.08em', textDecoration: 'none' }}>
-            Get a free automation audit →
-          </Link>
-          <div style={{ marginTop: 18, fontSize: 11, color: '#4a4038', fontFamily: 'monospace' }}>No commitment &nbsp;·&nbsp; Response within 24h &nbsp;·&nbsp; Worldwide</div>
-        </div>
-      </section>
+          <div className="steps-grid">
+            {STEPS.map(s => (
+              <div key={s.num} style={{ background: '#1e1a14', border: '1px solid #2e2820', borderRadius: 10, padding: '20px 18px' }}>
+                <div style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 700, color: 'rgba(201,169,110,0.25)', marginBottom: 12, lineHeight: 1 }}>
+                  {s.num}
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#ede5d5', marginBottom: 8, lineHeight: 1.35 }}>
+                  {s.title}
+                </div>
+                <div style={{ fontSize: 12, color: '#a09070', lineHeight: 1.6 }}>
+                  {s.desc}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
-      {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <footer style={{ borderTop: `1px solid ${border}`, padding: '24px', textAlign: 'center' }}>
-        <div style={{ fontSize: 11, color: '#4a4038', fontFamily: 'monospace', marginBottom: 8 }}>
-          Operated from Canada. Serving clients remotely worldwide.
+        {/* ── WHY ATLAS ────────────────────────────────────────────────────── */}
+        <section style={{ paddingBottom: 80 }}>
+          <div className="why-grid">
+            {[
+              { label: 'Remote-first', title: 'Fully remote delivery', desc: 'We work asynchronously across timezones. No on-site visits required — clear scope document, async updates, delivery on schedule.' },
+              { label: 'Clear scope', title: 'Scope before we build', desc: 'Every engagement starts with a written scope: what gets built, what connects to what, and what done looks like. No surprises.' },
+              { label: 'You own it', title: 'Zero vendor lock-in', desc: 'You own the workflow, the credentials, the code, and the infrastructure. Full handoff documentation. Cancel whenever you want.' },
+            ].map(item => (
+              <div key={item.label} style={{ background: '#1e1a14', border: '1px solid #2e2820', borderRadius: 10, padding: '24px 22px' }}>
+                <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 12 }}>
+                  {item.label}
+                </div>
+                <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 18, fontWeight: 600, color: '#e8c994', marginBottom: 10, lineHeight: 1.2 }}>
+                  {item.title}
+                </div>
+                <p style={{ fontSize: 13, color: '#a09070', lineHeight: 1.65, margin: 0 }}>
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
+        <section style={{ paddingBottom: 100 }}>
+          <div style={{ position: 'relative', background: '#1a1710', border: '1px solid #3a3228', borderRadius: 16, padding: 'clamp(40px,5vw,64px)', textAlign: 'center', overflow: 'hidden' }}>
+            <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 70% at 50% 0%, rgba(201,169,110,0.06), transparent)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative' }}>
+              <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 20 }}>
+                Free Consultation · No Commitment
+              </div>
+              <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(28px,4vw,48px)', fontWeight: 600, color: '#e8c994', margin: '0 0 20px', lineHeight: 1.15 }}>
+                Ready to turn manual work into an automated system?
+              </h2>
+              <p style={{ fontSize: 15, color: '#a09070', lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 520 }}>
+                Tell us what you&apos;re doing manually. We&apos;ll review your workflow and come back with a clear plan — no sales pressure, no commitment.
+              </p>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Link
+                  href="/contact"
+                  style={{
+                    background: '#c9a96e', color: '#1c1914',
+                    borderRadius: 8, padding: '14px 32px',
+                    fontSize: 13, fontWeight: 700, letterSpacing: '0.08em',
+                    textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
+                  }}
+                >
+                  Get Free Automation Audit →
+                </Link>
+                <button
+                  onClick={scrollToServices}
+                  style={{
+                    background: 'transparent', border: '1px solid #3a3228',
+                    borderRadius: 8, padding: '13px 24px',
+                    fontSize: 13, fontWeight: 600, color: '#a09070',
+                    cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  Browse services
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
+      <footer style={{ borderTop: '1px solid #2e2820', padding: '28px 24px', textAlign: 'center' }}>
+        <div style={{ fontSize: 11, color: '#6b6050', marginBottom: 12, fontFamily: 'monospace', letterSpacing: '0.06em' }}>
+          Operated from Canada · Serving clients remotely worldwide
         </div>
-        <div style={{ fontSize: 12, color: '#4a4038' }}>
+        <div style={{ fontSize: 12, color: '#6b6050' }}>
           © {new Date().getFullYear()} Atlas Technology &nbsp;·&nbsp;
-          <Link href="/blog" style={{ color: '#4a4038', textDecoration: 'none' }}>Blog</Link>
+          <Link href="/contact" style={{ color: '#6b6050', textDecoration: 'none' }}>Contact</Link>
           &nbsp;·&nbsp;
-          <Link href="/contact" style={{ color: '#4a4038', textDecoration: 'none' }}>Contact</Link>
+          <Link href="/blog" style={{ color: '#6b6050', textDecoration: 'none' }}>Blog</Link>
           &nbsp;·&nbsp;
-          <Link href="/" style={{ color: '#4a4038', textDecoration: 'none' }}>Travel Planner</Link>
+          <Link href="/" style={{ color: '#6b6050', textDecoration: 'none' }}>Travel App</Link>
         </div>
       </footer>
 
-      {/* ── Drawer portal ─────────────────────────────────────────────────── */}
-      {mounted && active && createPortal(
-        <ServiceDrawer service={active} onClose={close} />,
-        document.body
-      )}
+      {openSvc && <ServiceDrawer svc={openSvc} onClose={() => setOpenSvc(null)} />}
     </div>
   );
 }
