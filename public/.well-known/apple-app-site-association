@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "ca.getatlas.app",
+        "paths": ["/trip/*", "/trip"]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["ca.getatlas.app"]
+  }
+}
