@@ -189,7 +189,7 @@
 <link rel="preconnect" href="https://prffhhkemxibujjjiyhg.supabase.co"/>
 <link rel="dns-prefetch" href="https://api.anthropic.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<!-- Google Maps loaded dynamically after fetching key from /api/map-config -->
+<!-- Google Maps loaded dynamically; JS API key is domain-restricted, inlined below -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1943,18 +1943,16 @@ const ATLAS_MAP_STYLES=[
   {featureType:'water',elementType:'labels.text.fill',stylers:[{color:'#3a4a60'}]},
 ];
 let _gmapsPromise=null;
+const GOOGLE_MAPS_JS_KEY='AIzaSyA_2o5Y_If9BWOaQYxPTlXJlxc_NGkaf2Q';
 function loadGoogleMaps(){
   if(window.google?.maps)return Promise.resolve();
   if(_gmapsPromise)return _gmapsPromise;
-  _gmapsPromise=fetch('/api/map-config').then(r=>r.json()).then(({key})=>{
-    if(!key)return;
-    return new Promise((resolve,reject)=>{
-      window.__atlasGmapsReady=resolve;
-      const s=document.createElement('script');
-      s.src=`https://maps.googleapis.com/maps/api/js?key=${key}&callback=__atlasGmapsReady`;
-      s.onerror=reject;
-      document.head.appendChild(s);
-    });
+  _gmapsPromise=new Promise((resolve,reject)=>{
+    window.__atlasGmapsReady=resolve;
+    const s=document.createElement('script');
+    s.src=`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_JS_KEY}&callback=__atlasGmapsReady`;
+    s.onerror=reject;
+    document.head.appendChild(s);
   }).catch(()=>{});
   return _gmapsPromise;
 }
