@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const BASE_URL = "https://getatlas.ca";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
