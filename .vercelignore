@@ -1,4 +1,3 @@
-api/blog.js
 api/push-subscribe.js
 api/routes.js
 api/send-email.js
