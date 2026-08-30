@@ -235,21 +235,20 @@ const CAPABILITIES = [
 ];
 
 const FLOW_NODES = [
-  { label: 'Website\n/ Form', sub: 'intake' },
-  { label: 'Lead\nCapture', sub: 'webhook' },
-  { label: 'CRM\nLog', sub: 'storage' },
-  { label: 'AI\nDraft', sub: 'claude / gpt' },
-  { label: 'Human\nApproval', sub: 'slack / email' },
-  { label: 'Notification\nSent', sub: 'delivery' },
-  { label: 'Follow-up\nQueued', sub: 'sequence' },
+  { label: 'Client\nRequest', sub: 'intake' },
+  { label: 'Priority\n& Details', sub: 'triage' },
+  { label: 'AI\nDraft', sub: 'prepare' },
+  { label: 'Human\nApproval', sub: 'review gate' },
+  { label: 'Follow-up\nTask', sub: 'ownership' },
+  { label: 'Status\nUpdate', sub: 'delivery' },
+  { label: 'Activity\nLog', sub: 'audit trail' },
 ];
 
 const STEPS = [
-  { num: '01', title: 'Free audit call', desc: 'We review your current workflow, identify the highest-value automation opportunities, and come back with a written scope.' },
-  { num: '02', title: 'Scope & timeline', desc: 'We agree on exactly what gets built, what it connects to, and when it ships — before any work begins.' },
-  { num: '03', title: 'System build', desc: 'Atlas builds and tests your system. You receive updates as each component goes live.' },
-  { num: '04', title: 'Human approval gates', desc: 'Any sensitive action — outbound emails, CRM writes, notifications — requires your explicit approval before executing.' },
-  { num: '05', title: 'Handoff + you own it', desc: 'Full documentation, credentials, and a walkthrough session. You own everything we build — no lock-in.' },
+  { num: '01', title: 'Find the friction', desc: 'We map the repetitive work, missed handoffs, and information gaps that cost your team time.' },
+  { num: '02', title: 'Design the control', desc: 'We agree on what AI can prepare, what your team approves, and what should always stay manual.' },
+  { num: '03', title: 'Build one useful flow', desc: 'Atlas builds and tests a focused workflow, connects it to your tools, and makes the result easy to verify.' },
+  { num: '04', title: 'Improve from evidence', desc: 'After the first flow is working, real usage and feedback guide what should be improved or expanded next.' },
 ];
 
 /* ─── SMALL COMPONENTS ──────────────────────────────────────────────────────── */
@@ -509,7 +508,7 @@ function AutoFlowDiagram() {
     <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: 4 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 0, minWidth: 680 }}>
         {FLOW_NODES.map((node, i) => {
-          const isApproval = node.sub === 'slack / email';
+          const isApproval = node.sub === 'review gate';
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i === FLOW_NODES.length - 1 ? 'none' : 1 }}>
               <div style={{
@@ -577,8 +576,8 @@ export default function ServicesClient() {
         @media (max-width: 580px) { .prod-grid { grid-template-columns: 1fr; } }
         .cap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
         @media (max-width: 500px) { .cap-grid { grid-template-columns: 1fr; } }
-        .steps-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-        @media (max-width: 900px) { .steps-grid { grid-template-columns: repeat(3, 1fr); } }
+        .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        @media (max-width: 900px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 580px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
         .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         @media (max-width: 760px) { .why-grid { grid-template-columns: 1fr; } }
@@ -615,18 +614,18 @@ export default function ServicesClient() {
 
           <div style={{ position: 'relative', maxWidth: 780 }}>
             <div style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 28 }}>
-              Atlas Technology · AI Automation & Web Solutions
+              Atlas AI Technology · Practical automation for real operations
             </div>
 
             <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(38px,5.5vw,72px)', fontWeight: 600, color: '#e8c994', lineHeight: 1.02, margin: '0 0 10px', letterSpacing: '-0.01em' }}>
-              Your workflows automated.
+              Your business has enough work.
             </h1>
             <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(26px,3.8vw,52px)', fontWeight: 400, color: '#7a6a4a', lineHeight: 1.1, margin: '0 0 32px', letterSpacing: '-0.01em', fontStyle: 'italic' }}>
-              In weeks, not months.
+              The busywork should not be part of it.
             </h2>
 
             <p style={{ fontSize: 'clamp(14px,1.6vw,17px)', color: '#c5b99a', lineHeight: 1.75, margin: '0 0 40px', maxWidth: 580 }}>
-              We design and build automation systems, AI integrations, and Next.js products for businesses done doing things manually. Fixed scope. Human approval for every sensitive action. You own everything we build.
+              Atlas AI Technology builds practical automation systems that organize requests, prepare the next step, and keep your people in control. Start with one useful workflow, prove it works, then expand from evidence.
             </p>
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -640,7 +639,7 @@ export default function ServicesClient() {
                   whiteSpace: 'nowrap',
                 }}
               >
-                Book a Discovery Call →
+                Plan My Automation →
               </Link>
               <button
                 onClick={scrollToServices}
@@ -652,7 +651,7 @@ export default function ServicesClient() {
                   letterSpacing: '0.04em', whiteSpace: 'nowrap',
                 }}
               >
-                See what we build ↓
+                See How It Works ↓
               </button>
             </div>
           </div>
@@ -663,14 +662,14 @@ export default function ServicesClient() {
           <section style={{ paddingBottom: 52 }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 40px', alignItems: 'center', padding: '22px 0', borderTop: '1px solid #2e2820', borderBottom: '1px solid #2e2820' }}>
               {([
-                ['12+', 'systems delivered'],
-                ['~3 wk', 'avg. delivery'],
-                ['4 continents', 'served remotely'],
-                ['100%', 'you own it forever'],
+                ['01', 'Built around your workflow'],
+                ['02', 'Human approval by default'],
+                ['03', 'Clear activity history'],
+                ['04', 'You own the system'],
               ] as [string, string][]).map(([num, label]) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-                  <span style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 28, fontWeight: 600, color: '#c9a96e', lineHeight: 1 }}>{num}</span>
-                  <span style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', color: '#6b6050', textTransform: 'uppercase' }}>{label}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: '#c9a96e', lineHeight: 1 }}>{num}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: '#a09070', textTransform: 'uppercase' }}>{label}</span>
                 </div>
               ))}
             </div>
@@ -700,11 +699,11 @@ export default function ServicesClient() {
         <section style={{ paddingBottom: 80 }}>
           <div style={{ background: '#1a1710', border: '1px solid #2e2820', borderRadius: 12, padding: '28px 28px 24px' }}>
             <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 18 }}>
-              System architecture · Example automation pipeline
+              Example workflow · Every important step stays visible
             </div>
             <AutoFlowDiagram />
             <div style={{ fontFamily: 'monospace', fontSize: 9, color: '#4a4035', marginTop: 18, letterSpacing: '0.08em' }}>
-              Every sensitive action — AI draft, outbound notification — routes through a human approval gate before executing.
+              AI prepares the next step. Your team reviews sensitive actions. Ownership and activity remain visible from intake to follow-up.
             </div>
           </div>
         </section>
@@ -897,11 +896,17 @@ export default function ServicesClient() {
 
         {/* ── WHY ATLAS ────────────────────────────────────────────────────── */}
         <section style={{ paddingBottom: 80 }}>
+          <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
+            Control is a feature
+          </div>
+          <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: '0 0 24px', lineHeight: 1.2 }}>
+            AI that knows where to stop
+          </h2>
           <div className="why-grid">
             {[
-              { label: 'Remote-first', title: 'Fully remote delivery', desc: 'We work asynchronously across timezones. No on-site visits required — clear scope document, async updates, delivery on schedule.' },
-              { label: 'Clear scope', title: 'Scope before we build', desc: 'Every engagement starts with a written scope: what gets built, what connects to what, and what done looks like. No surprises.' },
-              { label: 'You own it', title: 'Zero vendor lock-in', desc: 'You own the workflow, the credentials, the code, and the infrastructure. Full handoff documentation. Cancel whenever you want.' },
+              { label: 'Approval gates', title: 'Approval before action', desc: 'Sensitive messages and consequential steps stay behind a clear human review and approval gate.' },
+              { label: 'Bounded access', title: 'Access with boundaries', desc: 'Each workflow receives only the access it needs, with practical separation between connected systems.' },
+              { label: 'Audit trail', title: 'A visible activity trail', desc: 'Important activity is recorded so your team can understand what happened, who owns the next step, and what comes next.' },
             ].map(item => (
               <div key={item.label} style={{ background: '#1e1a14', border: '1px solid #2e2820', borderRadius: 10, padding: '24px 22px' }}>
                 <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 12 }}>
@@ -934,7 +939,7 @@ export default function ServicesClient() {
                 { q: 'Do I need technical knowledge to work with you?', a: 'Not at all. You describe the problem in plain language — what takes too long, what breaks, what you do manually every week — and we translate that into a system.' },
                 { q: 'How much does it cost?', a: 'Scope determines price, so we give you an exact number before work begins. Simple automation pipelines start small. Full web products or complex multi-system builds are scoped individually. The discovery call is always free.' },
                 { q: 'What happens after the project is delivered?', a: 'You get full documentation, credentials, and a walkthrough session. You own the system — the code, the workflows, the infrastructure. Nothing is locked to us.' },
-                { q: 'Do you work with businesses outside Canada?', a: 'Yes. Remote-first by design. Current and past clients span North America, Europe, South Asia, and Southeast Asia. Timezone has never been a blocker.' },
+                { q: 'Do you work with businesses outside Canada?', a: 'Yes. Atlas operates from Canada and is designed for remote delivery. Scope, reviews, documentation, and handoff can all be handled online across time zones.' },
               ] as { q: string; a: string }[]).map((item, i) => (
                 <div key={i} style={{ padding: '22px 0', borderTop: '1px solid #2e2820' }}>
                   <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 19, fontWeight: 600, color: '#e8c994', marginBottom: 10, lineHeight: 1.25 }}>
@@ -958,10 +963,10 @@ export default function ServicesClient() {
                 Free Consultation · No Commitment
               </div>
               <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(28px,4vw,48px)', fontWeight: 600, color: '#e8c994', margin: '0 0 20px', lineHeight: 1.15 }}>
-                Ready to stop doing it manually?
+                What should your team stop doing by hand?
               </h2>
               <p style={{ fontSize: 15, color: '#a09070', lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 520 }}>
-                Book a free 30-minute discovery call. We&apos;ll review your workflow and come back with a clear plan — no sales pitch, no commitment.
+                Tell us about one repetitive process. We&apos;ll help you identify a focused, practical place to begin — with clear boundaries and no commitment.
               </p>
               <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Link
@@ -973,7 +978,7 @@ export default function ServicesClient() {
                     textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
                   }}
                 >
-                  Book a Discovery Call →
+                  Start a Conversation →
                 </Link>
                 <button
                   onClick={scrollToServices}
@@ -999,7 +1004,7 @@ export default function ServicesClient() {
           Operated from Canada · Serving clients remotely worldwide
         </div>
         <div style={{ fontSize: 12, color: '#6b6050' }}>
-          © {new Date().getFullYear()} Atlas Technology &nbsp;·&nbsp;
+          © {new Date().getFullYear()} Atlas AI Technology &nbsp;·&nbsp;
           <Link href="/contact" style={{ color: '#6b6050', textDecoration: 'none' }}>Contact</Link>
           &nbsp;·&nbsp;
           <Link href="/blog" style={{ color: '#6b6050', textDecoration: 'none' }}>Blog</Link>
