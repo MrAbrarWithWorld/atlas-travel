@@ -39,7 +39,7 @@ a{color:#c9a96e;text-decoration:underline;text-decoration-color:rgba(201,169,110
   </header>
 
   <h1>Privacy Policy</h1>
-  <p class="date">Last updated: June 29, 2026</p>
+  <p class="date">Last updated: August 30, 2026</p>
 
   <p>ATLAS is committed to protecting your privacy. This Privacy Policy explains what information ATLAS collects, how it is used, and the choices available to you when using the service at <a href="https://getatlas.ca">getatlas.ca</a> and via the Atlas mobile app (Android). By using ATLAS, you agree to the practices described in this policy.</p>
 
@@ -47,6 +47,8 @@ a{color:#c9a96e;text-decoration:underline;text-decoration-color:rgba(201,169,110
   <p>ATLAS collects only what is necessary to provide a high-quality travel planning experience:</p>
   <ul>
     <li><strong>Account information</strong> — Name and email address provided when signing in with Google.</li>
+    <li><strong>Service enquiry and CRM information</strong> — Details you submit through a service or contact form, such as name, business email, company, phone number, selected service, current tools, timeline, budget range, project description, consent record, and request reference.</li>
+    <li><strong>Enquiry attribution</strong> — Limited campaign parameters (UTM values) and the referring site's origin and path. Query strings and fragments are not intentionally collected from referrer URLs.</li>
     <li><strong>Travel queries and AI responses</strong> — Conversations stored to enable trip history and saved plans.</li>
     <li><strong>Saved trips and projects</strong> — Travel plans and project collections saved to your account.</li>
     <li><strong>Personal preferences</strong> — Optional settings such as passport type, home city, travel style, and custom notes. Stored locally in your browser and used only to personalize AI responses when provided.</li>
@@ -67,12 +69,15 @@ a{color:#c9a96e;text-decoration:underline;text-decoration-color:rgba(201,169,110
     <li>To enforce usage limits and prevent misuse</li>
     <li>To process payments and manage subscriptions via Stripe</li>
     <li>To respond to support requests submitted to <a href="mailto:support@getatlas.ca">support@getatlas.ca</a></li>
+    <li>To review service enquiries, qualify fit, schedule discovery, prepare scopes or quotes, and provide requested client support</li>
+    <li>To measure which service pages and campaigns lead to enquiries, without using advertising cookies</li>
     <li>To improve ATLAS over time</li>
   </ul>
 
   <h2>3. Data Storage and Security</h2>
   <p>Account and trip data are stored securely in Supabase, a SOC 2 compliant cloud database platform. Personal preferences are stored in your browser's local storage and are not shared with third parties unless actively used in a conversation.</p>
   <p>Conversation history is stored temporarily in local storage and cleared after 24 hours for guest users. Saved plans for logged-in users are retained until deleted or an account deletion is requested. Industry-standard TLS encryption is used for all data in transit and at rest.</p>
+  <p>Service enquiries may be processed through ATLAS's CRM and workflow automation systems. Access is limited to people and providers who need the information to review, route, and respond to the request.</p>
 
   <h2>4. Cookies and Local Storage</h2>
   <p>ATLAS uses essential cookies and browser local storage to:</p>
@@ -96,6 +101,8 @@ a{color:#c9a96e;text-decoration:underline;text-decoration-color:rgba(201,169,110
     <li><strong>YouTube</strong> — Travel video links are surfaced via the YouTube Data API. No personal data is shared with YouTube beyond standard API usage.</li>
     <li><strong>Vercel</strong> — Hosting and serverless infrastructure.</li>
     <li><strong>Zoho Mail</strong> — Transactional and customer support email system.</li>
+    <li><strong>HubSpot</strong> — Customer relationship management for service enquiries, follow-up activity, and client pipeline records.</li>
+    <li><strong>n8n</strong> — Workflow automation used to validate and route service enquiries between ATLAS systems.</li>
     <li><strong>Firebase (Google)</strong> — Push notification delivery for the Android app via Firebase Cloud Messaging (FCM). No personal data is shared beyond the device token required for notification delivery. <a href="https://firebase.google.com/support/privacy" target="_blank">Firebase Privacy Policy</a>.</li>
   </ul>
 
@@ -107,6 +114,7 @@ a{color:#c9a96e;text-decoration:underline;text-decoration-color:rgba(201,169,110
     <li><strong>Guest users</strong> — Conversation data is stored in local storage and cleared after 24 hours.</li>
     <li><strong>Logged-in users</strong> — Saved trips and account data are retained until deleted or account deletion is requested.</li>
     <li><strong>Payment records</strong> — Retained as required by Stripe and applicable financial regulations.</li>
+    <li><strong>Service enquiries</strong> — Retained while a request or client relationship is active and for up to 24 months after the last business interaction, unless a longer period is required for legal, tax, security, or dispute purposes, or deletion is requested where applicable.</li>
   </ul>
 
   <h2>8. Your Rights</h2>

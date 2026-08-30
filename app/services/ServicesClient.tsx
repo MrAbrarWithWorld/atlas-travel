@@ -454,9 +454,11 @@ function DrawerBullet({ children }: { children: React.ReactNode }) {
 function ServiceDrawer({
   service,
   onClose,
+  contactHref,
 }: {
   service: Service;
   onClose: () => void;
+  contactHref: string;
 }) {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -573,7 +575,7 @@ function ServiceDrawer({
 
         <div className={styles.drawerCta}>
           <p>Final scope, delivery plan, and handoff are defined around the selected workflow.</p>
-          <Link href="/contact" className={styles.primaryButton}>
+          <Link href={contactHref} className={styles.primaryButton}>
             Discuss this workflow
             <ArrowRight size={16} weight="bold" />
           </Link>
@@ -810,9 +812,27 @@ function WorkflowFeature({
 
 export default function ServicesClient() {
   const [openService, setOpenService] = useState<Service | null>(null);
+  const [contactAttribution, setContactAttribution] = useState('');
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const servicesRef = useRef<HTMLElement>(null);
   const { motionEnabled, toggle } = useMotionPreference();
+
+  useEffect(() => {
+    const incoming = new URLSearchParams(window.location.search);
+    const preserved = new URLSearchParams();
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'].forEach((key) => {
+      const value = incoming.get(key)?.trim().slice(0, 160);
+      if (value) preserved.set(key, value);
+    });
+    setContactAttribution(preserved.toString());
+  }, []);
+
+  const contactHref = useCallback((serviceId?: string) => {
+    const params = new URLSearchParams(contactAttribution);
+    if (serviceId) params.set('service', serviceId);
+    const query = params.toString();
+    return query ? `/contact?${query}` : '/contact';
+  }, [contactAttribution]);
 
   const showService = (service: Service, trigger: HTMLElement) => {
     returnFocusRef.current = trigger;
@@ -838,7 +858,7 @@ export default function ServicesClient() {
       <SiteNav
         activePath="/services"
         ctaLabel="Plan my automation →"
-        ctaHref="/contact"
+        ctaHref={contactHref()}
       />
 
       <main>
@@ -856,7 +876,7 @@ export default function ServicesClient() {
                 actions—so your team stays focused and the next step stays visible.
               </p>
               <div className={styles.heroActions}>
-                <Link href="/contact" className={styles.primaryButton}>
+                <Link href={contactHref()} className={styles.primaryButton}>
                   Plan my automation
                   <ArrowRight size={16} weight="bold" />
                 </Link>
@@ -1021,7 +1041,7 @@ export default function ServicesClient() {
                     {content}
                   </a>
                 ) : (
-                  <Link key={product.title} className={styles.productCard} href={product.href}>
+                  <Link key={product.title} className={styles.productCard} href={product.href === '/contact' ? contactHref() : product.href}>
                     {content}
                   </Link>
                 );
@@ -1065,7 +1085,7 @@ export default function ServicesClient() {
                   <span className={styles.eyebrow}>{item.label}</span>
                   <h3>{item.title}</h3>
                   <p>{item.copy}</p>
-                  <Link href="/contact">
+                  <Link href={contactHref()}>
                     Discuss the fit
                     <ArrowRight size={15} weight="bold" />
                   </Link>
@@ -1130,7 +1150,7 @@ export default function ServicesClient() {
             <h2>What should your team stop doing by hand?</h2>
             <p>Tell us about one repetitive process. We will help you find a practical place to begin, with the right controls designed in.</p>
             <div className={styles.heroActions}>
-              <Link href="/contact" className={styles.primaryButton}>
+              <Link href={contactHref()} className={styles.primaryButton}>
                 Start the conversation
                 <ArrowRight size={16} weight="bold" />
               </Link>
@@ -1146,14 +1166,20 @@ export default function ServicesClient() {
       <footer className={styles.footer}>
         <span>Based in Canada · Available for remote collaboration</span>
         <nav aria-label="Footer">
-          <Link href="/contact">Contact</Link>
+          <Link href={contactHref()}>Contact</Link>
           <Link href="/blog">Blog</Link>
           <Link href="/">Travel app</Link>
         </nav>
         <span>© {new Date().getFullYear()} Atlas AI Technology</span>
       </footer>
 
-      {openService && <ServiceDrawer service={openService} onClose={closeService} />}
+      {openService && (
+        <ServiceDrawer
+          service={openService}
+          onClose={closeService}
+          contactHref={contactHref(openService.id)}
+        />
+      )}
     </div>
   );
 }
