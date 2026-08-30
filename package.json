@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev-next.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.45.4",
     "next": "15.5.15",
     "nodemailer": "^6.9.16",

@@ -1,11 +1,46 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 import Link from 'next/link';
+import {
+  ArrowRight,
+  ArrowsClockwise,
+  BracketsCurly,
+  Browser,
+  CaretDown,
+  ChartLineUp,
+  Check,
+  CheckCircle,
+  ClipboardText,
+  Code,
+  Compass,
+  Database,
+  EnvelopeSimple,
+  FlowArrow,
+  Gauge,
+  LinkSimple,
+  ListChecks,
+  LockKey,
+  Monitor,
+  Pause,
+  Play,
+  RocketLaunch,
+  Robot,
+  ShieldCheck,
+  Sparkle,
+  Stack,
+  UserCheck,
+  X,
+} from '@phosphor-icons/react';
 import SiteNav from '../components/SiteNav';
-
-/* ─── DATA ─────────────────────────────────────────────────────────────────── */
+import styles from './ServicesClient.module.css';
 
 const SERVICES = [
   {
@@ -13,28 +48,30 @@ const SERVICES = [
     abbrev: 'AI',
     category: 'Automation',
     title: 'AI Workflow Automation',
-    tagline: 'Trigger-based pipelines with human approval gates',
-    scope: '2–4 weeks',
-    overview: 'Replace manual back-and-forth with automated pipelines — lead intake → CRM log → AI-drafted reply → human approval → delivery. Built on n8n with configurable approval checkpoints so nothing sensitive goes out unsupervised.',
-    bestFor: 'Service businesses, agencies, and operators managing high-volume inbound — especially those losing leads to inbox delays or timezone gaps.',
+    shortTitle: 'Workflow automation',
+    tagline: 'Turn requests, approvals, handoffs, and updates into one controlled flow.',
+    overview:
+      'Atlas maps the way work already moves through your team, then builds an automation around it. AI can prepare the next step while consequential actions remain behind an approval gate.',
+    bestFor:
+      'Service teams and operators dealing with repeated intake, routing, follow-up, and status communication.',
     problems: [
-      'Leads fall through the cracks during off-hours',
-      'Hours spent drafting the same follow-up emails',
-      'No consistent handoff process between intake and response',
-      'Manual steps that break when someone is unavailable',
+      'Requests arrive through several channels and lose context',
+      'Approvals depend on manual reminders',
+      'Routine follow-up is rewritten every time',
+      'Ownership becomes unclear after a handoff',
     ],
     whatWeBuild: [
-      'n8n trigger workflows (form, webhook, or schedule)',
-      'AI drafting nodes using Claude or GPT-4o',
-      'Human approval gate via Slack message or email',
-      'CRM write step (HubSpot, Notion, or Supabase)',
-      'Notification delivery to Slack, email, or WhatsApp',
+      'Structured intake from forms, email, webhook, or schedule',
+      'Context collection and conditional routing',
+      'AI-assisted drafting with output validation',
+      'Human approval checkpoints for sensitive actions',
+      'Task, status, and activity-history updates',
     ],
     deliverables: [
-      'Live n8n workflow (exported + documented)',
-      'Approval interface configured in your Slack or inbox',
-      'Test suite with sample data walkthroughs',
-      'Written runbook for making changes yourself',
+      'Documented current-state and proposed workflow',
+      'Configured automation with test scenarios',
+      'Approval and exception-handling design',
+      'Handoff notes for operating the system',
     ],
   },
   {
@@ -42,86 +79,92 @@ const SERVICES = [
     abbrev: 'CRM',
     category: 'CRM',
     title: 'CRM & Lead Capture',
-    tagline: 'Full inbound pipeline from form to CRM to notification',
-    scope: '1–2 weeks',
-    overview: 'A complete inbound system: form submission or API call → webhook route → CRM record creation → team notification → AI-drafted first reply ready for approval. No more manually copying leads from email into a spreadsheet.',
-    bestFor: 'Businesses relying on inbound leads with no dedicated ops or sales team — consultants, agencies, B2B service providers.',
+    shortTitle: 'Intake & CRM systems',
+    tagline: 'Move an inbound request from capture to ownership without copy-and-paste work.',
+    overview:
+      'A connected intake system can create a clean CRM record, notify the right person, prepare a response, and keep the next action visible.',
+    bestFor:
+      'Businesses that rely on inbound enquiries but do not have a consistent route from first contact to follow-up.',
     problems: [
-      'No visibility into lead volume or source',
-      'Leads arrive via email and get buried',
-      'No system for routing or follow-up assignment',
-      'CRM feels too complex to actually maintain',
+      'Leads sit in a shared inbox without clear ownership',
+      'Information is copied between email and spreadsheets',
+      'Duplicate or incomplete records create extra work',
+      'Follow-up timing depends on someone remembering',
     ],
     whatWeBuild: [
-      'Web form or API intake endpoint',
-      'n8n webhook routing and deduplication',
-      'HubSpot, Notion, or custom CRM integration',
-      'Slack and email notification on new lead',
-      'AI-drafted reply queued for human approval',
+      'Web-form or API intake endpoint',
+      'Validation, routing, and deduplication',
+      'CRM record creation and ownership assignment',
+      'Team notification in the preferred channel',
+      'Draft response queued for human review',
     ],
     deliverables: [
-      'Live intake form (embed-ready or standalone)',
-      'Working CRM connection with test records',
-      'Notification setup in your preferred channel',
-      'Lead demo walkthrough showing full journey',
+      'Working intake route with test records',
+      'Configured CRM connection',
+      'Notification and ownership rules',
+      'End-to-end walkthrough and handoff notes',
     ],
   },
   {
     id: 'website-development',
     abbrev: 'WEB',
     category: 'Web',
-    title: 'Website Development',
-    tagline: 'Next.js sites with automation hooks built in from the start',
-    scope: '3–6 weeks',
-    overview: 'Production-grade Next.js websites with fast load times, clean design, and automation infrastructure built in — not bolted on later. Lead capture routes to your CRM on day one. Content is yours to manage without a developer.',
-    bestFor: 'Startups, service businesses, and product studios outgrowing Wix or WordPress and needing a site that can scale with them.',
+    title: 'Web Apps & Portals',
+    shortTitle: 'Web apps & portals',
+    tagline: 'Useful client and internal experiences with automation designed in from the start.',
+    overview:
+      'Atlas builds focused web applications and portals that connect the user experience to the operational system behind it.',
+    bestFor:
+      'Teams that need a practical customer, resident, vendor, or internal interface instead of another disconnected form.',
     problems: [
-      'Slow or outdated site hurting credibility',
-      'No content control without a developer',
-      "Lead capture goes to email — no system behind it",
-      "Can't add features without starting over",
+      'The current website does not support the real workflow',
+      'Users cannot see request or task status',
+      'Staff re-enter information into internal tools',
+      'New features are difficult to add safely',
     ],
     whatWeBuild: [
-      'Next.js App Router site (TypeScript, Tailwind)',
-      'Supabase or headless CMS for content management',
-      'Lead capture connected to CRM via API route',
-      'SEO structure, sitemap, metadata',
-      'Vercel deployment with CI/CD pipeline',
+      'Next.js interfaces designed around the task',
+      'Secure server-side routes and validation',
+      'Database, content, or CRM connections',
+      'Role-appropriate views and status states',
+      'Deployment and handoff configuration',
     ],
     deliverables: [
-      'Deployed site on your domain',
-      'Admin content panel (no-code edits)',
-      'CI/CD pipeline for future updates',
-      'Handoff guide for making changes yourself',
+      'Responsive application or portal',
+      'Connected forms and operational routes',
+      'Tested primary user journey',
+      'Implementation and handoff notes',
     ],
   },
   {
     id: 'email-report-automation',
     abbrev: 'EML',
-    category: 'Email',
+    category: 'Communication',
     title: 'AI Email & Report Automation',
-    tagline: 'Scheduled AI-generated summaries with human review checkpoint',
-    scope: '1–3 weeks',
-    overview: 'Replace manually-written weekly reports and repetitive email drafting with scheduled AI pipelines. Atlas builds a system that compiles the relevant data, runs it through an AI summarization step, and delivers it for your review before sending.',
-    bestFor: 'Operators who write the same weekly digest, status update, or follow-up email on repeat — and want to reclaim those hours without losing control of what goes out.',
+    shortTitle: 'Email & reporting',
+    tagline: 'Compile the context, prepare the update, and leave the final decision with your team.',
+    overview:
+      'Atlas can assemble information from approved sources, prepare a structured draft, and deliver it to a review surface before anything is sent.',
+    bestFor:
+      'Operators who repeatedly prepare status reports, summaries, follow-ups, and internal updates.',
     problems: [
-      'Hours spent writing reports no one reads in full',
-      'Inconsistent follow-up cadence losing deals',
-      'Context lost between messages and meetings',
-      'Manually compiling data from multiple sources',
+      'The same report is assembled manually each cycle',
+      'Context is scattered across several tools',
+      'Drafting starts from a blank page every time',
+      'There is no consistent review checkpoint',
     ],
     whatWeBuild: [
-      'Scheduled n8n workflow (daily, weekly, or triggered)',
-      'Data aggregation from your sources (CRM, sheets, API)',
-      'AI summarization node with structured output',
-      'Human review + edit interface before delivery',
-      'Email delivery via SMTP, Gmail API, or Resend',
+      'Scheduled or event-triggered collection',
+      'Structured source aggregation',
+      'AI-assisted summaries using defined templates',
+      'Human review and edit checkpoint',
+      'Approved delivery and activity recording',
     ],
     deliverables: [
-      'Live scheduled workflow with test run',
-      'Review interface (Slack thread or email draft)',
-      'Template for editing output format',
-      'Schedule and delivery configuration',
+      'Configured workflow with a test run',
+      'Review surface and output template',
+      'Source and schedule configuration',
+      'Operating notes for future adjustments',
     ],
   },
   {
@@ -129,28 +172,30 @@ const SERVICES = [
     abbrev: 'OPS',
     category: 'Operations',
     title: 'Business Process Automation',
-    tagline: 'Map, eliminate, and systematize your most painful manual work',
-    scope: '2–4 weeks',
-    overview: 'Atlas maps your most time-consuming manual process — approvals, scheduling, data sync, notification chains — and builds an automated system to replace it. Starts with a discovery session to understand the actual pain, not the assumed solution.',
-    bestFor: 'Operations leads, office managers, and solo founders spending more than 3 hours per week on the same repetitive admin tasks.',
+    shortTitle: 'Process systems',
+    tagline: 'Replace fragile handoffs with a visible, testable operating path.',
+    overview:
+      'We identify a high-friction process, agree on the controls, and build a focused system that follows the way your team needs to work.',
+    bestFor:
+      'Operations leads, office managers, and founders managing repeated approvals, schedules, data sync, or notification chains.',
     problems: [
-      'Spreadsheets passed between people as a database',
-      'Approvals that require hunting someone down',
-      'Data in one tool that needs to be in another',
-      'Processes that break whenever someone is out',
+      'A spreadsheet is doing the work of a system',
+      'Approvals require chasing the right person',
+      'One tool contains data another tool needs',
+      'The process breaks when someone is unavailable',
     ],
     whatWeBuild: [
-      'Trigger-to-action automation chains (n8n)',
-      'Form or API input layer for structured data entry',
-      'Conditional routing and error handling',
-      'Human-in-loop approval gates for sensitive steps',
-      'Cross-tool data sync (CRM, sheets, Slack, email)',
+      'Trigger-to-action workflow design',
+      'Structured form or API input',
+      'Conditional routing and exception handling',
+      'Approval gates and ownership rules',
+      'Cross-tool status and data synchronization',
     ],
     deliverables: [
-      'Process map document (current vs. automated)',
-      'Live workflow with test results',
-      'Runbook for operating and modifying the system',
-      'Handoff session walking through every step',
+      'Current and proposed process map',
+      'Configured workflow with test results',
+      'Exception and recovery notes',
+      'Team walkthrough and handoff documentation',
     ],
   },
   {
@@ -158,862 +203,957 @@ const SERVICES = [
     abbrev: 'SDK',
     category: 'AI Product',
     title: 'AI Product & API Integration',
-    tagline: 'Add AI capabilities to existing products without a full ML stack',
-    scope: '2–5 weeks',
-    overview: 'Add chat, classification, summarization, or generation to an existing product or internal tool via Claude or GPT-4o API. Atlas handles prompt architecture, output validation, streaming, fallback logic, and integration into your existing codebase.',
-    bestFor: 'Technical founders or product teams with working apps that need intelligent features — without hiring an ML engineer or starting from scratch.',
+    shortTitle: 'AI product integration',
+    tagline: 'Add a focused AI capability without turning the whole product into an experiment.',
+    overview:
+      'Atlas integrates classification, summarization, drafting, or conversational assistance into an existing product with clear inputs, output validation, and fallback behavior.',
+    bestFor:
+      'Product teams with a specific, testable AI use case that should fit into an existing user journey.',
     problems: [
-      'AI feels too complex to integrate correctly',
-      'Unclear which model or API fits the use case',
-      'No structure for prompts, context, or output validation',
-      "Existing codebase doesn't know where AI fits in",
+      'The right AI use case is not clearly bounded',
+      'Prompts and outputs are difficult to test',
+      'Model failure behavior is undefined',
+      'The existing product has no safe integration path',
     ],
     whatWeBuild: [
-      'API integration layer (server-side, no keys in browser)',
-      'Prompt template system with structured output schemas',
-      'Streaming response support if needed',
-      'Fallback and error handling logic',
-      'Context management for multi-turn conversations',
+      'Server-side model integration',
+      'Prompt templates and structured output schemas',
+      'Validation, fallback, and error states',
+      'Context handling for the selected use case',
+      'A test path for regression review',
     ],
     deliverables: [
-      'Working integration in your codebase',
-      'Documented prompt system with examples',
-      'Test harness for regression testing',
-      'Usage guide for extending the integration',
+      'Working integration in the selected experience',
+      'Documented prompt and output contract',
+      'Test cases and failure-state review',
+      'Extension notes for future iterations',
     ],
   },
 ];
 
 const PRODUCTS = [
   {
-    id: 'atlas-travel',
-    label: 'Live Product',
+    label: 'Live product',
     title: 'Atlas AI Travel Planner',
-    desc: 'AI-powered itinerary builder for travellers. Plan entire trips in minutes with day-by-day schedules, AI chat, and shareable plans.',
+    desc: 'A day-by-day itinerary builder with planning, chat, and shareable trip views.',
     cta: 'Try Atlas',
     href: '/',
     external: false,
   },
   {
-    id: 'atlas-blog',
-    label: 'Content Platform',
+    label: 'Content platform',
     title: 'Atlas Travel Blog',
-    desc: 'Editorial and community platform for travel content. Destination guides, community posts, and SEO-optimised articles.',
-    cta: 'Read Blog',
+    desc: 'Destination guides and travel content built on the same Atlas web foundation.',
+    cta: 'Read the blog',
     href: '/blog',
     external: false,
   },
   {
-    id: 'atlas-news',
-    label: 'Media Product',
+    label: 'Media product',
     title: 'Atlas Travel News',
-    desc: 'Curated travel news aggregator. Automated summaries and updates from sources across the industry.',
-    cta: 'Visit News',
+    desc: 'A focused travel-news surface with organized summaries and updates.',
+    cta: 'Visit the news site',
     href: 'https://news.getatlas.ca',
     external: true,
   },
   {
-    id: 'atlas-studio',
-    label: 'For Clients',
+    label: 'Client work',
     title: 'Atlas Product Studio',
-    desc: 'Custom product development and automation for external clients. Request a free consultation to discuss your system.',
-    cta: 'Request a project',
+    desc: 'Practical product development and automation shaped around one real workflow.',
+    cta: 'Discuss a project',
     href: '/contact',
     external: false,
   },
 ];
 
 const CAPABILITIES = [
-  'n8n automation workflows (self-hosted or cloud)',
-  'Claude / GPT-4o API integration',
-  'Next.js full-stack web applications',
-  'Supabase database and authentication',
-  'Lead capture → CRM pipeline architecture',
-  'Slack / WhatsApp / email notifications',
-  'Human-in-loop approval systems',
-  'Vercel deployment and CI/CD pipelines',
-];
-
-const FLOW_NODES = [
-  { label: 'Client\nRequest', sub: 'intake' },
-  { label: 'Priority\n& Details', sub: 'triage' },
-  { label: 'AI\nDraft', sub: 'prepare' },
-  { label: 'Human\nApproval', sub: 'review gate' },
-  { label: 'Follow-up\nTask', sub: 'ownership' },
-  { label: 'Status\nUpdate', sub: 'delivery' },
-  { label: 'Activity\nLog', sub: 'audit trail' },
+  'Automation workflows',
+  'OpenAI and Anthropic models',
+  'Next.js applications',
+  'Supabase data systems',
+  'CRM and intake architecture',
+  'Slack, WhatsApp, and email',
+  'Human approval systems',
+  'Vercel delivery workflows',
 ];
 
 const STEPS = [
-  { num: '01', title: 'Find the friction', desc: 'We map the repetitive work, missed handoffs, and information gaps that cost your team time.' },
-  { num: '02', title: 'Design the control', desc: 'We agree on what AI can prepare, what your team approves, and what should always stay manual.' },
-  { num: '03', title: 'Build one useful flow', desc: 'Atlas builds and tests a focused workflow, connects it to your tools, and makes the result easy to verify.' },
-  { num: '04', title: 'Improve from evidence', desc: 'After the first flow is working, real usage and feedback guide what should be improved or expanded next.' },
+  {
+    num: '01',
+    title: 'Find the friction',
+    desc: 'We map the repeated work, missed handoffs, and information gaps.',
+    icon: Compass,
+  },
+  {
+    num: '02',
+    title: 'Design the control',
+    desc: 'We define what the system prepares, what people approve, and what stays manual.',
+    icon: Gauge,
+  },
+  {
+    num: '03',
+    title: 'Build one useful flow',
+    desc: 'We connect, configure, and test a focused workflow against realistic scenarios.',
+    icon: Code,
+  },
+  {
+    num: '04',
+    title: 'Improve from evidence',
+    desc: 'Real usage and feedback guide the next improvement or expansion.',
+    icon: ChartLineUp,
+  },
 ];
 
-/* ─── SMALL COMPONENTS ──────────────────────────────────────────────────────── */
+const HERO_STAGES = [
+  { title: 'Request received', icon: EnvelopeSimple },
+  { title: 'Context', icon: Stack },
+  { title: 'AI draft', icon: Sparkle },
+  { title: 'Human approval', icon: UserCheck },
+  { title: 'Work order', icon: ClipboardText },
+  { title: 'Logged outcome', icon: CheckCircle },
+];
 
-function Bullet({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 8 }}>
-      <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#c9a96e', lineHeight: '22px', flexShrink: 0 }}>▸</span>
-      <span style={{ fontSize: 13, color: '#c5b99a', lineHeight: 1.6 }}>{children}</span>
-    </div>
-  );
+const FEATURE_SLIDES = [
+  {
+    eyebrow: '01 · Workflow design',
+    title: 'Built around your workflow',
+    copy: 'We map how your team actually works—requests, approvals, handoffs, and updates—then build automation that follows it.',
+    bullets: [
+      'Capture from any approved channel',
+      'Route and prioritize with context',
+      'Sync status back to your systems',
+    ],
+  },
+  {
+    eyebrow: '02 · Human control',
+    title: 'Approval before action',
+    copy: 'AI can prepare the next step, while your team keeps control of sensitive messages, assignments, and consequential actions.',
+    bullets: [
+      'Place gates at the right decisions',
+      'Review, edit, approve, or return',
+      'Keep exceptions visible to people',
+    ],
+  },
+  {
+    eyebrow: '03 · Activity history',
+    title: 'A trail your team can follow',
+    copy: 'Each important transition can record what happened, what is waiting, and who owns the next step.',
+    bullets: [
+      'See the current workflow state',
+      'Keep ownership and handoffs clear',
+      'Review important activity later',
+    ],
+  },
+];
+
+const SERVICE_ICONS = [
+  FlowArrow,
+  Database,
+  Browser,
+  EnvelopeSimple,
+  ArrowsClockwise,
+  BracketsCurly,
+];
+
+type Service = (typeof SERVICES)[number];
+
+function useMotionPreference() {
+  const [motionEnabled, setMotionEnabled] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const saved = window.sessionStorage.getItem('atlas-services-motion');
+    const apply = () => {
+      if (saved === 'on') setMotionEnabled(true);
+      else if (saved === 'off') setMotionEnabled(false);
+      else setMotionEnabled(!media.matches);
+    };
+    apply();
+    media.addEventListener('change', apply);
+    return () => media.removeEventListener('change', apply);
+  }, []);
+
+  const toggle = useCallback(() => {
+    setMotionEnabled((current) => {
+      const next = !current;
+      window.sessionStorage.setItem('atlas-services-motion', next ? 'on' : 'off');
+      return next;
+    });
+  }, []);
+
+  return { motionEnabled, toggle };
 }
 
-function DrawerSection({ label, children }: { label: string; children: React.ReactNode }) {
+function RevealSection({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -30px' }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div style={{ marginBottom: 28 }}>
-      <div style={{ fontSize: 9, fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.2em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid #2e2820' }}>
-        {label}
-      </div>
+    <div
+      ref={ref}
+      className={[styles.reveal, visible ? styles.revealVisible : '', className]
+        .filter(Boolean)
+        .join(' ')}
+    >
       {children}
     </div>
   );
 }
 
-function ServiceIcon({ abbrev }: { abbrev: string }) {
+function MotionToggle({
+  enabled,
+  onToggle,
+}: {
+  enabled: boolean;
+  onToggle: () => void;
+}) {
   return (
-    <div style={{
-      width: 36, height: 36, borderRadius: 6,
-      border: '1px solid rgba(201,169,110,0.25)',
-      background: 'rgba(201,169,110,0.05)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 9, fontWeight: 800, letterSpacing: '0.06em',
-      color: '#c9a96e', fontFamily: 'monospace', flexShrink: 0,
-    }}>
-      {abbrev}
-    </div>
+    <button
+      type="button"
+      className={styles.motionToggle}
+      onClick={onToggle}
+      aria-pressed={enabled}
+    >
+      {enabled ? <Pause size={14} weight="bold" /> : <Play size={14} weight="fill" />}
+      <span>Motion {enabled ? 'on' : 'off'}</span>
+    </button>
   );
 }
 
-function RevealSection({ children, style: s, delay = 0 }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setTimeout(() => el.classList.add('in'), delay); obs.disconnect(); } },
-      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [delay]);
-  return <div ref={ref} className="reveal-item" style={s}>{children}</div>;
+function DrawerBullet({ children }: { children: React.ReactNode }) {
+  return (
+    <li className={styles.drawerBullet}>
+      <Check size={14} weight="bold" aria-hidden="true" />
+      <span>{children}</span>
+    </li>
+  );
 }
 
-/* ─── DRAWER ────────────────────────────────────────────────────────────────── */
-
-type Service = typeof SERVICES[number];
-
-function ServiceDrawer({ svc, onClose }: { svc: Service; onClose: () => void }) {
+function ServiceDrawer({
+  service,
+  onClose,
+}: {
+  service: Service;
+  onClose: () => void;
+}) {
   const [mounted, setMounted] = useState(false);
-  const [reduced, setReduced] = useState(false);
   const [visible, setVisible] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const reduceMotion = useRef(false);
 
   useEffect(() => {
+    reduceMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setMounted(true);
-    setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    const orig = document.body.style.overflow;
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    requestAnimationFrame(() => setVisible(true));
-    return () => { document.body.style.overflow = orig; };
+    window.requestAnimationFrame(() => {
+      setVisible(true);
+      closeRef.current?.focus();
+    });
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
   }, []);
 
-  const handleClose = useCallback(() => {
-    if (!reduced) {
-      setVisible(false);
-      setTimeout(onClose, 280);
-    } else {
+  const close = useCallback(() => {
+    if (reduceMotion.current) {
       onClose();
+      return;
     }
-  }, [reduced, onClose]);
+    setVisible(false);
+    window.setTimeout(onClose, 320);
+  }, [onClose]);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [handleClose]);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== 'Tab' || !panelRef.current) return;
+      const focusable = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [close]);
 
   if (!mounted) return null;
 
-  const transitionStyle = reduced ? {} : {
-    transition: 'opacity 0.28s ease, transform 0.28s cubic-bezier(0.22,1,0.36,1)',
-  };
-
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
-  const panelStyle: React.CSSProperties = isMobile
-    ? {
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        height: '90dvh', background: '#1e1a14',
-        border: '1px solid #3a3228', borderRadius: '16px 16px 0 0',
-        overflowY: 'auto', zIndex: 1001, padding: '28px 22px 40px',
-        transform: visible ? 'translateY(0)' : 'translateY(100%)',
-        opacity: visible ? 1 : 0, ...transitionStyle,
-      }
-    : {
-        position: 'fixed', top: 0, right: 0,
-        width: 520, maxWidth: '92vw', height: '100dvh',
-        background: '#1e1a14', border: '1px solid #3a3228',
-        overflowY: 'auto', zIndex: 1001, padding: '36px 36px 60px',
-        transform: visible ? 'translateX(0)' : 'translateX(100%)',
-        opacity: visible ? 1 : 0, ...transitionStyle,
-      };
-
   return createPortal(
-    <>
-      <div
-        onClick={handleClose}
-        style={{
-          position: 'fixed', inset: 0, background: 'rgba(10,9,7,0.72)',
-          backdropFilter: 'blur(4px)', zIndex: 1000,
-          opacity: visible ? 1 : 0, ...transitionStyle,
-        }}
-        aria-hidden="true"
+    <div className={styles.drawerLayer} data-visible={visible}>
+      <button
+        type="button"
+        className={styles.drawerBackdrop}
+        onClick={close}
+        aria-label="Close service details"
       />
-      <div style={panelStyle} role="dialog" aria-modal="true" aria-label={svc.title}>
-
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <ServiceIcon abbrev={svc.abbrev} />
-            <div>
-              <div style={{ fontSize: 9, fontFamily: 'monospace', fontWeight: 700, letterSpacing: '0.18em', color: '#a09070', textTransform: 'uppercase', marginBottom: 4 }}>
-                {svc.category}
-              </div>
-              <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 600, color: '#e8c994', lineHeight: 1.15 }}>
-                {svc.title}
-              </div>
-            </div>
+      <div
+        ref={panelRef}
+        className={styles.drawer}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="service-drawer-title"
+      >
+        <div className={styles.drawerHeader}>
+          <div>
+            <span className={styles.eyebrow}>{service.category}</span>
+            <h2 id="service-drawer-title">{service.title}</h2>
           </div>
           <button
-            onClick={handleClose}
+            ref={closeRef}
+            type="button"
+            className={styles.iconButton}
+            onClick={close}
             aria-label="Close"
-            style={{ background: 'none', border: '1px solid #3a3228', borderRadius: 6, color: '#a09070', cursor: 'pointer', padding: '6px 10px', fontSize: 14, flexShrink: 0, marginLeft: 12 }}
           >
-            ✕
+            <X size={20} weight="bold" />
           </button>
         </div>
 
-        {/* Scope badge */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,169,110,0.06)', border: '1px solid rgba(201,169,110,0.2)', borderRadius: 100, padding: '4px 14px', marginBottom: 28 }}>
-          <span style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: '#c9a96e', textTransform: 'uppercase' }}>Starting scope</span>
-          <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#ede5d5', fontWeight: 600 }}>{svc.scope}</span>
+        <p className={styles.drawerLead}>{service.tagline}</p>
+
+        <div className={styles.drawerSection}>
+          <span className={styles.drawerLabel}>Overview</span>
+          <p>{service.overview}</p>
+        </div>
+        <div className={styles.drawerSection}>
+          <span className={styles.drawerLabel}>Best fit</span>
+          <p>{service.bestFor}</p>
+        </div>
+        <div className={styles.drawerSection}>
+          <span className={styles.drawerLabel}>Problems addressed</span>
+          <ul>{service.problems.map((item) => <DrawerBullet key={item}>{item}</DrawerBullet>)}</ul>
+        </div>
+        <div className={styles.drawerSection}>
+          <span className={styles.drawerLabel}>What Atlas can build</span>
+          <ul>{service.whatWeBuild.map((item) => <DrawerBullet key={item}>{item}</DrawerBullet>)}</ul>
+        </div>
+        <div className={styles.drawerSection}>
+          <span className={styles.drawerLabel}>Example deliverables</span>
+          <ul>{service.deliverables.map((item) => <DrawerBullet key={item}>{item}</DrawerBullet>)}</ul>
         </div>
 
-        <DrawerSection label="Overview">
-          <p style={{ fontSize: 14, color: '#c5b99a', lineHeight: 1.7, margin: 0 }}>{svc.overview}</p>
-        </DrawerSection>
-
-        <DrawerSection label="Best for">
-          <p style={{ fontSize: 13, color: '#c5b99a', lineHeight: 1.7, margin: 0 }}>{svc.bestFor}</p>
-        </DrawerSection>
-
-        <DrawerSection label="Problems solved">
-          {svc.problems.map((p, i) => <Bullet key={i}>{p}</Bullet>)}
-        </DrawerSection>
-
-        <DrawerSection label="What Atlas builds">
-          {svc.whatWeBuild.map((w, i) => <Bullet key={i}>{w}</Bullet>)}
-        </DrawerSection>
-
-        <DrawerSection label="Example deliverables">
-          {svc.deliverables.map((d, i) => <Bullet key={i}>{d}</Bullet>)}
-        </DrawerSection>
-
-        {/* CTA */}
-        <div style={{ paddingTop: 20, borderTop: '1px solid #2e2820' }}>
-          <p style={{ fontSize: 13, color: '#a09070', lineHeight: 1.6, margin: '0 0 20px' }}>
-            Every engagement starts with a free audit call — no commitment required.
-          </p>
-          <Link
-            href="/contact"
-            style={{
-              display: 'inline-block',
-              background: '#c9a96e', color: '#1c1914',
-              borderRadius: 8, padding: '13px 28px',
-              fontSize: 13, fontWeight: 700, letterSpacing: '0.08em',
-              textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
-            }}
-          >
-            Book a Discovery Call →
+        <div className={styles.drawerCta}>
+          <p>Final scope, delivery plan, and handoff are defined around the selected workflow.</p>
+          <Link href="/contact" className={styles.primaryButton}>
+            Discuss this workflow
+            <ArrowRight size={16} weight="bold" />
           </Link>
         </div>
       </div>
-    </>,
+    </div>,
     document.body
   );
 }
 
-/* ─── SERVICE CARD ──────────────────────────────────────────────────────────── */
+function HeroWorkflow({
+  motionEnabled,
+}: {
+  motionEnabled: boolean;
+}) {
+  const [activeStage, setActiveStage] = useState(3);
+  const [manual, setManual] = useState(false);
 
-function ServiceCard({ svc, onOpen }: { svc: Service; onOpen: () => void }) {
-  const [hov, setHov] = useState(false);
+  useEffect(() => {
+    if (!motionEnabled || manual) return;
+    const timer = window.setInterval(() => {
+      setActiveStage((current) => (current + 1) % HERO_STAGES.length);
+    }, 2400);
+    return () => window.clearInterval(timer);
+  }, [motionEnabled, manual]);
+
+  const activeTitle = HERO_STAGES[activeStage].title;
+  const approvalActive = activeStage === 3;
+
   return (
-    <div
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        background: hov ? '#231f18' : '#1e1a14',
-        border: `1px solid ${hov ? 'rgba(201,169,110,0.3)' : '#2e2820'}`,
-        borderRadius: 10, padding: '22px 20px', cursor: 'pointer',
-        transition: 'background 0.18s, border-color 0.18s, box-shadow 0.18s',
-        boxShadow: hov ? '0 0 24px rgba(201,169,110,0.06)' : 'none',
-        display: 'flex', flexDirection: 'column', gap: 14,
-      }}
-      onClick={onOpen}
-      role="button"
-      tabIndex={0}
-      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onOpen(); }}
-      aria-label={`Open details for ${svc.title}`}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <ServiceIcon abbrev={svc.abbrev} />
-          <span style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: '#a09070', textTransform: 'uppercase' }}>
-            {svc.category}
-          </span>
-        </div>
-        <span style={{ fontFamily: 'monospace', fontSize: 9, color: '#6b6050', letterSpacing: '0.1em' }}>
-          {svc.scope}
+    <div className={styles.heroConsole} aria-label="Example property service workflow">
+      <div className={styles.consoleTexture} aria-hidden="true" />
+      <div className={styles.scanLine} aria-hidden="true" />
+      <div className={styles.consoleTopline}>
+        <span>Example workflow</span>
+        <span className={styles.consoleDivider}>Property service request</span>
+        <span className={styles.exampleOnly}>
+          <span className={styles.liveDot} />
+          Example only
         </span>
       </div>
 
-      <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 20, fontWeight: 600, color: '#e8c994', lineHeight: 1.2 }}>
-        {svc.title}
-      </div>
-
-      <div style={{ fontSize: 12, color: '#a09070', lineHeight: 1.55, flex: 1 }}>
-        {svc.tagline}
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: hov ? '#c9a96e' : '#7a6a50', textTransform: 'uppercase', transition: 'color 0.15s' }}>
-          View system details
-        </span>
-        <span style={{ fontFamily: 'monospace', fontSize: 11, color: hov ? '#c9a96e' : '#7a6a50', transition: 'color 0.15s, transform 0.15s', display: 'inline-block', transform: hov ? 'translateX(3px)' : 'none' }}>
-          →
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* ─── AUTOMATION FLOW DIAGRAM ───────────────────────────────────────────────── */
-
-function AutoFlowDiagram() {
-  return (
-    <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: 4 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 0, minWidth: 680 }}>
-        {FLOW_NODES.map((node, i) => {
-          const isApproval = node.sub === 'review gate';
+      <ol className={styles.stageRail}>
+        {HERO_STAGES.map((stage, index) => {
+          const Icon = stage.icon;
+          const isActive = index === activeStage;
+          const isComplete = index < activeStage;
           return (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i === FLOW_NODES.length - 1 ? 'none' : 1 }}>
-              <div style={{
-                background: isApproval ? 'rgba(201,169,110,0.08)' : '#1e1a14',
-                border: isApproval ? '1px solid rgba(201,169,110,0.35)' : '1px solid #2e2820',
-                borderRadius: 8, padding: '10px 12px', minWidth: 76, flexShrink: 0,
-                textAlign: 'center',
-              }}>
-                {node.label.split('\n').map((line, j) => (
-                  <div key={j} style={{
-                    fontFamily: 'monospace', fontSize: 10, fontWeight: 700,
-                    letterSpacing: '0.04em', color: isApproval ? '#c9a96e' : '#ede5d5',
-                    lineHeight: 1.3, whiteSpace: 'nowrap',
-                  }}>
-                    {line}
-                  </div>
-                ))}
-                <div style={{ fontFamily: 'monospace', fontSize: 8, color: '#6b6050', marginTop: 5, letterSpacing: '0.06em' }}>
-                  {node.sub}
-                </div>
-              </div>
-              {i < FLOW_NODES.length - 1 && (
-                <div style={{ display: 'flex', alignItems: 'center', flex: 1, height: 1, position: 'relative', minWidth: 16 }}>
-                  <div style={{ flex: 1, height: 1, background: '#3a3228' }} />
-                  <div style={{ fontFamily: 'monospace', fontSize: 10, color: '#4a4035', flexShrink: 0, lineHeight: 1 }}>›</div>
-                </div>
+            <li
+              key={stage.title}
+              className={styles.stage}
+              data-active={isActive}
+              data-complete={isComplete}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setManual(true);
+                  setActiveStage(index);
+                }}
+                aria-current={isActive ? 'step' : undefined}
+              >
+                <span className={styles.stageIcon}>
+                  <Icon size={18} weight={isActive ? 'duotone' : 'regular'} />
+                </span>
+                <span>{stage.title}</span>
+              </button>
+              {index < HERO_STAGES.length - 1 && (
+                <span className={styles.stageConnector} aria-hidden="true">
+                  <span />
+                </span>
               )}
-            </div>
+            </li>
           );
         })}
+      </ol>
+
+      <div className={styles.consoleBody}>
+        <div className={styles.approvalPanel}>
+          <span className={styles.consoleLabel}>
+            Step {String(activeStage + 1).padStart(2, '0')} of 06
+          </span>
+          <h3>{approvalActive ? 'Human approval' : activeTitle}</h3>
+          <p>
+            {approvalActive
+              ? 'Review the AI-prepared draft. Edit if needed, then approve the next action.'
+              : 'The example is moving through the selected workflow state. Your system would reflect your team’s real controls.'}
+          </p>
+
+          <dl className={styles.summaryGrid}>
+            <div>
+              <dt>Request</dt>
+              <dd>Leaking faucet in Unit 3B</dd>
+            </div>
+            <div>
+              <dt>Property</dt>
+              <dd>Maple Walk Apartments</dd>
+            </div>
+            <div>
+              <dt>Category</dt>
+              <dd>Plumbing · Leak</dd>
+            </div>
+            <div>
+              <dt>Priority</dt>
+              <dd><span className={styles.priorityDot} /> Medium</dd>
+            </div>
+            <div>
+              <dt>Assignee</dt>
+              <dd>Turner Plumbing</dd>
+            </div>
+            <div>
+              <dt>Status</dt>
+              <dd>{activeTitle}</dd>
+            </div>
+          </dl>
+
+          <div className={styles.aiNote}>
+            <span>AI notes</span>
+            <p>Detected an ongoing leak risk. Prior similar issue logged for the same unit.</p>
+          </div>
+        </div>
+
+        <div className={styles.reviewPanel}>
+          <span className={styles.consoleLabel}>Review controls</span>
+          <button type="button" className={styles.approveButton}>
+            Approve &amp; dispatch
+            <ArrowRight size={15} weight="bold" />
+            <span className={styles.approvalPulse} aria-hidden="true" />
+          </button>
+          <button type="button" className={styles.secondaryConsoleButton}>
+            Request changes
+          </button>
+
+          <div className={styles.activity}>
+            <span className={styles.consoleLabel}>Activity trail</span>
+            <div className={styles.activityRow}>
+              <span className={styles.activityTime}>8:42 AM</span>
+              <span>Draft prepared by Atlas</span>
+              <span className={styles.aiTag}>AI</span>
+            </div>
+            <div className={styles.activityRow} data-current={approvalActive}>
+              <span className={styles.activityTime}>8:45 AM</span>
+              <span>{approvalActive ? 'Waiting for human approval' : activeTitle}</span>
+              <span className={styles.youTag}>You</span>
+            </div>
+            <div className={styles.activityRow} data-muted="true">
+              <span className={styles.activityTime}>—</span>
+              <span>Work order and update</span>
+              <span className={styles.pendingTag}>Pending</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.consoleFooter}>
+        <span>This is an example workflow. Yours will match how your team works.</span>
+        <span className={styles.liveStatus}><span className={styles.liveDot} /> Live demo</span>
       </div>
     </div>
   );
 }
 
-/* ─── MAIN COMPONENT ────────────────────────────────────────────────────────── */
+function WorkflowFeature({
+  motionEnabled,
+}: {
+  motionEnabled: boolean;
+}) {
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (!motionEnabled || paused) return;
+    const timer = window.setInterval(() => {
+      setActive((current) => (current + 1) % FEATURE_SLIDES.length);
+    }, 7600);
+    return () => window.clearInterval(timer);
+  }, [motionEnabled, paused]);
+
+  const slide = FEATURE_SLIDES[active];
+
+  return (
+    <div
+      className={styles.featurePanel}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
+      <span className={styles.cornerIndex}>{String(active + 1).padStart(2, '0')}</span>
+      <div className={styles.featureVisual}>
+        <Image
+          src="/services/workflow-hud.webp"
+          width={600}
+          height={440}
+          alt=""
+          priority={false}
+          className={styles.workflowImage}
+        />
+        <span className={styles.signalPacket} aria-hidden="true" />
+        <span className={styles.signalPacketTwo} aria-hidden="true" />
+        <span className={styles.visualCaption}>Animated workflow illustration · Example only</span>
+      </div>
+
+      <div className={styles.featureCopy} key={slide.title}>
+        <span className={styles.eyebrow}>{slide.eyebrow}</span>
+        <h3>{slide.title}</h3>
+        <p>{slide.copy}</p>
+        <ul>
+          {slide.bullets.map((bullet) => (
+            <li key={bullet}>
+              <Check size={15} weight="bold" />
+              <span>{bullet}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className={styles.featureDots} aria-label="Featured workflow views">
+        {FEATURE_SLIDES.map((item, index) => (
+          <button
+            type="button"
+            key={item.title}
+            className={styles.featureDot}
+            data-active={index === active}
+            aria-label={'Show ' + item.title}
+            aria-current={index === active ? 'true' : undefined}
+            onClick={() => setActive(index)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function ServicesClient() {
-  const [openSvc, setOpenSvc] = useState<Service | null>(null);
-  const svcRef = useRef<HTMLDivElement>(null);
+  const [openService, setOpenService] = useState<Service | null>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const servicesRef = useRef<HTMLElement>(null);
+  const { motionEnabled, toggle } = useMotionPreference();
+
+  const showService = (service: Service, trigger: HTMLElement) => {
+    returnFocusRef.current = trigger;
+    setOpenService(service);
+  };
+
+  const closeService = () => {
+    setOpenService(null);
+    window.requestAnimationFrame(() => returnFocusRef.current?.focus());
+  };
 
   const scrollToServices = () => {
-    svcRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    servicesRef.current?.scrollIntoView({
+      behavior: motionEnabled ? 'smooth' : 'auto',
+      block: 'start',
+    });
   };
 
   return (
-    <div style={{ background: '#1c1914', minHeight: '100vh', color: '#ede5d5', fontFamily: 'DM Sans, sans-serif' }}>
-      <SiteNav activePath="/services" />
+    <div
+      className={[styles.page, motionEnabled ? styles.motionOn : styles.motionOff].join(' ')}
+    >
+      <SiteNav
+        activePath="/services"
+        ctaLabel="Plan my automation →"
+        ctaHref="/contact"
+      />
 
-      <style>{`
-        * { box-sizing: border-box; }
-        .svc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        @media (max-width: 960px) { .svc-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 580px) { .svc-grid { grid-template-columns: 1fr; } }
-        .svc-scroll-wrap { position: relative; }
-        @media (max-width: 700px) {
-          .svc-grid { display: flex !important; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 12px; padding-bottom: 4px; }
-          .svc-grid::-webkit-scrollbar { display: none; }
-          .svc-grid > div { flex-shrink: 0 !important; width: 78vw; max-width: 300px; height: auto !important; scroll-snap-align: start; }
-          .svc-scroll-wrap::before, .svc-scroll-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 44px; z-index: 2; pointer-events: none; }
-          .svc-scroll-wrap::before { left: 0; background: linear-gradient(to right, #1c1914, transparent); }
-          .svc-scroll-wrap::after { right: 0; background: linear-gradient(to left, #1c1914, transparent); }
-        }
-        .prod-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        @media (max-width: 580px) { .prod-grid { grid-template-columns: 1fr; } }
-        .cap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
-        @media (max-width: 500px) { .cap-grid { grid-template-columns: 1fr; } }
-        .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        @media (max-width: 900px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 580px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
-        .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        @media (max-width: 760px) { .why-grid { grid-template-columns: 1fr; } }
-        .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        @media (max-width: 760px) { .tier-grid { grid-template-columns: 1fr; } }
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .logo-marquee-track { display: flex; gap: 10px; animation: marquee 22s linear infinite; will-change: transform; }
-        .logo-marquee-wrap { overflow: hidden; position: relative; }
-        .logo-marquee-wrap::before, .logo-marquee-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 60px; z-index: 1; pointer-events: none; }
-        .logo-marquee-wrap::before { left: 0; background: linear-gradient(to right, #1c1914, transparent); }
-        .logo-marquee-wrap::after { right: 0; background: linear-gradient(to left, #1c1914, transparent); }
-        .reveal-item { opacity: 0; transform: translateY(24px); }
-        .reveal-item.in { opacity: 1; transform: translateY(0); transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1); }
-        :focus-visible { outline: 2px solid #c9a96e; outline-offset: 3px; }
-      `}</style>
-
-      <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px' }}>
-
-        {/* ── HERO ─────────────────────────────────────────────────────────── */}
-        <section style={{ paddingTop: 120, paddingBottom: 80, position: 'relative' }}>
-          <div aria-hidden="true" style={{
-            position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none',
-            backgroundImage: 'linear-gradient(rgba(201,169,110,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,169,110,0.04) 1px, transparent 1px)',
-            backgroundSize: '64px 64px',
-            WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent)',
-            maskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent)',
-          }} />
-          <div aria-hidden="true" style={{
-            position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)',
-            width: 640, height: 320, borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(201,169,110,0.09) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
-
-          <div style={{ position: 'relative', maxWidth: 780 }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 28 }}>
-              Atlas AI Technology · Practical automation for real operations
+      <main>
+        <section className={styles.hero}>
+          <div className={styles.heroField} aria-hidden="true" />
+          <div className={styles.heroInner}>
+            <div className={styles.heroCopy}>
+              <div className={styles.heroMeta}>
+                <span className={styles.eyebrow}>Atlas AI Technology · Practical automation for real operations</span>
+                <MotionToggle enabled={motionEnabled} onToggle={toggle} />
+              </div>
+              <h1>From incoming request to handled.</h1>
+              <p>
+                Atlas connects messy incoming requests to clear, human-controlled
+                actions—so your team stays focused and the next step stays visible.
+              </p>
+              <div className={styles.heroActions}>
+                <Link href="/contact" className={styles.primaryButton}>
+                  Plan my automation
+                  <ArrowRight size={16} weight="bold" />
+                </Link>
+                <button type="button" className={styles.textButton} onClick={scrollToServices}>
+                  See how it works
+                  <CaretDown size={15} weight="bold" />
+                </button>
+              </div>
+              <div className={styles.heroPrinciples}>
+                <span><ShieldCheck size={18} /> Human control</span>
+                <span><ListChecks size={18} /> Visible history</span>
+                <span><LinkSimple size={18} /> Connected tools</span>
+              </div>
             </div>
+            <HeroWorkflow motionEnabled={motionEnabled} />
+          </div>
+        </section>
 
-            <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(38px,5.5vw,72px)', fontWeight: 600, color: '#e8c994', lineHeight: 1.02, margin: '0 0 10px', letterSpacing: '-0.01em' }}>
-              Your business has enough work.
-            </h1>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(26px,3.8vw,52px)', fontWeight: 400, color: '#7a6a4a', lineHeight: 1.1, margin: '0 0 32px', letterSpacing: '-0.01em', fontStyle: 'italic' }}>
-              The busywork should not be part of it.
-            </h2>
+        <section className={styles.decisionStrip} aria-label="Atlas control principles">
+          <div className={styles.decisionInner}>
+            <ShieldCheck size={28} weight="duotone" />
+            <span>You decide what runs.</span>
+            <span>You decide what waits.</span>
+            <span>Every action is recorded.</span>
+          </div>
+        </section>
 
-            <p style={{ fontSize: 'clamp(14px,1.6vw,17px)', color: '#c5b99a', lineHeight: 1.75, margin: '0 0 40px', maxWidth: 580 }}>
-              Atlas AI Technology builds practical automation systems that organize requests, prepare the next step, and keep your people in control. Start with one useful workflow, prove it works, then expand from evidence.
+        <section ref={servicesRef} className={styles.servicesSystem}>
+          <RevealSection className={styles.sectionInner}>
+            <span className={styles.eyebrow}>Our services</span>
+            <h2>Six services. One operating system.</h2>
+            <p className={styles.sectionLead}>
+              Each service addresses a critical part of the workflow—and they work
+              better when the handoffs are designed together.
             </p>
 
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-              <Link
-                href="/contact"
-                style={{
-                  background: '#c9a96e', color: '#1c1914',
-                  borderRadius: 8, padding: '14px 32px',
-                  fontSize: 13, fontWeight: 700, letterSpacing: '0.08em',
-                  textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                Plan My Automation →
-              </Link>
-              <button
-                onClick={scrollToServices}
-                style={{
-                  background: 'transparent', border: '1px solid #3a3228',
-                  borderRadius: 8, padding: '13px 24px',
-                  fontSize: 13, fontWeight: 600, color: '#a09070',
-                  cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-                  letterSpacing: '0.04em', whiteSpace: 'nowrap',
-                }}
-              >
-                See How It Works ↓
-              </button>
+            <div className={styles.servicesLayout}>
+              <WorkflowFeature motionEnabled={motionEnabled} />
+              <div className={styles.serviceNavigator}>
+                {SERVICES.map((service, index) => {
+                  const Icon = SERVICE_ICONS[index];
+                  return (
+                    <button
+                      type="button"
+                      key={service.id}
+                      className={styles.serviceRow}
+                      onClick={(event) => showService(service, event.currentTarget)}
+                    >
+                      <span className={styles.serviceNumber}>
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <Icon size={20} weight="duotone" />
+                      <span className={styles.serviceRowText}>
+                        <strong>{service.shortTitle}</strong>
+                        <small>{service.tagline}</small>
+                      </span>
+                      <ArrowRight size={17} weight="bold" className={styles.rowArrow} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </RevealSection>
+        </section>
+
+        <section className={styles.processSection}>
+          <RevealSection className={styles.sectionInner}>
+            <span className={styles.eyebrow}>How it works</span>
+            <div className={styles.processHeading}>
+              <h2>Start with one high-value workflow. Build from proof.</h2>
+              <p>Discovery, design, build, testing, and handoff stay connected to one clear operational goal.</p>
+            </div>
+            <ol className={styles.processRail}>
+              {STEPS.map((step) => {
+                const Icon = step.icon;
+                return (
+                  <li key={step.num}>
+                    <div className={styles.processIcon}>
+                      <span>{step.num}</span>
+                      <Icon size={22} weight="duotone" />
+                    </div>
+                    <h3>{step.title}</h3>
+                    <p>{step.desc}</p>
+                  </li>
+                );
+              })}
+            </ol>
+          </RevealSection>
+        </section>
+
+        <section className={styles.controlSection}>
+          <RevealSection className={styles.sectionInner}>
+            <div className={styles.splitHeading}>
+              <div>
+                <span className={styles.eyebrow}>Control is a feature</span>
+                <h2>AI that knows where to stop.</h2>
+              </div>
+              <p>
+                The strongest automation is not the one that removes every person.
+                It is the one that makes the right work clearer and keeps the right
+                decisions human.
+              </p>
+            </div>
+
+            <div className={styles.controlGrid}>
+              <article className={styles.controlCard}>
+                <UserCheck size={30} weight="duotone" />
+                <span className={styles.cardIndex}>01</span>
+                <h3>Approval gates</h3>
+                <p>Sensitive messages and consequential actions pause at a defined review point.</p>
+              </article>
+              <article className={styles.controlCard}>
+                <LockKey size={30} weight="duotone" />
+                <span className={styles.cardIndex}>02</span>
+                <h3>Bounded access</h3>
+                <p>Each workflow is designed around only the connections and permissions it needs.</p>
+              </article>
+              <article className={styles.controlCard}>
+                <ListChecks size={30} weight="duotone" />
+                <span className={styles.cardIndex}>03</span>
+                <h3>Visible activity</h3>
+                <p>Important transitions keep their state, owner, and next action understandable.</p>
+              </article>
+            </div>
+          </RevealSection>
+        </section>
+
+        <section className={styles.workSection}>
+          <RevealSection className={styles.sectionInner}>
+            <div className={styles.splitHeading}>
+              <div>
+                <span className={styles.eyebrow}>Products &amp; platforms</span>
+                <h2>Built by Atlas.</h2>
+              </div>
+              <p>Working product surfaces that show how design, engineering, content, and operations can live in one system.</p>
+            </div>
+            <div className={styles.productGrid}>
+              {PRODUCTS.map((product, index) => {
+                const Icon = [Monitor, Browser, Robot, BracketsCurly][index];
+                const content = (
+                  <>
+                    <span className={styles.productTopline}>
+                      <Icon size={21} weight="duotone" />
+                      {product.label}
+                    </span>
+                    <h3>{product.title}</h3>
+                    <p>{product.desc}</p>
+                    <span className={styles.productCta}>
+                      {product.cta}
+                      <ArrowRight size={15} weight="bold" />
+                    </span>
+                  </>
+                );
+                return product.external ? (
+                  <a
+                    key={product.title}
+                    className={styles.productCard}
+                    href={product.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  <Link key={product.title} className={styles.productCard} href={product.href}>
+                    {content}
+                  </Link>
+                );
+              })}
+            </div>
+          </RevealSection>
+        </section>
+
+        <section className={styles.capabilitySection}>
+          <div className={styles.sectionInner}>
+            <span className={styles.capabilityLabel}>Tools we can connect</span>
+            <div className={styles.capabilityList}>
+              {CAPABILITIES.map((capability) => <span key={capability}>{capability}</span>)}
             </div>
           </div>
         </section>
 
-        {/* ── TRUST BAR ────────────────────────────────────────────────────── */}
-        <RevealSection>
-          <section style={{ paddingBottom: 52 }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 40px', alignItems: 'center', padding: '22px 0', borderTop: '1px solid #2e2820', borderBottom: '1px solid #2e2820' }}>
-              {([
-                ['01', 'Built around your workflow'],
-                ['02', 'Human approval by default'],
-                ['03', 'Clear activity history'],
-                ['04', 'You own the system'],
-              ] as [string, string][]).map(([num, label]) => (
-                <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: '#c9a96e', lineHeight: 1 }}>{num}</span>
-                  <span style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: '#a09070', textTransform: 'uppercase' }}>{label}</span>
-                </div>
+        <section className={styles.engagementSection}>
+          <RevealSection className={styles.sectionInner}>
+            <span className={styles.eyebrow}>Engagement</span>
+            <h2>Choose the relationship that fits the work.</h2>
+            <div className={styles.engagementGrid}>
+              {[
+                {
+                  label: 'Focused build',
+                  title: 'One workflow',
+                  copy: 'Define, design, and deliver one clear operational system with an agreed handoff.',
+                },
+                {
+                  label: 'Ongoing iteration',
+                  title: 'Systems partnership',
+                  copy: 'Continue improving connected workflows with a defined focus for each cycle.',
+                },
+                {
+                  label: 'Existing system',
+                  title: 'System care',
+                  copy: 'Review, maintain, and refine an existing Atlas-built or compatible automation.',
+                },
+              ].map((item, index) => (
+                <article key={item.title} className={styles.engagementCard} data-featured={index === 1}>
+                  <span className={styles.eyebrow}>{item.label}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.copy}</p>
+                  <Link href="/contact">
+                    Discuss the fit
+                    <ArrowRight size={15} weight="bold" />
+                  </Link>
+                </article>
               ))}
             </div>
-          </section>
-        </RevealSection>
+          </RevealSection>
+        </section>
 
-        {/* ── TOOL LOGOS ───────────────────────────────────────────────────── */}
-        <RevealSection>
-          <section style={{ paddingBottom: 68 }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 16 }}>
-              Built with
-            </div>
-            <div className="logo-marquee-wrap">
-              <div className="logo-marquee-track">
-                {['n8n', 'Claude', 'GPT-4o', 'Next.js', 'Supabase', 'Vercel', 'Stripe', 'Slack', 'WhatsApp', 'HubSpot', 'Resend', 'PostgreSQL',
-                  'n8n', 'Claude', 'GPT-4o', 'Next.js', 'Supabase', 'Vercel', 'Stripe', 'Slack', 'WhatsApp', 'HubSpot', 'Resend', 'PostgreSQL'].map((tool, i) => (
-                  <div key={i} style={{ flexShrink: 0, background: '#1e1a14', border: '1px solid #2e2820', borderRadius: 6, padding: '7px 16px', fontFamily: 'monospace', fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', color: '#a09070', whiteSpace: 'nowrap' }}>
-                    {tool}
-                  </div>
+        <section className={styles.faqSection}>
+          <RevealSection className={styles.sectionInner}>
+            <div className={styles.faqLayout}>
+              <div>
+                <span className={styles.eyebrow}>FAQ</span>
+                <h2>Questions before we begin.</h2>
+                <p>Final scope, timing, commercial terms, and handoff are agreed after we understand the workflow.</p>
+              </div>
+              <div className={styles.faqList}>
+                {[
+                  {
+                    q: 'How long does a project take?',
+                    a: 'Timing depends on the workflow, connections, review needs, and testing plan. We define the delivery plan before implementation begins.',
+                  },
+                  {
+                    q: 'What if I do not know exactly what I need?',
+                    a: 'Start with the repetitive work or missed handoff. We can map the current process and identify a focused first workflow together.',
+                  },
+                  {
+                    q: 'Do I need technical knowledge?',
+                    a: 'No. You explain the operational problem in plain language; Atlas translates it into a system design you can review.',
+                  },
+                  {
+                    q: 'How is pricing determined?',
+                    a: 'Price follows the agreed scope, integrations, controls, and delivery plan. You receive the proposed scope before work begins.',
+                  },
+                  {
+                    q: 'What happens after delivery?',
+                    a: 'The agreed handoff can include documentation, a walkthrough, and operating notes appropriate to the system.',
+                  },
+                  {
+                    q: 'Can the work be delivered remotely?',
+                    a: 'Yes. Atlas is based in Canada and can collaborate remotely for discovery, reviews, testing, and handoff.',
+                  },
+                ].map((item) => (
+                  <details key={item.q} className={styles.faqItem}>
+                    <summary>
+                      <span>{item.q}</span>
+                      <CaretDown size={18} weight="bold" />
+                    </summary>
+                    <p>{item.a}</p>
+                  </details>
                 ))}
               </div>
             </div>
-          </section>
-        </RevealSection>
-
-        {/* ── AUTOMATION FLOW ───────────────────────────────────────────────── */}
-        <section style={{ paddingBottom: 80 }}>
-          <div style={{ background: '#1a1710', border: '1px solid #2e2820', borderRadius: 12, padding: '28px 28px 24px' }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 18 }}>
-              Example workflow · Every important step stays visible
-            </div>
-            <AutoFlowDiagram />
-            <div style={{ fontFamily: 'monospace', fontSize: 9, color: '#4a4035', marginTop: 18, letterSpacing: '0.08em' }}>
-              AI prepares the next step. Your team reviews sensitive actions. Ownership and activity remain visible from intake to follow-up.
-            </div>
-          </div>
+          </RevealSection>
         </section>
 
-        {/* ── SERVICES ─────────────────────────────────────────────────────── */}
-        <section ref={svcRef} style={{ paddingBottom: 80, scrollMarginTop: 80 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
-                Services
-              </div>
-              <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: 0, lineHeight: 1.2 }}>
-                What we build
-              </h2>
+        <section className={styles.finalCta}>
+          <div className={styles.ctaField} aria-hidden="true" />
+          <RevealSection className={styles.ctaInner}>
+            <span className={styles.eyebrow}>Start with one workflow</span>
+            <h2>What should your team stop doing by hand?</h2>
+            <p>Tell us about one repetitive process. We will help you find a practical place to begin, with the right controls designed in.</p>
+            <div className={styles.heroActions}>
+              <Link href="/contact" className={styles.primaryButton}>
+                Start the conversation
+                <ArrowRight size={16} weight="bold" />
+              </Link>
+              <button type="button" className={styles.textButton} onClick={scrollToServices}>
+                Browse services
+                <CaretDown size={15} weight="bold" />
+              </button>
             </div>
-            <div style={{ fontFamily: 'monospace', fontSize: 10, color: '#6b6050', letterSpacing: '0.08em' }}>
-              Select a card for full system details
-            </div>
-          </div>
-
-          <div className="svc-scroll-wrap">
-            <div className="svc-grid">
-              {SERVICES.map((svc, i) => (
-                <RevealSection key={svc.id} delay={i * 70} style={{ height: '100%' }}>
-                  <ServiceCard svc={svc} onOpen={() => setOpenSvc(svc)} />
-                </RevealSection>
-              ))}
-            </div>
-          </div>
+          </RevealSection>
         </section>
+      </main>
 
-        {/* ── PRODUCTS ─────────────────────────────────────────────────────── */}
-        <section style={{ paddingBottom: 80 }}>
-          <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
-            Products & Platforms
-          </div>
-          <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: '0 0 20px', lineHeight: 1.2 }}>
-            Built by Atlas
-          </h2>
-          <div className="prod-grid">
-            {PRODUCTS.map(p => (
-              <div key={p.id} style={{ background: '#1e1a14', border: '1px solid #2e2820', borderRadius: 10, padding: '20px' }}>
-                <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: '#6b6050', textTransform: 'uppercase', marginBottom: 10 }}>
-                  {p.label}
-                </div>
-                <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 18, fontWeight: 600, color: '#e8c994', marginBottom: 8, lineHeight: 1.2 }}>
-                  {p.title}
-                </div>
-                <p style={{ fontSize: 12, color: '#a09070', lineHeight: 1.6, margin: '0 0 16px' }}>
-                  {p.desc}
-                </p>
-                {p.external ? (
-                  <a href={p.href} target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: '#c9a96e', textDecoration: 'none', textTransform: 'uppercase' }}>
-                    {p.cta} →
-                  </a>
-                ) : (
-                  <Link href={p.href} style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: '#c9a96e', textDecoration: 'none', textTransform: 'uppercase' }}>
-                    {p.cta} →
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── CAPABILITIES ─────────────────────────────────────────────────── */}
-        <section style={{ paddingBottom: 80 }}>
-          <div style={{ background: '#1a1710', border: '1px solid #2e2820', borderRadius: 12, padding: '28px' }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 8 }}>
-              Technical Stack
-            </div>
-            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 600, color: '#e8c994', marginBottom: 20, lineHeight: 1.2 }}>
-              What we work with
-            </div>
-            <div className="cap-grid">
-              {CAPABILITIES.map((cap, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid #231f18' }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#c9a96e', lineHeight: '20px', flexShrink: 0 }}>▸</span>
-                  <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#a09070', letterSpacing: '0.03em', lineHeight: 1.5 }}>{cap}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── ENGAGEMENT TIERS ─────────────────────────────────────────────── */}
-        <RevealSection>
-          <section style={{ paddingBottom: 80 }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
-              Engagement
-            </div>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: '0 0 24px', lineHeight: 1.2 }}>
-              How we work together
-            </h2>
-            <div className="tier-grid">
-              {([
-                {
-                  label: 'Project',
-                  title: 'One-Time Build',
-                  desc: 'Best for teams with a clear problem and a defined scope. We agree on exactly what gets built, build it, and hand it off. Fixed price, fixed timeline.',
-                  items: ['Scoped before we start', 'Fixed price · no surprises', 'Full handoff with docs', 'You own the system forever'],
-                  highlight: false,
-                },
-                {
-                  label: 'Retainer',
-                  title: 'Ongoing Partnership',
-                  desc: 'Best for operators who want systems that grow with their business. Monthly engagement with a defined focus area and continuous iteration.',
-                  items: ['Monthly automation focus', 'Evolving system design', 'Priority turnaround', 'Slack-based async comms'],
-                  highlight: true,
-                },
-                {
-                  label: 'Support',
-                  title: 'System Care',
-                  desc: 'Best for businesses with an existing Atlas-built or custom automation stack that needs monitoring, fixes, or minor changes on an ongoing basis.',
-                  items: ['Bug fixes and edge cases', 'Minor workflow changes', 'Health monitoring', 'Response within 48h'],
-                  highlight: false,
-                },
-              ] as { label: string; title: string; desc: string; items: string[]; highlight: boolean }[]).map(tier => (
-                <div key={tier.label} style={{
-                  background: tier.highlight ? '#1e1b12' : '#1e1a14',
-                  border: `1px solid ${tier.highlight ? 'rgba(201,169,110,0.35)' : '#2e2820'}`,
-                  borderRadius: 10, padding: '28px 24px',
-                  display: 'flex', flexDirection: 'column', gap: 16,
-                  boxShadow: tier.highlight ? '0 0 32px rgba(201,169,110,0.06)' : 'none',
-                }}>
-                  <div>
-                    <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', color: tier.highlight ? '#c9a96e' : '#6b6050', textTransform: 'uppercase', marginBottom: 10 }}>
-                      {tier.label}
-                    </div>
-                    <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 600, color: '#e8c994', lineHeight: 1.2, marginBottom: 12 }}>
-                      {tier.title}
-                    </div>
-                    <p style={{ fontSize: 13, color: '#a09070', lineHeight: 1.65, margin: 0 }}>
-                      {tier.desc}
-                    </p>
-                  </div>
-                  <div style={{ borderTop: '1px solid #2e2820', paddingTop: 16, flex: 1 }}>
-                    {tier.items.map(item => (
-                      <div key={item} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
-                        <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#c9a96e', lineHeight: '20px', flexShrink: 0 }}>▸</span>
-                        <span style={{ fontSize: 12, color: '#c5b99a', lineHeight: 1.55 }}>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <Link
-                    href="/contact"
-                    style={{
-                      display: 'block',
-                      background: tier.highlight ? '#c9a96e' : 'transparent',
-                      color: tier.highlight ? '#1c1914' : '#a09070',
-                      border: tier.highlight ? 'none' : '1px solid #3a3228',
-                      borderRadius: 8, padding: '11px 20px',
-                      fontSize: 12, fontWeight: 700, letterSpacing: '0.06em',
-                      textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
-                      textAlign: 'center',
-                    }}
-                  >
-                    Book a Discovery Call →
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </section>
-        </RevealSection>
-
-        {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
-        <section style={{ paddingBottom: 80 }}>
-          <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
-            Process
-          </div>
-          <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: '0 0 20px', lineHeight: 1.2 }}>
-            How Atlas works
-          </h2>
-          <div className="steps-grid">
-            {STEPS.map(s => (
-              <div key={s.num} style={{ background: '#1e1a14', border: '1px solid #2e2820', borderRadius: 10, padding: '20px 18px' }}>
-                <div style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 700, color: 'rgba(201,169,110,0.25)', marginBottom: 12, lineHeight: 1 }}>
-                  {s.num}
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#ede5d5', marginBottom: 8, lineHeight: 1.35 }}>
-                  {s.title}
-                </div>
-                <div style={{ fontSize: 12, color: '#a09070', lineHeight: 1.6 }}>
-                  {s.desc}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── WHY ATLAS ────────────────────────────────────────────────────── */}
-        <section style={{ paddingBottom: 80 }}>
-          <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
-            Control is a feature
-          </div>
-          <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: '0 0 24px', lineHeight: 1.2 }}>
-            AI that knows where to stop
-          </h2>
-          <div className="why-grid">
-            {[
-              { label: 'Approval gates', title: 'Approval before action', desc: 'Sensitive messages and consequential steps stay behind a clear human review and approval gate.' },
-              { label: 'Bounded access', title: 'Access with boundaries', desc: 'Each workflow receives only the access it needs, with practical separation between connected systems.' },
-              { label: 'Audit trail', title: 'A visible activity trail', desc: 'Important activity is recorded so your team can understand what happened, who owns the next step, and what comes next.' },
-            ].map(item => (
-              <div key={item.label} style={{ background: '#1e1a14', border: '1px solid #2e2820', borderRadius: 10, padding: '24px 22px' }}>
-                <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 12 }}>
-                  {item.label}
-                </div>
-                <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 18, fontWeight: 600, color: '#e8c994', marginBottom: 10, lineHeight: 1.2 }}>
-                  {item.title}
-                </div>
-                <p style={{ fontSize: 13, color: '#a09070', lineHeight: 1.65, margin: 0 }}>
-                  {item.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── FAQ ─────────────────────────────────────────────────────────── */}
-        <RevealSection>
-          <section style={{ paddingBottom: 80 }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>
-              FAQ
-            </div>
-            <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(24px,3vw,36px)', fontWeight: 600, color: '#e8c994', margin: '0 0 28px', lineHeight: 1.2 }}>
-              Common questions
-            </h2>
-            <div style={{ maxWidth: 760, borderBottom: '1px solid #2e2820' }}>
-              {([
-                { q: 'How long does a project actually take?', a: 'Most automation projects ship in 2–4 weeks from scope sign-off. Websites take 3–6 weeks depending on complexity. Everything starts with a written scope document so you know the timeline before any work begins.' },
-                { q: "What if I don't know exactly what I need?", a: "That's the point of the discovery call. We review your current workflow, find the highest-value automation opportunities, and write up a clear plan — no commitment needed. Most clients come in saying the same thing." },
-                { q: 'Do I need technical knowledge to work with you?', a: 'Not at all. You describe the problem in plain language — what takes too long, what breaks, what you do manually every week — and we translate that into a system.' },
-                { q: 'How much does it cost?', a: 'Scope determines price, so we give you an exact number before work begins. Simple automation pipelines start small. Full web products or complex multi-system builds are scoped individually. The discovery call is always free.' },
-                { q: 'What happens after the project is delivered?', a: 'You get full documentation, credentials, and a walkthrough session. You own the system — the code, the workflows, the infrastructure. Nothing is locked to us.' },
-                { q: 'Do you work with businesses outside Canada?', a: 'Yes. Atlas operates from Canada and is designed for remote delivery. Scope, reviews, documentation, and handoff can all be handled online across time zones.' },
-              ] as { q: string; a: string }[]).map((item, i) => (
-                <div key={i} style={{ padding: '22px 0', borderTop: '1px solid #2e2820' }}>
-                  <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 19, fontWeight: 600, color: '#e8c994', marginBottom: 10, lineHeight: 1.25 }}>
-                    {item.q}
-                  </div>
-                  <p style={{ fontSize: 13, color: '#a09070', lineHeight: 1.7, margin: 0 }}>
-                    {item.a}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-        </RevealSection>
-
-        {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
-        <section style={{ paddingBottom: 100 }}>
-          <div style={{ position: 'relative', background: '#1a1710', border: '1px solid #3a3228', borderRadius: 16, padding: 'clamp(40px,5vw,64px)', textAlign: 'center', overflow: 'hidden' }}>
-            <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 70% at 50% 0%, rgba(201,169,110,0.06), transparent)', pointerEvents: 'none' }} />
-            <div style={{ position: 'relative' }}>
-              <div style={{ fontFamily: 'monospace', fontSize: 9, fontWeight: 700, letterSpacing: '0.25em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 20 }}>
-                Free Consultation · No Commitment
-              </div>
-              <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(28px,4vw,48px)', fontWeight: 600, color: '#e8c994', margin: '0 0 20px', lineHeight: 1.15 }}>
-                What should your team stop doing by hand?
-              </h2>
-              <p style={{ fontSize: 15, color: '#a09070', lineHeight: 1.7, margin: '0 auto 36px', maxWidth: 520 }}>
-                Tell us about one repetitive process. We&apos;ll help you identify a focused, practical place to begin — with clear boundaries and no commitment.
-              </p>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <Link
-                  href="/contact"
-                  style={{
-                    background: '#c9a96e', color: '#1c1914',
-                    borderRadius: 8, padding: '14px 32px',
-                    fontSize: 13, fontWeight: 700, letterSpacing: '0.08em',
-                    textDecoration: 'none', fontFamily: 'DM Sans, sans-serif',
-                  }}
-                >
-                  Start a Conversation →
-                </Link>
-                <button
-                  onClick={scrollToServices}
-                  style={{
-                    background: 'transparent', border: '1px solid #3a3228',
-                    borderRadius: 8, padding: '13px 24px',
-                    fontSize: 13, fontWeight: 600, color: '#a09070',
-                    cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-                    letterSpacing: '0.04em',
-                  }}
-                >
-                  Browse services
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer style={{ borderTop: '1px solid #2e2820', padding: '28px 24px', textAlign: 'center' }}>
-        <div style={{ fontSize: 11, color: '#6b6050', marginBottom: 12, fontFamily: 'monospace', letterSpacing: '0.06em' }}>
-          Operated from Canada · Serving clients remotely worldwide
-        </div>
-        <div style={{ fontSize: 12, color: '#6b6050' }}>
-          © {new Date().getFullYear()} Atlas AI Technology &nbsp;·&nbsp;
-          <Link href="/contact" style={{ color: '#6b6050', textDecoration: 'none' }}>Contact</Link>
-          &nbsp;·&nbsp;
-          <Link href="/blog" style={{ color: '#6b6050', textDecoration: 'none' }}>Blog</Link>
-          &nbsp;·&nbsp;
-          <Link href="/" style={{ color: '#6b6050', textDecoration: 'none' }}>Travel App</Link>
-        </div>
+      <footer className={styles.footer}>
+        <span>Based in Canada · Available for remote collaboration</span>
+        <nav aria-label="Footer">
+          <Link href="/contact">Contact</Link>
+          <Link href="/blog">Blog</Link>
+          <Link href="/">Travel app</Link>
+        </nav>
+        <span>© {new Date().getFullYear()} Atlas AI Technology</span>
       </footer>
 
-      {openSvc && <ServiceDrawer svc={openSvc} onClose={() => setOpenSvc(null)} />}
+      {openService && <ServiceDrawer service={openService} onClose={closeService} />}
     </div>
   );
 }

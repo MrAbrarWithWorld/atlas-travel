@@ -5,7 +5,15 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import AtlasLogo from './AtlasLogo';
 
-export default function SiteNav({ activePath }: { activePath?: string }) {
+export default function SiteNav({
+  activePath,
+  ctaLabel = 'Try Atlas →',
+  ctaHref = '/',
+}: {
+  activePath?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -49,8 +57,8 @@ export default function SiteNav({ activePath }: { activePath?: string }) {
             {l.label}
           </Link>
         ))}
-        <Link href="/" onClick={() => setMobileOpen(false)} style={{ display: 'block', marginTop: 24, border: `1px solid ${gold}`, borderRadius: 8, padding: '13px 20px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', textAlign: 'center' }}>
-          Try Atlas Travel →
+        <Link href={ctaHref} onClick={() => setMobileOpen(false)} style={{ display: 'block', marginTop: 24, border: `1px solid ${gold}`, borderRadius: 8, padding: '13px 20px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', textAlign: 'center' }}>
+          {ctaLabel}
         </Link>
       </div>
     </div>
@@ -78,8 +86,8 @@ export default function SiteNav({ activePath }: { activePath?: string }) {
 
           {/* CTA */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Link href="/" className="snav-desktop" style={{ background: 'none', border: `1px solid ${gold}`, borderRadius: 6, padding: '8px 18px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', whiteSpace: 'nowrap' }}>
-              Try Atlas →
+            <Link href={ctaHref} className="snav-desktop" style={{ background: 'none', border: `1px solid ${gold}`, borderRadius: 6, padding: '8px 18px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              {ctaLabel}
             </Link>
             {/* Mobile hamburger */}
             <button className="snav-mobile-btn" onClick={() => setMobileOpen(true)} aria-label="Open menu" style={{ background: 'none', border: 'none', color: text, fontSize: 22, cursor: 'pointer', padding: '4px 8px' }}>☰</button>
