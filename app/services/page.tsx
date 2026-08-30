@@ -2,11 +2,14 @@ import type { Metadata } from 'next';
 import ServicesClient from './ServicesClient';
 
 export const metadata: Metadata = {
-  title: 'AI Automation & Web Solutions | Atlas Technology',
-  description: 'Atlas Technology helps online businesses worldwide automate workflows, capture leads, build websites, and save time with AI. Based in Canada — serving clients remotely worldwide.',
+  title: 'AI Automation Services | Atlas AI Technology',
+  description: 'Atlas AI Technology builds practical automation systems that organize requests, prepare the next step, and keep your people in control.',
+  alternates: {
+    canonical: '/services',
+  },
   openGraph: {
-    title: 'AI Automation & Web Solutions | Atlas Technology',
-    description: 'Automate your business workflows. AI-powered CRMs, websites, and process automation for businesses worldwide.',
+    title: 'AI Automation Services | Atlas AI Technology',
+    description: 'Practical AI automation for client communication, repetitive operations, and controlled business workflows.',
     url: 'https://getatlas.ca/services',
   },
 };
