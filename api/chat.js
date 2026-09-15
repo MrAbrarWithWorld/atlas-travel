@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { createClient } from '@supabase/supabase-js';
 
 async function geocodeLocation(placeName) {
@@ -239,7 +240,8 @@ const ENABLE_CLAUDE_ROUTING = true;
 
 function getKey(req, userId) {
   if (userId) return `user_${userId}`;
-  return req.headers["x-forwarded-for"]?.split(",")[0] || req.headers["x-real-ip"] || "unknown";
+  const ip = (req.headers["x-forwarded-for"]?.split(",")[0] || req.headers["x-real-ip"] || "unknown").trim();
+  return "ip_" + createHash("sha256").update(ip).digest("hex").slice(0, 32);
 }
 
 function getUser(key, tier) {
@@ -255,6 +257,54 @@ function getUser(key, tier) {
     user.tier = tier;
   }
   return user;
+}
+
+// Usage is stored in Supabase (chat_rate_limits) so limits hold across
+// serverless instances and cold starts. Falls back to the in-memory Map
+// if the database is unreachable, so chat never breaks because of it.
+let usageDb = null;
+function getUsageDb() {
+  if (!SUPABASE_SERVICE_KEY) return null;
+  if (!usageDb) usageDb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, { auth: { persistSession: false } });
+  return usageDb;
+}
+
+function applyUsageRow(user, row) {
+  if (!row) return user;
+  user.tokensUsed = Number(row.tokens_used) || 0;
+  user.plansUsed = Number(row.plans_used) || 0;
+  user.resetAt = new Date(row.reset_at).getTime() || user.resetAt;
+  return user;
+}
+
+async function loadUsage(key, tier) {
+  const user = getUser(key, tier);
+  const db = getUsageDb();
+  if (!db) return user;
+  try {
+    const { data, error } = await db.rpc("chat_usage_get", { p_key: key, p_window_seconds: RESET_MS / 1000 });
+    if (error) throw error;
+    return applyUsageRow(user, Array.isArray(data) ? data[0] : data);
+  } catch (e) {
+    console.error("usage load failed:", e.message);
+    return user;
+  }
+}
+
+async function recordUsage(user, key, tokens, isPlan) {
+  const t = Math.max(0, Math.round(tokens || 0));
+  const p = isPlan ? 1 : 0;
+  user.tokensUsed += t;
+  user.plansUsed += p;
+  const db = getUsageDb();
+  if (!db) return;
+  try {
+    const { data, error } = await db.rpc("chat_usage_add", { p_key: key, p_tokens: t, p_plans: p, p_window_seconds: RESET_MS / 1000 });
+    if (error) throw error;
+    applyUsageRow(user, Array.isArray(data) ? data[0] : data);
+  } catch (e) {
+    console.error("usage record failed:", e.message);
+  }
 }
 
 function isNewPlan(messages) {
@@ -565,7 +615,7 @@ export default async function handler(req, res) {
 
   const key = getKey(req, userId);
   const limits = LIMITS[userTier] || LIMITS.guest;
-  const user = getUser(key, userTier);
+  const user = await loadUsage(key, userTier);
   const resetInHours = Math.ceil((user.resetAt - Date.now()) / (1000 * 60 * 60));
 
   if (user.tokensUsed >= limits.tokens) {
@@ -664,8 +714,7 @@ const travelContext = await getTravelContext(messages);
             } catch {}
           }
         }
-        user.tokensUsed += (promptTok + completionTok) || Math.ceil(fullText.length * 0.35);
-        if (requestingNewPlan) user.plansUsed += 1;
+        await recordUsage(user, key, (promptTok + completionTok) || Math.ceil(fullText.length * 0.35), requestingNewPlan);
         endStream(Math.max(0, limits.plans - user.plansUsed));
         return;
       }
@@ -696,8 +745,7 @@ const travelContext = await getTravelContext(messages);
       if (geminiReply) {
         startSSE();
         writeSSE({ type: 'delta', text: geminiReply });
-        user.tokensUsed += 2000;
-        if (requestingNewPlan) user.plansUsed += 1;
+        await recordUsage(user, key, 2000, requestingNewPlan);
         endStream(Math.max(0, limits.plans - user.plansUsed));
         return;
       }
@@ -811,8 +859,7 @@ const travelContext = await getTravelContext(messages);
       }
     }
     const used = inputTok + outputTok;
-    user.tokensUsed += used;
-    if (requestingNewPlan) user.plansUsed += 1;
+    await recordUsage(user, key, used, requestingNewPlan);
     endStream(Math.max(0, limits.plans - user.plansUsed));
     if (SUPABASE_SERVICE_KEY) {
       const costUsd = (inputTok / 1_000_000) * 3 + (outputTok / 1_000_000) * 15;
