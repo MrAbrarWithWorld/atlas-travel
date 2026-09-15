@@ -40,7 +40,7 @@ export default function MobileNav() {
       >
         {/* Header */}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:32 }}>
-          <Link href="/" onClick={() => setOpen(false)} style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none" }}>
+          <Link href="/" prefetch={false} onClick={() => setOpen(false)} style={{ display:"flex", alignItems:"center", gap:8, textDecoration:"none" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/atlas-icon.png" width={22} height={22} alt="Atlas" style={{ borderRadius:3, display:"block" }} />
             <span style={{ fontFamily:"var(--font-cormorant-garamond),serif", fontSize:18, fontWeight:600, color:"#c9a96e", letterSpacing:"0.2em" }}>ATLAS</span>

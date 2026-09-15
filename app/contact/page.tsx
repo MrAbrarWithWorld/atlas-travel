@@ -67,7 +67,7 @@ export default function ContactPage() {
             {/* Travel app link */}
             <div style={{ marginTop: 40, paddingTop: 28, borderTop: '1px solid #3a3228' }}>
               <div style={{ fontSize: 12, color: '#a09070', marginBottom: 10 }}>Looking for the travel app?</div>
-              <Link href="/" style={{ fontSize: 13, color: '#c9a96e', textDecoration: 'none', fontWeight: 600 }}>
+              <Link href="/" prefetch={false} style={{ fontSize: 13, color: '#c9a96e', textDecoration: 'none', fontWeight: 600 }}>
                 Atlas AI Travel Planner →
               </Link>
             </div>
@@ -89,7 +89,7 @@ export default function ContactPage() {
           &nbsp;·&nbsp;
           <Link href="/blog" style={{ color: '#a09070', textDecoration: 'none' }}>Blog</Link>
           &nbsp;·&nbsp;
-          <Link href="/" style={{ color: '#a09070', textDecoration: 'none' }}>Travel App</Link>
+          <Link href="/" prefetch={false} style={{ color: '#a09070', textDecoration: 'none' }}>Travel App</Link>
         </div>
       </footer>
     </div>

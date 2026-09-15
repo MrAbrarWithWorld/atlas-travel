@@ -1148,7 +1148,7 @@ export default function ServicesClient() {
         <nav aria-label="Footer">
           <Link href="/contact">Contact</Link>
           <Link href="/blog">Blog</Link>
-          <Link href="/">Travel app</Link>
+          <Link href="/" prefetch={false}>Travel app</Link>
         </nav>
         <span>© {new Date().getFullYear()} Atlas AI Technology</span>
       </footer>
