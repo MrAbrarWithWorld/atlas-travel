@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import SiteNav from '../components/SiteNav';
 import ContactForm from './ContactForm';
+import { ATTRIBUTION_KEYS, isServiceId, type Attribution } from '../lib/lead-intake';
 
 export const metadata: Metadata = {
   title: 'Book a Discovery Call | Atlas Technology',
@@ -13,7 +14,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContactPage() {
+type ContactPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function ContactPage({ searchParams }: ContactPageProps) {
+  const params = await searchParams;
+  const requestedService = first(params.service);
+  const service = isServiceId(requestedService) ? requestedService : 'not-sure';
+  const attribution: Attribution = {};
+
+  for (const key of ATTRIBUTION_KEYS) {
+    const value = first(params[key])?.trim().slice(0, 160);
+    if (value) attribution[key] = value;
+  }
+
   return (
     <div style={{ background: '#1c1914', minHeight: '100vh', color: '#ede5d5', fontFamily: 'DM Sans, sans-serif' }}>
       <SiteNav activePath="/contact" />
@@ -50,8 +69,8 @@ export default function ContactPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
               {[
                 { icon: '📅', title: '30-minute focused call', desc: 'We come prepared. You describe the problem; we map it to a solution and leave you with a clear written scope.' },
-                { icon: '⚡', title: 'Response within 24 hours', desc: 'We review every request personally and confirm a call time fast — regardless of your timezone.' },
-                { icon: '🔒', title: 'Your information stays private', desc: 'We never share your details with third parties. Everything discussed on the call stays between us.' },
+                { icon: '⚡', title: 'Personal follow-up', desc: 'We review each request ourselves and usually suggest the clearest next step within two business days.' },
+                { icon: '🔒', title: 'Handled with care', desc: 'Your details are used to review and respond to your request, with necessary CRM and service providers covered by our privacy policy.' },
                 { icon: '🌍', title: 'Fully remote · worldwide', desc: 'Remote-first by design. We\'ve worked with clients across 4 continents. Timezone is never a problem.' },
               ].map(item => (
                 <div key={item.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
@@ -75,7 +94,7 @@ export default function ContactPage() {
 
           {/* Right: Form */}
           <div style={{ background: '#231f18', border: '1px solid #3a3228', borderRadius: 16, padding: '36px 32px' }}>
-            <ContactForm />
+            <ContactForm initialService={service} attribution={attribution} />
           </div>
 
         </div>
