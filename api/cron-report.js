@@ -12,6 +12,13 @@ export default async function handler(req, res) {
   // Only allow GET (Vercel cron) or POST with secret
   if (req.method !== "GET" && req.method !== "POST") return res.status(405).end();
 
+  // Vercel Cron sends "Authorization: Bearer <CRON_SECRET>" when CRON_SECRET is set.
+  const secret = process.env.CRON_SECRET;
+  const auth = req.headers["authorization"] || "";
+  if (!secret || auth !== `Bearer ${secret}`) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   try {
     const now = new Date();
     const yesterday = new Date(now - 24 * 60 * 60 * 1000).toISOString();

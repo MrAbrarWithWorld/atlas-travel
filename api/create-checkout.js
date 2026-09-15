@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -11,11 +12,25 @@ const PRICE_IDS = {
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { plan, userId, userEmail } = req.body;
+  const { plan } = req.body || {};
+
+  // Identify the buyer from their Supabase session so a subscription can
+  // never be attached to someone else's account.
+  const token = (req.headers["authorization"] || "").replace(/^Bearer\s+/i, "");
+  if (!token || !process.env.SUPABASE_SERVICE_KEY) {
+    return res.status(401).json({ error: "Please sign in first to upgrade." });
+  }
+  const sb = createClient("https://prffhhkemxibujjjiyhg.supabase.co", process.env.SUPABASE_SERVICE_KEY);
+  const { data: authData, error: authError } = await sb.auth.getUser(token);
+  if (authError || !authData?.user) {
+    return res.status(401).json({ error: "Please sign in first to upgrade." });
+  }
+  const userId = authData.user.id;
+  const userEmail = authData.user.email;
 
   if (!plan || !PRICE_IDS[plan]) {
     return res.status(400).json({ error: "Invalid plan" });

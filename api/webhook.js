@@ -10,6 +10,11 @@ const sb = createClient(
 
 export const config = { api: { bodyParser: false } };
 
+function periodEndIso(subscription) {
+  const ts = subscription?.current_period_end ?? subscription?.items?.data?.[0]?.current_period_end;
+  return ts ? new Date(ts * 1000).toISOString() : null;
+}
+
 async function sendWelcomeEmail(toEmail, toName, plan) {
   const isExplorer = plan?.includes("explorer");
   const planLabel = isExplorer ? "💎 Explorer" : "⭐ Pro";
@@ -126,7 +131,7 @@ export default async function handler(req, res) {
           stripe_subscription_id: session.subscription,
           plan: plan || "pro_monthly",
           status: "active",
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          ...(periodEndIso(subscription) ? { current_period_end: periodEndIso(subscription) } : {}),
           updated_at: new Date().toISOString(),
         }, { onConflict: "stripe_subscription_id" });
 
@@ -143,9 +148,10 @@ export default async function handler(req, res) {
       // ✅ Subscription renewed
       case "invoice.payment_succeeded": {
         const invoice = event.data.object;
-        if (!invoice.subscription) break;
+        const invoiceSubId = invoice.subscription || invoice.parent?.subscription_details?.subscription;
+        if (!invoiceSubId) break;
 
-        const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+        const subscription = await stripe.subscriptions.retrieve(invoiceSubId);
         const customerId = invoice.customer;
 
         // Find user by customer ID
@@ -159,9 +165,9 @@ export default async function handler(req, res) {
           await sb.from("subscriptions").upsert({
             user_id: existing.user_id,
             stripe_customer_id: customerId,
-            stripe_subscription_id: invoice.subscription,
+            stripe_subscription_id: invoiceSubId,
             status: "active",
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            ...(periodEndIso(subscription) ? { current_period_end: periodEndIso(subscription) } : {}),
             updated_at: new Date().toISOString(),
           }, { onConflict: "stripe_subscription_id" });
         }
@@ -177,7 +183,7 @@ export default async function handler(req, res) {
         await sb.from("subscriptions")
           .update({
             status: newStatus,
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            ...(periodEndIso(subscription) ? { current_period_end: periodEndIso(subscription) } : {}),
             updated_at: new Date().toISOString(),
           })
           .eq("stripe_subscription_id", subscription.id);

@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { createHash } from 'crypto';
+import { createHash, timingSafeEqual } from 'crypto';
 import webpush from 'web-push';
 import nodemailer from 'nodemailer';
 
@@ -108,8 +108,19 @@ async function sendNewsletterEmails(title, slug, description, heroEmoji) {
   }
 }
 
-const PASSWORD = process.env.ADMIN_PASSWORD || 'AtlasAdmin2026!';
-const TOKEN = createHash('sha256').update(PASSWORD).digest('hex');
+// No fallback: if ADMIN_PASSWORD is not configured, admin login is disabled.
+const PASSWORD = process.env.ADMIN_PASSWORD || '';
+const ADMIN_ENABLED = PASSWORD.length >= 12;
+const TOKEN = ADMIN_ENABLED
+  ? createHash('sha256').update('atlas-admin-session:' + PASSWORD).digest('hex')
+  : null;
+
+function passwordMatches(input) {
+  if (!ADMIN_ENABLED || typeof input !== 'string') return false;
+  const a = createHash('sha256').update(input).digest();
+  const b = createHash('sha256').update(PASSWORD).digest();
+  return timingSafeEqual(a, b);
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -126,7 +137,7 @@ function parseBody(str) {
 }
 
 function isAuthed(req) {
-  return parseCookies(req)['atlas_admin'] === TOKEN;
+  return ADMIN_ENABLED && parseCookies(req)['atlas_admin'] === TOKEN;
 }
 
 async function readBody(req) {
@@ -890,7 +901,7 @@ export default async function handler(req, res) {
     const { action } = body;
 
     if (action === 'login') {
-      if (body.password !== PASSWORD) return res.status(401).json({ error: 'Wrong password' });
+      if (!passwordMatches(body.password)) return res.status(401).json({ error: 'Wrong password' });
       res.setHeader('Set-Cookie', `atlas_admin=${TOKEN}; Path=/; Max-Age=86400; HttpOnly; SameSite=Strict`);
       return res.status(200).json({ ok: true });
     }
@@ -1008,7 +1019,7 @@ export default async function handler(req, res) {
 
     // Login
     if (!editSlug && section !== 'community') {
-      if (body.password === PASSWORD) {
+      if (passwordMatches(body.password)) {
         res.setHeader('Set-Cookie', `atlas_admin=${TOKEN}; Path=/; Max-Age=86400; HttpOnly; SameSite=Strict`);
         res.setHeader('Location', '/admin');
         return res.status(302).end();

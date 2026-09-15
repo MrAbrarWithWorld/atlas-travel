@@ -1490,9 +1490,10 @@ function PricingModal({user, onClose}) {
     if (!user) { alert("Please sign in first to upgrade."); return; }
     setLoading(plan);
     try {
+      const {data:{session:checkoutSession}} = await sb.auth.getSession();
       const res = await fetch('/api/create-checkout', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', ...(checkoutSession?.access_token ? {Authorization: 'Bearer ' + checkoutSession.access_token} : {})},
         body: JSON.stringify({
           plan: `${plan}_${billing}`,
           userId: user?.id || '',
@@ -1503,7 +1504,7 @@ function PricingModal({user, onClose}) {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert('Something went wrong. Please try again.');
+        alert(data.error || 'Something went wrong. Please try again.');
         setLoading(null);
       }
     } catch(e) {
