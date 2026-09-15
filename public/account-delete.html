@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Delete your Atlas account — ATLAS</title>
+<meta name="description" content="How to delete your Atlas account and the data associated with it, from the website or the Atlas Android app."/>
+<link rel="canonical" href="https://getatlas.ca/account/delete"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#1c1914;color:#ede5d5;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;}
+.container{max-width:680px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+header{display:flex;align-items:center;gap:0.75rem;margin-bottom:2.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(201,169,110,0.15);}
+header span{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;letter-spacing:0.3em;color:#d4aa6e;text-transform:uppercase;}
+h1{font-family:'Cormorant Garamond',serif;font-size:2.1rem;font-weight:400;color:#e8dcc8;margin-bottom:1rem;}
+h2{font-size:0.68rem;font-weight:600;color:#c9a96e;letter-spacing:0.15em;text-transform:uppercase;margin:2rem 0 0.75rem;}
+p,li{font-size:0.9rem;color:#b8ad98;line-height:1.8;}
+p{margin-bottom:0.75rem;}
+ul,ol{margin:0.25rem 0 0.75rem 1.2rem;}
+li::marker{color:#c9a96e;}
+a{color:#c9a96e;}
+.card{background:#231f18;border:1px solid #3a3228;border-radius:12px;padding:1.4rem;margin:1rem 0;}
+button{font-family:inherit;font-size:0.85rem;font-weight:600;letter-spacing:0.04em;border-radius:8px;padding:0.8rem 1.4rem;cursor:pointer;}
+.btn-outline{background:none;border:1px solid #c9a96e;color:#c9a96e;}
+.btn-danger{background:#8f2f2f;border:1px solid #b44;color:#fff;}
+button:disabled{opacity:0.55;cursor:default;}
+.muted{color:#a09070;font-size:0.8rem;}
+.msg{margin-top:0.9rem;font-size:0.85rem;}
+.msg.error{color:#e87070;}
+.msg.ok{color:#8fc49a;}
+label{display:flex;gap:0.6rem;align-items:flex-start;margin:0.9rem 0;font-size:0.85rem;color:#d8c9a8;}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <svg width="28" height="28" viewBox="0 0 400 400" aria-hidden="true"><circle cx="200" cy="200" r="170" fill="none" stroke="#c9a96e" stroke-width="2.2"/><circle cx="200" cy="200" r="130" fill="none" stroke="#8a6a3a" stroke-width="1"/><circle cx="200" cy="200" r="18" fill="#c9a96e"/></svg>
+    <span>Atlas</span>
+  </header>
+
+  <h1>Delete your Atlas account</h1>
+  <p>You can permanently delete your Atlas account (website and Android app) and the data connected to it at any time.</p>
+
+  <h2>Delete it here</h2>
+  <div class="card" id="delete-card">
+    <div id="signed-out">
+      <p>Sign in with the same Google account you use for Atlas, then confirm.</p>
+      <button class="btn-outline" id="sign-in">Continue with Google</button>
+    </div>
+    <div id="signed-in" hidden>
+      <p>Signed in as <strong id="who"></strong>.</p>
+      <label><input type="checkbox" id="confirm"/> <span>I understand this permanently deletes my account, saved trips, chat history and settings, and cannot be undone.</span></label>
+      <button class="btn-danger" id="delete" disabled>Delete my account</button>
+      <p class="muted" style="margin-top:0.8rem">Not you? <a href="#" id="sign-out">Sign out</a></p>
+    </div>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </div>
+
+  <h2>In the Android app</h2>
+  <ol>
+    <li>Open Atlas and go to <strong>Settings → Account</strong>.</li>
+    <li>Tap <strong>Delete account</strong> and confirm.</li>
+  </ol>
+
+  <h2>By email</h2>
+  <p>Email <a href="mailto:support@getatlas.ca?subject=Delete%20my%20Atlas%20account">support@getatlas.ca</a> from the address on your account with the subject “Delete my Atlas account”. Requests are completed within 30 days.</p>
+
+  <h2>What is deleted</h2>
+  <ul>
+    <li>Your account and sign-in details</li>
+    <li>Saved trips and trip projects, including shared trip links</li>
+    <li>Chat history, preferences and push-notification settings</li>
+    <li>Community stories you submitted</li>
+  </ul>
+  <h2>What may be kept</h2>
+  <ul>
+    <li>Payment and invoice records that the law requires us to keep (for example invoices held by Stripe or Google Play)</li>
+    <li>Anonymous usage statistics that no longer identify you</li>
+  </ul>
+  <p><strong>Subscriptions:</strong> deleting your account does not cancel a store subscription. Cancel a Google Play subscription in Google Play → Payments &amp; subscriptions. If you have an active website (Stripe) subscription, cancel it first or email us and we will cancel it for you.</p>
+
+  <p style="margin-top:2rem"><a href="/privacy">Privacy policy</a> · <a href="/">Back to Atlas</a></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  var sb = supabase.createClient('https://prffhhkemxibujjjiyhg.supabase.co', 'sb_publishable_gDzH6bF1tOYuKmx4uIGaLw_On9AG90E');
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = function (text, kind) { $('msg').textContent = text || ''; $('msg').className = 'msg' + (kind ? ' ' + kind : ''); };
+
+  function render(session) {
+    var signedIn = !!(session && session.user);
+    $('signed-out').hidden = signedIn;
+    $('signed-in').hidden = !signedIn;
+    if (signedIn) $('who').textContent = session.user.email || 'your account';
+  }
+
+  sb.auth.getSession().then(function (r) { render(r.data.session); });
+  sb.auth.onAuthStateChange(function (_e, session) { render(session); });
+
+  $('sign-in').addEventListener('click', function () {
+    sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/account/delete', queryParams: { prompt: 'select_account' } } });
+  });
+  $('sign-out').addEventListener('click', function (e) { e.preventDefault(); sb.auth.signOut(); msg(''); });
+  $('confirm').addEventListener('change', function () { $('delete').disabled = !this.checked; });
+
+  $('delete').addEventListener('click', async function () {
+    $('delete').disabled = true;
+    msg('Deleting…');
+    var res = await sb.rpc('delete_my_account');
+    if (res.error) {
+      msg((res.error.message || 'Could not delete your account.') + ' You can also email support@getatlas.ca.', 'error');
+      $('delete').disabled = false;
+      return;
+    }
+    await sb.auth.signOut();
+    try { localStorage.clear(); } catch (e) {}
+    $('signed-in').hidden = true;
+    $('signed-out').hidden = true;
+    msg('Your Atlas account and data have been deleted.', 'ok');
+  });
+})();
+</script>
+</body>
+</html>

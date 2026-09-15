@@ -25,6 +25,10 @@
       "destination": "/terms.html"
     },
     {
+      "source": "/account/delete",
+      "destination": "/account-delete.html"
+    },
+    {
       "source": "/trip/(.*)",
       "destination": "/trip.html"
     },

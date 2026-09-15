@@ -607,7 +607,9 @@ export default async function handler(req, res) {
             .eq('user_id', userId)
             .eq('status', 'active')
             .gte('current_period_end', new Date().toISOString())
-            .single();
+            .order('current_period_end', { ascending: false })
+            .limit(1)
+            .maybeSingle();
           if (sub) {
             userTier = sub.plan?.includes('explorer') ? 'explorer' : 'pro';
           } else {
