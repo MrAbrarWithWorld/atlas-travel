@@ -8,7 +8,7 @@ import BlogNav from "./components/BlogNav";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Atlas Travel Blog — Destination Guides, Visa Tips & Itineraries",
+  title: { absolute: "Atlas Travel Blog — Destination Guides, Visa Tips & Itineraries" },
   description: "Explore expert travel guides, visa tips, budget breakdowns, and hidden gems from around the world.",
   alternates: {
     canonical: "https://getatlas.ca/blog",

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import ServicesClient from './ServicesClient';
 
 export const metadata: Metadata = {
-  title: 'AI Automation Services | Atlas AI Technology',
+  title: { absolute: 'AI Automation Services | Atlas AI Technology' },
   description: 'Atlas AI Technology builds practical automation systems that organize requests, prepare the next step, and keep your people in control.',
   alternates: {
     canonical: '/services',

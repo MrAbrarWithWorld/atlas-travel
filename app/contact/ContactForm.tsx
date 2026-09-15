@@ -83,13 +83,29 @@ export default function ContactForm({ initialService, attribution }: ContactForm
       else if (res.ok && data.status === 'duplicate') setStatus('duplicate');
       else {
         setStatus('error');
-        setErrMsg(data.error || 'Something went wrong. Please try again.');
+        setErrMsg(res.status >= 500
+          ? 'We could not send your request right now.'
+          : (data.error || 'Something went wrong. Please try again.'));
       }
     } catch {
       setStatus('error');
       setErrMsg('Network error. Please check your connection and try again.');
     }
   }
+
+  const serviceLabel = SERVICE_OPTIONS.find((option) => option.value === form.service)?.label || form.service;
+  const mailtoFallback = `mailto:support@getatlas.ca?subject=${encodeURIComponent('Discovery call request' + (form.company ? ` — ${form.company}` : ''))}&body=${encodeURIComponent(
+    [
+      `Name: ${form.name}`,
+      `Email: ${form.email}`,
+      form.company ? `Company: ${form.company}` : null,
+      form.phone ? `Phone: ${form.phone}` : null,
+      `Service: ${serviceLabel}`,
+      form.currentTools ? `Current tools: ${form.currentTools}` : null,
+      '',
+      form.message,
+    ].filter((line): line is string => line !== null).join('\n').slice(0, 1800),
+  )}`;
 
   const inputBase: CSSProperties = {
     width: '100%', background: '#1c1914', border: '1px solid #3a3228', borderRadius: 8,
@@ -157,9 +173,17 @@ export default function ContactForm({ initialService, attribution }: ContactForm
         </div>
         <label style={{ display: 'flex', gap: 11, alignItems: 'flex-start', color: '#b7aa91', fontSize: 12, lineHeight: 1.5 }}>
           <input type="checkbox" checked={form.consent} onChange={(e) => set('consent', e.target.checked)} required style={{ marginTop: 3, accentColor: '#c9a96e' }} />
-          <span>I agree that Atlas may use this information, together with its CRM, automation and service providers, to review and respond to this request. See the <Link href="/privacy.html" style={{ color: '#c9a96e' }}>privacy policy</Link>.</span>
+          <span>I agree that Atlas may use this information, together with its CRM, automation and service providers, to review and respond to this request. See the <Link href="/privacy" style={{ color: '#c9a96e' }}>privacy policy</Link>.</span>
         </label>
-        {status === 'error' && <div role="alert" aria-live="polite" style={{ background: '#2a1a1a', border: '1px solid #6b2020', borderRadius: 8, padding: '12px 16px', color: '#e87070', fontSize: 13 }}>{errMsg}{requestId ? ` Reference: ${requestId}` : ''}</div>}
+        {status === 'error' && (
+          <div role="alert" aria-live="polite" style={{ background: '#2a1a1a', border: '1px solid #6b2020', borderRadius: 8, padding: '12px 16px', color: '#e87070', fontSize: 13, lineHeight: 1.55 }}>
+            {errMsg}{requestId ? ` Reference: ${requestId}` : ''}
+            <div style={{ marginTop: 8, color: '#d8c9a8' }}>
+              You can also send it by email:{' '}
+              <a href={mailtoFallback} style={{ color: '#c9a96e', fontWeight: 600 }}>support@getatlas.ca</a>
+            </div>
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <button type="submit" disabled={status === 'loading'} style={{ background: status === 'loading' ? '#7a6040' : '#c9a96e', color: '#1c1914', border: 'none', borderRadius: 8, padding: '13px 28px', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', cursor: status === 'loading' ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>{status === 'loading' ? 'Sending…' : 'Send my request →'}</button>
           <span style={{ fontSize: 12, color: '#a09070' }}>* Required · You can choose “Not sure”</span>

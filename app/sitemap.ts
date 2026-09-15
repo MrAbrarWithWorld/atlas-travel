@@ -36,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .from("saved_plans")
         .select("share_id, created_at")
         .not("share_id", "is", null)
+        .eq("is_public", true)
         .limit(1000),
       supabase
         .from("user_posts")

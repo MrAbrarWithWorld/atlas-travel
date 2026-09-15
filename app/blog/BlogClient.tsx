@@ -242,7 +242,7 @@ export default function BlogClient({
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(28,25,20,0.88) 0%, rgba(28,25,20,0.4) 55%, rgba(28,25,20,0.15) 100%)" }} />
                   <div style={{ position: "absolute", bottom: 64, left: 64, right: 64, maxWidth: 720 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", color: "#c9a96e", marginBottom: 18, textTransform: "uppercase" }}>{featured.category}</div>
-                    <h1 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: "clamp(32px,4.5vw,64px)", fontWeight: 600, lineHeight: 1.1, color: "#ede5d5", marginBottom: 18 }}>{featured.title}</h1>
+                    <h2 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: "clamp(32px,4.5vw,64px)", fontWeight: 600, lineHeight: 1.1, color: "#ede5d5", marginBottom: 18 }}>{featured.title}</h2>
                     {featured.description && <p style={{ fontSize: 15, color: "rgba(237,229,213,0.75)", lineHeight: 1.65, marginBottom: 28, maxWidth: 560 }}>{featured.description}</p>}
                     <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", color: "#c9a96e", textTransform: "uppercase", display: "inline-flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(201,169,110,0.4)", paddingBottom: 2 }}>
                       Read the story

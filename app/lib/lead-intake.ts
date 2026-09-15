@@ -28,7 +28,7 @@ export const TIMELINE_OPTIONS = [
 ] as const;
 
 export const BUDGET_OPTIONS = [
-  { value: 'not-sure', label: 'Not sure — recommend a starting point' },
+  { value: 'not-sure', label: 'Not sure yet' },
   { value: 'under-500', label: 'Under CAD $500' },
   { value: '500-999', label: 'CAD $500–999' },
   { value: '1000-2499', label: 'CAD $1,000–2,499' },

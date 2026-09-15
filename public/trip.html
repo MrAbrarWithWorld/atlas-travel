@@ -159,10 +159,14 @@ function TripPage(){
   useEffect(()=>{
     const shareId = window.location.pathname.split('/trip/')[1];
     if(!shareId){setError(true);setLoading(false);return;}
-    sb.from('saved_plans').select('title,messages,locations,created_at').eq('share_id',shareId).eq('is_public',true).single()
+    const noindex=()=>{const m=document.createElement('meta');m.name='robots';m.content='noindex';document.head.appendChild(m);};
+    sb.from('saved_plans').select('title,messages,locations,created_at').eq('share_id',shareId).eq('is_public',true).maybeSingle()
       .then(({data,error})=>{
-        if(error||!data){setError(true);}
-        else{setPlan(data);}
+        if(error||!data){setError(true);noindex();}
+        else{
+          setPlan(data);
+          if(data.title){document.title=`${data.title} — Trip Plan | Atlas`;const d=document.querySelector('meta[name="description"]');if(d)d.setAttribute('content',`${data.title}: an AI-generated travel plan made with Atlas.`);}
+        }
         setLoading(false);
       });
   },[]);
@@ -181,12 +185,12 @@ function TripPage(){
       React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1"}),
       React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
     ),
-    React.createElement("p",{style:{color:"#6a5a3a",fontSize:"0.75rem",letterSpacing:"0.1em"}},"Loading trip...")
+    React.createElement("p",{style:{color:"#a09070",fontSize:"0.75rem",letterSpacing:"0.1em"}},"Loading trip...")
   );
 
   if(error) return React.createElement("div",{style:{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:"1rem",padding:"2rem",textAlign:"center"}},
     React.createElement("p",{style:{color:"#c9a96e",fontFamily:"'Cormorant Garamond',serif",fontSize:"1.5rem"}},"Trip not found"),
-    React.createElement("p",{style:{color:"#6a5a3a",fontSize:"0.78rem"}},"This trip may be private or the link may be incorrect."),
+    React.createElement("p",{style:{color:"#a09070",fontSize:"0.78rem"}},"This trip may be private or the link may be incorrect."),
     React.createElement("a",{href:"/",style:{color:"#c9a96e",fontSize:"0.72rem",letterSpacing:"0.1em",textTransform:"uppercase",marginTop:"1rem"}},"Plan your own trip →")
   );
 

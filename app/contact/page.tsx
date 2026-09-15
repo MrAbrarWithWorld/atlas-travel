@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { CalendarCheck, ChatCircleText, ClipboardText, EnvelopeSimple, LockSimple, Globe } from '@phosphor-icons/react/dist/ssr';
 import SiteNav from '../components/SiteNav';
 import ContactForm from './ContactForm';
 import { ATTRIBUTION_KEYS, isServiceId, type Attribution } from '../lib/lead-intake';
 
 export const metadata: Metadata = {
-  title: 'Book a Discovery Call | Atlas Technology',
-  description: 'Book a free 30-minute discovery call with Atlas Technology. Based in Canada, serving clients remotely worldwide. We review your workflow and come back with a clear plan.',
+  title: { absolute: 'Book a Discovery Call | Atlas AI Technology' },
+  description: 'Book a free 30-minute discovery call with Atlas AI Technology. Based in Canada, serving clients remotely worldwide. We review your workflow and come back with a clear plan.',
+  alternates: { canonical: '/contact' },
   openGraph: {
-    title: 'Book a Discovery Call | Atlas Technology',
+    title: 'Book a Discovery Call | Atlas AI Technology',
     description: 'Free 30-minute call. We review your workflow and come back with a clear plan — no sales pitch, no commitment.',
     url: 'https://getatlas.ca/contact',
   },
@@ -38,20 +40,24 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
       <SiteNav activePath="/contact" />
 
       <style>{`
-        .contact-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 64px; align-items: start; }
-        @media (max-width: 860px) { .contact-grid { grid-template-columns: 1fr; gap: 40px; } }
-        .contact-sidebar { padding-top: 16px; }
-        @media (max-width: 860px) { .contact-sidebar { padding-top: 0; } }
+        .contact-grid { display: grid; grid-template-columns: 1fr 1.5fr; grid-template-areas: 'intro form' 'details form'; column-gap: 64px; row-gap: 0; align-items: start; }
+        .contact-intro { grid-area: intro; padding-top: 16px; }
+        .contact-details { grid-area: details; }
+        .contact-form { grid-area: form; }
+        @media (max-width: 860px) {
+          .contact-grid { grid-template-columns: 1fr; grid-template-areas: 'intro' 'form' 'details'; row-gap: 32px; }
+          .contact-intro { padding-top: 0; }
+          .contact-form { padding: 28px 20px !important; }
+        }
       `}</style>
 
       <div style={{ maxWidth: 1060, margin: '0 auto', padding: '100px 24px 80px' }}>
         <div className="contact-grid">
 
-          {/* Left: Info */}
-          <div className="contact-sidebar">
+          {/* Left: intro */}
+          <div className="contact-intro">
             {/* Canada badge */}
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#231f18', border: '1px solid #3a3228', borderRadius: 100, padding: '5px 14px', marginBottom: 24 }}>
-              <span style={{ fontSize: 13 }}>🍁</span>
               <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: '#a09070', textTransform: 'uppercase' }}>Based in Canada · Remote worldwide</span>
             </div>
 
@@ -65,23 +71,54 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
               Tell us what you&apos;re doing manually. On the call we review your workflow, identify the highest-value automation opportunities, and walk you through a clear plan. No pitch, no invoice.
             </p>
 
-            {/* Trust items */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+          </div>
+
+          {/* Left: details (below the form on phones) */}
+          <div className="contact-details">
+            {/* What happens next */}
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', color: '#c9a96e', textTransform: 'uppercase', marginBottom: 14 }}>
+              What happens next
+            </div>
+            <ol style={{ listStyle: 'none', padding: 0, margin: '0 0 36px', display: 'flex', flexDirection: 'column', gap: 0, borderLeft: '1px solid #3a3228' }}>
               {[
-                { icon: '📅', title: '30-minute focused call', desc: 'We come prepared. You describe the problem; we map it to a solution and leave you with a clear written scope.' },
-                { icon: '⚡', title: 'Personal follow-up', desc: 'We review each request ourselves and usually suggest the clearest next step within two business days.' },
-                { icon: '🔒', title: 'Handled with care', desc: 'Your details are used to review and respond to your request, with necessary CRM and service providers covered by our privacy policy.' },
-                { icon: '🌍', title: 'Fully remote · worldwide', desc: 'Remote-first by design. We\'ve worked with clients across 4 continents. Timezone is never a problem.' },
-              ].map(item => (
-                <div key={item.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                  <div style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 2 }}>{item.icon}</div>
+                { Icon: ClipboardText, title: 'We review your request', desc: 'Atlas reads every request personally and usually replies within two business days.' },
+                { Icon: CalendarCheck, title: '30-minute discovery call', desc: 'We walk through the workflow together and find the highest-value place to start.' },
+                { Icon: ChatCircleText, title: 'A clear written scope', desc: 'You leave with a short written scope and the recommended next step. No obligation to continue.' },
+              ].map(({ Icon, title, desc }, index) => (
+                <li key={title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start', padding: '0 0 20px 20px', position: 'relative' }}>
+                  <span aria-hidden="true" style={{ position: 'absolute', left: -12, top: 0, width: 24, height: 24, borderRadius: '50%', background: '#1c1914', border: '1px solid #c9a96e', color: '#c9a96e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={13} weight="bold" />
+                  </span>
+                  <div style={{ paddingLeft: 8 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#ede5d5', marginBottom: 3 }}>
+                      <span style={{ color: '#a09070', fontWeight: 500, marginRight: 6 }}>{index + 1}.</span>{title}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: '#a09070', lineHeight: 1.55 }}>{desc}</div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            {/* Trust items */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {[
+                { Icon: LockSimple, title: 'Handled with care', desc: 'Your details are only used to review and respond to your request, as described in our privacy policy.' },
+                { Icon: Globe, title: 'Remote-first, any time zone', desc: 'Based in Canada and set up to work with clients remotely around the world.' },
+              ].map(({ Icon, title, desc }) => (
+                <div key={title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  <Icon size={18} color="#c9a96e" style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true" />
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#ede5d5', marginBottom: 3 }}>{item.title}</div>
-                    <div style={{ fontSize: 12, color: '#a09070', lineHeight: 1.55 }}>{item.desc}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#ede5d5', marginBottom: 3 }}>{title}</div>
+                    <div style={{ fontSize: 12.5, color: '#a09070', lineHeight: 1.55 }}>{desc}</div>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* Direct email */}
+            <a href="mailto:support@getatlas.ca?subject=Discovery%20call%20request" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 28, fontSize: 13, color: '#c9a96e', textDecoration: 'none' }}>
+              <EnvelopeSimple size={16} aria-hidden="true" /> Prefer email? support@getatlas.ca
+            </a>
 
             {/* Travel app link */}
             <div style={{ marginTop: 40, paddingTop: 28, borderTop: '1px solid #3a3228' }}>
@@ -93,7 +130,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
           </div>
 
           {/* Right: Form */}
-          <div style={{ background: '#231f18', border: '1px solid #3a3228', borderRadius: 16, padding: '36px 32px' }}>
+          <div className="contact-form" style={{ background: '#231f18', border: '1px solid #3a3228', borderRadius: 16, padding: '36px 32px' }}>
             <ContactForm initialService={service} attribution={attribution} />
           </div>
 
@@ -103,7 +140,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
       {/* Footer */}
       <footer style={{ borderTop: '1px solid #3a3228', padding: '24px', textAlign: 'center' }}>
         <div style={{ fontSize: 12, color: '#a09070' }}>
-          © {new Date().getFullYear()} Atlas Technology &nbsp;·&nbsp;
+          © {new Date().getFullYear()} Atlas AI Technology &nbsp;·&nbsp;
           <Link href="/services" style={{ color: '#a09070', textDecoration: 'none' }}>Services</Link>
           &nbsp;·&nbsp;
           <Link href="/blog" style={{ color: '#a09070', textDecoration: 'none' }}>Blog</Link>

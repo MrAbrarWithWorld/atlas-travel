@@ -76,7 +76,7 @@ function injectInlinePhotos(html: string, photos: string[] | null | undefined): 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const key = process.env.SUPABASE_SERVICE_KEY;
-  if (!key) return { title: "Article | Atlas Travel" };
+  if (!key) return { title: "Article" };
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://prffhhkemxibujjjiyhg.supabase.co',
     key
@@ -87,10 +87,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     .eq("slug", slug)
     .single();
 
-  if (!post) return { title: "Article | Atlas Travel" };
+  if (!post) return { title: "Article not found", robots: { index: false } };
 
   return {
-    title: post.title + " | Atlas Travel",
+    title: post.title,
     description: post.description,
     alternates: {
       canonical: "https://getatlas.ca/blog/" + post.slug,

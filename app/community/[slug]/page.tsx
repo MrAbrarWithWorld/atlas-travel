@@ -16,7 +16,7 @@ interface UserPost {
   destination: string | null;
   slug: string;
   created_at: string;
-  photos: { url: string; caption?: string }[] | null;
+  photos: (string | { url: string; caption?: string })[] | null;
 }
 
 function sanitizeHtml(html: string): string {
@@ -41,7 +41,7 @@ function fmt(iso: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const key = process.env.SUPABASE_SERVICE_KEY;
-  if (!key) return { title: "Community Story | Atlas Travel" };
+  if (!key) return { title: "Community Story" };
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || "https://prffhhkemxibujjjiyhg.supabase.co",
@@ -54,11 +54,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     .eq("status", "approved")
     .single();
 
-  if (!post) return { title: "Community Story | Atlas Travel" };
+  if (!post) return { title: "Story not found", robots: { index: false } };
 
   return {
-    title: post.title + " | Atlas Community",
+    title: { absolute: post.title + " | Atlas Community" },
     description: post.excerpt || "A community travel story on Atlas.",
+    alternates: { canonical: "https://getatlas.ca/community/" + slug },
     openGraph: {
       title: post.title,
       description: post.excerpt || "",
@@ -132,7 +133,7 @@ export default async function CommunityStoryPage({ params }: { params: Promise<{
             {story.photos.map((photo, i) => (
               <div key={i} style={{ width: 120, height: 90, borderRadius: 8, overflow: "hidden" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo.url} alt={photo.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={typeof photo === "string" ? photo : photo.url} alt={typeof photo === "string" ? "" : photo.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
             ))}
           </div>

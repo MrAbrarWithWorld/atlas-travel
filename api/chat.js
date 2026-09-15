@@ -339,6 +339,12 @@ function detectDestinationOnly(messages) {
       : "";
   const hasDestination = /italy|japan|thailand|turkey|australia|dubai|london|paris|bali|singapore|maldives|greece|spain|france|germany|switzerland|canada|usa|america|nepal|india|sri lanka|vietnam|indonesia|malaysia|egypt|morocco|brazil|mexico|new zealand|south korea|china|hong kong|taiwan|pakistan|bangladesh|myanmar|cambodia|laos|philippines|portugal|netherlands|belgium|austria|sweden|norway|denmark|finland|iceland|ireland|scotland|croatia|czechia|hungary|romania|poland|ukraine|russia|kenya|tanzania|south africa|nigeria|ghana|ethiopia|argentina|chile|colombia|peru|cuba|jamaica|jordan|israel|lebanon|iran|georgia|armenia|azerbaijan|uzbekistan|kazakhstan|ইতালি|জাপান|থাইল্যান্ড|তুরস্ক|অস্ট্রেলিয়া|দুবাই|লন্ডন|প্যারিস|বালি|মালদ্বীপ|গ্রীস|স্পেন|ফ্রান্স|জার্মানি|সুইজারল্যান্ড|নেপাল|ভারত|শ্রীলঙ্কা|ভিয়েতনাম|মিশর|ব্রাজিল|মেক্সিকো|কোরিয়া|চীন|হংকং|জর্ডান|পাকিস্তান|বাংলাদেশ|jabo|jaite|jete|যাবো|যাব|যেতে|visit|dekhte|দেখতে/i.test(last);
   const hasInfo = /\d+\s*(day|night|days|nights|দিন|রাত)|budget|\$|cad|usd|bdt|tk|taka|টাকা|বাজেট|\d+\s*(people|person|জন)|solo|couple|family|friends|সোলো|কাপল|পরিবার/i.test(last);
+  // A quick factual question ("best month to visit Lisbon?") deserves an answer,
+  // not the trip-planning questionnaire. Only ask for details when the user
+  // is actually asking for a plan.
+  const isQuestion = /\?\s*$|^(what|when|where|which|who|how|is|are|do|does|can|should|best|kokhon|kothay|ki\b)|কখন|কোথায়|কোন|কেমন|কী|কি\s/i.test(last.trim());
+  const wantsPlan = /plan|itinerary|trip|tour|holiday|vacation|travel to|going to|want to (go|visit)|jabo|jaite|jete|যাবো|যাব|যেতে|ট্রিপ|ট্যুর|প্ল্যান/i.test(last);
+  if (isQuestion && !wantsPlan) return false;
   return hasDestination && !hasInfo;
 }
 
@@ -355,8 +361,8 @@ function needsClaudeQuality(messages) {
   return /itinerary|day by day|complete|full plan|visa|hotel|solo|couple|family|budget|passport|rtd|বিস্তারিত|পুরো|সম্পূর্ণ/i.test(last);
 }
 
-const SYSTEM_MSG = `CRITICAL RULE #1 — NO EXCEPTIONS:
-When a user mentions ANY destination or travel intention, you MUST ONLY ask questions. DO NOT give any plan, flight info, hotel, visa, or cost. ONLY ask:
+const SYSTEM_MSG = `CRITICAL RULE #1:
+When a user asks you to PLAN a trip (or states a travel intention like "I want to go to X") without giving details, you MUST ONLY ask questions first. DO NOT give a plan, flight info, hotels, or costs yet. ONLY ask:
 "Before I plan your trip, I need a few details:
 1. How many days are you planning to stay?
 2. What is your total budget?
@@ -364,6 +370,7 @@ When a user mentions ANY destination or travel intention, you MUST ONLY ask ques
 4. What kind of trip? (relaxation/sightseeing/adventure)
 5. What passport/travel document do you have?"
 Wait for ALL answers. Then plan.
+Exception: if the user asks a quick factual travel question (best time to visit, weather, visa rules, currency, safety, what to pack), answer it directly and concisely, then offer to build a full plan.
 
 You are ATLAS — the world's most sophisticated AI travel intelligence.
 

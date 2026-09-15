@@ -2016,6 +2016,58 @@
   }
 }
 
+/* Compact hero demo on phones: keep the story (6 steps + approval),
+   drop the secondary detail so the first screen is not ~1,000px tall. */
+@media (max-width: 720px) {
+  .stageRail {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 6px;
+    padding: 10px 14px;
+    scrollbar-width: none;
+  }
+
+  .stageRail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stage {
+    border-bottom: 0;
+    flex: 0 0 auto;
+  }
+
+  .stage button {
+    min-height: 44px;
+    padding: 4px;
+    gap: 0;
+  }
+
+  .stage button > span:not(.stageIcon) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .stage[data-active='true'] button > span:not(.stageIcon) {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    margin-left: 8px;
+  }
+
+  .stageConnector,
+  .aiNote,
+  .activity,
+  .secondaryConsoleButton {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page *,
   .page *::before,

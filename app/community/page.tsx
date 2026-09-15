@@ -1,9 +1,33 @@
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import type { Metadata } from "next";
 import WriteStoryForm from "./WriteStoryForm";
 import BlogNav from "../blog/components/BlogNav";
 
 export const revalidate = 60;
+
+async function approvedStoryCount(): Promise<number> {
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!key) return 0;
+  try {
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || "https://prffhhkemxibujjjiyhg.supabase.co", key);
+    const { count } = await supabase.from("user_posts").select("id", { count: "exact", head: true }).eq("status", "approved");
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const count = await approvedStoryCount();
+  return {
+    title: "Community Travel Stories",
+    description: "Real trips from Atlas travellers — itineraries, visa tips, budget breakdowns and hidden gems, written by the people who went.",
+    alternates: { canonical: "https://getatlas.ca/community" },
+    // Keep an empty listing out of search results until the first story is published.
+    robots: count > 0 ? { index: true, follow: true } : { index: false, follow: true },
+  };
+}
 
 interface UserPost {
   id: string;
@@ -15,7 +39,7 @@ interface UserPost {
   destination: string;
   slug: string;
   created_at: string;
-  photos: { url: string; caption?: string }[] | null;
+  photos: (string | { url: string; caption?: string })[] | null;
 }
 
 function fmt(iso: string) {
@@ -103,7 +127,7 @@ export default async function CommunityPage() {
                         {post.photos.slice(0,4).map((photo, i) => (
                           <div key={i} style={{ width:56, height:42, borderRadius:6, overflow:"hidden", flexShrink:0 }}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={photo.url} alt={photo.caption || ''} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                            <img src={typeof photo === "string" ? photo : photo.url} alt={typeof photo === "string" ? "" : photo.caption || ""} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
                           </div>
                         ))}
                         {post.photos.length > 4 && (
