@@ -275,7 +275,7 @@ export default function HomePage() {
                   30-day money-back on setup, and every message follows Canadian anti-spam rules (CASL).
                 </p>
                 <p className={styles.founder}>
-                  Built in Toronto by <strong>S M Abrar Fahim</strong>, automation engineer and founder of Atlas AI Technology.
+                  Designed, built and supported from <strong>Toronto, Canada</strong>.
                 </p>
               </div>
             </div>
