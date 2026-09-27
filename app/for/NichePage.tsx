@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { ArrowRight, CheckCircle, Lightning, Warning } from '@phosphor-icons/react/dist/ssr';
-import SiteNav from '../../components/SiteNav';
-import styles from '../../business.module.css';
+import SiteNav from '../components/SiteNav';
+import styles from '../business.module.css';
 import {
   BusinessFooter,
   FaqSection,
@@ -12,8 +11,8 @@ import {
   StepsSection,
   faqJsonLd,
   type Faq,
-} from '../../components/BusinessBlocks';
-import { contactFor } from '../../lib/offer';
+} from '../components/BusinessBlocks';
+import { contactFor } from '../lib/offer';
 
 type Niche = {
   slug: string;
@@ -28,7 +27,7 @@ type Niche = {
   faqs: Faq[];
 };
 
-const NICHES: Record<string, Niche> = {
+export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers', Niche> = {
   trades: {
     slug: 'trades',
     metaTitle: 'Missed-Call Text-Back & Lead Follow-Up for Contractors in Toronto',
@@ -142,18 +141,7 @@ const NICHES: Record<string, Niche> = {
   },
 };
 
-type Props = { params: Promise<{ niche: string }> };
-
-export function generateStaticParams() {
-  return Object.keys(NICHES).map((niche) => ({ niche }));
-}
-
-export const dynamicParams = false;
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { niche } = await params;
-  const data = NICHES[niche];
-  if (!data) return {};
+export function nicheMetadata(data: Niche): Metadata {
   return {
     title: { absolute: `${data.metaTitle} | Atlas AI Technology` },
     description: data.metaDescription,
@@ -164,15 +152,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: 'Atlas AI Technology',
       title: data.metaTitle,
       description: data.metaDescription,
+      images: [{ url: '/og-image.png', width: 1200, height: 630 }],
     },
   };
 }
 
-export default async function NichePage({ params }: Props) {
-  const { niche } = await params;
-  const data = NICHES[niche];
-  if (!data) notFound();
-
+export function NicheView({ data }: { data: Niche }) {
   const serviceJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Service',

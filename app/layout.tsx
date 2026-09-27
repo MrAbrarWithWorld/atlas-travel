@@ -19,12 +19,14 @@ export const metadata: Metadata = {
     title: "Atlas AI Technology | Every lead answered in seconds",
     description:
       "Missed-call text-back, instant replies and follow-ups you approve. Free missed-lead audit. Founding prices from $29/month.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Atlas AI Technology: every lead answered in seconds" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Atlas AI Technology | Every lead answered in seconds",
     description:
       "Missed-call text-back, instant replies and follow-ups you approve. Free audit. Founding prices from $29/month.",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,

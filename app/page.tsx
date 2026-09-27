@@ -42,6 +42,7 @@ export const metadata: Metadata = {
     title: 'Every lead answered in seconds | Atlas AI Technology',
     description:
       'Missed-call text-back, instant replies and follow-ups you approve. Free audit. Founding prices from $29/month.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
 };
 
