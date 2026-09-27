@@ -4,42 +4,28 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://getatlas.ca"),
   title: {
-    default: "Atlas | AI Travel Planner",
-    template: "%s | Atlas Travel",
+    default: "Atlas AI Technology | Lead follow-up automation for small businesses",
+    template: "%s | Atlas",
   },
   description:
-    "Atlas is an AI-powered travel planner that creates personalized itineraries, discovers hidden gems, and makes travel planning effortless.",
-  keywords: [
-    "AI travel planner",
-    "travel itinerary",
-    "personalized travel",
-    "trip planning",
-    "travel guide",
-  ],
-  authors: [{ name: "Atlas Travel" }],
-  creator: "Atlas Travel",
+    "Atlas AI Technology builds lead follow-up and workflow automation for small businesses in Toronto and across Canada. Free missed-lead audit, founding prices from $29/month.",
+  authors: [{ name: "Atlas AI Technology" }],
+  creator: "Atlas AI Technology",
   openGraph: {
     type: "website",
     locale: "en_CA",
     url: "https://getatlas.ca",
-    siteName: "Atlas Travel",
-    title: "Atlas | AI Travel Planner",
+    siteName: "Atlas AI Technology",
+    title: "Atlas AI Technology | Every lead answered in seconds",
     description:
-      "Atlas is an AI-powered travel planner that creates personalized itineraries, discovers hidden gems, and makes travel planning effortless.",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Atlas Travel Planner",
-      },
-    ],
+      "Missed-call text-back, instant replies and follow-ups you approve. Free missed-lead audit. Founding prices from $29/month.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Atlas AI Technology: every lead answered in seconds" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Atlas | AI Travel Planner",
+    title: "Atlas AI Technology | Every lead answered in seconds",
     description:
-      "Atlas is an AI-powered travel planner that creates personalized itineraries and makes travel planning effortless.",
+      "Missed-call text-back, instant replies and follow-ups you approve. Free audit. Founding prices from $29/month.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -70,27 +56,20 @@ export default function RootLayout({
               {
                 "@context": "https://schema.org",
                 "@type": "Organization",
-                "name": "Atlas Travel",
+                "name": "Atlas AI Technology",
                 "url": "https://getatlas.ca",
-                "logo": "https://getatlas.ca/icon.png",
+                "logo": "https://getatlas.ca/icon-512.png",
+                "email": "support@getatlas.ca",
                 "sameAs": [
                   "https://play.google.com/store/apps/details?id=ca.getatlas.app"
                 ],
-                "description": "Atlas is an AI-powered travel planner that creates personalized itineraries, discovers hidden gems, and makes travel planning effortless."
+                "description": "Lead follow-up and workflow automation for small businesses in Toronto and across Canada. Also the maker of the Atlas AI Travel Planner app."
               },
               {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
-                "name": "Atlas Travel",
-                "url": "https://getatlas.ca",
-                "potentialAction": {
-                  "@type": "SearchAction",
-                  "target": {
-                    "@type": "EntryPoint",
-                    "urlTemplate": "https://getatlas.ca/blog?q={search_term_string}"
-                  },
-                  "query-input": "required name=search_term_string"
-                }
+                "name": "Atlas AI Technology",
+                "url": "https://getatlas.ca"
               }
             ])
           }}

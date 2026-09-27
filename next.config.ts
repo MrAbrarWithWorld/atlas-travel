@@ -20,7 +20,16 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
-        { source: '/', destination: '/index.html' }
+        // getatlas.ca/ is the Atlas AI Technology business homepage (app/page.tsx).
+        // The travel planner lives at travel.getatlas.ca/ and at getatlas.ca/travel.
+        // API routes, /privacy, /terms, /trip/*, /blog and /.well-known stay on getatlas.ca
+        // because the Play Store app depends on them.
+        {
+          source: '/',
+          has: [{ type: 'host', value: 'travel.getatlas.ca' }],
+          destination: '/index.html',
+        },
+        { source: '/travel', destination: '/index.html' },
       ]
     };
   },

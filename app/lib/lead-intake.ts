@@ -1,4 +1,7 @@
 export const SERVICE_IDS = [
+  'free-audit',
+  'lead-rescue',
+  'follow-up-system',
   'workflow-automation',
   'crm-lead-capture',
   'website-development',
@@ -12,6 +15,9 @@ export type ServiceId = (typeof SERVICE_IDS)[number];
 
 export const SERVICE_OPTIONS: ReadonlyArray<{ value: ServiceId; label: string }> = [
   { value: 'not-sure', label: 'Not sure yet — help me choose' },
+  { value: 'free-audit', label: 'Free missed-lead audit' },
+  { value: 'lead-rescue', label: 'Lead Rescue (founding price)' },
+  { value: 'follow-up-system', label: 'Follow-Up System (founding price)' },
   { value: 'workflow-automation', label: 'AI workflow automation' },
   { value: 'crm-lead-capture', label: 'CRM & lead capture' },
   { value: 'website-development', label: 'Web app or client portal' },
@@ -91,6 +97,27 @@ function textField(
   if (required && !normalized) return { error: `${label} is required` };
   if (normalized.length > max) return { error: `${label} is too long` };
   return { value: normalized };
+}
+
+function labelFor(options: ReadonlyArray<{ value: string; label: string }>, value: string) {
+  return options.find((option) => option.value === value)?.label ?? value;
+}
+
+/**
+ * The CRM webhook only stores `message` (as notes), so the structured answers are
+ * appended to it. Without this, service, timeline, budget and tools were dropped.
+ */
+export function composeLeadMessage(lead: LeadIntake): string {
+  const details = [
+    `Service: ${labelFor(SERVICE_OPTIONS, lead.service)}`,
+    `Timeline: ${labelFor(TIMELINE_OPTIONS, lead.timeline)}`,
+    `Budget: ${labelFor(BUDGET_OPTIONS, lead.budgetBand)}`,
+    lead.currentTools ? `Current tools: ${lead.currentTools}` : '',
+    lead.company ? `Company: ${lead.company}` : '',
+    lead.phone ? `Phone: ${lead.phone}` : '',
+  ].filter(Boolean).join('\n');
+  const body = lead.message || 'No message provided';
+  return `${body}\n\n---\n${details}`.slice(0, 5000);
 }
 
 export function isServiceId(value: unknown): value is ServiceId {

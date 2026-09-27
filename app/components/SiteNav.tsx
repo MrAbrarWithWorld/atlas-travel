@@ -8,7 +8,7 @@ import AtlasLogo from './AtlasLogo';
 export default function SiteNav({
   activePath,
   ctaLabel = 'Try Atlas →',
-  ctaHref = '/',
+  ctaHref = '/travel',
 }: {
   activePath?: string;
   ctaLabel?: string;

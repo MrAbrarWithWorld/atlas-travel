@@ -237,7 +237,7 @@ const PRODUCTS = [
     title: 'Atlas AI Travel Planner',
     desc: 'A day-by-day itinerary builder with planning, chat, and shareable trip views.',
     cta: 'Try Atlas',
-    href: '/',
+    href: '/travel',
     external: false,
   },
   {
@@ -1168,7 +1168,7 @@ export default function ServicesClient() {
         <nav aria-label="Footer">
           <Link href={contactHref()}>Contact</Link>
           <Link href="/blog">Blog</Link>
-          <Link href="/" prefetch={false}>Travel app</Link>
+          <Link href="/travel" prefetch={false}>Travel app</Link>
         </nav>
         <span>© {new Date().getFullYear()} Atlas AI Technology</span>
       </footer>
