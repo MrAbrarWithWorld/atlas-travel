@@ -2,7 +2,7 @@
   "name": "ATLAS — AI Travel Intelligence",
   "short_name": "ATLAS",
   "description": "AI-powered travel planning. Every destination starts with a dream.",
-  "start_url": "/",
+  "start_url": "/travel",
   "display": "standalone",
   "background_color": "#1c1914",
   "theme_color": "#1c1914",

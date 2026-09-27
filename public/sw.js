@@ -11,7 +11,7 @@ self.addEventListener('activate', event => {
 
 // Push notification handler
 self.addEventListener('push', event => {
-  let data = { title: 'Atlas', body: 'You have a travel reminder.', icon: '/icon-192.png', url: '/' };
+  let data = { title: 'Atlas', body: 'You have a travel reminder.', icon: '/icon-192.png', url: '/travel' };
   try {
     if (event.data) {
       const parsed = event.data.json();
@@ -25,7 +25,7 @@ self.addEventListener('push', event => {
       icon: data.icon || '/icon-192.png',
       badge: '/icon-192.png',
       tag: data.tag || 'atlas-notif',
-      data: { url: data.url || '/' },
+      data: { url: data.url || '/travel' },
       actions: [
         { action: 'open', title: 'Open Atlas' },
         { action: 'dismiss', title: 'Dismiss' }
@@ -39,7 +39,7 @@ self.addEventListener('notificationclick', event => {
   event.notification.close();
   if (event.action === 'dismiss') return;
 
-  const url = event.notification.data?.url || '/';
+  const url = event.notification.data?.url || '/travel';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
       for (const client of clientList) {

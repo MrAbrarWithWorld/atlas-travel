@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { parseLeadIntake } from '../../lib/lead-intake';
+import { composeLeadMessage, parseLeadIntake } from '../../lib/lead-intake';
 
 export const runtime = 'nodejs';
 
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
 
     const payload = {
       ...lead,
-      message: lead.message || 'No message provided',
+      message: composeLeadMessage(lead),
       source: 'getatlas.ca/contact',
       request_id: requestId,
       idempotency_key: lead.clientSubmissionId,
