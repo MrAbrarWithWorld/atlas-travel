@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
   experimental: {
     // Enable PPR when stable
   },
+  async redirects() {
+    // One business page: the old /services page now lives on the homepage.
+    return [{ source: '/services', destination: '/#services', permanent: true }];
+  },
   async rewrites() {
     return {
       beforeFiles: [

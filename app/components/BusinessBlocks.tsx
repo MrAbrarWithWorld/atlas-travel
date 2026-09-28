@@ -99,7 +99,7 @@ export function StepsSection() {
 
 export function FaqSection({ items }: { items: Faq[] }) {
   return (
-    <section className={styles.section} aria-labelledby="faq-title">
+    <section id="faq" className={styles.section} aria-labelledby="faq-title">
       <div className={styles.wrap}>
         <span className={styles.eyebrow}>Questions</span>
         <h2 id="faq-title" className={styles.h2}>Straight answers.</h2>
@@ -151,7 +151,8 @@ export function BusinessFooter() {
       <div className={`${styles.wrap} ${styles.footerInner}`}>
         <span>© {new Date().getFullYear()} Atlas AI Technology · Toronto, Canada</span>
         <nav aria-label="Footer">
-          <Link href="/services">Services</Link>
+          <Link href="/#services">Services</Link>
+          <Link href="/#pricing">Pricing</Link>
           <Link href="/for/trades">Trades</Link>
           <Link href="/for/realtors">Realtors</Link>
           <Link href="/for/bookkeepers">Bookkeepers</Link>

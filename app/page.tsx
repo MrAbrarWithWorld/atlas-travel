@@ -14,6 +14,12 @@ import {
   Scissors,
   ShieldCheck,
   Code,
+  ChartLineUp,
+  EnvelopeSimple,
+  FlowArrow,
+  Lightning,
+  Robot,
+  AppWindow,
 } from '@phosphor-icons/react/dist/ssr';
 import SiteNav from './components/SiteNav';
 import styles from './business.module.css';
@@ -98,6 +104,15 @@ const NICHES = [
   { Icon: Scissors, title: 'Salons, spas & studios', text: 'Booking reminders, fewer no-shows, more reviews.', href: '' },
   { Icon: Storefront, title: 'Restaurants & local shops', text: 'Catering enquiries answered and review requests sent.', href: '' },
   { Icon: Briefcase, title: 'Agencies & freelancers', text: 'Automations you can resell to your own clients.', href: '' },
+];
+
+const SERVICES = [
+  { Icon: Lightning, title: 'Lead capture & instant reply', text: 'Missed-call text-back, web-form and Google enquiry replies, every lead saved in one CRM.', service: 'crm-lead-capture' },
+  { Icon: EnvelopeSimple, title: 'Follow-ups & email automation', text: 'Quote follow-ups, reminders and review requests, drafted by AI and sent after your OK.', service: 'email-report-automation' },
+  { Icon: AppWindow, title: 'Client intake & portals', text: 'Intake forms, document checklists and simple client portals that fill your records for you.', service: 'website-development' },
+  { Icon: ChartLineUp, title: 'Reports & dashboards', text: 'A weekly view of leads, jobs and revenue, built from the tools you already use.', service: 'email-report-automation' },
+  { Icon: FlowArrow, title: 'Business process automation', text: 'Connect your apps so data moves on its own: no copy-paste between email, sheets and CRM.', service: 'process-automation' },
+  { Icon: Robot, title: 'AI assistants & integrations', text: 'AI that drafts, sorts and summarizes inside your workflow, always with a human in control.', service: 'ai-product-integration' },
 ];
 
 const leadRescue = PAID_PLANS.find((plan) => plan.id === 'lead-rescue')!;
@@ -216,6 +231,27 @@ export default function HomePage() {
                   <h3>{title}</h3>
                   <p>{text}</p>
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="services" className={styles.section} aria-labelledby="services-title">
+          <div className={styles.wrap}>
+            <span className={styles.eyebrow}>What we build</span>
+            <h2 id="services-title" className={styles.h2}>Six ways we take work off your plate.</h2>
+            <p className={styles.lead}>
+              Most clients start with Lead Rescue, then add more as it pays off. Every system is built,
+              tested and supported by us, and you approve anything that talks to your customers.
+            </p>
+            <div className={styles.nicheGrid}>
+              {SERVICES.map(({ Icon, title, text, service }) => (
+                <Link key={title} href={contactFor(service)} className={styles.niche}>
+                  <span className={styles.icon}><Icon size={22} weight="duotone" aria-hidden="true" /></span>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                  <span className={styles.more}>Ask about this →</span>
+                </Link>
               ))}
             </div>
           </div>

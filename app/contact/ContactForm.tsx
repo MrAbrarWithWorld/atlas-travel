@@ -94,7 +94,7 @@ export default function ContactForm({ initialService, attribution }: ContactForm
   }
 
   const serviceLabel = SERVICE_OPTIONS.find((option) => option.value === form.service)?.label || form.service;
-  const mailtoFallback = `mailto:support@getatlas.ca?subject=${encodeURIComponent('Discovery call request' + (form.company ? ` — ${form.company}` : ''))}&body=${encodeURIComponent(
+  const mailtoFallback = `mailto:support@getatlas.ca?subject=${encodeURIComponent('Free audit request' + (form.company ? ` — ${form.company}` : ''))}&body=${encodeURIComponent(
     [
       `Name: ${form.name}`,
       `Email: ${form.email}`,
@@ -129,7 +129,7 @@ export default function ContactForm({ initialService, attribution }: ContactForm
           {duplicate ? 'Your contact is already on file. Atlas will review the latest request and follow up personally.' : 'Atlas will review the workflow and contact you with the clearest next step.'}
         </p>
         {requestId && <p style={{ color: '#6f6658', fontSize: 11, margin: '0 0 28px' }}>Request reference: {requestId}</p>}
-        <Link href="/services" style={{ color: '#c9a96e', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>← Back to Services</Link>
+        <Link href="/#services" style={{ color: '#c9a96e', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>← Back to Services</Link>
       </div>
     );
   }
