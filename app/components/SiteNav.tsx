@@ -34,9 +34,9 @@ export default function SiteNav({
   }
 
   const navLinks = [
-    { href: '/#services', label: 'SERVICES' },
-    { href: '/#pricing', label: 'PRICING' },
-    { href: '/#faq', label: 'FAQ' },
+    { href: '/services', label: 'SERVICES' },
+    { href: '/pricing', label: 'PRICING' },
+    { href: '/faq', label: 'FAQ' },
     { href: '/contact', label: 'CONTACT' },
   ];
 

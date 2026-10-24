@@ -108,12 +108,12 @@ export default function ContactForm({ initialService, attribution }: ContactForm
   )}`;
 
   const inputBase: CSSProperties = {
-    width: '100%', background: '#1c1914', border: '1px solid #3a3228', borderRadius: 8,
-    padding: '12px 16px', color: '#ede5d5', fontSize: 14, outline: 'none',
-    boxSizing: 'border-box', fontFamily: 'DM Sans, sans-serif', transition: 'border-color 0.15s',
+    width: '100%', background: '#0d1011', border: '1px solid rgba(241,238,231,0.14)', borderRadius: 10,
+    padding: '12px 16px', color: '#f1eee7', fontSize: 14.5, outline: 'none',
+    boxSizing: 'border-box', fontFamily: 'DM Sans, sans-serif', transition: 'border-color 0.15s, box-shadow 0.15s',
   };
   const labelStyle: CSSProperties = {
-    fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: '#a09070',
+    fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: '#aaa79f',
     display: 'block', marginBottom: 6, textTransform: 'uppercase',
   };
 
@@ -122,14 +122,14 @@ export default function ContactForm({ initialService, attribution }: ContactForm
     return (
       <div style={{ textAlign: 'center', padding: '40px 0' }}>
         <div style={{ fontSize: 48, marginBottom: 20 }}>{duplicate ? '📬' : '✅'}</div>
-        <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 30, color: '#e8c994', margin: '0 0 12px' }}>
+        <h2 style={{ fontFamily: 'inherit', fontWeight: 700, letterSpacing: '-0.01em', fontSize: 28, color: '#f1eee7', margin: '0 0 12px' }}>
           {duplicate ? 'We already have your details' : 'Request received'}
         </h2>
-        <p style={{ color: '#a09070', fontSize: 15, lineHeight: 1.6, margin: '0 0 18px' }}>
+        <p style={{ color: '#aaa79f', fontSize: 15, lineHeight: 1.6, margin: '0 0 18px' }}>
           {duplicate ? 'Your contact is already on file. Atlas will review the latest request and follow up personally.' : 'Atlas will review the workflow and contact you with the clearest next step.'}
         </p>
-        {requestId && <p style={{ color: '#6f6658', fontSize: 11, margin: '0 0 28px' }}>Request reference: {requestId}</p>}
-        <Link href="/#services" style={{ color: '#c9a96e', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>← Back to Services</Link>
+        {requestId && <p style={{ color: '#7d7a73', fontSize: 11, margin: '0 0 28px' }}>Request reference: {requestId}</p>}
+        <Link href="/services" style={{ color: '#e6b854', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>← Back to Services</Link>
       </div>
     );
   }
@@ -139,10 +139,11 @@ export default function ContactForm({ initialService, attribution }: ContactForm
       <style>{`
         .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         @media (max-width: 600px) { .cf-row { grid-template-columns: 1fr; } }
-        .cf-input:focus { border-color: #c9a96e !important; }
+        .cf-input:focus { border-color: #d7a744 !important; box-shadow: 0 0 0 3px rgba(215,167,68,0.18); }
+        .cf-input option { background: #121516; color: #f1eee7; }
       `}</style>
-      <h2 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 26, color: '#e8c994', margin: '0 0 8px' }}>Tell us about the workflow</h2>
-      <p style={{ color: '#a09070', fontSize: 13, lineHeight: 1.55, margin: '0 0 24px' }}>A few practical details help us recommend the smallest useful starting point.</p>
+      <h2 style={{ fontFamily: 'inherit', fontWeight: 700, letterSpacing: '-0.01em', fontSize: 24, color: '#f1eee7', margin: '0 0 8px' }}>Tell us about the workflow</h2>
+      <p style={{ color: '#aaa79f', fontSize: 13, lineHeight: 1.55, margin: '0 0 24px' }}>A few practical details help us recommend the smallest useful starting point.</p>
 
       <form onSubmit={handleSubmit} aria-busy={status === 'loading'} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         <div className="cf-row">
@@ -171,22 +172,22 @@ export default function ContactForm({ initialService, attribution }: ContactForm
           <label style={labelStyle} htmlFor="contact-message">Outcome or challenge</label>
           <textarea id="contact-message" className="cf-input" style={{ ...inputBase, minHeight: 116, resize: 'vertical' }} maxLength={4000} placeholder="What should become faster, clearer, or easier to manage?" value={form.message} onChange={(e) => set('message', e.target.value)} />
         </div>
-        <label style={{ display: 'flex', gap: 11, alignItems: 'flex-start', color: '#b7aa91', fontSize: 12, lineHeight: 1.5 }}>
-          <input type="checkbox" checked={form.consent} onChange={(e) => set('consent', e.target.checked)} required style={{ marginTop: 3, accentColor: '#c9a96e' }} />
-          <span>I agree that Atlas may use this information, together with its CRM, automation and service providers, to review and respond to this request. See the <Link href="/privacy" prefetch={false} style={{ color: '#c9a96e' }}>privacy policy</Link>.</span>
+        <label style={{ display: 'flex', gap: 11, alignItems: 'flex-start', color: '#aaa79f', fontSize: 12, lineHeight: 1.5 }}>
+          <input type="checkbox" checked={form.consent} onChange={(e) => set('consent', e.target.checked)} required style={{ marginTop: 3, accentColor: '#e6b854' }} />
+          <span>I agree that Atlas may use this information, together with its CRM, automation and service providers, to review and respond to this request. See the <Link href="/privacy" prefetch={false} style={{ color: '#e6b854' }}>privacy policy</Link>.</span>
         </label>
         {status === 'error' && (
           <div role="alert" aria-live="polite" style={{ background: '#2a1a1a', border: '1px solid #6b2020', borderRadius: 8, padding: '12px 16px', color: '#e87070', fontSize: 13, lineHeight: 1.55 }}>
             {errMsg}{requestId ? ` Reference: ${requestId}` : ''}
-            <div style={{ marginTop: 8, color: '#d8c9a8' }}>
+            <div style={{ marginTop: 8, color: '#cfcac0' }}>
               You can also send it by email:{' '}
-              <a href={mailtoFallback} style={{ color: '#c9a96e', fontWeight: 600 }}>support@getatlas.ca</a>
+              <a href={mailtoFallback} style={{ color: '#e6b854', fontWeight: 600 }}>support@getatlas.ca</a>
             </div>
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <button type="submit" disabled={status === 'loading'} style={{ background: status === 'loading' ? '#7a6040' : '#c9a96e', color: '#1c1914', border: 'none', borderRadius: 8, padding: '13px 28px', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em', cursor: status === 'loading' ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>{status === 'loading' ? 'Sending…' : 'Send my request →'}</button>
-          <span style={{ fontSize: 12, color: '#a09070' }}>* Required · You can choose “Not sure”</span>
+          <button type="submit" disabled={status === 'loading'} style={{ background: status === 'loading' ? '#8a6f35' : '#d7a744', color: '#141516', border: 'none', borderRadius: 10, padding: '15px 28px', fontSize: 14.5, fontWeight: 700, letterSpacing: '0.02em', boxShadow: '0 12px 32px -14px rgba(215,167,68,0.7)', cursor: status === 'loading' ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>{status === 'loading' ? 'Sending…' : 'Send my request →'}</button>
+          <span style={{ fontSize: 12, color: '#aaa79f' }}>* Required · You can choose “Not sure”</span>
         </div>
       </form>
     </>

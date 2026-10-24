@@ -97,7 +97,7 @@ export const PAID_PLANS: Plan[] = [
   },
   {
     id: 'digital-base',
-    service: 'not-sure',
+    service: 'digital-base-setup',
     label: 'Project service',
     name: 'Digital Base Setup',
     price: 'From CAD 1,500',
@@ -118,6 +118,9 @@ export const OFFER_TERMS = [
   '30-day money-back guarantee on the setup fee.',
   'Month to month. Cancel anytime. Prices in CAD, plus applicable tax.',
 ];
+
+// Structured-data price range (set in a8fe78c). Used by every page's JSON-LD; keep verbatim.
+export const PRICE_RANGE = 'Automation plans $0–$500 CAD setup; digital base & custom projects quoted separately.';
 
 export function contactFor(service: string) {
   return `/contact?service=${encodeURIComponent(service)}`;

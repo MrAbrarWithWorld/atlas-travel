@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { composeLeadMessage, parseLeadIntake } from '../../lib/lead-intake';
+import { ADDED_SERVICE_IDS, composeLeadMessage, parseLeadIntake } from '../../lib/lead-intake';
 
 export const runtime = 'nodejs';
 
@@ -130,39 +130,54 @@ export async function POST(req: NextRequest) {
       consent_version: CONSENT_VERSION,
     };
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), webhookTimeoutMs());
-    let n8nRes: Response;
+    let n8nRes!: Response;
     let data: Record<string, unknown> = {};
-    try {
-      n8nRes = await fetch(webhookUrl, {
-        method: 'POST',
-        redirect: 'error',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Atlas-CRM-Token': webhookToken,
-          'Idempotency-Key': lead.clientSubmissionId,
-          'X-Atlas-Request-Id': requestId,
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-      data = await readWebhookData(n8nRes, controller);
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.error('[lead-intake] Webhook timeout', { requestId });
+    // Attempt 1 sends the real service value. If the CRM rejects one of the service values
+    // added on 2026-10-24 as invalid input (400/422), attempt 2 resends the same lead as
+    // `not-sure`; `message` still carries the readable service label, so nothing is lost.
+    const attempts = ADDED_SERVICE_IDS.includes(lead.service) ? 2 : 1;
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      const body = attempt === 1 ? payload : { ...payload, service: 'not-sure' };
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), webhookTimeoutMs());
+      data = {};
+      try {
+        n8nRes = await fetch(webhookUrl, {
+          method: 'POST',
+          redirect: 'error',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Atlas-CRM-Token': webhookToken,
+            'Idempotency-Key': lead.clientSubmissionId,
+            'X-Atlas-Request-Id': requestId,
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        data = await readWebhookData(n8nRes, controller);
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.error('[lead-intake] Webhook timeout', { requestId });
+          return NextResponse.json(
+            { error: 'Lead service timed out. Please retry.', requestId },
+            { status: 504 },
+          );
+        }
+        console.error('[lead-intake] Webhook network or response error', { requestId });
         return NextResponse.json(
-          { error: 'Lead service timed out. Please retry.', requestId },
-          { status: 504 },
+          { error: 'Lead service error. Please retry.', status: 'error', requestId },
+          { status: 502 },
         );
+      } finally {
+        clearTimeout(timeout);
       }
-      console.error('[lead-intake] Webhook network or response error', { requestId });
-      return NextResponse.json(
-        { error: 'Lead service error. Please retry.', status: 'error', requestId },
-        { status: 502 },
-      );
-    } finally {
-      clearTimeout(timeout);
+      const rejectedAsInvalid = n8nRes.status === 400 || n8nRes.status === 422;
+      if (!(rejectedAsInvalid && attempt < attempts)) break;
+      console.warn('[lead-intake] CRM rejected new service value; retrying as not-sure', {
+        requestId,
+        service: lead.service,
+        status: n8nRes.status,
+      });
     }
 
     // Duplicate detection: 409 or body has duplicate flag

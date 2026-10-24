@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import {
   ArrowRight,
   Briefcase,
@@ -14,13 +15,6 @@ import {
   Scissors,
   ShieldCheck,
   Code,
-  ChartLineUp,
-  EnvelopeSimple,
-  FlowArrow,
-  Lightning,
-  Robot,
-  AppWindow,
-  Globe,
 } from '@phosphor-icons/react/dist/ssr';
 import SiteNav from './components/SiteNav';
 import styles from './business.module.css';
@@ -28,12 +22,16 @@ import {
   BusinessFooter,
   FaqSection,
   FinalCta,
+  FlowSteps,
   PricingSection,
-  StepsSection,
   faqJsonLd,
-  type Faq,
 } from './components/BusinessBlocks';
-import { PAID_PLANS, contactFor } from './lib/offer';
+import RevealRoot from './components/fx/RevealRoot';
+import HeroConstellation from './components/fx/HeroConstellation';
+import ServiceIcon from './components/fx/ServiceIcon';
+import { PAID_PLANS, PRICE_RANGE, contactFor } from './lib/offer';
+import { SERVICES, SERVICES_HEADING, SERVICES_LEAD } from './lib/services';
+import { FAQS } from './lib/faqs';
 
 // Travel planner moved to /travel (and travel.getatlas.ca); see next.config.ts.
 
@@ -52,33 +50,6 @@ export const metadata: Metadata = {
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
 };
-
-const FAQS: Faq[] = [
-  {
-    q: 'How much does it cost?',
-    a: 'The missed-lead audit and the auto-reply starter are free. Lead Rescue is $99 setup + $29/month with the first month free. The Follow-Up System is $299 setup + $59/month. Prices are in CAD and are founding prices for our first clients.',
-  },
-  {
-    q: 'Why are the prices so low?',
-    a: 'We are building our first case studies in Canada. Early clients get founding prices and keep them for as long as they stay. Prices will go up for new clients later.',
-  },
-  {
-    q: 'Do I need to change my software?',
-    a: 'Usually not. We connect what you already use: your website form, phone number, Gmail or Outlook, Google Calendar and a simple CRM. If you have no CRM, we set one up for you.',
-  },
-  {
-    q: 'Will it send messages without me knowing?',
-    a: 'Only the instant first reply that you approve in advance. Follow-ups and anything important are drafted for you and wait for your one-tap approval.',
-  },
-  {
-    q: 'Is there a contract?',
-    a: 'No long contract. Plans are month to month and you can cancel anytime. If the setup does not save you time in the first 30 days, we refund the setup fee.',
-  },
-  {
-    q: 'Is my customer data safe?',
-    a: 'Your data stays in your own accounts wherever possible. We only use it to run your automations and we follow Canadian anti-spam law (CASL) for every message.',
-  },
-];
 
 const PROBLEMS = [
   {
@@ -107,16 +78,6 @@ const NICHES = [
   { Icon: Briefcase, title: 'Agencies & freelancers', text: 'Automations you can resell to your own clients.', href: '' },
 ];
 
-const SERVICES = [
-  { Icon: Lightning, title: 'Lead capture & instant reply', text: 'Missed-call text-back, web-form and Google enquiry replies, every lead saved in one CRM.', service: 'crm-lead-capture' },
-  { Icon: EnvelopeSimple, title: 'Follow-ups & email automation', text: 'Quote follow-ups, reminders and review requests, drafted by AI and sent after your OK.', service: 'email-report-automation' },
-  { Icon: AppWindow, title: 'Client intake & portals', text: 'Intake forms, document checklists and simple client portals that fill your records for you.', service: 'website-development' },
-  { Icon: ChartLineUp, title: 'Reports & dashboards', text: 'A weekly view of leads, jobs and revenue, built from the tools you already use.', service: 'email-report-automation' },
-  { Icon: FlowArrow, title: 'Business process automation', text: 'Connect your apps so data moves on its own: no copy-paste between email, sheets and CRM.', service: 'process-automation' },
-  { Icon: Robot, title: 'AI assistants & integrations', text: 'AI that drafts, sorts and summarizes inside your workflow, always with a human in control.', service: 'ai-product-integration' },
-  { Icon: Globe, title: 'Digital base setup', text: 'Your website, profiles and listings finished and connected: every page completed, Google and social profiles fixed, listings where your buyers look, and one tracker for every enquiry.', service: 'not-sure', wide: true },
-];
-
 const leadRescue = PAID_PLANS.find((plan) => plan.id === 'lead-rescue')!;
 
 const businessJsonLd = {
@@ -132,7 +93,7 @@ const businessJsonLd = {
     { '@type': 'Country', name: 'Canada' },
   ],
   email: 'support@getatlas.ca',
-  priceRange: 'Automation plans $0–$500 CAD setup; digital base & custom projects quoted separately.',
+  priceRange: PRICE_RANGE,
   makesOffer: [
     { '@type': 'Offer', name: 'Free Missed-Lead Audit', price: '0', priceCurrency: 'CAD' },
     { '@type': 'Offer', name: 'Lead Rescue', price: '99', priceCurrency: 'CAD', description: '$99 setup + $29/month, first month free' },
@@ -142,7 +103,8 @@ const businessJsonLd = {
 
 export default function HomePage() {
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${styles.fx}`}>
+      <RevealRoot />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify([businessJsonLd, faqJsonLd(FAQS)]) }}
@@ -150,9 +112,10 @@ export default function HomePage() {
       <SiteNav activePath="/" ctaLabel="Free audit →" ctaHref={contactFor('free-audit')} />
 
       <main>
-        <section className={styles.hero}>
+        <section className={`${styles.hero} ${styles.fxHero}`}>
+          <HeroConstellation targetId="lead-demo" />
           <div className={`${styles.wrap} ${styles.heroGrid}`}>
-            <div>
+            <div className={styles.heroIn}>
               <span className={styles.eyebrow}>Atlas AI Technology · Toronto &amp; GTA</span>
               <h1 className={styles.h1}>
                 Every lead answered in seconds. <em>Even when you&rsquo;re on the job.</em>
@@ -176,7 +139,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className={styles.demo} aria-label="Example: how Lead Rescue handles a missed call">
+            <div className={styles.demoStage}>
+            <div id="lead-demo" className={styles.demo} aria-label="Example: how Lead Rescue handles a missed call">
               <div className={styles.demoHead}>
                 <span>Example · Lead Rescue</span>
                 <span className={styles.live}>Running</span>
@@ -215,6 +179,7 @@ export default function HomePage() {
                 {leadRescue.name}: {leadRescue.price} · {leadRescue.priceNote.toLowerCase()}
               </div>
             </div>
+            </div>
           </div>
         </section>
 
@@ -227,8 +192,8 @@ export default function HomePage() {
               keep every lead in one place and remind you who to call back.
             </p>
             <div className={styles.problems}>
-              {PROBLEMS.map(({ Icon, title, text }) => (
-                <div key={title} className={styles.card}>
+              {PROBLEMS.map(({ Icon, title, text }, i) => (
+                <div key={title} className={styles.card} data-reveal="" style={{ '--d': `${i * 90}ms` } as CSSProperties}>
                   <span className={styles.icon}><Icon size={22} weight="duotone" aria-hidden="true" /></span>
                   <h3>{title}</h3>
                   <p>{text}</p>
@@ -241,32 +206,39 @@ export default function HomePage() {
         <section id="services" className={styles.section} aria-labelledby="services-title">
           <div className={styles.wrap}>
             <span className={styles.eyebrow}>What we build</span>
-            <h2 id="services-title" className={styles.h2}>Seven ways we take work off your plate.</h2>
-            <p className={styles.lead}>
-              Most clients start with Lead Rescue, then add more as it pays off. Every system is built,
-              tested and supported by us, and you approve anything that talks to your customers.
-            </p>
+            <h2 id="services-title" className={styles.h2}>{SERVICES_HEADING}</h2>
+            <p className={styles.lead}>{SERVICES_LEAD}</p>
             <div className={styles.nicheGrid}>
-              {SERVICES.map(({ Icon, title, text, service, wide }) => (
-                <Link key={title} href={contactFor(service)} className={wide ? `${styles.niche} ${styles.nicheWide}` : styles.niche}>
-                  <span className={styles.icon}><Icon size={22} weight="duotone" aria-hidden="true" /></span>
+              {SERVICES.map(({ icon, title, text, service, slug }, i) => (
+                <Link
+                  key={slug}
+                  href={contactFor(service)}
+                  className={slug === 'digital-base-setup' ? `${styles.niche} ${styles.nicheWide}` : styles.niche}
+                  data-reveal=""
+                  data-glow=""
+                  style={{ '--d': `${(i % 3) * 90}ms` } as CSSProperties}
+                >
+                  <span className={styles.iconTile}><ServiceIcon id={icon} /></span>
                   <h3>{title}</h3>
                   <p>{text}</p>
                   <span className={styles.more}>Ask about this →</span>
                 </Link>
               ))}
             </div>
+            <div className={styles.moreRow}>
+              <Link className={styles.moreLink} href="/services">See all services →</Link>
+            </div>
           </div>
         </section>
 
-        <PricingSection />
+        <PricingSection fx more={{ href: '/pricing', label: 'All prices →' }} />
 
         <section className={styles.section} aria-labelledby="who-title">
           <div className={styles.wrap}>
             <span className={styles.eyebrow}>Who it&rsquo;s for</span>
             <h2 id="who-title" className={styles.h2}>Built for busy owners who can&rsquo;t sit by the phone.</h2>
             <div className={styles.nicheGrid}>
-              {NICHES.map(({ Icon, title, text, href }) => {
+              {NICHES.map(({ Icon, title, text, href }, i) => {
                 const inner = (
                   <>
                     <span className={styles.icon}><Icon size={22} weight="duotone" aria-hidden="true" /></span>
@@ -275,24 +247,25 @@ export default function HomePage() {
                     {href && <span className={styles.more}>See how it works →</span>}
                   </>
                 );
+                const fxProps = { 'data-reveal': '', style: { '--d': `${(i % 3) * 90}ms` } as CSSProperties };
                 return href ? (
-                  <Link key={title} href={href} className={styles.niche}>{inner}</Link>
+                  <Link key={title} href={href} className={styles.niche} data-glow="" {...fxProps}>{inner}</Link>
                 ) : (
-                  <div key={title} className={styles.niche}>{inner}</div>
+                  <div key={title} className={styles.niche} {...fxProps}>{inner}</div>
                 );
               })}
             </div>
           </div>
         </section>
 
-        <StepsSection />
+        <FlowSteps />
 
         <section className={styles.section} aria-labelledby="proof-title">
           <div className={styles.wrap}>
             <span className={styles.eyebrow}>Why trust us</span>
             <h2 id="proof-title" className={styles.h2}>Proof through work, not promises.</h2>
             <div className={styles.proofGrid}>
-              <div className={styles.card}>
+              <div className={styles.card} data-reveal="">
                 <span className={styles.icon}><Code size={22} weight="duotone" aria-hidden="true" /></span>
                 <h3>Engineer-built, on proven tools</h3>
                 <p>
@@ -305,7 +278,7 @@ export default function HomePage() {
                   ))}
                 </div>
               </div>
-              <div className={styles.card}>
+              <div className={styles.card} data-reveal="" style={{ '--d': '90ms' } as CSSProperties}>
                 <span className={styles.icon}><ShieldCheck size={22} weight="duotone" aria-hidden="true" /></span>
                 <h3>Low risk by design</h3>
                 <p>
@@ -320,11 +293,13 @@ export default function HomePage() {
           </div>
         </section>
 
-        <FaqSection items={FAQS} />
+        <FaqSection items={FAQS} more={{ href: '/faq', label: 'More questions →' }} />
 
         <FinalCta
           title="Find out how many leads you are missing. Free."
           text="Tell us about your business. We test your response time and send a short report with a fix plan within 2–3 business days."
+          pricingHref="/pricing"
+          textured
         />
       </main>
 

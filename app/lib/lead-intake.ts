@@ -2,14 +2,28 @@ export const SERVICE_IDS = [
   'free-audit',
   'lead-rescue',
   'follow-up-system',
+  'digital-base-setup',
   'workflow-automation',
   'crm-lead-capture',
+  'client-intake',
   'website-development',
   'email-report-automation',
+  'reports-dashboards',
   'process-automation',
   'ai-product-integration',
   'not-sure',
 ] as const;
+
+/**
+ * Service values added on 2026-10-24. The CRM webhook keeps the readable service label in
+ * `message`; if it ever rejects one of these raw values, the API retries once as `not-sure`
+ * so the lead is never lost (see app/api/lead-intake/route.ts).
+ */
+export const ADDED_SERVICE_IDS: ReadonlyArray<string> = [
+  'digital-base-setup',
+  'client-intake',
+  'reports-dashboards',
+];
 
 export type ServiceId = (typeof SERVICE_IDS)[number];
 
@@ -18,10 +32,13 @@ export const SERVICE_OPTIONS: ReadonlyArray<{ value: ServiceId; label: string }>
   { value: 'free-audit', label: 'Free missed-lead audit' },
   { value: 'lead-rescue', label: 'Lead Rescue (founding price)' },
   { value: 'follow-up-system', label: 'Follow-Up System (founding price)' },
+  { value: 'digital-base-setup', label: 'Digital Base Setup' },
   { value: 'workflow-automation', label: 'AI workflow automation' },
   { value: 'crm-lead-capture', label: 'CRM & lead capture' },
+  { value: 'client-intake', label: 'Client intake & portals' },
   { value: 'website-development', label: 'Web app or client portal' },
   { value: 'email-report-automation', label: 'Email & report automation' },
+  { value: 'reports-dashboards', label: 'Reports & dashboards' },
   { value: 'process-automation', label: 'Business process automation' },
   { value: 'ai-product-integration', label: 'AI product & API integration' },
 ];
