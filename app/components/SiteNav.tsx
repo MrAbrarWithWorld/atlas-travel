@@ -29,6 +29,9 @@ export default function SiteNav({
   const border = '#3a3228';
   const bg = '#1c1914';
 
+  // /travel is the static travel app (public/index.html), not a Next.js page: don't prefetch it.
+  const ctaPrefetch = ctaHref.startsWith('/travel') ? false : undefined;
+
   function linkColor(href: string) {
     return activePath === href ? gold : text;
   }
@@ -58,7 +61,7 @@ export default function SiteNav({
             {l.label}
           </Link>
         ))}
-        <Link href={ctaHref} onClick={() => setMobileOpen(false)} style={{ display: 'block', marginTop: 24, border: `1px solid ${gold}`, borderRadius: 8, padding: '13px 20px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', textAlign: 'center' }}>
+        <Link href={ctaHref} prefetch={ctaPrefetch} onClick={() => setMobileOpen(false)} style={{ display: 'block', marginTop: 24, border: `1px solid ${gold}`, borderRadius: 8, padding: '13px 20px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', textAlign: 'center' }}>
           {ctaLabel}
         </Link>
       </div>
@@ -87,7 +90,7 @@ export default function SiteNav({
 
           {/* CTA */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Link href={ctaHref} className="snav-desktop" style={{ background: 'none', border: `1px solid ${gold}`, borderRadius: 6, padding: '8px 18px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            <Link href={ctaHref} prefetch={ctaPrefetch} className="snav-desktop" style={{ background: 'none', border: `1px solid ${gold}`, borderRadius: 6, padding: '8px 18px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', whiteSpace: 'nowrap' }}>
               {ctaLabel}
             </Link>
             {/* Mobile hamburger */}

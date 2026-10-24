@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { EnvelopeSimple, LockSimple, Globe } from '@phosphor-icons/react/dist/ssr';
+import { LockSimple, Globe } from '@phosphor-icons/react/dist/ssr';
 import SiteNav from '../components/SiteNav';
 import styles from '../business.module.css';
 import { BusinessFooter } from '../components/BusinessBlocks';
@@ -26,6 +26,10 @@ type ContactPageProps = {
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
+
+// Envelope outline (same shape as the other line icons), inlined for the email_off link below.
+const MAIL_ICON =
+  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.8 6.5 8.2 6.2 8.2-6.2"/></svg>';
 
 const NEXT_STEPS = [
   { title: 'We review your request', desc: 'Atlas reads every request personally and usually replies within two business days.' },
@@ -96,9 +100,14 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
                 ))}
               </div>
 
-              <a className={styles.mailLink} href="mailto:support@getatlas.ca?subject=Free%20missed-lead%20audit">
-                <EnvelopeSimple size={16} aria-hidden="true" /> Prefer email? support@getatlas.ca
-              </a>
+              {/* Cloudflare's email obfuscation rewrites plain emails in the HTML, which breaks React
+                  hydration. The email_off markers tell Cloudflare to leave this link alone. */}
+              <span
+                className={styles.mailWrap}
+                dangerouslySetInnerHTML={{
+                  __html: `<!--email_off--><a class="${styles.mailLink}" href="mailto:support@getatlas.ca?subject=Free%20missed-lead%20audit">${MAIL_ICON} Prefer email? support@getatlas.ca</a><!--/email_off-->`,
+                }}
+              />
 
               <div className={styles.travelNote}>
                 <div>Looking for the travel app?</div>
