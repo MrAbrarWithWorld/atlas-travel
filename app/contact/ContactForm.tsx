@@ -108,7 +108,7 @@ export default function ContactForm({ initialService, attribution }: ContactForm
   )}`;
 
   const inputBase: CSSProperties = {
-    width: '100%', background: '#0d1011', border: '1px solid rgba(241,238,231,0.14)', borderRadius: 10,
+    width: '100%', background: 'rgba(255,240,210,0.03)', border: '1px solid rgba(255,236,200,0.14)', borderRadius: 12,
     padding: '12px 16px', color: '#f1eee7', fontSize: 14.5, outline: 'none',
     boxSizing: 'border-box', fontFamily: 'DM Sans, sans-serif', transition: 'border-color 0.15s, box-shadow 0.15s',
   };
@@ -139,8 +139,12 @@ export default function ContactForm({ initialService, attribution }: ContactForm
       <style>{`
         .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         @media (max-width: 600px) { .cf-row { grid-template-columns: 1fr; } }
-        .cf-input:focus { border-color: #d7a744 !important; box-shadow: 0 0 0 3px rgba(215,167,68,0.18); }
-        .cf-input option { background: #121516; color: #f1eee7; }
+        .cf-input:focus { border-color: #ecc067 !important; box-shadow: 0 0 0 4px rgba(217,168,67,0.16), inset 0 1px 0 rgba(255,244,222,0.06); }
+        .cf-submit { transition: transform .5s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease, filter .3s ease; }
+        .cf-submit:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 18px 40px -12px rgba(217,168,67,0.85) !important; }
+        .cf-submit:not(:disabled):active { transform: scale(0.97); transition-duration: .12s; }
+        @media (prefers-reduced-motion: reduce) { .cf-submit { transition: none; } .cf-submit:not(:disabled):hover, .cf-submit:not(:disabled):active { transform: none; } }
+        .cf-input option { background: #15130f; color: #f4efe6; }
       `}</style>
       <h2 style={{ fontFamily: 'inherit', fontWeight: 700, letterSpacing: '-0.01em', fontSize: 24, color: '#f1eee7', margin: '0 0 8px' }}>Tell us about the workflow</h2>
       <p style={{ color: '#aaa79f', fontSize: 13, lineHeight: 1.55, margin: '0 0 24px' }}>A few practical details help us recommend the smallest useful starting point.</p>
@@ -186,7 +190,7 @@ export default function ContactForm({ initialService, attribution }: ContactForm
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <button type="submit" disabled={status === 'loading'} style={{ background: status === 'loading' ? '#8a6f35' : '#d7a744', color: '#141516', border: 'none', borderRadius: 10, padding: '15px 28px', fontSize: 14.5, fontWeight: 700, letterSpacing: '0.02em', boxShadow: '0 12px 32px -14px rgba(215,167,68,0.7)', cursor: status === 'loading' ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>{status === 'loading' ? 'Sending…' : 'Send my request →'}</button>
+          <button type="submit" className="cf-submit" disabled={status === 'loading'} style={{ background: status === 'loading' ? '#8a6f35' : 'linear-gradient(135deg, #f8e8bf 0%, #edc46c 30%, #d9a843 60%, #ad7720 100%)', color: '#1d1608', border: 'none', borderRadius: 999, padding: '15px 30px', fontSize: 14.5, fontWeight: 700, letterSpacing: '0.02em', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.55), 0 12px 30px -12px rgba(217,168,67,0.72)', cursor: status === 'loading' ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>{status === 'loading' ? 'Sending…' : 'Send my request →'}</button>
           <span style={{ fontSize: 12, color: '#aaa79f' }}>* Required · You can choose “Not sure”</span>
         </div>
       </form>

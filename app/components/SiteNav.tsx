@@ -23,11 +23,11 @@ export default function SiteNav({
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
-  const gold = '#c9a96e';
-  const text = '#ede5d5';
-  const muted = '#a09070';
-  const border = '#3a3228';
-  const bg = '#1c1914';
+  const gold = '#e6b95e';
+  const text = '#f4efe6';
+  const muted = '#b2ab9e';
+  const border = 'rgba(255,236,200,0.12)';
+  const bg = '#14120f';
 
   // /travel is the static travel app (public/index.html), not a Next.js page: don't prefetch it.
   const ctaPrefetch = ctaHref.startsWith('/travel') ? false : undefined;
@@ -61,7 +61,7 @@ export default function SiteNav({
             {l.label}
           </Link>
         ))}
-        <Link href={ctaHref} prefetch={ctaPrefetch} onClick={() => setMobileOpen(false)} style={{ display: 'block', marginTop: 24, border: `1px solid ${gold}`, borderRadius: 8, padding: '13px 20px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', textAlign: 'center' }}>
+        <Link href={ctaHref} prefetch={ctaPrefetch} onClick={() => setMobileOpen(false)} className="snav-cta" style={{ display: 'block', marginTop: 24, border: `1px solid ${gold}`, borderRadius: 999, padding: '13px 20px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', textAlign: 'center' }}>
           {ctaLabel}
         </Link>
       </div>
@@ -71,11 +71,16 @@ export default function SiteNav({
   return (
     <>
       <style>{`
-        .snav-link:hover { color: #c9a96e !important; }
+        .snav-link { transition: color .25s ease; }
+        .snav-link:hover { color: #ecc067 !important; }
+        .snav-cta { transition: transform .5s cubic-bezier(.34,1.56,.64,1), background-color .3s ease, box-shadow .3s ease; }
+        .snav-cta:hover { background: rgba(217,168,67,0.12) !important; box-shadow: 0 10px 26px -14px rgba(217,168,67,0.6); transform: translateY(-1px); }
+        .snav-cta:active { transform: scale(0.97); transition-duration: .12s; }
+        @media (prefers-reduced-motion: reduce) { .snav-cta, .snav-link { transition: none; } .snav-cta:hover, .snav-cta:active { transform: none; } }
         @media (max-width: 768px) { .snav-desktop { display: none !important; } }
         @media (min-width: 769px) { .snav-mobile-btn { display: none !important; } }
       `}</style>
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'rgba(28,25,20,0.97)', borderBottom: `1px solid ${border}`, backdropFilter: 'blur(8px)' }}>
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'rgba(11,10,8,0.72)', borderBottom: `1px solid ${border}`, backdropFilter: 'blur(16px) saturate(150%)', WebkitBackdropFilter: 'blur(16px) saturate(150%)', boxShadow: 'inset 0 -1px 0 rgba(255,244,222,0.03), 0 10px 30px -20px rgba(0,0,0,0.8)' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', gap: 24 }}>
           <AtlasLogo />
 
@@ -90,7 +95,7 @@ export default function SiteNav({
 
           {/* CTA */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Link href={ctaHref} prefetch={ctaPrefetch} className="snav-desktop" style={{ background: 'none', border: `1px solid ${gold}`, borderRadius: 6, padding: '8px 18px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            <Link href={ctaHref} prefetch={ctaPrefetch} className="snav-desktop snav-cta" style={{ background: 'rgba(217,168,67,0.04)', border: `1px solid ${gold}`, borderRadius: 999, padding: '8px 18px', color: gold, fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', whiteSpace: 'nowrap' }}>
               {ctaLabel}
             </Link>
             {/* Mobile hamburger */}

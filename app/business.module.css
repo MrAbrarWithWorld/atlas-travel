@@ -23,7 +23,7 @@
 .page a:focus-visible, .page summary:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
 
 .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
-.section { padding: 88px 0; border-top: 1px solid var(--line); }
+.section { padding: 96px 0; border-top: 1px solid var(--line); }
 .eyebrow { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
 .h2 { font-size: clamp(28px, 3.6vw, 42px); line-height: 1.12; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 16px; max-width: 760px; }
 .lead { font-size: 17px; line-height: 1.65; color: var(--muted); max-width: 680px; margin: 0; }
@@ -161,7 +161,7 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 
 @media (max-width: 560px) {
   .hero { padding: 104px 0 64px; }
-  .section { padding: 64px 0; }
+  .section { padding: 68px 0; }
   .steps { grid-template-columns: minmax(0, 1fr); }
   .wrap { padding: 0 16px; }
   .primary, .secondary { width: 100%; justify-content: center; }
@@ -180,14 +180,15 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 .fx { --ease: cubic-bezier(.2, .7, .2, 1); --sig: #7cc4ff; }
 
 /* Scroll reveal: hidden state exists only after RevealRoot runs (html[data-fx-ready]). */
+.fx { --settle: cubic-bezier(.3, 1.32, .5, 1); }
 .fx [data-reveal] {
-  transition: opacity .8s var(--ease) var(--d, 0ms), translate .8s var(--ease) var(--d, 0ms);
+  transition: opacity .7s var(--ease) var(--d, 0ms), translate .95s var(--settle) var(--d, 0ms);
 }
 .fx .niche[data-reveal], .fx .plan[data-reveal], .fx .card[data-reveal], .fx .svcRow[data-reveal] {
-  transition: opacity .8s var(--ease) var(--d, 0ms), translate .8s var(--ease) var(--d, 0ms),
-    transform .3s var(--ease), border-color .25s ease, box-shadow .3s ease;
+  transition: opacity .7s var(--ease) var(--d, 0ms), translate .95s var(--settle) var(--d, 0ms),
+    transform .55s var(--spring), border-color .3s ease, box-shadow .4s var(--soft);
 }
-:global(html[data-fx-ready]) .fx [data-reveal]:not([data-in]) { opacity: 0; translate: 0 22px; }
+:global(html[data-fx-ready]) .fx [data-reveal]:not([data-in]) { opacity: 0; translate: 0 20px; }
 
 /* Text links that sit on .page (which forces color: inherit) */
 .moreRow { margin-top: 30px; }
@@ -253,29 +254,13 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 .pageHead .pageTitle { animation-name: fxRiseText; }
 .pageHead > .wrap > .lead { animation-delay: .14s; }
 
-/* Card + button micro-interactions */
+/* Pointer spotlight on linked cards (fx pages; RevealRoot feeds --mx/--my) */
 .fx a.niche { position: relative; isolation: isolate; overflow: hidden; }
 .fx a.niche::before {
-  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .3s ease;
-  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 0%), rgba(215, 167, 68, 0.13), transparent 65%);
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .35s ease;
+  background: radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%), rgba(236, 192, 103, 0.14), transparent 65%);
 }
-.fx a.niche:hover { transform: translateY(-4px); border-color: rgba(215, 167, 68, 0.55); box-shadow: 0 24px 50px -24px rgba(0, 0, 0, 0.85), 0 0 34px -10px rgba(215, 167, 68, 0.28); }
 .fx a.niche:hover::before { opacity: 1; }
-.fx .plan:hover { transform: translateY(-4px); box-shadow: 0 26px 60px -28px rgba(0, 0, 0, 0.9), 0 0 40px -14px rgba(215, 167, 68, 0.3); }
-.fx .plan:not(.planHighlight):not(.planFree):hover { border-color: rgba(215, 167, 68, 0.45); }
-.fx .primary { position: relative; overflow: hidden; box-shadow: 0 12px 32px -14px rgba(215, 167, 68, 0.7); transition: background .15s ease, transform .2s var(--ease), box-shadow .25s ease; }
-.fx .primary::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none; transform: translateX(-120%);
-  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.38) 50%, transparent 65%);
-  transition: transform .7s var(--ease);
-}
-.fx .primary:hover::after { transform: translateX(120%); }
-.fx .primary:hover { box-shadow: 0 16px 40px -14px rgba(215, 167, 68, 0.85); }
-.fx .primary:active, .fx .secondary:active, .fx .planCta:active, .page .svcCta:active { transform: scale(0.98); }
-.fx .secondary { transition: border-color .2s ease, background-color .2s ease, transform .2s var(--ease); }
-.fx .secondary:hover { background: rgba(215, 167, 68, 0.08); transform: translateY(-1px); }
-.fx .planCta { transition: background-color .2s ease, transform .2s var(--ease), box-shadow .2s ease; }
-.fx .planCta:hover { box-shadow: 0 10px 28px -14px rgba(215, 167, 68, 0.6); }
 
 /* Service icon set */
 .svgIcon { display: block; overflow: visible; }
@@ -414,7 +399,7 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
   padding: 6px 14px; margin-bottom: 22px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
 }
 .pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--good); animation: fxBeat 2s ease-out infinite; }
-.contactIntro .eyebrow { display: block; }
+.contactIntro .eyebrow { display: table; }
 .contactIntro .lead { font-size: 16.5px; }
 .nextSteps { list-style: none; margin: 0 0 24px; padding: 0; display: grid; gap: 0; }
 .nextStep { position: relative; display: grid; grid-template-columns: 32px 1fr; gap: 14px; padding-bottom: 20px; }
@@ -510,3 +495,198 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 @media (prefers-reduced-motion: reduce) { .svcTier:hover { transform: none; } }
 /* Price cards of different lengths share a row: keep bullets packed at the top. */
 .priceGrid .features { align-content: start; }
+
+/* ==========================================================================
+   Batch 4 — premium "jelly" layer. Gold + black stays; depth, gloss, springs.
+   Base classes on purpose: /for pages inherit the shared-component polish.
+   Motion uses transform/opacity only; all of it is off under reduced motion.
+   ========================================================================== */
+.page {
+  --bg: #0b0a08;
+  --panel: #15130f;
+  --panel-2: #1b1814;
+  --text: #f4efe6;
+  --muted: #b2ab9e;
+  --dim: #857c6e;
+  --gold: #d9a843;
+  --gold-bright: #ecc067;
+  --gold-soft: rgba(217, 168, 67, 0.12);
+  --line: rgba(255, 236, 200, 0.10);
+  --line-strong: rgba(255, 236, 200, 0.18);
+  --gold-grad: linear-gradient(135deg, #f8e8bf 0%, #edc46c 30%, #d9a843 60%, #ad7720 100%);
+  --gold-text: linear-gradient(100deg, #f8e8bf 0%, #ecc067 42%, #cf9734 100%);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  --soft: cubic-bezier(.22, .8, .25, 1);
+  --surface: linear-gradient(180deg, rgba(255, 240, 210, 0.045), rgba(255, 240, 210, 0.012) 45%, rgba(255, 240, 210, 0) 100%);
+  --gloss: inset 0 1px 0 rgba(255, 244, 222, 0.08);
+  --shadow-1: var(--gloss), 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 30px -16px rgba(0, 0, 0, 0.75), 0 26px 54px -38px rgba(217, 168, 67, 0.26);
+  --shadow-2: inset 0 1px 0 rgba(255, 244, 222, 0.11), 0 0 0 1px rgba(236, 192, 103, 0.30), 0 2px 4px rgba(0, 0, 0, 0.4),
+    0 32px 64px -28px rgba(0, 0, 0, 0.92), 0 24px 64px -26px rgba(217, 168, 67, 0.38);
+  background:
+    radial-gradient(1100px 640px at 88% -6%, rgba(217, 168, 67, 0.08), transparent 62%),
+    radial-gradient(900px 700px at -12% 36%, rgba(217, 168, 67, 0.035), transparent 60%),
+    var(--bg);
+}
+
+/* Type rhythm: slightly tighter display tracking, gradient gold accents */
+.h1 { letter-spacing: -0.042em; }
+.h2 { letter-spacing: -0.028em; }
+.pageTitle { letter-spacing: -0.038em; }
+.h1 em, .eyebrow {
+  background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+
+/* Surfaces: layered soft shadow, gloss top edge, larger radius */
+.card, .niche, .step, .plan, .flowCard, .svcRow, .faqItem, .faq details, .svcTier, .summaryCard {
+  background: var(--surface), var(--panel);
+  border-color: var(--line);
+  box-shadow: var(--shadow-1);
+}
+.card { border-radius: 20px; padding: 26px; }
+.niche { border-radius: 20px; padding: 24px; }
+.step { border-radius: 20px; padding: 24px; }
+.plan { border-radius: 24px; padding: 28px; }
+.flowCard { border-radius: 18px; }
+.svcRow { border-radius: 28px; }
+.faqItem, .faq details { border-radius: 16px; }
+.svcTier { border-radius: 16px; background: var(--surface), var(--panel-2); }
+.summaryCard { border-radius: 22px; background: linear-gradient(180deg, rgba(217, 168, 67, 0.07), rgba(217, 168, 67, 0) 55%), var(--panel); }
+.problems, .nicheGrid, .freeGrid, .priceGrid, .proofGrid, .steps { gap: 20px; }
+.planFree { background: linear-gradient(180deg, rgba(92, 201, 138, 0.09), rgba(92, 201, 138, 0) 60%), var(--surface), var(--panel); border-color: rgba(92, 201, 138, 0.32); }
+.planHighlight {
+  border: 1.5px solid transparent;
+  background: linear-gradient(180deg, rgba(217, 168, 67, 0.14), rgba(217, 168, 67, 0) 55%) padding-box,
+    linear-gradient(var(--panel), var(--panel)) padding-box, var(--gold-grad) border-box;
+  box-shadow: var(--gloss), 0 1px 2px rgba(0, 0, 0, 0.45), 0 18px 46px -20px rgba(217, 168, 67, 0.42);
+}
+.badge {
+  background: var(--gold-grad); color: #1d1608; padding: 5px 11px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 6px 16px -6px rgba(217, 168, 67, 0.65);
+}
+.badgeFree { background: linear-gradient(135deg, #a3eac0, #4fbf7f); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 6px 16px -6px rgba(92, 201, 138, 0.55); }
+.icon, .iconTile { border-radius: 14px; box-shadow: inset 0 1px 0 rgba(255, 244, 222, 0.10), 0 6px 16px -8px rgba(217, 168, 67, 0.35); }
+.step::before { background: var(--gold-grad); color: #1d1608; border: 0; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 6px 16px -6px rgba(217, 168, 67, 0.6); }
+.chip { background: rgba(255, 240, 210, 0.035); border-color: var(--line-strong); box-shadow: var(--gloss); }
+
+/* Springy interactions */
+.card, .niche, .step, .plan, .flowCard, .svcTier, .faqItem, .faq details, .svcRow {
+  transition: transform .55s var(--spring), box-shadow .4s var(--soft), border-color .3s ease, background-color .3s ease;
+}
+.icon, .iconTile, .svcBigIcon { transition: transform .6s var(--spring); }
+@media (hover: hover) and (pointer: fine) {
+  a.niche:hover, .plan:hover { transform: translateY(-6px); box-shadow: var(--shadow-2); border-color: rgba(236, 192, 103, 0.36); }
+  .card:hover, .step:hover, .flowCard:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); border-color: rgba(236, 192, 103, 0.3); }
+  .svcRow:hover { transform: translateY(-4px); box-shadow: var(--shadow-2); border-color: rgba(236, 192, 103, 0.32); }
+  .svcTier:hover { transform: translateY(-4px); box-shadow: var(--shadow-2); border-color: rgba(236, 192, 103, 0.4); }
+  .faqItem:hover, .faq details:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+  .planHighlight:hover { box-shadow: var(--gloss), 0 2px 4px rgba(0, 0, 0, 0.4), 0 34px 70px -28px rgba(0, 0, 0, 0.9), 0 26px 70px -22px rgba(217, 168, 67, 0.55); }
+  a.niche:hover .iconTile, a.niche:hover .icon, .card:hover .icon, .svcRow:hover .svcBigIcon { transform: translateY(-3px) scale(1.08) rotate(-4deg); }
+}
+
+/* Buttons: gradient gold pill (shine + squish), glass secondary, pill plan CTAs */
+.primary {
+  position: relative; overflow: hidden; border-radius: 999px; padding: 15px 26px;
+  background: var(--gold-grad); color: #1d1608 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -2px 6px rgba(120, 70, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 30px -12px rgba(217, 168, 67, 0.72);
+  transition: transform .5s var(--spring), box-shadow .3s var(--soft), filter .3s ease;
+}
+.primary::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; transform: translateX(-120%);
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+  transition: transform .75s var(--soft);
+}
+.primary:hover { background: var(--gold-grad); transform: translateY(-2px); filter: brightness(1.05) saturate(1.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -2px 6px rgba(120, 70, 0, 0.28), 0 2px 4px rgba(0, 0, 0, 0.4), 0 18px 40px -12px rgba(217, 168, 67, 0.88); }
+.primary:hover::after { transform: translateX(120%); }
+.secondary {
+  border-radius: 999px; padding: 14px 22px; background: rgba(255, 240, 210, 0.04); border: 1px solid var(--line-strong);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: var(--gloss);
+  transition: transform .5s var(--spring), background-color .3s ease, border-color .3s ease, box-shadow .3s ease;
+}
+.secondary:hover { background: rgba(217, 168, 67, 0.10); border-color: rgba(236, 192, 103, 0.5); transform: translateY(-2px); box-shadow: var(--gloss), 0 12px 28px -14px rgba(217, 168, 67, 0.5); }
+.planCta {
+  border-radius: 999px; border-color: rgba(236, 192, 103, 0.55); background: rgba(217, 168, 67, 0.04); box-shadow: var(--gloss);
+  transition: transform .5s var(--spring), background-color .3s ease, box-shadow .3s ease;
+}
+.planCta:hover { background: rgba(217, 168, 67, 0.12); box-shadow: var(--gloss), 0 10px 26px -14px rgba(217, 168, 67, 0.6); }
+.planHighlight .planCta {
+  background: var(--gold-grad); border-color: transparent; color: #1d1608 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 10px 26px -12px rgba(217, 168, 67, 0.72);
+}
+.planHighlight .planCta:hover { background: var(--gold-grad); filter: brightness(1.05); }
+.page .svcCta { border-radius: 999px; border-color: rgba(236, 192, 103, 0.55); background: rgba(217, 168, 67, 0.04); box-shadow: var(--gloss); transition: transform .5s var(--spring), background-color .3s ease, box-shadow .3s ease; }
+.page .moreLink { transition: border-color .25s ease, gap .45s var(--spring); }
+.page .svcJump a { transition: transform .45s var(--spring), border-color .25s ease, color .25s ease, background-color .25s ease; background: rgba(255, 240, 210, 0.03); }
+.svcStartSteps li span { background: rgba(255, 240, 210, 0.035); border-color: var(--line-strong); box-shadow: var(--gloss); }
+@media (hover: hover) and (pointer: fine) {
+  .page .svcJump a:hover, .page .svcCta:hover, .planCta:hover { transform: translateY(-2px); }
+}
+.primary:active, .secondary:active, .planCta:active, .page .svcCta:active, .page .svcJump a:active {
+  transform: scale(0.97); transition-duration: .12s;
+}
+
+/* Glass: hero example card, page heads, contact form */
+.demo, .fxHero .demo {
+  border-radius: 22px; border: 1px solid rgba(255, 236, 200, 0.13);
+  background: linear-gradient(180deg, rgba(255, 240, 210, 0.07), rgba(255, 240, 210, 0.02) 60%), rgba(18, 16, 13, 0.62);
+  -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255, 244, 222, 0.12), 0 40px 100px -30px rgba(0, 0, 0, 0.85), 0 30px 80px -40px rgba(217, 168, 67, 0.4);
+}
+.event { border-radius: 14px; background: rgba(255, 240, 210, 0.035); border-color: rgba(255, 236, 200, 0.09); box-shadow: inset 0 1px 0 rgba(255, 244, 222, 0.04); }
+.eventDone { background: rgba(92, 201, 138, 0.08); border-color: rgba(92, 201, 138, 0.42); }
+.headPlate {
+  position: relative; padding: 40px 44px 44px; border-radius: 30px; border: 1px solid rgba(255, 236, 200, 0.10);
+  background: linear-gradient(180deg, rgba(255, 240, 210, 0.06), rgba(255, 240, 210, 0.015) 60%, rgba(255, 240, 210, 0.01));
+  -webkit-backdrop-filter: blur(14px) saturate(130%); backdrop-filter: blur(14px) saturate(130%);
+  box-shadow: inset 0 1px 0 rgba(255, 244, 222, 0.11), 0 30px 80px -50px rgba(0, 0, 0, 0.9), 0 40px 90px -60px rgba(217, 168, 67, 0.4);
+  animation: fxRiseText .9s var(--ease) both;
+}
+.headPlate .lead { max-width: 720px; }
+.pageHead { padding-top: 124px; }
+.contactFormCard {
+  border-radius: 26px; border-color: rgba(255, 236, 200, 0.13);
+  background: linear-gradient(180deg, rgba(255, 240, 210, 0.065), rgba(255, 240, 210, 0.02) 50%), rgba(20, 18, 15, 0.7);
+  -webkit-backdrop-filter: blur(14px) saturate(130%); backdrop-filter: blur(14px) saturate(130%);
+  box-shadow: inset 0 1px 0 rgba(255, 244, 222, 0.12), 0 40px 100px -40px rgba(0, 0, 0, 0.9), 0 30px 80px -50px rgba(217, 168, 67, 0.4);
+}
+
+/* Ambient gold glow: hero + final CTA (CSS only) */
+.hero::before {
+  background: radial-gradient(52% 58% at 78% 34%, rgba(217, 168, 67, 0.16), transparent 70%),
+    radial-gradient(34% 44% at 10% 88%, rgba(217, 168, 67, 0.06), transparent 70%),
+    radial-gradient(30% 40% at 96% 92%, rgba(124, 196, 255, 0.05), transparent 70%);
+}
+.final { position: relative; isolation: isolate; overflow: hidden; background: transparent; }
+.final::before {
+  content: ''; position: absolute; left: 50%; top: -20%; width: min(1200px, 160%); height: 140%; z-index: -2; pointer-events: none;
+  translate: -50% 0; background: radial-gradient(closest-side, rgba(217, 168, 67, 0.20), rgba(217, 168, 67, 0.06) 48%, transparent 76%);
+}
+.footer { background: linear-gradient(180deg, rgba(255, 240, 210, 0.02), transparent 80%); }
+
+/* Lit step nodes use the gold gradient (fades in via an overlay; background-image can't transition) */
+.flowNode { position: relative; isolation: isolate; background: var(--panel); color: #1d1608; }
+.flowNode::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: 50%; background: var(--gold-grad);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5); transition: opacity .45s ease; transition-delay: calc(var(--i) * 500ms + 250ms);
+}
+:global(html[data-fx-ready]) .fx .flow:not([data-in]) .flowNode::before { opacity: 0; }
+.faqChevron { transition: transform .5s var(--spring), border-color .25s ease, background-color .25s ease; }
+
+@media (max-width: 560px) {
+  .headPlate { padding: 26px 20px 28px; border-radius: 24px; }
+  .pageHead { padding-top: 96px; }
+  .primary, .secondary { padding: 15px 22px; }
+}
+
+/* Reduced motion: every spring, lift, squish, shine and entrance is off */
+@media (prefers-reduced-motion: reduce) {
+  .page *, .page *::before, .page *::after { animation: none !important; transition: none !important; }
+  .page a.niche:hover, .page .plan:hover, .page .card:hover, .page .step:hover, .page .flowCard:hover, .page .svcRow:hover,
+  .page .svcTier:hover, .page .faqItem:hover, .page .faq details:hover, .page .primary:hover, .page .secondary:hover,
+  .page .planCta:hover, .page .svcCta:hover, .page .svcJump a:hover, .page .primary:active, .page .secondary:active,
+  .page .planCta:active, .page .svcCta:active, .page .svcJump a:active,
+  .page a.niche:hover .iconTile, .page a.niche:hover .icon, .page .card:hover .icon, .page .svcRow:hover .svcBigIcon { transform: none; }
+  .page .primary::after { display: none; }
+}
+.contactIntro .pageTitle { font-size: clamp(32px, 3.9vw, 48px); }

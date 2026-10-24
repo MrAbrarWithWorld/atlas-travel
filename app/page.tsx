@@ -274,7 +274,7 @@ export default function HomePage() {
                   run on the same kind of system we sell: every lead is logged, tracked and followed up.
                 </p>
                 <div className={styles.stack}>
-                  {['n8n', 'Supabase', 'Gmail & Outlook', 'Google Calendar', 'Webhooks & APIs', 'AI drafting'].map((tool) => (
+                  {['Gmail & Outlook', 'Google Calendar', 'Webhooks & APIs', 'AI drafting'].map((tool) => (
                     <span key={tool} className={styles.chip}>{tool}</span>
                   ))}
                 </div>

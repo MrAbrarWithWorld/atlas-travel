@@ -35,8 +35,10 @@ export default function FaqPage() {
       <main>
         <section className={`${styles.section} ${styles.pageHead}`} aria-labelledby="faq-title">
           <div className={styles.wrap}>
-            <span className={styles.eyebrow}>Questions</span>
-            <h1 id="faq-title" className={`${styles.h2} ${styles.pageTitle}`}>Straight answers.</h1>
+            <div className={styles.headPlate}>
+              <span className={styles.eyebrow}>Questions</span>
+              <h1 id="faq-title" className={`${styles.h2} ${styles.pageTitle}`}>Straight answers.</h1>
+            </div>
           </div>
         </section>
 

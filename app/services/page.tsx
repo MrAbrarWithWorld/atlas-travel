@@ -55,14 +55,16 @@ export default function ServicesPage() {
       <main>
         <section className={`${styles.section} ${styles.pageHead}`} aria-labelledby="services-title">
           <div className={styles.wrap}>
-            <span className={styles.eyebrow}>What we build</span>
-            <h1 id="services-title" className={`${styles.h2} ${styles.pageTitle}`}>{SERVICES_HEADING}</h1>
-            <p className={styles.lead}>{SERVICES_LEAD}</p>
-            <nav className={styles.svcJump} aria-label="Services on this page">
-              {SERVICES.map((service) => (
-                <a key={service.slug} href={`#${service.slug}`}>{service.title}</a>
-              ))}
-            </nav>
+            <div className={styles.headPlate}>
+              <span className={styles.eyebrow}>What we build</span>
+              <h1 id="services-title" className={`${styles.h2} ${styles.pageTitle}`}>{SERVICES_HEADING}</h1>
+              <p className={styles.lead}>{SERVICES_LEAD}</p>
+              <nav className={styles.svcJump} aria-label="Services on this page">
+                {SERVICES.map((service) => (
+                  <a key={service.slug} href={`#${service.slug}`}>{service.title}</a>
+                ))}
+              </nav>
+            </div>
           </div>
         </section>
 

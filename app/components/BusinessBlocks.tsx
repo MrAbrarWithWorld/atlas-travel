@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Check, CheckCircle } from '@phosphor-icons/react/dist/ssr';
 import styles from '../business.module.css';
@@ -49,6 +49,11 @@ function MoreLinkRow({ more }: { more?: MoreLink }) {
   );
 }
 
+// On the /pricing page the heading sits on a glass plate; elsewhere it renders exactly as before.
+function HeadWrap({ asPage, children }: { asPage: boolean; children: ReactNode }) {
+  return asPage ? <div className={styles.headPlate}>{children}</div> : <>{children}</>;
+}
+
 /**
  * Founding prices block. Defaults render exactly as on the /for pages.
  * `asPage` makes it the /pricing page header (h1); `fx` turns on reveal + hover polish;
@@ -70,12 +75,14 @@ export function PricingSection({
   return (
     <section id="pricing" className={sectionClass} aria-labelledby="pricing-title">
       <div className={styles.wrap}>
-        <span className={styles.eyebrow}>Founding prices</span>
-        <Title id="pricing-title" className={asPage ? `${styles.h2} ${styles.pageTitle}` : styles.h2}>{heading ?? 'Start free. Pay only when it works for you.'}</Title>
-        <p className={styles.lead}>
-          We are taking on our first clients in Canada, so prices are the lowest they will ever be.
-          Lock them in now and keep them for as long as you stay.
-        </p>
+        <HeadWrap asPage={asPage}>
+          <span className={styles.eyebrow}>Founding prices</span>
+          <Title id="pricing-title" className={asPage ? `${styles.h2} ${styles.pageTitle}` : styles.h2}>{heading ?? 'Start free. Pay only when it works for you.'}</Title>
+          <p className={styles.lead}>
+            We are taking on our first clients in Canada, so prices are the lowest they will ever be.
+            Lock them in now and keep them for as long as you stay.
+          </p>
+        </HeadWrap>
         <div className={styles.freeGrid}>
           {FREE_PLANS.map((plan, i) => <PlanCard key={plan.id} plan={plan} free fx={fx} index={i} />)}
         </div>

@@ -60,7 +60,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
       <main className={`${styles.section} ${styles.pageHead}`}>
         <div className={`${styles.wrap} ${styles.contactGrid}`}>
-          <div className={styles.contactIntro}>
+          <div className={`${styles.contactIntro} ${styles.headPlate}`}>
             <span className={styles.pill}>Toronto · Serving all of Canada</span>
             <span className={styles.eyebrow}>Free · No card · No obligation</span>
             <h1 className={`${styles.h2} ${styles.pageTitle}`}>Get your free missed-lead audit</h1>
