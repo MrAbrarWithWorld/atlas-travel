@@ -11,8 +11,9 @@ function PlanCard({ plan, free }: { plan: Plan; free?: boolean }) {
     <article className={cls}>
       {free && <span className={`${styles.badge} ${styles.badgeFree}`}>Free</span>}
       {plan.highlight && <span className={styles.badge}>Best place to start</span>}
+      {plan.label && !plan.highlight && <span className={styles.badge}>{plan.label}</span>}
       <h3 className={styles.planName}>{plan.name}</h3>
-      <p className={styles.planTag}>{plan.tagline}</p>
+      {plan.tagline && <p className={styles.planTag}>{plan.tagline}</p>}
       <div className={styles.price}>{plan.price}</div>
       <div className={styles.priceNote}>{plan.priceNote}</div>
       {plan.normally && (
@@ -149,7 +150,7 @@ export function BusinessFooter() {
   return (
     <footer className={styles.footer}>
       <div className={`${styles.wrap} ${styles.footerInner}`}>
-        <span>© {new Date().getFullYear()} Atlas AI Technology · Toronto, Canada</span>
+        <span>© {new Date().getFullYear()} Atlas AI Technology · Toronto &amp; GTA — working with clients across Canada and internationally.</span>
         <nav aria-label="Footer">
           <Link href="/#services">Services</Link>
           <Link href="/#pricing">Pricing</Link>

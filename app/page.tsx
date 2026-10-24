@@ -20,6 +20,7 @@ import {
   Lightning,
   Robot,
   AppWindow,
+  Globe,
 } from '@phosphor-icons/react/dist/ssr';
 import SiteNav from './components/SiteNav';
 import styles from './business.module.css';
@@ -113,6 +114,7 @@ const SERVICES = [
   { Icon: ChartLineUp, title: 'Reports & dashboards', text: 'A weekly view of leads, jobs and revenue, built from the tools you already use.', service: 'email-report-automation' },
   { Icon: FlowArrow, title: 'Business process automation', text: 'Connect your apps so data moves on its own: no copy-paste between email, sheets and CRM.', service: 'process-automation' },
   { Icon: Robot, title: 'AI assistants & integrations', text: 'AI that drafts, sorts and summarizes inside your workflow, always with a human in control.', service: 'ai-product-integration' },
+  { Icon: Globe, title: 'Digital base setup', text: 'Your website, profiles and listings finished and connected: every page completed, Google and social profiles fixed, listings where your buyers look, and one tracker for every enquiry.', service: 'not-sure', wide: true },
 ];
 
 const leadRescue = PAID_PLANS.find((plan) => plan.id === 'lead-rescue')!;
@@ -130,7 +132,7 @@ const businessJsonLd = {
     { '@type': 'Country', name: 'Canada' },
   ],
   email: 'support@getatlas.ca',
-  priceRange: '$0–$500 CAD setup',
+  priceRange: 'Automation plans $0–$500 CAD setup; digital base & custom projects quoted separately.',
   makesOffer: [
     { '@type': 'Offer', name: 'Free Missed-Lead Audit', price: '0', priceCurrency: 'CAD' },
     { '@type': 'Offer', name: 'Lead Rescue', price: '99', priceCurrency: 'CAD', description: '$99 setup + $29/month, first month free' },
@@ -239,14 +241,14 @@ export default function HomePage() {
         <section id="services" className={styles.section} aria-labelledby="services-title">
           <div className={styles.wrap}>
             <span className={styles.eyebrow}>What we build</span>
-            <h2 id="services-title" className={styles.h2}>Six ways we take work off your plate.</h2>
+            <h2 id="services-title" className={styles.h2}>Seven ways we take work off your plate.</h2>
             <p className={styles.lead}>
               Most clients start with Lead Rescue, then add more as it pays off. Every system is built,
               tested and supported by us, and you approve anything that talks to your customers.
             </p>
             <div className={styles.nicheGrid}>
-              {SERVICES.map(({ Icon, title, text, service }) => (
-                <Link key={title} href={contactFor(service)} className={styles.niche}>
+              {SERVICES.map(({ Icon, title, text, service, wide }) => (
+                <Link key={title} href={contactFor(service)} className={wide ? `${styles.niche} ${styles.nicheWide}` : styles.niche}>
                   <span className={styles.icon}><Icon size={22} weight="duotone" aria-hidden="true" /></span>
                   <h3>{title}</h3>
                   <p>{text}</p>

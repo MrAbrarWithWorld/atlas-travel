@@ -2,10 +2,11 @@
 // Prices in CAD. Approved by the owner on 2026-09-27: lowest prices now, raised step by step later.
 
 export type Plan = {
-  id: 'free-audit' | 'auto-reply' | 'lead-rescue' | 'follow-up-system' | 'custom';
+  id: 'free-audit' | 'auto-reply' | 'lead-rescue' | 'follow-up-system' | 'custom' | 'digital-base';
   service: string; // ServiceId passed to /contact?service=
+  label?: string; // small badge above the card, e.g. 'Project service'
   name: string;
-  tagline: string;
+  tagline?: string;
   price: string;
   priceNote: string;
   normally?: string;
@@ -93,6 +94,21 @@ export const PAID_PLANS: Plan[] = [
       'Connections between the tools you already use',
     ],
     cta: 'Describe your workflow',
+  },
+  {
+    id: 'digital-base',
+    service: 'not-sure',
+    label: 'Project service',
+    name: 'Digital Base Setup',
+    price: 'From CAD 1,500',
+    priceNote: 'Fixed written quote first',
+    features: [
+      'Website completion: every empty page filled, forms working, no dead links',
+      'Google Business Profile + social profiles corrected and connected',
+      'Listings/portals setup for your market (e.g. real estate portals)',
+      'One lead tracker for enquiries from every channel',
+    ],
+    cta: 'Describe your project',
   },
 ];
 
