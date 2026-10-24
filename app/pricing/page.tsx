@@ -9,7 +9,7 @@ import { SITE, breadcrumbs, businessNode, jsonLd } from '../lib/schema';
 export const metadata: Metadata = {
   title: { absolute: 'Founding Prices: Lead Rescue, Follow-Up System & Projects | Atlas AI Technology' },
   description:
-    'Free missed-lead audit and auto-reply starter. Lead Rescue $99 setup + $29/mo, Follow-Up System $299 setup + $59/mo, Custom Automation from $500, Digital Base Setup from CAD 1,500. Prices in CAD.',
+    'Free missed-lead audit and auto-reply starter. Lead Rescue $99 setup + $29/mo, Follow-Up System $299 setup + $59/mo, Custom Automation from $500, Digital Base Setup from CAD 1,500, your own AI assistant from CAD 249. Prices in CAD.',
   alternates: { canonical: '/pricing' },
   openGraph: {
     type: 'website',
@@ -29,6 +29,7 @@ const AMOUNTS: Record<string, { price: number; from?: boolean }> = {
   'follow-up-system': { price: 299 },
   custom: { price: 500, from: true },
   'digital-base': { price: 1500, from: true },
+  'ai-assistant': { price: 249, from: true },
 };
 
 const structuredData = [

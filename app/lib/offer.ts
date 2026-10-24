@@ -2,7 +2,7 @@
 // Prices in CAD. Approved by the owner on 2026-09-27: lowest prices now, raised step by step later.
 
 export type Plan = {
-  id: 'free-audit' | 'auto-reply' | 'lead-rescue' | 'follow-up-system' | 'custom' | 'digital-base';
+  id: 'free-audit' | 'auto-reply' | 'lead-rescue' | 'follow-up-system' | 'custom' | 'digital-base' | 'ai-assistant';
   service: string; // ServiceId passed to /contact?service=
   label?: string; // small badge above the card, e.g. 'Project service'
   name: string;
@@ -107,6 +107,22 @@ export const PAID_PLANS: Plan[] = [
       'Google Business Profile + social profiles corrected and connected',
       'Listings/portals setup for your market (e.g. real estate portals)',
       'One lead tracker for enquiries from every channel',
+    ],
+    cta: 'Describe your project',
+  },
+  {
+    id: 'ai-assistant',
+    service: 'ai-assistant',
+    label: 'Project service',
+    name: 'Your own AI assistant',
+    price: 'From CAD 249',
+    priceNote: 'Fixed written quote first',
+    features: [
+      'Founding Pilot: private server setup — yours, or we arrange it',
+      '1 channel + email & calendar + 1 workflow included',
+      'AI usage on your own account, or prepaid credit with a limit you control',
+      'Training, guide + 14 days of setup support',
+      'Standard & Business builds from CAD 499 / 999',
     ],
     cta: 'Describe your project',
   },

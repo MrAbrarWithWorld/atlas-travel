@@ -77,7 +77,10 @@
 
 /* Pricing */
 .freeGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 40px; }
-.priceGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+.priceGrid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+/* Five paid cards: three per row, then the two project services side by side (no orphan). */
+.priceGrid > * { grid-column: span 2; }
+.priceGrid > :nth-child(n + 4) { grid-column: span 3; }
 .plan { position: relative; display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 26px; }
 .planFree { background: linear-gradient(180deg, rgba(92, 201, 138, 0.08), var(--panel) 60%); border-color: rgba(92, 201, 138, 0.35); }
 .planHighlight { border: 2px solid var(--gold); background: linear-gradient(180deg, var(--gold-soft), var(--panel) 55%); }
@@ -153,6 +156,7 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
   .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .freeGrid, .proofGrid, .terms { grid-template-columns: minmax(0, 1fr); }
   .priceGrid { gap: 28px; }
+  .priceGrid > *, .priceGrid > :nth-child(n + 4) { grid-column: auto; }
 }
 
 @media (max-width: 560px) {
@@ -469,3 +473,40 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 
 /* Section that follows a page head directly */
 .sectionTight { padding-top: 8px; border-top: 0; }
+
+/* Batch 3: homepage service grid (8 cards: 4 / 2 / 1 columns) */
+.nicheGrid.svcGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .nicheGrid.svcGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .nicheGrid.svcGrid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Batch 3: /services detail blocks */
+.svcLabel { margin: 0 0 10px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); }
+.svcGetsWrap { margin-top: 8px; }
+.svcGets { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.svcGets li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; font-size: 15px; line-height: 1.55; color: var(--text); }
+.svcGets svg { color: var(--gold-bright); margin-top: 3px; }
+.svcStart { margin-top: 8px; }
+.svcStartSteps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.svcStartSteps li { display: flex; align-items: center; gap: 8px; }
+.svcStartSteps li span {
+  font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--panel-2); color: var(--muted);
+}
+.svcStartSteps li:not(:last-child)::after { content: '→'; color: var(--gold); font-weight: 700; }
+.svcTiersWrap { order: 3; grid-column: 1 / -1; padding: 30px 48px 44px; border-top: 1px solid var(--line); }
+.svcTiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 24px; }
+.svcTier { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 18px; transition: border-color .25s ease, transform .25s ease; }
+.svcTier:hover { border-color: rgba(215, 167, 68, 0.45); transform: translateY(-2px); }
+.svcTierHi { border-color: rgba(215, 167, 68, 0.55); background: linear-gradient(180deg, rgba(215, 167, 68, 0.10), var(--panel-2) 70%); }
+.svcTierHead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.svcTierName { font-weight: 800; font-size: 17px; }
+.svcTierPrice { font-weight: 700; font-size: 14px; color: var(--gold-bright); white-space: nowrap; }
+.svcTierNote { margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--good); }
+.svcTier p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--muted); }
+@media (max-width: 960px) {
+  .svcTiersWrap { padding: 24px 24px 30px; }
+  .svcTiers { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { .svcTier:hover { transform: none; } }
+/* Price cards of different lengths share a row: keep bullets packed at the top. */
+.priceGrid .features { align-content: start; }

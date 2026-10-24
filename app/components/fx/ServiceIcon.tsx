@@ -62,6 +62,16 @@ function Paths({ id }: { id: ServiceIconId }) {
           <path className={A} d="M25 20c.3 2.1 1.1 2.9 3.2 3.2-2.1.3-2.9 1.1-3.2 3.2-.3-2.1-1.1-2.9-3.2-3.2 2.1-.3 2.9-1.1 3.2-3.2Z" />
         </>
       );
+    case 'assistant':
+      return (
+        <>
+          <path className={D} pathLength={1} d="M4 6.5A2.5 2.5 0 0 1 6.5 4h13A2.5 2.5 0 0 1 22 6.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 3.6V16A2.5 2.5 0 0 1 4 13.5Z" />
+          <path className={D} pathLength={1} d="M13 6.8c.3 1.7 1 2.4 2.7 2.7-1.7.3-2.4 1-2.7 2.7-.3-1.7-1-2.4-2.7-2.7 1.7-.3 2.4-1 2.7-2.7Z" />
+          <rect className={D} pathLength={1} x="16" y="19" width="12" height="9" rx="1.8" />
+          <path className={D} pathLength={1} d="M16 23.5h12M19 21.2h3M19 25.8h3" />
+          <circle className={A} cx="25" cy="21.2" r="1.1" />
+        </>
+      );
     case 'digital-base':
       return (
         <>

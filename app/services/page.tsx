@@ -1,25 +1,26 @@
 import type { Metadata } from 'next';
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
+import { Check } from '@phosphor-icons/react/dist/ssr';
 import SiteNav from '../components/SiteNav';
 import styles from '../business.module.css';
 import { BusinessFooter, FinalCta } from '../components/BusinessBlocks';
 import RevealRoot from '../components/fx/RevealRoot';
 import ServiceIcon from '../components/fx/ServiceIcon';
 import { contactFor } from '../lib/offer';
-import { SERVICES, SERVICES_HEADING, SERVICES_LEAD } from '../lib/services';
+import { HOW_IT_STARTS, SERVICES, SERVICES_HEADING, SERVICES_LEAD } from '../lib/services';
 import { SITE, breadcrumbs, businessNode, jsonLd } from '../lib/schema';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Services: Lead Capture, Follow-Ups, Portals & Automation | Atlas AI Technology' },
+  title: { absolute: 'Services: Lead Capture, Follow-Ups, Automation & Your Own AI Assistant | Atlas AI Technology' },
   description:
-    'Lead capture & instant reply, follow-ups & email automation, client intake & portals, reports & dashboards, business process automation, AI assistants and digital base setup. Atlas AI Technology, Toronto.',
+    'Lead capture & instant reply, follow-ups & email automation, client intake & portals, reports & dashboards, business process automation, AI integrations, digital base setup and your own private AI assistant. Atlas AI Technology, Toronto.',
   alternates: { canonical: '/services' },
   openGraph: {
     type: 'website',
     url: `${SITE}/services`,
     siteName: 'Atlas AI Technology',
-    title: 'Seven ways we take work off your plate | Atlas AI Technology',
+    title: 'Eight ways we take work off your plate | Atlas AI Technology',
     description: 'Every system is built, tested and supported by us, and you approve anything that talks to your customers.',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
@@ -78,8 +79,47 @@ export default function ServicesPage() {
                 <div className={styles.svcBody}>
                   <h2>{service.title}</h2>
                   <p>{service.text}</p>
-                  <Link className={styles.svcCta} href={contactFor(service.service)}>Ask about this →</Link>
+                  <div className={styles.svcGetsWrap}>
+                    <h3 className={styles.svcLabel}>What you get</h3>
+                    <ul className={styles.svcGets}>
+                      {service.gets.map((item) => (
+                        <li key={item}>
+                          <Check size={16} weight="bold" aria-hidden="true" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {service.howItStarts && (
+                    <div className={styles.svcStart}>
+                      <h3 className={styles.svcLabel}>How it starts</h3>
+                      <ol className={styles.svcStartSteps}>
+                        {HOW_IT_STARTS.map((step) => <li key={step}><span>{step}</span></li>)}
+                      </ol>
+                    </div>
+                  )}
+                  {!service.tiers && (
+                    <Link className={styles.svcCta} href={contactFor(service.service)}>Ask about this →</Link>
+                  )}
                 </div>
+                {service.tiers && (
+                  <div className={styles.svcTiersWrap}>
+                    <h3 className={styles.svcLabel}>Three ways to start</h3>
+                    <div className={styles.svcTiers}>
+                      {service.tiers.map((tier) => (
+                        <div key={tier.name} className={tier.highlight ? `${styles.svcTier} ${styles.svcTierHi}` : styles.svcTier}>
+                          <div className={styles.svcTierHead}>
+                            <span className={styles.svcTierName}>{tier.name}</span>
+                            <span className={styles.svcTierPrice}>{tier.price}</span>
+                          </div>
+                          {tier.note && <div className={styles.svcTierNote}>{tier.note}</div>}
+                          <p>{tier.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <Link className={styles.svcCta} href={contactFor(service.service)}>Ask about this →</Link>
+                  </div>
+                )}
               </article>
             ))}
           </div>

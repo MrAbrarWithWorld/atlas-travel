@@ -11,11 +11,12 @@ export const SERVICE_IDS = [
   'reports-dashboards',
   'process-automation',
   'ai-product-integration',
+  'ai-assistant',
   'not-sure',
 ] as const;
 
 /**
- * Service values added on 2026-10-24. The CRM webhook keeps the readable service label in
+ * Service values added on 2026-10-24 (ai-assistant in batch 3). The CRM webhook keeps the readable service label in
  * `message`; if it ever rejects one of these raw values, the API retries once as `not-sure`
  * so the lead is never lost (see app/api/lead-intake/route.ts).
  */
@@ -23,6 +24,7 @@ export const ADDED_SERVICE_IDS: ReadonlyArray<string> = [
   'digital-base-setup',
   'client-intake',
   'reports-dashboards',
+  'ai-assistant',
 ];
 
 export type ServiceId = (typeof SERVICE_IDS)[number];
@@ -41,6 +43,7 @@ export const SERVICE_OPTIONS: ReadonlyArray<{ value: ServiceId; label: string }>
   { value: 'reports-dashboards', label: 'Reports & dashboards' },
   { value: 'process-automation', label: 'Business process automation' },
   { value: 'ai-product-integration', label: 'AI product & API integration' },
+  { value: 'ai-assistant', label: 'Your own AI assistant' },
 ];
 
 export const TIMELINE_OPTIONS = [

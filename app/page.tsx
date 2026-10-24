@@ -208,20 +208,21 @@ export default function HomePage() {
             <span className={styles.eyebrow}>What we build</span>
             <h2 id="services-title" className={styles.h2}>{SERVICES_HEADING}</h2>
             <p className={styles.lead}>{SERVICES_LEAD}</p>
-            <div className={styles.nicheGrid}>
-              {SERVICES.map(({ icon, title, text, service, slug }, i) => (
+            {/* Cards open the service's detail block on /services; Contact is the CTA inside it. */}
+            <div className={`${styles.nicheGrid} ${styles.svcGrid}`}>
+              {SERVICES.map(({ icon, title, text, slug }, i) => (
                 <Link
                   key={slug}
-                  href={contactFor(service)}
-                  className={slug === 'digital-base-setup' ? `${styles.niche} ${styles.nicheWide}` : styles.niche}
+                  href={`/services#${slug}`}
+                  className={styles.niche}
                   data-reveal=""
                   data-glow=""
-                  style={{ '--d': `${(i % 3) * 90}ms` } as CSSProperties}
+                  style={{ '--d': `${(i % 4) * 80}ms` } as CSSProperties}
                 >
                   <span className={styles.iconTile}><ServiceIcon id={icon} /></span>
                   <h3>{title}</h3>
                   <p>{text}</p>
-                  <span className={styles.more}>Ask about this →</span>
+                  <span className={styles.more}>See details →</span>
                 </Link>
               ))}
             </div>

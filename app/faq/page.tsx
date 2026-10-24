@@ -5,13 +5,13 @@ import { BusinessFooter, FinalCta, faqJsonLd } from '../components/BusinessBlock
 import RevealRoot from '../components/fx/RevealRoot';
 import FaqAccordion from '../components/fx/FaqAccordion';
 import { contactFor } from '../lib/offer';
-import { FAQS, FAQ_GROUPS } from '../lib/faqs';
+import { FAQS_PAGE, FAQ_GROUPS } from '../lib/faqs';
 import { SITE, breadcrumbs, jsonLd } from '../lib/schema';
 
 export const metadata: Metadata = {
   title: { absolute: 'FAQ: Prices, Contracts, Software & Data | Atlas AI Technology' },
   description:
-    'Straight answers: how much it costs, why founding prices are low, whether you need new software, what gets sent without you, contracts and customer data safety.',
+    'Straight answers: how much it costs, why founding prices are low, whether you need new software, what gets sent without you, contracts, customer data safety and your own AI assistant.',
   alternates: { canonical: '/faq' },
   openGraph: {
     type: 'website',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
 };
 
-const structuredData = [faqJsonLd(FAQS), breadcrumbs('FAQ', '/faq')];
+const structuredData = [faqJsonLd(FAQS_PAGE), breadcrumbs('FAQ', '/faq')];
 
 export default function FaqPage() {
   return (
@@ -42,7 +42,7 @@ export default function FaqPage() {
 
         <section id="faq" className={`${styles.section} ${styles.sectionTight}`} aria-label="Frequently asked questions">
           <div className={styles.wrap}>
-            <FaqAccordion items={FAQS} groups={FAQ_GROUPS} />
+            <FaqAccordion items={FAQS_PAGE} groups={FAQ_GROUPS} />
           </div>
         </section>
 
