@@ -690,3 +690,8 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
   .page .primary::after { display: none; }
 }
 .contactIntro .pageTitle { font-size: clamp(32px, 3.9vw, 48px); }
+
+/* Link to the guarantee, cancellation and refund terms under the offer terms (all pricing blocks) */
+.termsPolicy { margin: 16px 0 0; font-size: 14px; }
+.page .termsPolicy a { color: var(--gold-bright); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(236, 192, 103, 0.45); }
+.page .termsPolicy a:hover { text-decoration-color: var(--gold-bright); }

@@ -178,7 +178,7 @@ export default function ContactForm({ initialService, attribution }: ContactForm
         </div>
         <label style={{ display: 'flex', gap: 11, alignItems: 'flex-start', color: '#aaa79f', fontSize: 12, lineHeight: 1.5 }}>
           <input type="checkbox" checked={form.consent} onChange={(e) => set('consent', e.target.checked)} required style={{ marginTop: 3, accentColor: '#e6b854' }} />
-          <span>I agree that Atlas may use this information, together with its CRM, automation and service providers, to review and respond to this request. See the <Link href="/privacy" prefetch={false} style={{ color: '#e6b854' }}>privacy policy</Link>.</span>
+          <span>I agree that Atlas may use this information, together with its CRM, automation and service providers, to review and respond to this request. See the <Link href="/legal/services/privacy" style={{ color: '#e6b854' }}>privacy policy</Link>.</span>
         </label>
         {status === 'error' && (
           <div role="alert" aria-live="polite" style={{ background: '#2a1a1a', border: '1px solid #6b2020', borderRadius: 8, padding: '12px 16px', color: '#e87070', fontSize: 13, lineHeight: 1.55 }}>

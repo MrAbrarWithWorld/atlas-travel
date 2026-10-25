@@ -1,0 +1,8 @@
+{
+  "_note": "Business details used in the legal documents. Leave a value empty until it is confirmed: lines that use an empty value are hidden, and a document that lists the value under `requires:` cannot be built for production without it.",
+  "legalName": "S M Abrar Fahim",
+  "tradeName": "Atlas AI Technology",
+  "privacyOfficer": "S M Abrar Fahim",
+  "businessAddress": "",
+  "businessPhone": ""
+}

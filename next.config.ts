@@ -19,6 +19,14 @@ const nextConfig: NextConfig = {
   },
   // /services, /pricing and /faq are real pages (app/services, app/pricing, app/faq).
   // The homepage keeps #services / #pricing / #faq anchors for old links.
+  // /privacy and /terms are Next.js pages (app/privacy, app/terms) rendered from content/legal/travel.
+  // The old static files moved to legal-archive/; keep their URLs working.
+  async redirects() {
+    return [
+      { source: '/privacy.html', destination: '/privacy', permanent: true },
+      { source: '/terms.html', destination: '/terms', permanent: true },
+    ];
+  },
   async rewrites() {
     return {
       beforeFiles: [

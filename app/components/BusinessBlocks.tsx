@@ -97,6 +97,9 @@ export function PricingSection({
             </li>
           ))}
         </ul>
+        <p className={styles.termsPolicy}>
+          <Link href="/legal/services/terms#pricing-guarantee-and-cancellation">How the guarantee, cancellation and refunds work →</Link>
+        </p>
         <MoreLinkRow more={more} />
       </div>
     </section>
@@ -227,8 +230,9 @@ export function BusinessFooter({ extra = [] }: { extra?: MoreLink[] }) {
           <Link href="/for/realtors">Realtors</Link>
           <Link href="/for/bookkeepers">Bookkeepers</Link>
           <Link href="/contact">Contact</Link>
-          <Link href="/privacy" prefetch={false}>Privacy</Link>
-          <Link href="/terms" prefetch={false}>Terms</Link>
+          <Link href="/legal/services/privacy">Privacy</Link>
+          <Link href="/legal/services/terms">Terms</Link>
+          <Link href="/legal">Legal</Link>
           {extra.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
           <Link href="/travel" prefetch={false}>Atlas Travel app</Link>
         </nav>

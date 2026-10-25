@@ -27,7 +27,7 @@ export const FAQS: Array<Faq & { group: FaqGroup }> = [
   {
     group: 'Prices',
     q: 'Is there a contract?',
-    a: 'No long contract. Plans are month to month and you can cancel anytime. If the setup does not save you time in the first 30 days, we refund the setup fee.',
+    a: 'No long contract. Plans are month to month and you can cancel anytime. If you are not happy with your setup, tell us within 30 days after it goes live and we refund the setup fee.',
   },
   {
     group: 'Trust',
