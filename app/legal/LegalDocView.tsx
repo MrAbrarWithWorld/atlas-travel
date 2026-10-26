@@ -5,6 +5,7 @@ import { BusinessFooter } from '../components/BusinessBlocks';
 import biz from '../business.module.css';
 import styles from './legal.module.css';
 import LegalMarkdown, { EmailLink } from './LegalMarkdown';
+import HideAfter from './HideAfter';
 import { SET_LABELS, formatEffective, type LegalDoc } from './content';
 import { contactFor } from '../lib/offer';
 
@@ -55,8 +56,8 @@ function TravelFooter() {
 export default function LegalDocView({ doc }: { doc: LegalDoc }) {
   const isTravel = doc.set === 'travel';
   const inEffect = doc.status === 'in-effect';
-  const upcoming = inEffect && Boolean(doc.previous) && Boolean(doc.effective)
-    && Date.now() < new Date(`${doc.effective}T00:00:00-05:00`).getTime();
+  const startsAt = doc.effective ? new Date(`${doc.effective}T00:00:00-05:00`).getTime() : 0;
+  const upcoming = inEffect && Boolean(doc.previous) && Boolean(doc.effective) && Date.now() < startsAt;
   return (
     <div className={biz.page}>
       {isTravel ? <TravelHeader /> : <SiteNav activePath="/legal" ctaLabel="Free audit →" ctaHref={contactFor('free-audit')} />}
@@ -81,6 +82,7 @@ export default function LegalDocView({ doc }: { doc: LegalDoc }) {
             </div>
           )}
           {upcoming && (
+            <HideAfter until={startsAt}>
             <div className={styles.draftBanner} role="note">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
               <div>
@@ -88,6 +90,7 @@ export default function LegalDocView({ doc }: { doc: LegalDoc }) {
                 <a href={doc.previous}>previous Terms of Service</a> apply.
               </div>
             </div>
+            </HideAfter>
           )}
           <LegalMarkdown source={doc.body} />
         </div>

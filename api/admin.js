@@ -3,6 +3,7 @@ import { createHash, timingSafeEqual } from 'crypto';
 import webpush from 'web-push';
 import nodemailer from 'nodemailer';
 import { runLegalNotices, legalNoticeStatus, sendLegalNoticeTest } from '../lib/legal-notice.js';
+import { adminOverview, listCommunityPosts, moderateCommunityPost, siteHealth, chatTest } from '../lib/admin-insights.js';
 
 export const config = { maxDuration: 60 };
 
@@ -947,6 +948,31 @@ export default async function handler(req, res) {
     if (action === 'legal_notice_send') {
       try { return res.status(200).json(await runLegalNotices({ sb, timeBudgetMs: 40000 })); }
       catch (e) { return res.status(500).json({ status: 'error', error: e.message }); }
+    }
+
+    if (action === 'get_overview') {
+      try { return res.status(200).json(await adminOverview(sb)); }
+      catch (e) { return res.status(500).json({ error: e.message }); }
+    }
+
+    if (action === 'community_list') {
+      try { return res.status(200).json({ posts: await listCommunityPosts(sb) }); }
+      catch (e) { return res.status(500).json({ error: e.message }); }
+    }
+
+    if (action === 'community_moderate') {
+      try { return res.status(200).json(await moderateCommunityPost(sb, body.post_id, body.decision)); }
+      catch (e) { return res.status(400).json({ error: e.message }); }
+    }
+
+    if (action === 'site_health') {
+      try { return res.status(200).json(await siteHealth()); }
+      catch (e) { return res.status(500).json({ error: e.message }); }
+    }
+
+    if (action === 'chat_test') {
+      try { return res.status(200).json(await chatTest()); }
+      catch (e) { return res.status(500).json({ error: e.message }); }
     }
 
     if (action === 'get_stats') {

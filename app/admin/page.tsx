@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { api, INPUT, LABEL, BTN, BTN_GHOST, type Section } from './shared';
+import { OverviewPanel, CommunityPanel, SchedulePanel, HealthPanel } from './panels';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -10,13 +12,6 @@ type Post = {
   category: string;
   is_published: boolean;
   date_published: string;
-};
-
-type Stats = {
-  newsletter: number | null;
-  push: number | null;
-  users: number | null;
-  posts: number | null;
 };
 
 type PostForm = {
@@ -33,18 +28,7 @@ type PostForm = {
   inline_photos: string[];
 };
 
-// ─── API helper ───────────────────────────────────────────────────────────────
-
-async function api(action: string, data: Record<string, unknown> = {}) {
-  const res = await fetch('/api/admin', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'same-origin',
-    body: JSON.stringify({ action, ...data }),
-  });
-  const json = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, data: json };
-}
+// Shared helpers, styles and the new panels live in ./shared and ./panels.
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -77,17 +61,6 @@ const EMPTY_FORM: PostForm = {
 
 const PHOTO_SLOTS = 5;
 
-// ─── Shared styles ────────────────────────────────────────────────────────────
-
-const INPUT =
-  'w-full bg-white/[0.04] border border-[rgba(201,169,110,0.18)] rounded-lg px-3 py-2 text-[#ede5d5] text-sm focus:outline-none focus:border-[rgba(201,169,110,0.45)] transition-colors';
-const LABEL =
-  'block text-[0.62rem] tracking-[0.1em] uppercase text-[#5a4a2a] mb-1.5';
-const BTN =
-  'bg-[#c9a96e] text-[#1c1914] px-5 py-2 rounded-lg text-sm font-semibold tracking-wide hover:bg-[#e0c080] transition-colors disabled:opacity-50 cursor-pointer';
-const BTN_GHOST =
-  'border border-[rgba(201,169,110,0.25)] text-[#c9a96e] px-4 py-2 rounded-lg text-sm hover:bg-[rgba(201,169,110,0.08)] transition-colors cursor-pointer';
-
 // ─── Login screen ────────────────────────────────────────────────────────────
 
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
@@ -111,7 +84,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
         <div className="font-serif text-[2.2rem] font-light tracking-[0.4em] text-[#d4aa6e] uppercase mb-1">
           Atlas
         </div>
-        <div className="text-[0.6rem] tracking-[0.15em] uppercase text-[#4a3a1a] mb-8">
+        <div className="text-[0.6rem] tracking-[0.15em] uppercase text-[#7a6a4a] mb-8">
           Admin Panel
         </div>
         <form onSubmit={submit} className="space-y-3">
@@ -129,33 +102,6 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           {err && <p className="text-[#c06050] text-xs">{err}</p>}
         </form>
       </div>
-    </div>
-  );
-}
-
-// ─── Stats cards ─────────────────────────────────────────────────────────────
-
-function StatCards({ stats }: { stats: Stats | null }) {
-  const items: [string, number | null | undefined, string][] = [
-    ['Newsletter Subs', stats?.newsletter, 'active'],
-    ['Push Subs', stats?.push, 'subscribed'],
-    ['Registered Users', stats?.users, 'total'],
-    ['Published Posts', stats?.posts, 'live'],
-  ];
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-      {items.map(([label, value, sub]) => (
-        <div
-          key={label}
-          className="bg-[rgba(201,169,110,0.04)] border border-[rgba(201,169,110,0.12)] rounded-xl p-4"
-        >
-          <div className="text-[0.58rem] tracking-[0.12em] uppercase text-[#5a4a2a] mb-1">{label}</div>
-          <div className="font-serif text-[2rem] font-light text-[#e8dcc8] leading-tight">
-            {stats === null ? '…' : (value ?? '—')}
-          </div>
-          <div className="text-[0.65rem] text-[#6a5a3a] mt-1">{sub}</div>
-        </div>
-      ))}
     </div>
   );
 }
@@ -221,7 +167,7 @@ function LegalNoticeCard() {
   const canSend = info && !['done', 'nothing_to_announce'].includes(info.status) && info.hasResendKey !== false;
   return (
     <div className="bg-[rgba(201,169,110,0.04)] border border-[rgba(201,169,110,0.12)] rounded-xl p-4 mb-8">
-      <div className="text-[0.58rem] tracking-[0.12em] uppercase text-[#5a4a2a] mb-1">Legal update emails</div>
+      <div className="text-[0.58rem] tracking-[0.12em] uppercase text-[#8a7a5a] mb-1">Legal update emails</div>
       <div className="text-sm text-[#e8dcc8] mb-1">
         {label}
         {info?.total != null && <span className="text-[#c9a96e]"> · {info.sent ?? 0}/{info.total} sent</span>}
@@ -280,7 +226,7 @@ function PostsTable({
         <h2 className="font-serif text-xl font-light text-[#c9a96e]">
           Blog Posts{' '}
           {!loading && (
-            <span className="font-sans text-sm text-[#5a4a2a] font-normal">
+            <span className="font-sans text-sm text-[#8a7a5a] font-normal">
               ({posts.length})
             </span>
           )}
@@ -291,7 +237,7 @@ function PostsTable({
       </div>
 
       {loading ? (
-        <div className="text-[#4a3a1a] text-sm py-6">Loading posts…</div>
+        <div className="text-[#7a6a4a] text-sm py-6">Loading posts…</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
@@ -320,9 +266,9 @@ function PostsTable({
                     >
                       {p.title}
                     </button>
-                    <div className="text-[0.62rem] text-[#3a2a0a] font-mono mt-0.5">{p.slug}</div>
+                    <div className="text-[0.62rem] text-[#6a5a3a] font-mono mt-0.5">{p.slug}</div>
                   </td>
-                  <td className="py-2.5 px-3 text-[#5a4a2a] text-xs whitespace-nowrap">
+                  <td className="py-2.5 px-3 text-[#8a7a5a] text-xs whitespace-nowrap">
                     {p.category || '—'}
                   </td>
                   <td className="py-2.5 px-3 text-[#7a6a50] text-xs whitespace-nowrap">
@@ -333,7 +279,7 @@ function PostsTable({
                       className={`text-[0.6rem] tracking-wide uppercase px-2 py-0.5 rounded ${
                         p.is_published
                           ? 'bg-[rgba(80,200,80,0.1)] text-[#70c070]'
-                          : 'bg-white/[0.04] text-[#5a4a2a]'
+                          : 'bg-white/[0.04] text-[#8a7a5a]'
                       }`}
                     >
                       {p.is_published ? 'Live' : 'Draft'}
@@ -360,7 +306,7 @@ function PostsTable({
             </tbody>
           </table>
           {posts.length === 0 && (
-            <p className="text-[#4a3a1a] text-sm text-center py-10 border border-dashed border-[rgba(201,169,110,0.12)] rounded-xl mt-2">
+            <p className="text-[#7a6a4a] text-sm text-center py-10 border border-dashed border-[rgba(201,169,110,0.12)] rounded-xl mt-2">
               No posts yet — create the first one.
             </p>
           )}
@@ -460,7 +406,7 @@ function InlinePhotoSlots({
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[#5a4a2a]">
+      <p className="text-xs text-[#8a7a5a]">
         Content-এ যেখানে photo দিতে চাও সেখানে{' '}
         {Array.from({ length: PHOTO_SLOTS }, (_, i) => (
           <span key={i}>
@@ -491,7 +437,7 @@ function InlinePhotoSlots({
             />
 
             <div className="flex-1 min-w-0">
-              <div className="text-[0.62rem] text-[#5a4a2a] mb-1">
+              <div className="text-[0.62rem] text-[#8a7a5a] mb-1">
                 Photo {i + 1} — <code className="text-[#c9a96e]">[photo-{i + 1}]</code>
               </div>
               <input
@@ -616,14 +562,14 @@ function PostEditor({
   };
 
   if (loading) {
-    return <div className="text-[#4a3a1a] text-sm py-8">Loading post…</div>;
+    return <div className="text-[#7a6a4a] text-sm py-8">Loading post…</div>;
   }
 
   return (
     <div>
       <button
         onClick={onCancel}
-        className="text-[0.72rem] text-[#5a4a2a] hover:text-[#c9a96e] mb-4 transition-colors block"
+        className="text-[0.72rem] text-[#8a7a5a] hover:text-[#c9a96e] mb-4 transition-colors block"
       >
         ← Back to posts
       </button>
@@ -757,7 +703,7 @@ function PostEditor({
           />
           <span className="text-sm text-[#9a8a70]">
             Published{' '}
-            <span className="text-[#5a4a2a] text-xs">(visible on /blog)</span>
+            <span className="text-[#8a7a5a] text-xs">(visible on /blog)</span>
           </span>
         </label>
 
@@ -800,14 +746,20 @@ function PostEditor({
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
-type Section = 'overview' | 'posts' | 'editor';
+const NAV: { s: Section; label: string; short: string; icon: string; group: 'Dashboard' | 'Content' }[] = [
+  { s: 'overview', label: 'Overview', short: 'Home', icon: '📊', group: 'Dashboard' },
+  { s: 'health', label: 'Website health', short: 'Health', icon: '🩺', group: 'Dashboard' },
+  { s: 'posts', label: 'Blog posts', short: 'Posts', icon: '📝', group: 'Content' },
+  { s: 'schedule', label: 'Blog schedule', short: 'Schedule', icon: '🗓️', group: 'Content' },
+  { s: 'community', label: 'Community', short: 'Community', icon: '💬', group: 'Content' },
+];
 
 function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [section, setSection] = useState<Section>('overview');
   const [editSlug, setEditSlug] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
   const [loadingPosts, setLoadingPosts] = useState(false);
+  const [pending, setPending] = useState<number | null>(null);
 
   const refresh = useCallback(() => {
     setLoadingPosts(true);
@@ -815,10 +767,15 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       setPosts(data.posts || []);
       setLoadingPosts(false);
     });
-    api('get_stats').then(({ data }) => setStats(data));
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
+
+  const go = useCallback((s: Section) => {
+    setSection(s);
+    window.scrollTo({ top: 0 });
+  }, []);
+  const editPost = (slug: string | null) => { setEditSlug(slug); go('editor'); };
 
   const handleDelete = async (slug: string, title: string) => {
     if (!confirm(`Delete "${title}"?\n\nThis cannot be undone.`)) return;
@@ -826,106 +783,113 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     refresh();
   };
 
-  const navBtn = (label: string, s: Section) => {
-    const active = section === s;
-    return (
-      <button
-        onClick={() => setSection(s)}
-        className={`flex items-center gap-2.5 w-full px-5 py-2.5 text-left text-[0.78rem] transition-all border-l-2 ${
-          active
-            ? 'text-[#c9a96e] bg-[rgba(201,169,110,0.06)] border-l-[#c9a96e]'
-            : 'text-[#6a5a3a] hover:text-[#c9a96e] hover:bg-[rgba(201,169,110,0.03)] border-l-transparent'
-        }`}
-      >
-        {label}
-      </button>
-    );
-  };
-
   const logout = async () => {
     await api('logout');
     onLogout();
   };
 
+  const current = section === 'editor' ? 'posts' : section;
+  const badge = (s: Section) => (s === 'community' && pending ? pending : 0);
+
   return (
-    <div className="flex bg-[#111009] min-h-screen text-[#ede5d5]">
-      {/* Sidebar */}
-      <aside className="w-52 shrink-0 bg-[#0e0c08] border-r border-[rgba(201,169,110,0.1)] flex flex-col sticky top-0 h-screen overflow-hidden">
+    <div className="md:flex bg-[#111009] min-h-screen text-[#ede5d5]">
+      {/* Sidebar (tablet and desktop) */}
+      <aside className="hidden md:flex w-56 shrink-0 bg-[#0e0c08] border-r border-[rgba(201,169,110,0.1)] flex-col sticky top-0 h-screen overflow-hidden">
         <div className="px-5 py-6 border-b border-[rgba(201,169,110,0.1)] shrink-0">
-          <div className="font-serif text-xl font-light tracking-[0.35em] text-[#d4aa6e] uppercase">
-            Atlas
-          </div>
-          <div className="text-[0.58rem] tracking-[0.15em] uppercase text-[#4a3a1a] mt-0.5">
-            Admin Panel
-          </div>
+          <div className="font-serif text-xl font-light tracking-[0.35em] text-[#d4aa6e] uppercase">Atlas</div>
+          <div className="text-[0.58rem] tracking-[0.15em] uppercase text-[#7a6a4a] mt-0.5">Admin Panel</div>
         </div>
-
         <nav className="flex-1 py-3 overflow-y-auto">
-          <div className="text-[0.55rem] tracking-[0.15em] uppercase text-[#3a2a0a] px-5 pt-3 pb-1.5">
-            Dashboard
-          </div>
-          {navBtn('📊 Overview', 'overview')}
-          <div className="text-[0.55rem] tracking-[0.15em] uppercase text-[#3a2a0a] px-5 pt-4 pb-1.5">
-            Content
-          </div>
-          {navBtn('📝 Blog Posts', 'posts')}
+          {(['Dashboard', 'Content'] as const).map((g) => (
+            <div key={g}>
+              <div className="text-[0.55rem] tracking-[0.15em] uppercase text-[#6a5a3a] px-5 pt-4 pb-1.5">{g}</div>
+              {NAV.filter((n) => n.group === g).map((n) => {
+                const active = current === n.s;
+                return (
+                  <button
+                    key={n.s}
+                    type="button"
+                    onClick={() => go(n.s)}
+                    className={`flex items-center gap-2.5 w-full px-5 py-2.5 text-left text-[0.8rem] transition-all border-l-2 ${
+                      active
+                        ? 'text-[#c9a96e] bg-[rgba(201,169,110,0.06)] border-l-[#c9a96e]'
+                        : 'text-[#9a8a6a] hover:text-[#c9a96e] hover:bg-[rgba(201,169,110,0.03)] border-l-transparent'
+                    }`}
+                  >
+                    <span aria-hidden="true">{n.icon}</span>
+                    <span className="flex-1">{n.label}</span>
+                    {badge(n.s) ? <span className="text-[0.62rem] bg-[#e0a040] text-[#1c1914] rounded-full px-1.5 min-w-[1.2rem] text-center font-semibold">{badge(n.s)}</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
-
-        <div className="px-5 py-4 border-t border-[rgba(201,169,110,0.1)] shrink-0">
-          <button
-            onClick={logout}
-            className="text-[0.72rem] text-[#4a3a1a] hover:text-[#c9a96e] transition-colors"
-          >
-            ← Logout
-          </button>
+        <div className="px-5 py-4 border-t border-[rgba(201,169,110,0.1)] shrink-0 flex items-center justify-between">
+          <a href="/" target="_blank" rel="noreferrer" className="text-[0.72rem] text-[#7a6a4a] hover:text-[#c9a96e]">getatlas.ca ↗</a>
+          <button type="button" onClick={logout} className="text-[0.72rem] text-[#7a6a4a] hover:text-[#c9a96e] transition-colors">Logout</button>
         </div>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 px-8 py-8 max-w-4xl overflow-y-auto">
+      {/* Top bar (phone) */}
+      <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-[#0e0c08]/95 backdrop-blur border-b border-[rgba(201,169,110,0.12)]">
+        <div className="flex items-baseline gap-2">
+          <span className="font-serif text-lg font-light tracking-[0.3em] text-[#d4aa6e] uppercase">Atlas</span>
+          <span className="text-[0.58rem] tracking-[0.15em] uppercase text-[#7a6a4a]">Admin</span>
+        </div>
+        <button type="button" onClick={logout} className="text-[0.75rem] text-[#9a8a6a] border border-[rgba(201,169,110,0.2)] rounded-full px-3 py-1">Logout</button>
+      </header>
+
+      <main className="flex-1 min-w-0 px-4 md:px-8 pt-6 md:pt-8 pb-28 md:pb-10 max-w-5xl">
         {section === 'overview' && (
-          <>
-            <h1 className="font-serif text-3xl font-light text-[#e8dcc8] mb-6">Overview</h1>
-            <StatCards stats={stats} />
-            <LegalNoticeCard />
-            <div className="border-t border-[rgba(201,169,110,0.1)] pt-6">
-              <div className="font-serif text-lg font-light text-[#c9a96e] mb-4">Quick Actions</div>
-              <div className="flex gap-3 flex-wrap">
-                <button
-                  onClick={() => { setEditSlug(null); setSection('editor'); }}
-                  className={BTN}
-                >
-                  + New Post
-                </button>
-                <button onClick={() => setSection('posts')} className={BTN_GHOST}>
-                  View All Posts
-                </button>
-              </div>
-            </div>
-          </>
+          <OverviewPanel onGo={go} onNewPost={() => editPost(null)} onPending={setPending} legalCard={<LegalNoticeCard />} />
         )}
 
         {section === 'posts' && (
           <>
-            <h1 className="font-serif text-3xl font-light text-[#e8dcc8] mb-6">Blog Posts</h1>
+            <h1 className="font-serif text-2xl md:text-3xl font-light text-[#e8dcc8] mb-6">Blog Posts</h1>
             <PostsTable
               posts={posts}
               loading={loadingPosts}
-              onEdit={(slug) => { setEditSlug(slug); setSection('editor'); }}
+              onEdit={(slug) => editPost(slug)}
               onDelete={handleDelete}
-              onNew={() => { setEditSlug(null); setSection('editor'); }}
+              onNew={() => editPost(null)}
             />
           </>
         )}
 
+        {section === 'schedule' && (
+          <SchedulePanel posts={posts} loading={loadingPosts} onEdit={(slug) => editPost(slug)} onNew={() => editPost(null)} />
+        )}
+
+        {section === 'community' && <CommunityPanel onPending={setPending} />}
+
+        {section === 'health' && <HealthPanel />}
+
         {section === 'editor' && (
           <PostEditor
             editSlug={editSlug}
-            onDone={() => { refresh(); setSection('posts'); }}
-            onCancel={() => setSection('posts')}
+            onDone={() => { refresh(); go('posts'); }}
+            onCancel={() => go('posts')}
           />
         )}
       </main>
+
+      {/* Bottom tabs (phone) */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 grid grid-cols-5 bg-[#0e0c08]/95 backdrop-blur border-t border-[rgba(201,169,110,0.15)] pb-[env(safe-area-inset-bottom)]" aria-label="Admin sections">
+        {NAV.map((n) => {
+          const active = current === n.s;
+          return (
+            <button key={n.s} type="button" onClick={() => go(n.s)}
+              className={`relative flex flex-col items-center gap-0.5 py-2 text-[0.62rem] ${active ? 'text-[#c9a96e]' : 'text-[#8a7a5a]'}`}>
+              <span className="text-[1.15rem] leading-none" aria-hidden="true">{n.icon}</span>
+              {n.short}
+              {badge(n.s) ? <span className="absolute top-1 right-[22%] text-[0.55rem] bg-[#e0a040] text-[#1c1914] rounded-full px-1 min-w-[1rem] text-center font-semibold">{badge(n.s)}</span> : null}
+              {active && <span className="absolute top-0 inset-x-4 h-0.5 bg-[#c9a96e] rounded-full" />}
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }
@@ -942,7 +906,7 @@ export default function AdminPage() {
   if (authed === null) {
     return (
       <div className="min-h-screen bg-[#111009] flex items-center justify-center">
-        <div className="text-[#4a3a1a] text-xs tracking-widest uppercase animate-pulse">
+        <div className="text-[#7a6a4a] text-xs tracking-widest uppercase animate-pulse">
           Loading…
         </div>
       </div>
