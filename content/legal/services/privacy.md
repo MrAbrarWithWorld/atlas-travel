@@ -2,10 +2,10 @@
 title: Technology Services Privacy Notice
 set: services
 slug: privacy
-version: "1.1"
+version: "1.2"
 effective: "2026-10-26"
 status: in-effect
-summary: How Atlas AI Technology handles personal information from business enquiries, free audits, clients and other business contacts.
+summary: How Atlas AI Technology handles personal information from business enquiries, the website chat, free audits, clients and other business contacts.
 ---
 
 # Technology Services Privacy Notice
@@ -35,10 +35,12 @@ Our Privacy Officer is responsible for how we handle personal information. Conta
 | **Free audit results** | When and how your business replied to the test enquiry you asked us to send | Our test of your public contact channels |
 | **Client records** | Billing contact, invoices, payment status, project notes and approvals | You and our records |
 | **Access details** | Logins or keys you give us so we can build your system | You |
+| **Website chat** | The questions you type into our website assistant ("Ask Atlas") and its answers | You, if you use the chat |
 
 Our business services are for businesses. We do not knowingly collect information from children through them.
 
 ## 4. How we use it
+- To answer your questions in our website chat.
 - To reply to you, run the free audit or free setup you asked for, and prepare proposals and quotes.
 - To deliver, support and invoice the services you buy.
 - To keep records of consent, approvals, contracts and payments.
@@ -50,6 +52,13 @@ We use your information only for these purposes, or for purposes a reasonable pe
 
 ## 5. How we use AI tools
 We use AI tools, provided by AI companies mainly in the United States, to help us summarise enquiries and draft emails and proposals. We don't use your information to train AI models, and we don't make important decisions about you using AI alone.
+
+### Our website assistant (Ask Atlas)
+- "Ask Atlas" is an AI assistant that answers questions about our services. When you use it, your messages and the earlier messages in that chat are sent to an **AI service provider** to write the answer.
+- **We don't keep a copy of your chat.** It stays in your browser tab until you close the tab or start a new chat. The AI service provider may keep messages for a limited time, under its own terms, to keep its service secure and prevent misuse.
+- To prevent misuse, our server briefly keeps a scrambled (one-way hashed) form of your IP address in memory to limit how many messages can be sent. We don't store it.
+- The chat doesn't ask for your name or contact details. Please don't share sensitive information in it. If you want us to contact you, use our contact form.
+- Answers are written by AI and can be wrong. They are general information, not a quote.
 
 ## 6. Marketing emails
 We send marketing emails only if you agreed, or if Canada's anti-spam law otherwise allows it, for example when you are already a client. Every marketing email names us, includes our mailing address and has an unsubscribe link. We act on unsubscribe requests within 10 business days.
@@ -65,7 +74,7 @@ We don't sell personal information. We share it only with the types of service p
 | A team messaging tool | Alerts us when a new enquiry arrives |
 | Our email provider | Business email |
 | Google Fonts | Delivers the fonts on our website. Google receives your IP address and browser details |
-| AI service providers | Summarising and drafting (section 5) |
+| AI service providers | Summarising and drafting, and answering website chat questions (section 5) |
 | Payment providers | Processing your payments, for example your bank or card processor |
 | Other business software | Email, calendar, documents, accounting and similar tools we use to manage our work and client relationships |
 | Lawyers, accountants and insurers | Professional advice, under confidentiality |
@@ -84,6 +93,7 @@ Many of our providers are in the **United States**, and some operate in other co
 | Client records, contracts and invoices | For the relationship, then **six years** after the end of the tax year they relate to, as Canadian tax law requires |
 | Consent and unsubscribe records | As long as we need them to prove consent or respect your choice |
 | Access details you give us | We remove our access when the work ends |
+| Website chat | We don't keep a copy (section 5) |
 | Our clients' customers' information | As the client instructs and our contract with the client says |
 
 ## 10. How we protect it
@@ -98,7 +108,7 @@ No system is perfectly secure. If a breach creates a real risk of significant ha
 You can ask to see the personal information we hold about you, ask how we used it and who we shared it with, ask us to correct it, or withdraw your consent (subject to legal or contract limits). Contact our Privacy Officer. We reply within 30 days. You can also complain to the **Office of the Privacy Commissioner of Canada** (priv.gc.ca).
 
 ## 12. Cookies on our business pages
-Our business pages (getatlas.ca, /services, /pricing, /faq, /contact and /for/…) don't use advertising or analytics cookies. They load fonts from Google Fonts (section 7). Our network security provider may set a strictly necessary security cookie.
+Our business pages (getatlas.ca, /services, /pricing, /faq, /contact and /for/…) don't use advertising or analytics cookies. They load fonts from Google Fonts (section 7). Our network security provider may set a strictly necessary security cookie. If you use the website chat, your browser keeps the conversation in its session storage until you close the tab; the chat doesn't set cookies.
 
 ## 13. Changes to this notice
 We will post any new version here with its effective date. If we want to use your information for a new purpose, we will ask for your consent first.

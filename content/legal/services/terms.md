@@ -2,8 +2,8 @@
 title: Technology Services Terms of Service
 set: services
 slug: terms
-version: "1.0"
-effective: "2026-10-25"
+version: "1.1"
+effective: "2026-10-26"
 status: in-effect
 summary: Terms for the Atlas AI Technology website, enquiries, free offers, founding prices, the setup-fee guarantee, cancellation and refunds.
 ---
@@ -70,6 +70,7 @@ Some systems need paid third-party services, such as phone numbers and text mess
 ## 7. Website content
 - The website's text, graphics, logos and code belong to us or our licensors. You may view and share our pages to evaluate our services. Don't copy large parts or reuse them commercially without our permission.
 - Examples on the website, such as the "Lead Rescue" timeline, are **illustrations**, not records of real client activity.
+- **Website assistant.** "Ask Atlas" uses AI to answer questions about our services. Its answers are general information and can be wrong. They are not a quote, an offer or a promise. Only a fixed written quote or a signed agreement is binding.
 
 ## 8. Using the website and forms
 Don't misuse the website or our forms. This includes sending spam or unlawful content, trying to access our systems without permission, scraping or load-testing the site, and submitting someone else's information without their permission.

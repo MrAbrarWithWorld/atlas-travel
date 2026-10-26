@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Check, CheckCircle } from '@phosphor-icons/react/dist/ssr';
 import styles from '../business.module.css';
 import { FREE_PLANS, OFFER_TERMS, PAID_PLANS, contactFor, type Plan } from '../lib/offer';
+import AskAtlas from './AskAtlas';
 
 export type Faq = { q: string; a: string };
 
@@ -237,6 +238,7 @@ export function BusinessFooter({ extra = [] }: { extra?: MoreLink[] }) {
           <Link href="/travel" prefetch={false}>Atlas Travel app</Link>
         </nav>
       </div>
+      <AskAtlas />
     </footer>
   );
 }
