@@ -2,9 +2,10 @@
 title: Atlas AI Travel Planner — Privacy Policy
 set: travel
 slug: privacy
-version: "1.0"
-effective: "2026-10-25"
+version: "1.1"
+effective: "2026-10-26"
 status: in-effect
+notice: It now names the AI providers that write the answers, and explains Google Analytics, location, Google Calendar, shared trips, account deletion and who sends our service emails.
 summary: What the Atlas AI Travel Planner website and Android app collect, why, who receives it, how long we keep it, and your choices.
 ---
 
@@ -105,6 +106,7 @@ We share information only with the providers below, and only as needed for the p
 | Expo and Firebase Cloud Messaging (Google) | A device identifier for notifications, and app update checks | Android notifications and app updates |
 | Browser push services (Google, Mozilla, Apple) | A notification address created by your browser | Website notifications you turn on |
 | Zoho Mail | Your name and email address | Subscription and newsletter emails, and support replies |
+| Resend | Your email address | Service notices, such as updates to these documents |
 | GetYourGuide | Information its widget collects on blog pages | Activity suggestions on travel articles |
 
 These providers may use the information only to provide their services to us, or as their own terms allow for security and legal reasons.

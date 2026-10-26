@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import nodemailer from "nodemailer";
+import { runLegalNotices } from "../lib/legal-notice.js";
 
 const sb = createClient(
   "https://prffhhkemxibujjjiyhg.supabase.co",
@@ -17,6 +18,14 @@ export default async function handler(req, res) {
   const auth = req.headers["authorization"] || "";
   if (!secret || auth !== `Bearer ${secret}`) {
     return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  // Automatic notice to users when a Travel Planner Privacy Policy / Terms version changes.
+  let legal;
+  try {
+    legal = await runLegalNotices({ sb, timeBudgetMs: 15000 });
+  } catch (e) {
+    legal = { status: "error", error: e.message };
   }
 
   try {
@@ -153,6 +162,9 @@ export default async function handler(req, res) {
       </tr>
     </table>
 
+    <div style="font-size:11px;letter-spacing:2px;color:#6a5a3a;text-transform:uppercase;margin:20px 0 12px;">Legal update emails</div>
+    <div style="font-size:13px;color:#a8a090;">${legal.status}${legal.total != null ? ` · ${legal.sent}/${legal.total} sent` : ""}${legal.error ? ` · ${String(legal.error).replace(/</g, "&lt;")}` : ""}</div>
+
     <div style="margin-top:20px;text-align:center;">
       <a href="https://getatlas.ca" style="font-size:11px;color:#5a4a2a;text-decoration:none;letter-spacing:1px;">getatlas.ca</a>
     </div>
@@ -177,7 +189,7 @@ export default async function handler(req, res) {
       html,
     });
 
-    return res.status(200).json({ ok: true, sent: true });
+    return res.status(200).json({ ok: true, sent: true, legal });
   } catch (err) {
     console.error("Cron report error:", err.message);
     return res.status(500).json({ error: err.message });

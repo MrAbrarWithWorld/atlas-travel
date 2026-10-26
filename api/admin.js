@@ -2,6 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 import { createHash, timingSafeEqual } from 'crypto';
 import webpush from 'web-push';
 import nodemailer from 'nodemailer';
+import { runLegalNotices, legalNoticeStatus } from '../lib/legal-notice.js';
+
+export const config = { maxDuration: 60 };
 
 const sb = createClient(
   'https://prffhhkemxibujjjiyhg.supabase.co',
@@ -929,6 +932,16 @@ export default async function handler(req, res) {
         .eq('slug', body.slug)
         .single();
       return res.status(200).json({ post: post || null });
+    }
+
+    if (action === 'legal_notice_status') {
+      try { return res.status(200).json(await legalNoticeStatus({ sb })); }
+      catch (e) { return res.status(500).json({ status: 'error', error: e.message }); }
+    }
+
+    if (action === 'legal_notice_send') {
+      try { return res.status(200).json(await runLegalNotices({ sb, timeBudgetMs: 40000 })); }
+      catch (e) { return res.status(500).json({ status: 'error', error: e.message }); }
     }
 
     if (action === 'get_stats') {

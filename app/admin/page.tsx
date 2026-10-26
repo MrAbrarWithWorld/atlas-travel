@@ -160,6 +160,90 @@ function StatCards({ stats }: { stats: Stats | null }) {
   );
 }
 
+// ─── Legal update emails ─────────────────────────────────────────────────────
+
+type LegalStatus = {
+  status: string;
+  docs?: { slug: string; version: string; effective: string; shortTitle: string }[];
+  total?: number | null;
+  sent?: number;
+  remaining?: number;
+  lastRunAt?: string | null;
+  lastError?: string | null;
+  error?: string;
+  hasResendKey?: boolean;
+};
+
+const LEGAL_LABELS: Record<string, string> = {
+  not_started: 'Not sent yet',
+  sending: 'Sending (paused)',
+  in_progress: 'Sending…',
+  done: 'Sent to everyone',
+  busy: 'Another send is running',
+  nothing_to_announce: 'Nothing new to announce',
+  missing_resend_key: 'RESEND_API_KEY is missing in Vercel',
+  error: 'Error',
+};
+
+function LegalNoticeCard() {
+  const [info, setInfo] = useState<LegalStatus | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [running, setRunning] = useState(false);
+
+  const load = useCallback(() => {
+    api('legal_notice_status').then(({ data }) => setInfo(data as LegalStatus));
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  async function sendNow() {
+    setConfirming(false);
+    setRunning(true);
+    for (let i = 0; i < 30; i++) {
+      const { data } = await api('legal_notice_send');
+      const d = data as LegalStatus;
+      setInfo((prev) => ({ ...(prev || { status: '' }), ...d }));
+      if (d.status !== 'in_progress') break;
+    }
+    setRunning(false);
+    load();
+  }
+
+  const label = info ? (LEGAL_LABELS[info.status] || info.status) : '…';
+  const canSend = info && !['done', 'nothing_to_announce'].includes(info.status) && info.hasResendKey !== false;
+  return (
+    <div className="bg-[rgba(201,169,110,0.04)] border border-[rgba(201,169,110,0.12)] rounded-xl p-4 mb-8">
+      <div className="text-[0.58rem] tracking-[0.12em] uppercase text-[#5a4a2a] mb-1">Legal update emails</div>
+      <div className="text-sm text-[#e8dcc8] mb-1">
+        {label}
+        {info?.total != null && <span className="text-[#c9a96e]"> · {info.sent ?? 0}/{info.total} sent</span>}
+      </div>
+      {info?.docs?.length ? (
+        <div className="text-[0.72rem] text-[#8a7a5a] mb-2">
+          {info.docs.map((d) => `${d.shortTitle} v${d.version} (effective ${d.effective})`).join(' · ')}
+        </div>
+      ) : null}
+      {(info?.lastError || info?.error) && (
+        <div className="text-[0.72rem] text-[#e87070] mb-2">{info.lastError || info.error}</div>
+      )}
+      <div className="text-[0.68rem] text-[#6a5a3a] mb-3">
+        Sent automatically by the daily job when a Privacy Policy or Terms version changes. From noreply@getatlas.ca; replies go to support@getatlas.ca.
+      </div>
+      {canSend && !confirming && (
+        <button className={BTN} disabled={running} onClick={() => setConfirming(true)}>
+          {running ? 'Sending…' : 'Send now'}
+        </button>
+      )}
+      {canSend && confirming && (
+        <div className="flex gap-2 items-center flex-wrap">
+          <span className="text-[0.75rem] text-[#e8dcc8]">Email every Travel Planner account holder now?</span>
+          <button className={BTN} onClick={sendNow}>Yes, send</button>
+          <button className={BTN_GHOST} onClick={() => setConfirming(false)}>Cancel</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Posts table ──────────────────────────────────────────────────────────────
 
 function PostsTable({
@@ -788,6 +872,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           <>
             <h1 className="font-serif text-3xl font-light text-[#e8dcc8] mb-6">Overview</h1>
             <StatCards stats={stats} />
+            <LegalNoticeCard />
             <div className="border-t border-[rgba(201,169,110,0.1)] pt-6">
               <div className="font-serif text-lg font-light text-[#c9a96e] mb-4">Quick Actions</div>
               <div className="flex gap-3 flex-wrap">
