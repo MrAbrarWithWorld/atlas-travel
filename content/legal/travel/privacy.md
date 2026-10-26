@@ -3,8 +3,8 @@ title: Atlas AI Travel Planner — Privacy Policy
 set: travel
 slug: privacy
 version: "1.0"
-effective: ""
-status: pending-approval
+effective: "2026-10-25"
+status: in-effect
 summary: What the Atlas AI Travel Planner website and Android app collect, why, who receives it, how long we keep it, and your choices.
 ---
 

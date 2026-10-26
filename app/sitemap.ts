@@ -18,8 +18,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/travel`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE_URL}/blog`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/community`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
-    { url: `${BASE_URL}/privacy`, lastModified: new Date("2026-04-13"), changeFrequency: "monthly", priority: 0.3 },
-    { url: `${BASE_URL}/terms`, lastModified: new Date("2026-04-13"), changeFrequency: "monthly", priority: 0.3 },
+    { url: `${BASE_URL}/privacy`, lastModified: new Date("2026-10-25"), changeFrequency: "monthly", priority: 0.3 },
+    { url: `${BASE_URL}/terms`, lastModified: new Date("2026-10-25"), changeFrequency: "monthly", priority: 0.3 },
+    { url: `${BASE_URL}/legal`, lastModified: new Date("2026-10-25"), changeFrequency: "monthly", priority: 0.3 },
+    { url: `${BASE_URL}/legal/services/privacy`, lastModified: new Date("2026-10-25"), changeFrequency: "monthly", priority: 0.3 },
+    { url: `${BASE_URL}/legal/services/terms`, lastModified: new Date("2026-10-25"), changeFrequency: "monthly", priority: 0.3 },
   ];
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

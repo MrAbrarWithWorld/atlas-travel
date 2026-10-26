@@ -55,6 +55,8 @@ function TravelFooter() {
 export default function LegalDocView({ doc }: { doc: LegalDoc }) {
   const isTravel = doc.set === 'travel';
   const inEffect = doc.status === 'in-effect';
+  const upcoming = inEffect && Boolean(doc.previous) && Boolean(doc.effective)
+    && Date.now() < new Date(`${doc.effective}T00:00:00-05:00`).getTime();
   return (
     <div className={biz.page}>
       {isTravel ? <TravelHeader /> : <SiteNav activePath="/legal" ctaLabel="Free audit →" ctaHref={contactFor('free-audit')} />}
@@ -75,6 +77,15 @@ export default function LegalDocView({ doc }: { doc: LegalDoc }) {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /></svg>
               <div>
                 <strong>Review copy — not yet in effect.</strong> This version takes effect only after final approval.
+              </div>
+            </div>
+          )}
+          {upcoming && (
+            <div className={styles.draftBanner} role="note">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+              <div>
+                <strong>These terms take effect on {formatEffective(doc.effective)}.</strong> Until then, the{' '}
+                <a href={doc.previous}>previous Terms of Service</a> apply.
               </div>
             </div>
           )}

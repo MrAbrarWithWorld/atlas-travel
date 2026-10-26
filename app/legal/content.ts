@@ -30,6 +30,7 @@ export type LegalDoc = {
   body: string;
   url: string;
   missing: string[]; // required business details that are still empty
+  previous: string; // URL of the version that applies until `effective` (optional)
 };
 
 const ROOT = path.join(process.cwd(), 'content', 'legal');
@@ -123,6 +124,7 @@ export function getLegalDoc(set: LegalSet, slug: string): LegalDoc | null {
     body: fillDetails(body, details),
     url: legalUrl(set, slug as LegalSlug),
     missing,
+    previous: meta.previous || '',
   };
   assertReleasable(doc);
   return doc;

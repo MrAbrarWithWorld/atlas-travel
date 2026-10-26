@@ -3,8 +3,8 @@ title: Technology Services Terms of Service
 set: services
 slug: terms
 version: "1.0"
-effective: ""
-status: pending-approval
+effective: "2026-10-25"
+status: in-effect
 summary: Terms for the Atlas AI Technology website, enquiries, free offers, founding prices, the setup-fee guarantee, cancellation and refunds.
 ---
 

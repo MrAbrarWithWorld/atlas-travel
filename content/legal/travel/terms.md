@@ -3,8 +3,9 @@ title: Atlas AI Travel Planner — Terms of Service
 set: travel
 slug: terms
 version: "1.0"
-effective: ""
-status: pending-approval
+effective: "2026-11-08"
+status: in-effect
+previous: /terms-2026-06-29.html
 summary: The agreement for using the Atlas AI Travel Planner website and Android app, including plans, billing, cancellation and refunds.
 ---
 

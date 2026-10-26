@@ -3,8 +3,8 @@ title: Technology Services Privacy Notice
 set: services
 slug: privacy
 version: "1.0"
-effective: ""
-status: pending-approval
+effective: "2026-10-25"
+status: in-effect
 summary: How Atlas AI Technology handles personal information from business enquiries, free audits, clients and other business contacts.
 ---
 
