@@ -2156,7 +2156,9 @@ export default async function handler(req, res) {
       .eq('is_published', true)
       .order('date_published', { ascending: false })
       .limit(200);
-    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+    // Same URL serves HTML and JSON, so never let a shared cache hand one to the other.
+    res.setHeader('Cache-Control', 'private, no-cache');
+    res.setHeader('Vary', 'Accept, User-Agent');
     if (listErr) return res.status(500).json({ error: 'Could not load articles' });
     return res.status(200).json({
       posts: (list || []).map((p) => ({
@@ -2176,6 +2178,9 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
 
   if (!slug || slug === 'index') {
+    // The index URL also answers the Android app with JSON (above): keep HTML out of shared caches.
+    res.setHeader('Cache-Control', 'private, no-cache');
+    res.setHeader('Vary', 'Accept, User-Agent');
     // Community index page
     if (cat === 'community') {
       const { data: cposts } = await sb
