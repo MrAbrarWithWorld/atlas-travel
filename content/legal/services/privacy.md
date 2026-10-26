@@ -11,7 +11,7 @@ summary: How Atlas AI Technology handles personal information from business enqu
 # Technology Services Privacy Notice
 
 ## 1. Who we are and what this notice covers
-**{{legalName}}**, a sole proprietor in Toronto, Ontario, Canada, operating under the registered business name **{{tradeName}}** (called "{{brandName}}" on this website; "**we**", "**us**"). We build automations, CRMs, websites and AI assistants for businesses.
+**{{tradeName}}**, a business registered in Ontario and based in Toronto, Canada (called "{{brandName}}" on this website; "**we**", "**us**"). We build automations, CRMs, websites and AI assistants for businesses.
 
 This notice covers personal information about:
 - people who contact us, or ask for a free audit, a free setup, a proposal or a quote;
@@ -23,7 +23,7 @@ This notice covers personal information about:
 The **Atlas AI Travel Planner** has its own [Privacy Policy](/privacy).
 
 ## 2. Who is responsible
-Our Privacy Officer, **{{privacyOfficer}}**, is responsible for how we handle personal information. Contact details are in section 14.
+Our Privacy Officer is responsible for how we handle personal information. Contact details are in section 14.
 
 ## 3. What we collect
 | Information | Examples | Where it comes from |
@@ -104,6 +104,6 @@ Our business pages (getatlas.ca, /services, /pricing, /faq, /contact and /for/â€
 We will post any new version here with its effective date. If we want to use your information for a new purpose, we will ask for your consent first.
 
 ## 14. Contact us
-**Privacy Officer:** {{privacyOfficer}}
+**Privacy Officer:** Atlas AI Technologies, Toronto, Canada
 **Email:** support@getatlas.ca (subject "Privacy")
 **Mail:** {{businessAddress}}
