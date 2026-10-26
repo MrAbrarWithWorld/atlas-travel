@@ -12,9 +12,11 @@ summary: The agreement for using the Atlas AI Travel Planner website and Android
 # Atlas AI Travel Planner — Terms of Service
 
 ## 1. About these terms
-These terms are an agreement between you and **{{legalName}}**, operating as **{{tradeName}}** ("**we**", "**us**"). They apply to the **Atlas AI Travel Planner**: the website at getatlas.ca/travel and travel.getatlas.ca, our travel blog and community pages, and the **Atlas** Android app (together, "**the Planner**").
+These terms are an agreement between you and **{{legalName}}**, a sole proprietor in Toronto, Ontario, Canada, operating under the registered business name **{{tradeName}}** (called "{{brandName}}" on this website; "**we**", "**us**"). They apply to the **Atlas AI Travel Planner**: the website at getatlas.ca/travel and travel.getatlas.ca, our travel blog and community pages, and the **Atlas** Android app (together, "**the Planner**").
 
 **Our details**
+- Business: {{legalName}}, operating as {{tradeName}} (sole proprietorship registered in Ontario)
+- Location: Toronto, Ontario, Canada
 - Business address: {{businessAddress}}
 - Phone: {{businessPhone}}
 - Email: support@getatlas.ca
@@ -52,20 +54,23 @@ Answers are written by AI. They can be **wrong, incomplete or out of date**, inc
 | Explorer (paid) | The features shown for Explorer at checkout | Up to 999 |
 
 - Each plan also has a daily allowance of AI usage, which keeps the service fair for everyone. Limits reset 24 hours after your usage period starts.
-- The plans, their features and prices are shown on the pricing screen. The Stripe checkout page then shows the exact amount, currency and billing period **before you pay**, and that is the price you pay. Any tax we charge is shown at checkout.
-- **Paid plans are sold only on our website.** The Android app does not sell subscriptions. If you subscribe on the website, your plan also applies in the app when you sign in with the same account.
+- You can buy a paid plan on our website, where Stripe processes the payment, or in the Android app through Google Play, in app versions that offer it.
+- The plans, their features and prices are shown on the pricing screen. The Stripe or Google Play checkout then shows the exact amount, currency and billing period **before you pay**, and that is the price you pay. Any tax charged is shown at checkout.
+- Your plan applies wherever you sign in with the same account, on the website and in the app.
 - If we reduce what your paid plan includes, including its limits, we will tell you by email at least 30 days before your next renewal. You can cancel before the change takes effect.
 
 ## 7. Billing and renewal
 - Paid plans are monthly or yearly. They **renew automatically** at the end of each billing period until you cancel.
-- Stripe processes payments. Stripe's terms also apply to your payment.
+- Stripe processes website payments, and Google processes Google Play payments. Their terms also apply to your payment.
 - We will email you at least **30 days** before a price change affects your plan. The new price applies from your next renewal after that notice, and you can cancel before then.
 - If a payment fails, your account may return to the Free plan until the payment is made.
 
 ## 8. Cancelling
-- You can cancel at any time. On the website, open your **Account** panel and choose **Manage subscription via Stripe**, or email support@getatlas.ca from your account email.
+- You can cancel at any time.
+- **Website subscription:** on the website, open your **Account** panel and choose **Manage subscription via Stripe**, or email support@getatlas.ca from your account email.
+- **Google Play subscription:** in Google Play, go to **Payments & subscriptions → Subscriptions**, or use **Manage subscription** in the app.
 - Cancelling stops future renewals. You keep your paid features until the end of the period you have already paid for.
-- **Deleting your account does not cancel a subscription.** Cancel first, then delete your account.
+- **Deleting your account does not cancel a Google Play subscription**, so cancel it in Google Play first. If you have an active website subscription, the deletion page asks you to cancel it before deleting your account.
 
 ## 9. Refunds
 We refund:
@@ -75,7 +80,7 @@ We refund:
 
 Apart from these, when you cancel, we do not refund the unused part of a billing period. You keep access until the end of that period.
 
-To ask for a refund, email support@getatlas.ca from your account email with the date and amount of the charge. We will reply within 5 business days, and send any refund to the original payment method. Contacting us first is usually the fastest way to fix a billing problem. It does not limit your right under consumer protection law to ask your credit card company to reverse a charge.
+To ask for a refund, email support@getatlas.ca from your account email with the date and amount of the charge. For Google Play purchases, you can also ask Google for a refund under Google Play's refund policies. We will reply within 5 business days, and send any refund to the original payment method. Contacting us first is usually the fastest way to fix a billing problem. It does not limit your right under consumer protection law to ask your credit card company to reverse a charge.
 
 ## 10. Your content and sharing
 - You keep ownership of what you write in the Planner. You allow us to store, process and display it to provide the Planner to you, including sending it to the AI providers listed in our [Privacy Policy](/privacy).
@@ -103,7 +108,7 @@ We improve the Planner over time and may change or remove features. The Android 
 ## 15. Suspension and closing your account
 - We may suspend or close an account that seriously or repeatedly breaks these terms. Where it is reasonable, we will warn you first.
 - If we close your paid account without a good reason under these terms, we will refund the unused part of your current billing period.
-- You can delete your account at any time at [getatlas.ca/account/delete](/account/delete).
+- You can delete your account at any time, in the Android app (version 1.3.0 or later: **Settings → Delete account**) or at [getatlas.ca/account/delete](/account/delete).
 
 ## 16. Responsibility and limits
 - We provide the Planner with reasonable care and skill. Because AI can make mistakes, we do not promise that answers will be accurate, complete or up to date, or that the Planner will always be available.

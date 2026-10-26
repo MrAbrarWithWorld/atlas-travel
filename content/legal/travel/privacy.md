@@ -13,7 +13,7 @@ summary: What the Atlas AI Travel Planner website and Android app collect, why, 
 ## 1. Who we are and what this policy covers
 This policy covers the **Atlas AI Travel Planner**: the website at getatlas.ca/travel and travel.getatlas.ca, our travel blog and community pages, and the **Atlas** Android app (`ca.getatlas.app`). In this policy, "the Planner" means all of these.
 
-The Planner is provided by **{{legalName}}**, operating as **{{tradeName}}**, Toronto, Ontario, Canada ("**we**", "**us**").
+The Planner is provided by **{{legalName}}**, a sole proprietor in Toronto, Ontario, Canada, operating under the registered business name **{{tradeName}}** (called "{{brandName}}" on this website; "**we**", "**us**").
 
 If you contacted us about our business technology services, see the separate [Technology Services Privacy Notice](/legal/services/privacy).
 
@@ -23,7 +23,7 @@ If you contacted us about our business technology services, see the separate [Te
 - If you allow location, we use it **only to work out your city**.
 - We use **Google Analytics** to understand how the website is used.
 - **Shared trips are public.** Anyone with the link can see them, and they can appear in search engines.
-- You can delete your account at any time at [getatlas.ca/account/delete](/account/delete).
+- You can delete your account at any time, in the Android app or at [getatlas.ca/account/delete](/account/delete).
 - We do not sell your personal information and we do not show ads.
 
 ## 3. Information we collect
@@ -35,7 +35,7 @@ If you contacted us about our business technology services, see the separate [Te
 | **Preferences:** home city, passport country, currency, travel style and a custom instruction for the AI | When you set them | To personalise answers. These are stored on your device and **included in the messages sent to AI providers** |
 | **Location** | Only if you allow it | To find your city (see section 6) |
 | **Usage records:** how many plans and how much AI capacity you used, and which AI model answered. For visitors who are not signed in, these are linked to a scrambled (one-way hashed) form of the IP address | When you use the Planner | To apply daily limits, prevent abuse and track our costs |
-| **Subscription details:** email, plan, status, renewal date and Stripe customer and subscription IDs. If we give you free access, your email is on our access list | When you subscribe | To unlock paid features, handle billing and help you with problems |
+| **Subscription details:** email, plan, status and renewal date, plus the Stripe customer and subscription IDs (website) or the Google Play purchase token, product and order ID (Android app). If we give you free access, your email is on our access list | When you subscribe | To unlock paid features, handle billing and help you with problems |
 | **Notification settings** | If you turn on notifications | To send the reminders and updates you asked for |
 | **Newsletter email** | If you subscribe on the blog | To send new articles |
 | **Community stories and comments** | If you post them | To publish them. Stories are reviewed before they appear |
@@ -43,7 +43,7 @@ If you contacted us about our business technology services, see the separate [Te
 
 **Photos and files in the Android app.** When you attach a photo or file, it stays on your device. It is **not uploaded to us or to AI providers**. We keep only its file name and its location on your device, as part of your chat history.
 
-**Payment cards.** We never see or store your card number. Stripe collects it directly.
+**Payment cards.** We never see or store your card number. Stripe (website) or Google Play (Android app) collects your payment details directly.
 
 ## 4. How we use your information
 - To provide the Planner: answer your questions, build trip plans and keep your trips and conversations.
@@ -100,6 +100,7 @@ We share information only with the providers below, and only as needed for the p
 | Supabase | Account, trips, conversations, subscription status, usage records, newsletter and notification sign-ups, community posts | Database and sign-in |
 | Vercel and Cloudflare | Everything sent to our servers, in transit | Hosting, delivery and security |
 | Stripe | Email, plan and payment details (collected by Stripe) | Website subscriptions |
+| Google Play | Purchase and subscription details | Subscriptions bought in the Android app |
 | Google (Sign-In, Analytics, Calendar) | As described in sections 3, 7 and 8 | Sign-in, analytics and calendar |
 | Expo and Firebase Cloud Messaging (Google) | A device identifier for notifications, and app update checks | Android notifications and app updates |
 | Browser push services (Google, Mozilla, Apple) | A notification address created by your browser | Website notifications you turn on |
@@ -119,15 +120,17 @@ Most of our providers are in the **United States**, and some operate in other co
 | Account, saved trips, conversations and other content stored with us | While your account is open. You can delete trips at any time |
 | Current conversation in your browser | Not reloaded after 24 hours; replaced by your next conversation; removed when you clear your browser data |
 | Shared trips | Until you stop sharing or delete the trip |
-| Subscription and payment records | Six years after the end of the tax year they relate to, as Canadian tax law requires |
+| Payment records (receipts and invoices) | Six years after the end of the tax year they relate to, as Canadian tax law requires. Stripe and Google Play hold these records |
 | Newsletter | Until you unsubscribe. We then keep your email marked as unsubscribed so we don't email you again |
 | Backups | Deleted when the backups are overwritten |
 
-**Deleting your account:** our [account deletion page](/account/delete) explains what is deleted and what we keep. We keep payment records for as long as tax law requires.
+**When you delete your account**, we delete your sign-in account and profile, saved and shared trips, trip projects, conversations and messages, usage counts, notification sign-ups, community stories, the subscription records we hold, any free-access entry, and the newsletter subscription for the same email address.
+
+We do not automatically delete: comments you posted on blog articles (email us and we will remove them); records of AI usage costs, which keep a random account number but not your name or email; and payment records held by Stripe or Google Play.
 
 ## 13. Your choices and rights
 - **See or correct your information:** email us. We reply within 30 days.
-- **Delete your account:** go to [getatlas.ca/account/delete](/account/delete) and sign in with the same Google account. The Android app does not have a delete button yet; use the same page with the Google account you use in the app. If you signed in with an email link, or prefer email, write to support@getatlas.ca from your account email with the subject "Delete my Atlas account".
+- **Delete your account:** in the Android app (version 1.3.0 or later), go to **Settings → Delete account**. On the website, or with any app version, go to [getatlas.ca/account/delete](/account/delete) and sign in with the same Google account. If you have an active website subscription, you will be asked to cancel it first. A Google Play subscription is not cancelled automatically, so cancel it in Google Play. If you signed in with an email link, or prefer email, write to support@getatlas.ca from your account email with the subject "Delete my Atlas account".
 - **Withdraw consent:** you can turn off location, notifications or personalisation, unsubscribe from the newsletter, or block analytics at any time. Some features may then stop working.
 - **Complain:** contact us first. You can also complain to the **Office of the Privacy Commissioner of Canada** (priv.gc.ca).
 

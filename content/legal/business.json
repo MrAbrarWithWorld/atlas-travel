@@ -1,7 +1,8 @@
 {
-  "_note": "Business details used in the legal documents. Leave a value empty until it is confirmed: lines that use an empty value are hidden, and a document that lists the value under `requires:` cannot be built for production without it.",
+  "_note": "Business details used in the legal documents. Leave a value empty until it is confirmed: lines that use an empty value are hidden, and a document that lists the value under `requires:` cannot be built for production without it. tradeName is the business name registered under the Ontario Business Names Act (sole proprietorship of S M Abrar Fahim); brandName is the name used on the website.",
   "legalName": "S M Abrar Fahim",
-  "tradeName": "Atlas AI Technology",
+  "tradeName": "Atlas AI Technologies",
+  "brandName": "Atlas AI Technology",
   "privacyOfficer": "S M Abrar Fahim",
   "businessAddress": "",
   "businessPhone": ""

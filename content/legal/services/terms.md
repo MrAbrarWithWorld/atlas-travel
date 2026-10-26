@@ -11,7 +11,7 @@ summary: Terms for the Atlas AI Technology website, enquiries, free offers, foun
 # Technology Services Terms of Service
 
 ## 1. Who we are
-These terms are offered by **{{legalName}}**, operating as **{{tradeName}}** ("**we**", "**us**"), Toronto, Ontario, Canada.
+These terms are offered by **{{legalName}}**, a sole proprietor in Toronto, Ontario, Canada, operating under the registered business name **{{tradeName}}** (called "{{brandName}}" on this website; "**we**", "**us**").
 
 **Email:** support@getatlas.ca
 **Mail:** {{businessAddress}}

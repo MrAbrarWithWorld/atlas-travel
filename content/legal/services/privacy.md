@@ -11,7 +11,7 @@ summary: How Atlas AI Technology handles personal information from business enqu
 # Technology Services Privacy Notice
 
 ## 1. Who we are and what this notice covers
-**{{legalName}}**, operating as **{{tradeName}}** ("**we**", "**us**"), is based in Toronto, Ontario, Canada. We build automations, CRMs, websites and AI assistants for businesses.
+**{{legalName}}**, a sole proprietor in Toronto, Ontario, Canada, operating under the registered business name **{{tradeName}}** (called "{{brandName}}" on this website; "**we**", "**us**"). We build automations, CRMs, websites and AI assistants for businesses.
 
 This notice covers personal information about:
 - people who contact us, or ask for a free audit, a free setup, a proposal or a quote;
@@ -49,7 +49,7 @@ Our business services are for businesses. We do not knowingly collect informatio
 We use your information only for these purposes, or for purposes a reasonable person would expect. If we want to use it for something new, we will ask you first.
 
 ## 5. How we use AI tools
-We use AI tools to work faster. For example, they summarise enquiries and draft emails and proposals. **A person reviews and approves AI-drafted messages before they are sent to you.** We don't use your information to train AI models, and we don't make important decisions about you using AI alone.
+We use AI tools, provided by AI companies mainly in the United States, to help us summarise enquiries and draft emails and proposals. We don't use your information to train AI models, and we don't make important decisions about you using AI alone.
 
 ## 6. Marketing emails
 We send marketing emails only if you agreed, or if Canada's anti-spam law otherwise allows it, for example when you are already a client. Every marketing email names us, includes our mailing address and has an unsubscribe link. We act on unsubscribe requests within 10 business days.
@@ -67,6 +67,7 @@ We don't sell personal information. We share it only with service providers that
 | Google Fonts | Delivers the fonts on our website. Google receives your IP address and browser details |
 | AI service providers | Summarising and drafting (section 5) |
 | Payment providers | Processing your payments, for example your bank or card processor |
+| Other business software | Email, calendar, documents, accounting and similar tools we use to manage our work and client relationships |
 | Lawyers, accountants and insurers | Professional advice, under confidentiality |
 
 People who work for us or on our behalf see client and enquiry information only when they need it for their work, and under written confidentiality obligations.
