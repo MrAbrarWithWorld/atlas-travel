@@ -5,7 +5,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/_next/", "/admin"],
+      // Don't block /_next/: Google needs the CSS and JS files to render pages.
+      disallow: ["/api/", "/admin"],
     },
     sitemap: "https://getatlas.ca/sitemap.xml",
   };
