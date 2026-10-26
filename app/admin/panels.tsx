@@ -33,7 +33,6 @@ export type Health = {
   pages: { path: string; status: number; ms: number; error?: string }[];
   legal: LegalDoc[] | null;
   termsBannerLive: boolean | null;
-  analyticsOn?: boolean;
   keys: Record<string, boolean>;
   version: { commit: string | null; message: string | null; environment: string };
 };
@@ -141,7 +140,6 @@ export function OverviewPanel({ onGo, onNewPost, legalCard, onPending }: { onGo:
     for (const d of health.legal || []) {
       if (d.effective > today) alerts.push({ tone: 'info', text: `${d.shortTitle || d.title} take${d.slug === 'terms' ? '' : 's'} effect on ${niceDate(d.effective)}.`, go: 'health', action: 'Details' });
     }
-    if (health.analyticsOn === false) alerts.push({ tone: 'warn', text: 'Visitor counting is not switched on yet. In Vercel open atlas-travel → Analytics → Enable.' });
     const terms = (health.legal || []).find((d) => d.slug === 'terms');
     if (terms && terms.effective <= today && health.termsBannerLive) {
       alerts.push({ tone: 'warn', text: 'The Terms page still says "takes effect on…". Redeploy once in Vercel to remove it.', go: 'health' });
@@ -171,9 +169,8 @@ export function OverviewPanel({ onGo, onNewPost, legalCard, onPending }: { onGo:
       <h2 className={`${H2} mb-3`}>Website visitors</h2>
       <div className={`${CARD} mb-8 flex flex-col sm:flex-row sm:items-center gap-3`}>
         <div className="flex-1 text-[0.85rem] text-[#d8cfbd]">
-          {health?.analyticsOn === undefined && !health ? 'Checking visitor counting…'
-            : health?.analyticsOn ? <><span className="text-[#8fd6a8]">✓ Counting visitors</span> on the business pages (no cookies). See visitors, top pages, where people came from and their country.</>
-            : <><span className="text-[#f0c070]">Not switched on yet.</span> In Vercel open <strong>atlas-travel → Analytics → Enable</strong>. Counting starts straight away.</>}
+          Visitors to the business pages are counted without cookies: how many people came, which pages they opened, which website sent them and their country.
+          <div className="text-[0.75rem] text-[#f0c070] mt-1">First time only: if the Vercel page shows an <strong>Enable</strong> button, click it once. Counting starts from then.</div>
           <div className="text-[0.72rem] text-[#8a7a5a] mt-1">Travel Planner (/travel) visitors are in Google Analytics.</div>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -496,10 +493,7 @@ export function HealthPanel() {
                   <span className={v ? 'text-[#8fd6a8]' : 'text-[#f08a70]'}>{v ? '✓ set up' : '✗ missing'}</span>
                 </div>
               ))}
-              <div className="flex items-center justify-between rounded-lg border border-[rgba(201,169,110,0.12)] px-3 py-2 text-[0.82rem]">
-                <span className="text-[#e8dcc8]">Visitor counting (Vercel Analytics)</span>
-                <span className={h.analyticsOn ? 'text-[#8fd6a8]' : 'text-[#f0c070]'}>{h.analyticsOn ? '✓ on' : 'off: enable in Vercel'}</span>
-              </div>
+
             </div>
             <p className="text-[0.72rem] text-[#8a7a5a] mt-2">Only shows whether each key exists in Vercel. Key values are never shown.</p>
           </section>
