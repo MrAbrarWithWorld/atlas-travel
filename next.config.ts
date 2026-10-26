@@ -25,6 +25,14 @@ const nextConfig: NextConfig = {
     return [
       { source: '/privacy.html', destination: '/privacy', permanent: true },
       { source: '/terms.html', destination: '/terms', permanent: true },
+      // Android app 1.2.1 opens getatlas.ca/contact?intent=upgrade… (the business contact form since the
+      // planner moved to /travel). Send those to the planner, which opens its pricing or settings.
+      {
+        source: '/contact',
+        has: [{ type: 'query', key: 'intent', value: '(upgrade.*|manage-subscription)' }],
+        destination: '/travel',
+        permanent: false,
+      },
     ];
   },
   async rewrites() {
@@ -40,6 +48,9 @@ const nextConfig: NextConfig = {
           destination: '/index.html',
         },
         { source: '/travel', destination: '/index.html' },
+        // Stripe returns (?payment=…) and /plan/… buttons (?dest=…) still point at getatlas.ca/.
+        { source: '/', has: [{ type: 'query', key: 'payment' }], destination: '/index.html' },
+        { source: '/', has: [{ type: 'query', key: 'dest' }], destination: '/index.html' },
       ]
     };
   },

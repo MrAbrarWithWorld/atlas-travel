@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>/* Travel Planner home: / on travel.getatlas.ca, /travel on getatlas.ca */window.__ATLAS_HOME=location.hostname==='travel.getatlas.ca'?'/':'/travel';</script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -955,7 +956,7 @@ function SettingsModal({user, userTier, onClose, onLogout, onUpgrade}){
 
   async function sendPasswordReset(){
     if(!user?.email)return;
-    await sb.auth.resetPasswordForEmail(user.email,{redirectTo:'https://getatlas.ca'});
+    await sb.auth.resetPasswordForEmail(user.email,{redirectTo:'https://getatlas.ca/travel'});
     setResetSent(true);
     setTimeout(()=>setResetSent(false),4000);
   }
@@ -1654,7 +1655,7 @@ function LoginModal({onClose}){
   async function loginWith(provider){
     setLoading(provider);setError("");
     try{
-      const{error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin}});
+      const{error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin+(window.__ATLAS_HOME||'/')}});
       if(error)throw error;
     }
     catch(e){setError(e.message||"Login failed");setLoading(null);}
@@ -1664,7 +1665,7 @@ function LoginModal({onClose}){
     if(!e||!e.includes('@')){setError("Enter a valid email address");return;}
     setLoading('email');setError("");
     try{
-      const{error:err}=await sb.auth.signInWithOtp({email:e,options:{emailRedirectTo:window.location.origin}});
+      const{error:err}=await sb.auth.signInWithOtp({email:e,options:{emailRedirectTo:window.location.origin+(window.__ATLAS_HOME||'/')}});
       if(err)throw err;
       setMagicSent(true);setLoading(null);
     }catch(err){setError(err.message||"Failed to send link");setLoading(null);}
@@ -2633,7 +2634,7 @@ function App(){
     const params=new URLSearchParams(window.location.search);
     if(params.get('payment')==='success'){
       showToast('🎉 Welcome to Pro! Enjoy unlimited plans.');
-      window.history.replaceState({},'','/');
+      window.history.replaceState({},'',window.__ATLAS_HOME||'/');
       // Poll for updated subscription after Stripe webhook fires (2s, 6s, 14s)
       sb.auth.getSession().then(({data:{session}})=>{
         if(!session?.user)return;
@@ -2646,13 +2647,17 @@ function App(){
         });
       });
     } else if(params.get('payment')==='cancelled'){
-      window.history.replaceState({},'','/');
+      window.history.replaceState({},'',window.__ATLAS_HOME||'/');
     }
+    // Links from the Android app 1.2.1 (getatlas.ca/contact?intent=… is redirected here)
+    const intent=params.get('intent')||'';
+    if(intent==='manage-subscription'){setShowSettings(true);window.history.replaceState({},'',window.__ATLAS_HOME||'/');}
+    else if(intent.startsWith('upgrade')){setShowPricing(true);window.history.replaceState({},'',window.__ATLAS_HOME||'/');}
     const authError=params.get('error');
     if(authError){
       const desc=params.get('error_description')||authError;
       showToast('Login failed: '+desc.replace(/\+/g,' '));
-      window.history.replaceState({},'','/');
+      window.history.replaceState({},'',window.__ATLAS_HOME||'/');
     }
   },[]);
 

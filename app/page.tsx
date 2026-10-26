@@ -104,6 +104,13 @@ const businessJsonLd = {
 export default function HomePage() {
   return (
     <div className={`${styles.page} ${styles.fx}`}>
+      {/* Sign-in links for the Travel Planner can fall back to getatlas.ca/ (the business homepage).
+          Send those visitors on to /travel with their sign-in details so they end up signed in. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: "(function(){var h=location.hash,s=location.search;if(/(access_token|refresh_token|type=recovery|error_description)=/.test(h)||/[?&](code|error|error_description)=/.test(s)){location.replace('/travel'+s+h);}})();",
+        }}
+      />
       <RevealRoot />
       <script
         type="application/ld+json"

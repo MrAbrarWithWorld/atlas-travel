@@ -2144,6 +2144,33 @@ export default async function handler(req, res) {
     return res.status(201).json({ ok: true, message: 'Story submitted! It will appear after review.' });
   }
 
+  // Article list as JSON for the Android app's Blog tab (it fetches /api/blog and expects JSON).
+  // Browsers and search engines keep getting the HTML page.
+  const wantsJson = req.query.format === 'json'
+    || /application\/json/i.test(req.headers.accept || '')
+    || /okhttp/i.test(req.headers['user-agent'] || '');
+  if ((!slug || slug === 'index') && !cat && wantsJson) {
+    const { data: list, error: listErr } = await sb
+      .from('blog_posts')
+      .select('slug, title, description, category, date_published, read_time, cover_image_url')
+      .eq('is_published', true)
+      .order('date_published', { ascending: false })
+      .limit(200);
+    res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+    if (listErr) return res.status(500).json({ error: 'Could not load articles' });
+    return res.status(200).json({
+      posts: (list || []).map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.description || '',
+        category: p.category || '',
+        date_published: p.date_published,
+        read_time: p.read_time || '',
+        cover_image: p.cover_image_url || null,
+      })),
+    });
+  }
+
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', 'index, follow');
   res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
