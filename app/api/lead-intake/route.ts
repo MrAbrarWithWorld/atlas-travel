@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADDED_SERVICE_IDS, composeLeadMessage, parseLeadIntake } from '../../lib/lead-intake';
+import { handleAsk } from '../../lib/ask-handler';
 
 export const runtime = 'nodejs';
+export const maxDuration = 30; // the website assistant (mode=ask) may wait on an AI provider
 
 const MAX_BODY_BYTES = 32_000;
 const MAX_WEBHOOK_RESPONSE_BYTES = 64_000;
@@ -63,6 +65,9 @@ async function readWebhookData(response: Response, controller: AbortController) 
 }
 
 export async function POST(req: NextRequest) {
+  // Website assistant ("Ask Atlas"). Separate from enquiries: nothing is stored or forwarded.
+  if (req.nextUrl.searchParams.get('mode') === 'ask') return handleAsk(req);
+
   const requestId = crypto.randomUUID();
 
   if (!req.headers.get('content-type')?.toLowerCase().includes('application/json')) {

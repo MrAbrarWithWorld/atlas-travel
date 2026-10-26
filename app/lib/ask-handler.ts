@@ -1,14 +1,12 @@
-// "Ask Atlas" website assistant. Answers questions about Atlas AI Technology's services from the
+// "Ask Atlas" website assistant, served by POST /api/lead-intake?mode=ask (the Vercel Hobby plan
+// allows 12 server functions per deployment, so it shares the contact form's function). Answers questions about Atlas AI Technology's services from the
 // site's own approved copy (app/lib/assistant-knowledge.ts).
 // Privacy: we don't store conversations and never log message text. The browser keeps the
 // conversation for the open tab only. Messages go to an AI service provider to write the answer.
 import { createHash } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
-import { ASSISTANT_SYSTEM } from '../../lib/assistant-knowledge';
-import { isServiceId } from '../../lib/lead-intake';
-
-export const runtime = 'nodejs';
-export const maxDuration = 30;
+import { ASSISTANT_SYSTEM } from './assistant-knowledge';
+import { isServiceId } from './lead-intake';
 
 const MAX_BODY_BYTES = 24_000;
 const MAX_MESSAGE_CHARS = 1_000;
@@ -161,7 +159,7 @@ function splitCta(text: string) {
   return { reply, cta };
 }
 
-export async function POST(req: NextRequest) {
+export async function handleAsk(req: NextRequest) {
   if (!allowedOrigin(req)) return json({ error: 'Not allowed' }, 403);
 
   const length = Number(req.headers.get('content-length') || 0);
@@ -208,8 +206,4 @@ export async function POST(req: NextRequest) {
     }
   }
   return json({ reply: FALLBACK_REPLY, cta: null });
-}
-
-export function GET() {
-  return json({ error: 'Method not allowed' }, 405);
 }

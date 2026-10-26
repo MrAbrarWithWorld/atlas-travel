@@ -1,7 +1,8 @@
 'use client';
 
 // "Ask Atlas": floating AI assistant on the Atlas AI Technology pages (mounted by BusinessFooter).
-// The conversation lives in this browser tab only (sessionStorage) and is sent to /api/ask.
+// The conversation lives in this browser tab only (sessionStorage) and is sent to
+// /api/lead-intake?mode=ask (app/lib/ask-handler.ts).
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChatCircleDots, PaperPlaneRight, X } from '@phosphor-icons/react';
@@ -148,7 +149,7 @@ export default function AskAtlas() {
       setMsgs(next);
       setBusy(true);
       try {
-        const res = await fetch('/api/ask', {
+        const res = await fetch('/api/lead-intake?mode=ask', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ messages: next.map(({ role, content: c }) => ({ role, content: c })) }),

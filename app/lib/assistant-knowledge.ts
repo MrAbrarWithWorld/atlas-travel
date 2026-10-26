@@ -1,4 +1,4 @@
-// Knowledge and rules for the "Ask Atlas" website assistant (app/api/ask).
+// Knowledge and rules for the "Ask Atlas" website assistant (app/lib/ask-handler.ts).
 // Built from the same approved copy the website shows (services, pricing, FAQ), so the assistant
 // never knows more, or less, than the site says. Edit the site copy, not this file.
 // Never add internal tools, platforms, models or vendors here.
