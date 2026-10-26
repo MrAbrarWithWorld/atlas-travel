@@ -1505,12 +1505,12 @@ function CookieBanner(){
 }
   
 // ===================== PRICING MODAL =====================
-function PricingModal({user, onClose}) {
+function PricingModal({user, onClose, onLogin}) {
   const [loading, setLoading] = useState(null);
   const [billing, setBilling] = useState('monthly');
 
   async function handleUpgrade(plan) {
-    if (!user) { alert("Please sign in first to upgrade."); return; }
+    if (!user) { if (onLogin) { onLogin(); } else { alert("Please sign in first to upgrade."); } return; }
     setLoading(plan);
     try {
       const {data:{session:checkoutSession}} = await sb.auth.getSession();
@@ -3055,7 +3055,7 @@ async function setPlanTag(id,tag){
     React.createElement(CookieBanner,null),
     showOnboarding&&React.createElement(OnboardingModal,{onDone:(prompt)=>{setShowOnboarding(false);if(prompt&&prompt!=="Let's start planning!")send(prompt);}}),
     showSettings&&React.createElement(SettingsModal,{user,userTier,onClose:()=>setShowSettings(false),onLogout:handleLogout,onUpgrade:()=>setShowPricing(true)}), showHelp&&React.createElement(HelpModal,{onClose:()=>setShowHelp(false)}),showLogin&&React.createElement(LoginModal,{onClose:()=>setShowLogin(false)}),
-    showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false)}),
+    showPricing&&React.createElement(PricingModal,{user,onClose:()=>setShowPricing(false),onLogin:()=>{setShowPricing(false);setShowLogin(true);}}),
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
     showCalendar&&React.createElement(CalendarModal,{msgs,onClose:()=>setShowCalendar(false)}),
   showTools&&React.createElement(ToolsPanel,{onClose:()=>setShowTools(false)}),
