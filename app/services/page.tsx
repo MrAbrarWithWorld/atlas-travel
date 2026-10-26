@@ -92,6 +92,14 @@ export default function ServicesPage() {
                       ))}
                     </ul>
                   </div>
+                  {service.worksWith && (
+                    <div className={styles.svcWorks}>
+                      <h3 className={styles.svcLabel}>Works with</h3>
+                      <ul className={styles.svcChips}>
+                        {service.worksWith.map((tool) => <li key={tool}>{tool}</li>)}
+                      </ul>
+                    </div>
+                  )}
                   {service.howItStarts && (
                     <div className={styles.svcStart}>
                       <h3 className={styles.svcLabel}>How it starts</h3>

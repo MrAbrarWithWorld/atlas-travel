@@ -26,6 +26,7 @@ export type Service = {
   gets: string[]; // "What you get"
   howItStarts: boolean; // show the shared "How it starts" line
   tiers?: Tier[]; // "Three ways to start"
+  worksWith?: string[]; // "Works with" chips: only tools we actually set up for clients
 };
 
 // Shared "How it starts" steps: Free missed-lead audit (offer), "Fixed written quote first"
@@ -135,13 +136,14 @@ export const SERVICES: Service[] = [
     service: 'ai-assistant',
     gets: [
       'Your assistant installed on a private server (VPS) — bring your own, or we set one up for you',
-      '1 messaging channel of your choice, plus your email and calendar connected',
+      '1 messaging channel of your choice (WhatsApp, Telegram, Slack or Discord), plus your email and calendar connected',
       '1 workflow set up for your daily work — extra channels, modules and workflows available as fixed-price add-ons, quoted in writing before we start',
       'AI usage, your choice: your own AI account (you pay only for what you use), or a prepaid credit balance we manage for you, with a monthly limit you set — when it runs low we let you know, and you can top up or raise the limit anytime',
       'A personal training session, a written guide, and 14 days of setup support',
       'Optional care plan afterwards, or pay per fix — never locked in',
     ],
     howItStarts: false,
+    worksWith: ['WhatsApp', 'Telegram', 'Slack', 'Discord', 'Gmail', 'Outlook', 'Google Calendar', 'Google Drive', 'Google Docs & Sheets', 'Your CRM & business tools'],
     tiers: [
       {
         name: 'Pilot',

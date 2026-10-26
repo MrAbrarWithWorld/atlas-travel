@@ -40,7 +40,7 @@ export const FAQS: Array<Faq & { group: FaqGroup }> = [
 export const FAQ_AI_ASSISTANT: Faq & { group: FaqGroup } = {
   group: 'How it works',
   q: 'Can you build me my own AI assistant?',
-  a: 'Yes. We set up a private AI assistant on your own server (a VPS — yours, or one we arrange for you), configured for your work, with training and handover included. For AI usage you can use your own AI account and pay only for what you use, or take a prepaid credit balance with a monthly limit you control; when it runs low we tell you, and you can top up or raise the limit anytime. Setup starts from CAD 249 for our Founding Pilot (our first 5 assistant clients); bigger setups are a fixed written quote after a short discussion, because no two clients need the same assistant.',
+  a: 'Yes. We set up a private AI assistant on your own server (a VPS — yours, or one we arrange for you), configured for your work, with training and handover included. It can work with WhatsApp, Telegram, Slack or Discord, your email (Gmail or Outlook), Google Calendar, Google Drive, Docs and Sheets, and your CRM or other business tools. For AI usage you can use your own AI account and pay only for what you use, or take a prepaid credit balance with a monthly limit you control; when it runs low we tell you, and you can top up or raise the limit anytime. Setup starts from CAD 249 for our Founding Pilot (our first 5 assistant clients); bigger setups are a fixed written quote after a short discussion, because no two clients need the same assistant.',
 };
 
 export const FAQS_PAGE = [...FAQS, FAQ_AI_ASSISTANT];
