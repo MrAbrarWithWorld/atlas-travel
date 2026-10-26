@@ -15,7 +15,7 @@ summary: What the Atlas AI Travel Planner website and Android app collect, why, 
 ## 1. Who we are and what this policy covers
 This policy covers the **Atlas AI Travel Planner**: the website at getatlas.ca/travel and travel.getatlas.ca, our travel blog and community pages, and the **Atlas** Android app (`ca.getatlas.app`). In this policy, "the Planner" means all of these.
 
-The Planner is provided by **{{tradeName}}**, a business registered in Ontario and based in Toronto, Canada (called "{{brandName}}" on this website; "**we**", "**us**").
+The Planner is provided by **{{tradeName}}**, a business registered in Ontario and based in Toronto, Canada ("**we**", "**us**").
 
 If you contacted us about our business technology services, see the separate [Technology Services Privacy Notice](/legal/services/privacy).
 

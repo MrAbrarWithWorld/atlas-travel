@@ -1,6 +1,6 @@
 'use client';
 
-// "Ask Atlas": floating AI assistant on the Atlas AI Technology pages (mounted by BusinessFooter).
+// "Ask Atlas": floating AI assistant on the Atlas AI Technologies pages (mounted by BusinessFooter).
 // The conversation lives in this browser tab only (sessionStorage) and is sent to
 // /api/lead-intake?mode=ask (app/lib/ask-handler.ts).
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';

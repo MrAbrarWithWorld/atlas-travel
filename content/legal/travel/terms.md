@@ -13,7 +13,7 @@ summary: The agreement for using the Atlas AI Travel Planner website and Android
 # Atlas AI Travel Planner — Terms of Service
 
 ## 1. About these terms
-These terms are an agreement between you and **{{tradeName}}**, a business registered in Ontario and based in Toronto, Canada (called "{{brandName}}" on this website; "**we**", "**us**"). They apply to the **Atlas AI Travel Planner**: the website at getatlas.ca/travel and travel.getatlas.ca, our travel blog and community pages, and the **Atlas** Android app (together, "**the Planner**").
+These terms are an agreement between you and **{{tradeName}}**, a business registered in Ontario and based in Toronto, Canada ("**we**", "**us**"). They apply to the **Atlas AI Travel Planner**: the website at getatlas.ca/travel and travel.getatlas.ca, our travel blog and community pages, and the **Atlas** Android app (together, "**the Planner**").
 
 **Our details**
 - Business: {{tradeName}} (business name registered in Ontario)

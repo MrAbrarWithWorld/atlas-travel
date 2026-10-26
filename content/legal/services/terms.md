@@ -5,19 +5,19 @@ slug: terms
 version: "1.1"
 effective: "2026-10-26"
 status: in-effect
-summary: Terms for the Atlas AI Technology website, enquiries, free offers, founding prices, the setup-fee guarantee, cancellation and refunds.
+summary: Terms for the Atlas AI Technologies website, enquiries, free offers, founding prices, the setup-fee guarantee, cancellation and refunds.
 ---
 
 # Technology Services Terms of Service
 
 ## 1. Who we are
-These terms are offered by **{{tradeName}}**, a business registered in Ontario and based in Toronto, Canada (called "{{brandName}}" on this website; "**we**", "**us**").
+These terms are offered by **{{tradeName}}**, a business registered in Ontario and based in Toronto, Canada ("**we**", "**us**").
 
 **Email:** support@getatlas.ca
 **Mail:** {{businessAddress}}
 **Phone:** {{businessPhone}}
 
-These terms apply to the Atlas AI Technology pages of getatlas.ca (such as the home page, /services, /pricing, /faq, /contact and /for/…) and to every enquiry, free audit, free setup, proposal and quote. The **Atlas AI Travel Planner** is a separate consumer product with its own [Terms of Service](/terms).
+These terms apply to the Atlas AI Technologies pages of getatlas.ca (such as the home page, /services, /pricing, /faq, /contact and /for/…) and to every enquiry, free audit, free setup, proposal and quote. The **Atlas AI Travel Planner** is a separate consumer product with its own [Terms of Service](/terms).
 
 ## 2. Our services are for businesses
 Our automation, CRM, website, digital-base and AI-assistant services are for **businesses and professionals**. When you ask for or buy a service, you confirm that you are acting for a business and are allowed to do so.

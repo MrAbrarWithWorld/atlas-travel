@@ -143,13 +143,13 @@ export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers', Niche> = {
 
 export function nicheMetadata(data: Niche): Metadata {
   return {
-    title: { absolute: `${data.metaTitle} | Atlas AI Technology` },
+    title: { absolute: `${data.metaTitle} | Atlas AI Technologies` },
     description: data.metaDescription,
     alternates: { canonical: `/for/${data.slug}` },
     openGraph: {
       type: 'website',
       url: `https://getatlas.ca/for/${data.slug}`,
-      siteName: 'Atlas AI Technology',
+      siteName: 'Atlas AI Technologies',
       title: data.metaTitle,
       description: data.metaDescription,
       images: [{ url: '/og-image.png', width: 1200, height: 630 }],
@@ -163,7 +163,7 @@ export function NicheView({ data }: { data: Niche }) {
     '@type': 'Service',
     name: data.metaTitle,
     description: data.metaDescription,
-    provider: { '@type': 'ProfessionalService', name: 'Atlas AI Technology', url: 'https://getatlas.ca/' },
+    provider: { '@type': 'ProfessionalService', name: 'Atlas AI Technologies', url: 'https://getatlas.ca/' },
     areaServed: [
       { '@type': 'City', name: 'Toronto' },
       { '@type': 'Country', name: 'Canada' },

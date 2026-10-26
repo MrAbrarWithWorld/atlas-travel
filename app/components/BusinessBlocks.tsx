@@ -222,7 +222,7 @@ export function BusinessFooter({ extra = [] }: { extra?: MoreLink[] }) {
   return (
     <footer className={styles.footer}>
       <div className={`${styles.wrap} ${styles.footerInner}`}>
-        <span>© {new Date().getFullYear()} Atlas AI Technology · Toronto &amp; GTA — working with clients across Canada and internationally.</span>
+        <span>© {new Date().getFullYear()} Atlas AI Technologies · Toronto &amp; GTA — working with clients across Canada and internationally.</span>
         <nav aria-label="Footer">
           <Link href="/services">Services</Link>
           <Link href="/pricing">Pricing</Link>

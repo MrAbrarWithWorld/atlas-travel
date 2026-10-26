@@ -36,15 +36,15 @@ import { FAQS } from './lib/faqs';
 // Travel planner moved to /travel (and travel.getatlas.ca); see next.config.ts.
 
 export const metadata: Metadata = {
-  title: { absolute: 'Lead Follow-Up Automation for Small Businesses in Toronto | Atlas AI Technology' },
+  title: { absolute: 'Lead Follow-Up Automation for Small Businesses in Toronto | Atlas AI Technologies' },
   description:
     'Answer every lead in seconds. Missed-call text-back, instant web-form replies and follow-ups you approve, built in 2 weeks. Free missed-lead audit. Founding prices from $29/month.',
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     url: 'https://getatlas.ca/',
-    siteName: 'Atlas AI Technology',
-    title: 'Every lead answered in seconds | Atlas AI Technology',
+    siteName: 'Atlas AI Technologies',
+    title: 'Every lead answered in seconds | Atlas AI Technologies',
     description:
       'Missed-call text-back, instant replies and follow-ups you approve. Free audit. Founding prices from $29/month.',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
@@ -83,7 +83,7 @@ const leadRescue = PAID_PLANS.find((plan) => plan.id === 'lead-rescue')!;
 const businessJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ProfessionalService',
-  name: 'Atlas AI Technology',
+  name: 'Atlas AI Technologies',
   url: 'https://getatlas.ca/',
   description:
     'Lead follow-up and workflow automation for small businesses: missed-call text-back, instant web-form replies, CRM setup and approved follow-ups.',
@@ -116,7 +116,7 @@ export default function HomePage() {
           <HeroConstellation targetId="lead-demo" />
           <div className={`${styles.wrap} ${styles.heroGrid}`}>
             <div className={styles.heroIn}>
-              <span className={styles.eyebrow}>Atlas AI Technology · Toronto &amp; GTA</span>
+              <span className={styles.eyebrow}>Atlas AI Technologies · Toronto &amp; GTA</span>
               <h1 className={styles.h1}>
                 Every lead answered in seconds. <em>Even when you&rsquo;re on the job.</em>
               </h1>

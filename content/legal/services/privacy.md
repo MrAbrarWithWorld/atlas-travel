@@ -5,13 +5,13 @@ slug: privacy
 version: "1.2"
 effective: "2026-10-26"
 status: in-effect
-summary: How Atlas AI Technology handles personal information from business enquiries, the website chat, free audits, clients and other business contacts.
+summary: How Atlas AI Technologies handles personal information from business enquiries, the website chat, free audits, clients and other business contacts.
 ---
 
 # Technology Services Privacy Notice
 
 ## 1. Who we are and what this notice covers
-**{{tradeName}}**, a business registered in Ontario and based in Toronto, Canada (called "{{brandName}}" on this website; "**we**", "**us**"). We build automations, CRMs, websites and AI assistants for businesses.
+**{{tradeName}}**, a business registered in Ontario and based in Toronto, Canada ("**we**", "**us**"). We build automations, CRMs, websites and AI assistants for businesses.
 
 This notice covers personal information about:
 - people who contact us, or ask for a free audit, a free setup, a proposal or a quote;

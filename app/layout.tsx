@@ -4,26 +4,26 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://getatlas.ca"),
   title: {
-    default: "Atlas AI Technology | Lead follow-up automation for small businesses",
+    default: "Atlas AI Technologies | Lead follow-up automation for small businesses",
     template: "%s | Atlas",
   },
   description:
-    "Atlas AI Technology builds lead follow-up and workflow automation for small businesses in Toronto and across Canada. Free missed-lead audit, founding prices from $29/month.",
-  authors: [{ name: "Atlas AI Technology" }],
-  creator: "Atlas AI Technology",
+    "Atlas AI Technologies builds lead follow-up and workflow automation for small businesses in Toronto and across Canada. Free missed-lead audit, founding prices from $29/month.",
+  authors: [{ name: "Atlas AI Technologies" }],
+  creator: "Atlas AI Technologies",
   openGraph: {
     type: "website",
     locale: "en_CA",
     url: "https://getatlas.ca",
-    siteName: "Atlas AI Technology",
-    title: "Atlas AI Technology | Every lead answered in seconds",
+    siteName: "Atlas AI Technologies",
+    title: "Atlas AI Technologies | Every lead answered in seconds",
     description:
       "Missed-call text-back, instant replies and follow-ups you approve. Free missed-lead audit. Founding prices from $29/month.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Atlas AI Technology: every lead answered in seconds" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Atlas AI Technologies: every lead answered in seconds" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Atlas AI Technology | Every lead answered in seconds",
+    title: "Atlas AI Technologies | Every lead answered in seconds",
     description:
       "Missed-call text-back, instant replies and follow-ups you approve. Free audit. Founding prices from $29/month.",
     images: ["/og-image.png"],
@@ -56,7 +56,7 @@ export default function RootLayout({
               {
                 "@context": "https://schema.org",
                 "@type": "Organization",
-                "name": "Atlas AI Technology",
+                "name": "Atlas AI Technologies",
                 "url": "https://getatlas.ca",
                 "logo": "https://getatlas.ca/icon-512.png",
                 "email": "support@getatlas.ca",
@@ -68,7 +68,7 @@ export default function RootLayout({
               {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
-                "name": "Atlas AI Technology",
+                "name": "Atlas AI Technologies",
                 "url": "https://getatlas.ca"
               }
             ])

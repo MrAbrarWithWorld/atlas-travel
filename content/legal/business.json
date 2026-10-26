@@ -1,7 +1,6 @@
 {
-  "_note": "Business details used in the legal documents. Lines that use an empty value are hidden. tradeName is the business name registered in Ontario; brandName is the name used on the website. Personal names are deliberately not published (owner decision, 26 Oct 2026).",
+  "_note": "Business details used in the legal documents. Lines that use an empty value are hidden. tradeName is the business name registered in Ontario and is used as the company name everywhere on the website. Personal names are deliberately not published (owner decision, 26 Oct 2026).",
   "tradeName": "Atlas AI Technologies",
-  "brandName": "Atlas AI Technology",
   "businessAddress": "",
   "businessPhone": ""
 }

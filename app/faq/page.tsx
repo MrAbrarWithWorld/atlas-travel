@@ -9,15 +9,15 @@ import { FAQS_PAGE, FAQ_GROUPS } from '../lib/faqs';
 import { SITE, breadcrumbs, jsonLd } from '../lib/schema';
 
 export const metadata: Metadata = {
-  title: { absolute: 'FAQ: Prices, Contracts, Software & Data | Atlas AI Technology' },
+  title: { absolute: 'FAQ: Prices, Contracts, Software & Data | Atlas AI Technologies' },
   description:
     'Straight answers: how much it costs, why founding prices are low, whether you need new software, what gets sent without you, contracts, customer data safety and your own AI assistant.',
   alternates: { canonical: '/faq' },
   openGraph: {
     type: 'website',
     url: `${SITE}/faq`,
-    siteName: 'Atlas AI Technology',
-    title: 'Straight answers | Atlas AI Technology',
+    siteName: 'Atlas AI Technologies',
+    title: 'Straight answers | Atlas AI Technologies',
     description: 'Prices, contracts, software and data: the questions small businesses ask us first.',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },

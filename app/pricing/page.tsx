@@ -7,15 +7,15 @@ import { FREE_PLANS, PAID_PLANS, contactFor } from '../lib/offer';
 import { SITE, breadcrumbs, businessNode, jsonLd } from '../lib/schema';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Founding Prices: Lead Rescue, Follow-Up System & Projects | Atlas AI Technology' },
+  title: { absolute: 'Founding Prices: Lead Rescue, Follow-Up System & Projects | Atlas AI Technologies' },
   description:
     'Free missed-lead audit and auto-reply starter. Lead Rescue $99 setup + $29/mo, Follow-Up System $299 setup + $59/mo, Custom Automation from $500, Digital Base Setup from CAD 1,500, your own AI assistant from CAD 249. Prices in CAD.',
   alternates: { canonical: '/pricing' },
   openGraph: {
     type: 'website',
     url: `${SITE}/pricing`,
-    siteName: 'Atlas AI Technology',
-    title: 'Start free. Pay only when it works for you. | Atlas AI Technology',
+    siteName: 'Atlas AI Technologies',
+    title: 'Start free. Pay only when it works for you. | Atlas AI Technologies',
     description: 'Founding prices for our first clients in Canada. Lock them in now and keep them for as long as you stay.',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },

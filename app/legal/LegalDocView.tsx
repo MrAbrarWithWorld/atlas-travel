@@ -10,7 +10,7 @@ import { contactFor } from '../lib/offer';
 
 export function legalMetadata(doc: LegalDoc): Metadata {
   return {
-    title: { absolute: `${doc.title} | Atlas AI Technology` },
+    title: { absolute: `${doc.title} | Atlas AI Technologies` },
     description: doc.summary,
     alternates: { canonical: doc.url },
     // Documents awaiting approval must never be indexed or treated as in effect.
@@ -44,9 +44,9 @@ function TravelFooter() {
           <Link href="/terms">Terms of Service</Link>
           <a href="/account/delete">Delete your account</a>
           <Link href="/legal">All legal documents</Link>
-          <Link href="/">Atlas AI Technology</Link>
+          <Link href="/">Atlas AI Technologies</Link>
         </nav>
-        <p>© {new Date().getFullYear()} Atlas AI Technology · Toronto, Canada · <EmailLink email="support@getatlas.ca" /></p>
+        <p>© {new Date().getFullYear()} Atlas AI Technologies · Toronto, Canada · <EmailLink email="support@getatlas.ca" /></p>
       </div>
     </footer>
   );

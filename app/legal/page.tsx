@@ -12,8 +12,8 @@ const SETS: LegalSet[] = ['services', 'travel'];
 const pending = SETS.some((set) => listLegalDocs(set).some((d) => d.status !== 'in-effect'));
 
 export const metadata: Metadata = {
-  title: { absolute: 'Legal | Atlas AI Technology' },
-  description: 'Privacy and terms for Atlas AI Technology business services and the Atlas AI Travel Planner.',
+  title: { absolute: 'Legal | Atlas AI Technologies' },
+  description: 'Privacy and terms for Atlas AI Technologies business services and the Atlas AI Travel Planner.',
   alternates: { canonical: '/legal' },
   robots: pending ? { index: false, follow: false } : undefined,
 };
@@ -27,7 +27,7 @@ export default function LegalHub() {
           <span className={biz.eyebrow}>Legal</span>
           <h1 className={styles.title}>Privacy and terms</h1>
           <p className={styles.hubIntro}>
-            Atlas AI Technology offers two different things: technology services for businesses, and the
+            Atlas AI Technologies offers two different things: technology services for businesses, and the
             Atlas AI Travel Planner for travellers. Each has its own privacy policy and terms.
           </p>
           {pending && (

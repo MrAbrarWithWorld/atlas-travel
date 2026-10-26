@@ -9,11 +9,11 @@ import ContactForm from './ContactForm';
 import { ATTRIBUTION_KEYS, isServiceId, type Attribution } from '../lib/lead-intake';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Free Missed-Lead Audit & Contact | Atlas AI Technology' },
-  description: 'Get a free missed-lead audit or ask about Lead Rescue and the Follow-Up System. Atlas AI Technology, Toronto. Founding prices from $29/month.',
+  title: { absolute: 'Free Missed-Lead Audit & Contact | Atlas AI Technologies' },
+  description: 'Get a free missed-lead audit or ask about Lead Rescue and the Follow-Up System. Atlas AI Technologies, Toronto. Founding prices from $29/month.',
   alternates: { canonical: '/contact' },
   openGraph: {
-    title: 'Free Missed-Lead Audit | Atlas AI Technology',
+    title: 'Free Missed-Lead Audit | Atlas AI Technologies',
     description: 'Tell us about your business. We test your response time and send a short report with a fix plan. Free, no card.',
     url: 'https://getatlas.ca/contact',
   },

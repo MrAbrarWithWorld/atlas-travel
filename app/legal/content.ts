@@ -41,7 +41,7 @@ export const SLUGS: LegalSlug[] = ['privacy', 'terms'];
 
 export const SET_LABELS: Record<LegalSet, { title: string; intro: string }> = {
   services: {
-    title: 'Atlas AI Technology — business services',
+    title: 'Atlas AI Technologies — business services',
     intro: 'For businesses that contact us about, or buy, our automation, CRM, website and AI-assistant services.',
   },
   travel: {

@@ -8,7 +8,7 @@ export function businessNode(extra: Record<string, unknown> = {}) {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
     '@id': `${SITE}/#business`,
-    name: 'Atlas AI Technology',
+    name: 'Atlas AI Technologies',
     url: `${SITE}/`,
     description:
       'Lead follow-up and workflow automation for small businesses: missed-call text-back, instant web-form replies, CRM setup and approved follow-ups.',

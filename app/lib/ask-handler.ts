@@ -1,5 +1,5 @@
 // "Ask Atlas" website assistant, served by POST /api/lead-intake?mode=ask (the Vercel Hobby plan
-// allows 12 server functions per deployment, so it shares the contact form's function). Answers questions about Atlas AI Technology's services from the
+// allows 12 server functions per deployment, so it shares the contact form's function). Answers questions about Atlas AI Technologies' services from the
 // site's own approved copy (app/lib/assistant-knowledge.ts).
 // Privacy: we don't store conversations and never log message text. The browser keeps the
 // conversation for the open tab only. Messages go to an AI service provider to write the answer.

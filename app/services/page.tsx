@@ -12,15 +12,15 @@ import { HOW_IT_STARTS, SERVICES, SERVICES_HEADING, SERVICES_LEAD } from '../lib
 import { SITE, breadcrumbs, businessNode, jsonLd } from '../lib/schema';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Services: Lead Capture, Follow-Ups, Automation & Your Own AI Assistant | Atlas AI Technology' },
+  title: { absolute: 'Services: Lead Capture, Follow-Ups, Automation & Your Own AI Assistant | Atlas AI Technologies' },
   description:
-    'Lead capture & instant reply, follow-ups & email automation, client intake & portals, reports & dashboards, business process automation, AI integrations, digital base setup and your own private AI assistant. Atlas AI Technology, Toronto.',
+    'Lead capture & instant reply, follow-ups & email automation, client intake & portals, reports & dashboards, business process automation, AI integrations, digital base setup and your own private AI assistant. Atlas AI Technologies, Toronto.',
   alternates: { canonical: '/services' },
   openGraph: {
     type: 'website',
     url: `${SITE}/services`,
-    siteName: 'Atlas AI Technology',
-    title: 'Eight ways we take work off your plate | Atlas AI Technology',
+    siteName: 'Atlas AI Technologies',
+    title: 'Eight ways we take work off your plate | Atlas AI Technologies',
     description: 'Every system is built, tested and supported by us, and you approve anything that talks to your customers.',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
@@ -30,7 +30,7 @@ const structuredData = [
   businessNode({
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
-      name: 'Atlas AI Technology services',
+      name: 'Atlas AI Technologies services',
       itemListElement: SERVICES.map((service) => ({
         '@type': 'Offer',
         itemOffered: {
