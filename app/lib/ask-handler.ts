@@ -120,7 +120,7 @@ async function askPrimary(msgs: Msg[]) {
     body: JSON.stringify({
       model: 'claude-haiku-4-5',
       max_tokens: MAX_OUTPUT_TOKENS,
-      temperature: 0.3,
+      temperature: 0,
       system: ASSISTANT_SYSTEM,
       messages: msgs,
     }),
@@ -139,7 +139,7 @@ async function askSecondary(msgs: Msg[]) {
     body: JSON.stringify({
       model: 'meta-llama/llama-4-scout-17b-16e-instruct',
       max_tokens: MAX_OUTPUT_TOKENS,
-      temperature: 0.3,
+      temperature: 0,
       messages: [{ role: 'system', content: ASSISTANT_SYSTEM }, ...msgs],
     }),
   });
