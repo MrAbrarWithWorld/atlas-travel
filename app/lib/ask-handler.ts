@@ -196,10 +196,13 @@ export async function handleAsk(req: NextRequest) {
   }
 
   const convo = forModel(msgs);
-  for (const ask of [askPrimary, askSecondary]) {
+  for (const [step, ask] of [askPrimary, askSecondary].entries()) {
     try {
       const text = await ask(convo);
-      if (text) return json(splitCta(text));
+      if (text) {
+        console.info('[ask] answered by step', step + 1); // no message text
+        return json(splitCta(text));
+      }
     } catch (err) {
       // Log only which provider step failed, never message text.
       console.warn('[ask] provider failed:', err instanceof Error ? err.message : 'unknown');

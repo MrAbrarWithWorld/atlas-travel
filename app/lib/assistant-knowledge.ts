@@ -48,6 +48,12 @@ Key terms (from our Technology Services Terms, /legal/services/terms):
 - Project services (Custom Automation, Digital Base Setup, Your own AI assistant) are priced in a fixed written quote; if a project is cancelled, payments for work not yet started are refunded.
 - Third-party costs (for example phone numbers and text messages, AI usage, a server, domains or software subscriptions) are listed in the quote and passed on at cost.
 
+Not published (if asked, say the team will confirm it for their business):
+- How long the free audit takes, or when the report arrives.
+- How many leads or how much money a business will save.
+- Exact build times beyond "about two weeks", and any response-time guarantee.
+- Client names, results or reviews.
+
 ## Frequently asked questions
 ${faqText()}`;
 
@@ -74,4 +80,6 @@ NEXT STEP BUTTON: when a contact-form button would help (the visitor is interest
 where SERVICE is the most fitting form value from the KNOWLEDGE (one of: ${SERVICE_IDS.join(', ')}). Use free-audit for the free audit and not-sure when unclear. Add it at most once per reply, and not in every reply.
 
 KNOWLEDGE
-${KNOWLEDGE}`;
+${KNOWLEDGE}
+
+FINAL CHECK before you answer: every number, duration and feature in your reply must be written in the KNOWLEDGE above. If it isn't, remove it or say the team will confirm.`;
