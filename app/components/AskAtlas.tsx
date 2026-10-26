@@ -40,7 +40,7 @@ function safeHref(href: string) {
 // Tiny, safe formatter: **bold**, [text](/link), support@getatlas.ca. No raw HTML.
 function inline(text: string, key: string): ReactNode[] {
   const out: ReactNode[] = [];
-  const re = /\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)\s]+)\)|(support@getatlas\.ca)/gi;
+  const re = /\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)\s]+)\)|(support@getatlas\.ca)|(^|[\s(])(\/(?:services|pricing|faq|contact|travel|legal\/services\/(?:privacy|terms)))(?![\w/])/gi;
   let last = 0;
   let i = 0;
   for (let m = re.exec(text); m; m = re.exec(text)) {
@@ -53,6 +53,10 @@ function inline(text: string, key: string): ReactNode[] {
       else if (href.startsWith('mailto:')) out.push(<a key={k} href={href}>{m[2]}</a>);
       else out.push(<Link key={k} href={href} prefetch={false}>{m[2]}</Link>);
     } else if (m[4]) out.push(<a key={k} href="mailto:support@getatlas.ca">{m[4]}</a>);
+    else if (m[6]) {
+      if (m[5]) out.push(m[5]);
+      out.push(<Link key={k} href={m[6]} prefetch={false}>{`getatlas.ca${m[6]}`}</Link>);
+    }
     last = m.index + m[0].length;
   }
   if (last < text.length) out.push(text.slice(last));
