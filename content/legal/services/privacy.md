@@ -2,7 +2,7 @@
 title: Technology Services Privacy Notice
 set: services
 slug: privacy
-version: "1.2"
+version: "1.3"
 effective: "2026-10-26"
 status: in-effect
 summary: How Atlas AI Technologies handles personal information from business enquiries, the website chat, free audits, clients and other business contacts.
@@ -36,6 +36,7 @@ Our Privacy Officer is responsible for how we handle personal information. Conta
 | **Client records** | Billing contact, invoices, payment status, project notes and approvals | You and our records |
 | **Access details** | Logins or keys you give us so we can build your system | You |
 | **Website chat** | The questions you type into our website assistant ("Ask Atlas") and its answers | You, if you use the chat |
+| **Visit statistics** | The page you visit, the website that sent you, your country, and your device and browser type, counted without cookies | Our website (section 12) |
 
 Our business services are for businesses. We do not knowingly collect information from children through them.
 
@@ -44,7 +45,7 @@ Our business services are for businesses. We do not knowingly collect informatio
 - To reply to you, run the free audit or free setup you asked for, and prepare proposals and quotes.
 - To deliver, support and invoice the services you buy.
 - To keep records of consent, approvals, contracts and payments.
-- To see which pages and campaigns bring us enquiries, using only the "where you came from" information above.
+- To see how many people visit our pages, and which pages and campaigns bring us enquiries, using only the visit statistics and "where you came from" information above.
 - To protect our systems and prevent misuse.
 - To meet our legal, tax and accounting obligations.
 
@@ -68,7 +69,7 @@ We don't sell personal information. We share it only with the types of service p
 
 | Provider | Purpose |
 |---|---|
-| Hosting and network security providers | Run, deliver and protect our website and contact form |
+| Hosting and network security providers | Run, deliver and protect our website and contact form, and count visits (section 12) |
 | Workflow automation, running on a server we rent | Checks new enquiries and sends them to our CRM |
 | Our CRM database provider | Stores enquiries, follow-up tasks and activity records |
 | A team messaging tool | Alerts us when a new enquiry arrives |
@@ -94,6 +95,7 @@ Many of our providers are in the **United States**, and some operate in other co
 | Consent and unsubscribe records | As long as we need them to prove consent or respect your choice |
 | Access details you give us | We remove our access when the work ends |
 | Website chat | We don't keep a copy (section 5) |
+| Visit statistics | Kept only as totals, for a limited time set by our hosting provider |
 | Our clients' customers' information | As the client instructs and our contract with the client says |
 
 ## 10. How we protect it
@@ -108,7 +110,7 @@ No system is perfectly secure. If a breach creates a real risk of significant ha
 You can ask to see the personal information we hold about you, ask how we used it and who we shared it with, ask us to correct it, or withdraw your consent (subject to legal or contract limits). Contact our Privacy Officer. We reply within 30 days. You can also complain to the **Office of the Privacy Commissioner of Canada** (priv.gc.ca).
 
 ## 12. Cookies on our business pages
-Our business pages (getatlas.ca, /services, /pricing, /faq, /contact and /for/…) don't use advertising or analytics cookies. They load fonts from Google Fonts (section 7). Our network security provider may set a strictly necessary security cookie. If you use the website chat, your browser keeps the conversation in its session storage until you close the tab; the chat doesn't set cookies.
+Our business pages (getatlas.ca, /services, /pricing, /faq, /contact and /for/…) don't use advertising or analytics cookies. We count visits with our hosting provider's web analytics, which works without cookies and doesn't store your IP address. It records the page, the website that sent you, your country, and your device and browser type, and we see only totals. They load fonts from Google Fonts (section 7). Our network security provider may set a strictly necessary security cookie. If you use the website chat, your browser keeps the conversation in its session storage until you close the tab; the chat doesn't set cookies.
 
 ## 13. Changes to this notice
 We will post any new version here with its effective date. If we want to use your information for a new purpose, we will ask for your consent first.

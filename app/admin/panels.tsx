@@ -33,6 +33,7 @@ export type Health = {
   pages: { path: string; status: number; ms: number; error?: string }[];
   legal: LegalDoc[] | null;
   termsBannerLive: boolean | null;
+  analyticsOn?: boolean;
   keys: Record<string, boolean>;
   version: { commit: string | null; message: string | null; environment: string };
 };
@@ -56,6 +57,7 @@ const todayToronto = () => new Date().toLocaleDateString('en-CA', { timeZone: 'A
 const niceDate = (ymd: string) =>
   new Date(`${ymd}T12:00:00Z`).toLocaleDateString('en-CA', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 const pageOk = (status: number) => status >= 200 && status < 400;
+const VERCEL_ANALYTICS = 'https://vercel.com/mrabrarwithworlds-projects/atlas-travel/analytics';
 const LIST_BOX = 'bg-[rgba(201,169,110,0.04)] border border-[rgba(201,169,110,0.12)] rounded-xl overflow-hidden';
 
 // ─── Small pieces ────────────────────────────────────────────────────────────
@@ -139,6 +141,7 @@ export function OverviewPanel({ onGo, onNewPost, legalCard, onPending }: { onGo:
     for (const d of health.legal || []) {
       if (d.effective > today) alerts.push({ tone: 'info', text: `${d.shortTitle || d.title} take${d.slug === 'terms' ? '' : 's'} effect on ${niceDate(d.effective)}.`, go: 'health', action: 'Details' });
     }
+    if (health.analyticsOn === false) alerts.push({ tone: 'warn', text: 'Visitor counting is not switched on yet. In Vercel open atlas-travel → Analytics → Enable.' });
     const terms = (health.legal || []).find((d) => d.slug === 'terms');
     if (terms && terms.effective <= today && health.termsBannerLive) {
       alerts.push({ tone: 'warn', text: 'The Terms page still says "takes effect on…". Redeploy once in Vercel to remove it.', go: 'health' });
@@ -164,6 +167,20 @@ export function OverviewPanel({ onGo, onNewPost, legalCard, onPending }: { onGo:
       </div>
 
       {alerts.length > 0 && <Alerts alerts={alerts} onGo={onGo} />}
+
+      <h2 className={`${H2} mb-3`}>Website visitors</h2>
+      <div className={`${CARD} mb-8 flex flex-col sm:flex-row sm:items-center gap-3`}>
+        <div className="flex-1 text-[0.85rem] text-[#d8cfbd]">
+          {health?.analyticsOn === undefined && !health ? 'Checking visitor counting…'
+            : health?.analyticsOn ? <><span className="text-[#8fd6a8]">✓ Counting visitors</span> on the business pages (no cookies). See visitors, top pages, where people came from and their country.</>
+            : <><span className="text-[#f0c070]">Not switched on yet.</span> In Vercel open <strong>atlas-travel → Analytics → Enable</strong>. Counting starts straight away.</>}
+          <div className="text-[0.72rem] text-[#8a7a5a] mt-1">Travel Planner (/travel) visitors are in Google Analytics.</div>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <a className={BTN} href={VERCEL_ANALYTICS} target="_blank" rel="noreferrer">Business site visitors ↗</a>
+          <a className={BTN_GHOST} href="https://analytics.google.com" target="_blank" rel="noreferrer">Travel Planner ↗</a>
+        </div>
+      </div>
 
       <h2 className={`${H2} mb-3`}>Travel Planner</h2>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
@@ -368,6 +385,7 @@ export function SchedulePanel({ posts, loading, onEdit, onNew }: { posts: Post[]
 
 const LINKS: [string, string, string][] = [
   ['Vercel', 'https://vercel.com/mrabrarwithworlds-projects/atlas-travel', 'Deploys, logs, settings'],
+  ['Vercel Analytics', 'https://vercel.com/mrabrarwithworlds-projects/atlas-travel/analytics', 'Business site visitors'],
   ['Supabase', 'https://supabase.com/dashboard/projects', 'Database and sign-ins'],
   ['Stripe', 'https://dashboard.stripe.com', 'Website payments'],
   ['Google Play Console', 'https://play.google.com/console', 'Android app and purchases'],
@@ -478,6 +496,10 @@ export function HealthPanel() {
                   <span className={v ? 'text-[#8fd6a8]' : 'text-[#f08a70]'}>{v ? '✓ set up' : '✗ missing'}</span>
                 </div>
               ))}
+              <div className="flex items-center justify-between rounded-lg border border-[rgba(201,169,110,0.12)] px-3 py-2 text-[0.82rem]">
+                <span className="text-[#e8dcc8]">Visitor counting (Vercel Analytics)</span>
+                <span className={h.analyticsOn ? 'text-[#8fd6a8]' : 'text-[#f0c070]'}>{h.analyticsOn ? '✓ on' : 'off: enable in Vercel'}</span>
+              </div>
             </div>
             <p className="text-[0.72rem] text-[#8a7a5a] mt-2">Only shows whether each key exists in Vercel. Key values are never shown.</p>
           </section>
