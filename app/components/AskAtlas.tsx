@@ -26,7 +26,7 @@ function ctaLabel(service: string) {
   if (service === 'free-audit') return 'Get my free audit';
   if (service === 'not-sure') return 'Contact the team';
   const label = SERVICE_OPTIONS.find((o) => o.value === service)?.label.replace(/\s*\(.*\)$/, '');
-  return label ? `Ask about ${label}` : 'Contact the team';
+  return label ? `Ask about ${label.replace(/^Your\b/, 'your')}` : 'Contact the team';
 }
 
 function safeHref(href: string) {
