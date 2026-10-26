@@ -5,7 +5,7 @@ slug: privacy
 version: "1.1"
 effective: "2026-10-26"
 status: in-effect
-notice: It now names the AI providers that write the answers, and explains Google Analytics, location, Google Calendar, shared trips, account deletion and who sends our service emails.
+notice: Names the AI providers that write your answers (Groq, Google Gemini and Anthropic); Explains Google Analytics, location and Google Calendar; Explains that shared trips are public, and how account deletion works; Lists Resend, the service that sends our notices
 summary: What the Atlas AI Travel Planner website and Android app collect, why, who receives it, how long we keep it, and your choices.
 ---
 

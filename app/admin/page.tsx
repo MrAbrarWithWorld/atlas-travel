@@ -183,12 +183,14 @@ const LEGAL_LABELS: Record<string, string> = {
   nothing_to_announce: 'Nothing new to announce',
   missing_resend_key: 'RESEND_API_KEY is missing in Vercel',
   error: 'Error',
+  test_sent: 'Test sent to support@getatlas.ca',
 };
 
 function LegalNoticeCard() {
   const [info, setInfo] = useState<LegalStatus | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [running, setRunning] = useState(false);
+  const [testMsg, setTestMsg] = useState('');
 
   const load = useCallback(() => {
     api('legal_notice_status').then(({ data }) => setInfo(data as LegalStatus));
@@ -206,6 +208,13 @@ function LegalNoticeCard() {
     }
     setRunning(false);
     load();
+  }
+
+  async function sendTest() {
+    setTestMsg('Sending test…');
+    const { data } = await api('legal_notice_test');
+    const d = data as LegalStatus & { to?: string };
+    setTestMsg(d.status === 'test_sent' ? `Test sent to ${d.to}` : (d.error || LEGAL_LABELS[d.status] || d.status));
   }
 
   const label = info ? (LEGAL_LABELS[info.status] || info.status) : '…';
@@ -228,11 +237,17 @@ function LegalNoticeCard() {
       <div className="text-[0.68rem] text-[#6a5a3a] mb-3">
         Sent automatically by the daily job when a Privacy Policy or Terms version changes. From noreply@getatlas.ca; replies go to support@getatlas.ca.
       </div>
-      {canSend && !confirming && (
-        <button className={BTN} disabled={running} onClick={() => setConfirming(true)}>
-          {running ? 'Sending…' : 'Send now'}
-        </button>
-      )}
+      <div className="flex gap-2 items-center flex-wrap">
+        {canSend && !confirming && (
+          <button className={BTN} disabled={running} onClick={() => setConfirming(true)}>
+            {running ? 'Sending…' : 'Send now'}
+          </button>
+        )}
+        {info && info.status !== 'nothing_to_announce' && !confirming && (
+          <button className={BTN_GHOST} onClick={sendTest}>Send test to me</button>
+        )}
+        {testMsg && <span className="text-[0.75rem] text-[#c9a96e]">{testMsg}</span>}
+      </div>
       {canSend && confirming && (
         <div className="flex gap-2 items-center flex-wrap">
           <span className="text-[0.75rem] text-[#e8dcc8]">Email every Travel Planner account holder now?</span>

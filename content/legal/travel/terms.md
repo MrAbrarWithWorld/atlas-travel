@@ -6,7 +6,7 @@ version: "1.0"
 effective: "2026-11-10"
 status: in-effect
 previous: /terms-2026-06-29.html
-notice: You must be 18 or older to use the Planner; plan limits, billing, cancellation and refund rules are clearer, including refunds for duplicate charges and outages; shared trips are public and can appear in search engines.
+notice: You must be 18 or older to use the Planner; Clearer plan limits, billing, cancellation and refund rules; Refunds for duplicate charges and for outages on our side; Shared trips are public and can appear in search engines
 summary: The agreement for using the Atlas AI Travel Planner website and Android app, including plans, billing, cancellation and refunds.
 ---
 

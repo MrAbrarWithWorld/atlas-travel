@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createHash, timingSafeEqual } from 'crypto';
 import webpush from 'web-push';
 import nodemailer from 'nodemailer';
-import { runLegalNotices, legalNoticeStatus } from '../lib/legal-notice.js';
+import { runLegalNotices, legalNoticeStatus, sendLegalNoticeTest } from '../lib/legal-notice.js';
 
 export const config = { maxDuration: 60 };
 
@@ -936,6 +936,11 @@ export default async function handler(req, res) {
 
     if (action === 'legal_notice_status') {
       try { return res.status(200).json(await legalNoticeStatus({ sb })); }
+      catch (e) { return res.status(500).json({ status: 'error', error: e.message }); }
+    }
+
+    if (action === 'legal_notice_test') {
+      try { return res.status(200).json(await sendLegalNoticeTest({})); }
       catch (e) { return res.status(500).json({ status: 'error', error: e.message }); }
     }
 
