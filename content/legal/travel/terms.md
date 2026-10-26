@@ -5,7 +5,6 @@ slug: terms
 version: "1.0"
 effective: ""
 status: pending-approval
-requires: businessAddress, businessPhone
 summary: The agreement for using the Atlas AI Travel Planner website and Android app, including plans, billing, cancellation and refunds.
 ---
 
