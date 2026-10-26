@@ -2,10 +2,11 @@
 title: Atlas AI Travel Planner — Privacy Policy
 set: travel
 slug: privacy
-version: "1.1"
+version: "1.2"
+noticeVersion: "1.1"
 effective: "2026-10-26"
 status: in-effect
-notice: Names the AI providers that write your answers (Groq, Google Gemini and Anthropic); Explains Google Analytics, location and Google Calendar; Explains that shared trips are public, and how account deletion works; Lists Resend, the service that sends our notices
+notice: Explains how AI service providers process your messages; Explains Google Analytics, location and Google Calendar; Explains that shared trips are public, and how account deletion works; Explains who sends our service emails
 summary: What the Atlas AI Travel Planner website and Android app collect, why, who receives it, how long we keep it, and your choices.
 ---
 
@@ -20,7 +21,7 @@ If you contacted us about our business technology services, see the separate [Te
 
 ## 2. Summary
 - We collect your sign-in details, the messages you send to the Planner, the trips you save, and the settings you choose.
-- **Your messages are sent to AI providers in the United States** (Groq, Google Gemini and Anthropic) so they can write the answers.
+- **Your messages are sent to third-party AI service providers, mainly in the United States,** so they can write the answers.
 - If you allow location, we use it **only to work out your city**.
 - We use **Google Analytics** to understand how the website is used.
 - **Shared trips are public.** Anyone with the link can see them, and they can appear in search engines.
@@ -57,23 +58,18 @@ If you contacted us about our business technology services, see the separate [Te
 If we want to use your information for a new purpose, we will ask you first.
 
 ## 5. AI providers
-To answer you, the Planner sends your message, the earlier messages in that conversation and your personalisation (such as your city and passport country) to one of these AI providers:
-
-- **Groq, Inc.** (Llama models)
-- **Google LLC** (Gemini API)
-- **Anthropic, PBC** (Claude models)
+To answer you, the Planner sends your message, the earlier messages in that conversation and your personalisation (such as your city and passport country) to third-party **AI service providers**, mainly in the United States.
 
 We do not add your name or email address to these requests. Please do not type information you don't want to share, such as passport numbers or health details.
 
-How each provider handles your messages, under its own terms:
-- **Groq** does not keep your messages by default. It may keep them for up to 30 days to investigate errors or abuse.
-- **Anthropic** does not use them to train its models, and keeps them only for a limited time.
-- **Google** keeps them for a limited time to prevent misuse. When Google's free Gemini API service is used, Google may also use messages and answers to improve its products, and people at Google may read them.
+Each provider handles your messages under its own terms. Providers may keep messages for a limited time to keep their services secure and prevent misuse. Depending on the provider and the service plan, a provider may also use messages and answers to improve its products, which can include review by people.
+
+If you ask, we will tell you which providers have processed your information (see section 13).
 
 AI answers can be wrong. See section 4 of our [Terms of Service](/terms).
 
 ## 6. Location
-- **Website:** if you allow location, your browser sends your coordinates directly to **OpenStreetMap's Nominatim service** to look up your city. We keep only "City, Country" and add it to your messages.
+- **Website:** if you allow location, your browser sends your coordinates directly to a **map lookup service** to find your city. We keep only "City, Country" and add it to your messages.
 - **Android app:** the app asks for location permission when you first open the home screen. If you allow it, the app looks up your city on your device, saves the city on your device and adds it to your messages.
 - Location is optional. You can turn it off at any time in your browser or phone settings, and the Planner still works without it.
 
@@ -91,22 +87,21 @@ If you choose **Add to Google Calendar**, we ask Google for permission to **crea
 - **Community stories and comments** are public once published.
 
 ## 10. Who receives your information
-We share information only with the providers below, and only as needed for the purpose shown, or as described in section 9.
+We share information only with the types of providers below, and only as needed for the purpose shown, or as described in section 9. If you ask, we will tell you which specific providers have received your information.
 
 | Provider | What they receive | Why |
 |---|---|---|
-| Groq, Google (Gemini API), Anthropic | Messages, the conversation and your personalisation | Writing answers (section 5) |
-| Tavily; Google Maps Platform (geocoding, places, weather); YouTube Data API | Destination names and search terms, not your name or email | Adding current information, places, weather and videos |
-| OpenStreetMap Foundation (Nominatim), website only | Your coordinates, if you allow location | Finding your city |
-| Supabase | Account, trips, conversations, subscription status, usage records, newsletter and notification sign-ups, community posts | Database and sign-in |
-| Vercel and Cloudflare | Everything sent to our servers, in transit | Hosting, delivery and security |
+| AI service providers | Messages, the conversation and your personalisation | Writing answers (section 5) |
+| Search, map, places, weather and video services (including Google Maps Platform and YouTube) | Destination names and search terms, not your name or email | Adding current information, places, weather and videos |
+| A map lookup service (website only) | Your coordinates, if you allow location | Finding your city |
+| Our database and sign-in provider | Account, trips, conversations, subscription status, usage records, newsletter and notification sign-ups, community posts | Storing your data and signing you in |
+| Our hosting and network security providers | Everything sent to our servers, in transit | Hosting, delivery and security |
 | Stripe | Email, plan and payment details (collected by Stripe) | Website subscriptions |
 | Google Play | Purchase and subscription details | Subscriptions bought in the Android app |
 | Google (Sign-In, Analytics, Calendar) | As described in sections 3, 7 and 8 | Sign-in, analytics and calendar |
-| Expo and Firebase Cloud Messaging (Google) | A device identifier for notifications, and app update checks | Android notifications and app updates |
+| App update and notification services (including Firebase Cloud Messaging by Google) | A device identifier for notifications, and app update checks | Android notifications and app updates |
 | Browser push services (Google, Mozilla, Apple) | A notification address created by your browser | Website notifications you turn on |
-| Zoho Mail | Your name and email address | Subscription and newsletter emails, and support replies |
-| Resend | Your email address | Service notices, such as updates to these documents |
+| Our email providers | Your name and email address | Account, subscription and newsletter emails, service notices such as updates to these documents, and support replies |
 | GetYourGuide | Information its widget collects on blog pages | Activity suggestions on travel articles |
 
 These providers may use the information only to provide their services to us, or as their own terms allow for security and legal reasons.
@@ -131,7 +126,7 @@ Most of our providers are in the **United States**, and some operate in other co
 We do not automatically delete: comments you posted on blog articles (email us and we will remove them); records of AI usage costs, which keep a random account number but not your name or email; and payment records held by Stripe or Google Play.
 
 ## 13. Your choices and rights
-- **See or correct your information:** email us. We reply within 30 days.
+- **See or correct your information:** email us. You can also ask which providers have received your information. We reply within 30 days.
 - **Delete your account:** in the Android app (version 1.3.0 or later), go to **Settings → Delete account**. On the website, or with any app version, go to [getatlas.ca/account/delete](/account/delete) and sign in with the same Google account. If you have an active website subscription, you will be asked to cancel it first. A Google Play subscription is not cancelled automatically, so cancel it in Google Play. If you signed in with an email link, or prefer email, write to support@getatlas.ca from your account email with the subject "Delete my Atlas account".
 - **Withdraw consent:** you can turn off location, notifications or personalisation, unsubscribe from the newsletter, or block analytics at any time. Some features may then stop working.
 - **Complain:** contact us first. You can also complain to the **Office of the Privacy Commissioner of Canada** (priv.gc.ca).

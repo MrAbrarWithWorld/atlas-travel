@@ -32,6 +32,7 @@ export type LegalDoc = {
   missing: string[]; // required business details that are still empty
   previous: string; // URL of the version that applies until `effective` (optional)
   notice: string; // one-line summary of the changes, used in the automatic email to users (optional)
+  noticeVersion: string; // version users are notified about; set lower than `version` for wording-only edits
 };
 
 const ROOT = path.join(process.cwd(), 'content', 'legal');
@@ -127,6 +128,7 @@ export function getLegalDoc(set: LegalSet, slug: string): LegalDoc | null {
     missing,
     previous: meta.previous || '',
     notice: meta.notice || '',
+    noticeVersion: meta.noticeVersion || meta.version || '',
   };
   assertReleasable(doc);
   return doc;

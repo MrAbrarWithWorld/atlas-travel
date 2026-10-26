@@ -2,8 +2,8 @@
 title: Technology Services Privacy Notice
 set: services
 slug: privacy
-version: "1.0"
-effective: "2026-10-25"
+version: "1.1"
+effective: "2026-10-26"
 status: in-effect
 summary: How Atlas AI Technology handles personal information from business enquiries, free audits, clients and other business contacts.
 ---
@@ -55,15 +55,15 @@ We use AI tools, provided by AI companies mainly in the United States, to help u
 We send marketing emails only if you agreed, or if Canada's anti-spam law otherwise allows it, for example when you are already a client. Every marketing email names us, includes our mailing address and has an unsubscribe link. We act on unsubscribe requests within 10 business days.
 
 ## 7. Who receives your information
-We don't sell personal information. We share it only with service providers that help us run the business, and only as much as they need:
+We don't sell personal information. We share it only with the types of service providers below, which help us run the business, and only as much as they need. If you ask, we will tell you which specific providers have received your information.
 
 | Provider | Purpose |
 |---|---|
-| Vercel and Cloudflare | Run, deliver and protect our website and contact form |
-| n8n, running on a server we rent | Checks new enquiries and sends them to our CRM |
-| Supabase | Database for our CRM: enquiries, follow-up tasks and activity records |
-| Discord | Sends us an alert when a new enquiry arrives |
-| Zoho Mail | Our business email |
+| Hosting and network security providers | Run, deliver and protect our website and contact form |
+| Workflow automation, running on a server we rent | Checks new enquiries and sends them to our CRM |
+| Our CRM database provider | Stores enquiries, follow-up tasks and activity records |
+| A team messaging tool | Alerts us when a new enquiry arrives |
+| Our email provider | Business email |
 | Google Fonts | Delivers the fonts on our website. Google receives your IP address and browser details |
 | AI service providers | Summarising and drafting (section 5) |
 | Payment providers | Processing your payments, for example your bank or card processor |
@@ -98,7 +98,7 @@ No system is perfectly secure. If a breach creates a real risk of significant ha
 You can ask to see the personal information we hold about you, ask how we used it and who we shared it with, ask us to correct it, or withdraw your consent (subject to legal or contract limits). Contact our Privacy Officer. We reply within 30 days. You can also complain to the **Office of the Privacy Commissioner of Canada** (priv.gc.ca).
 
 ## 12. Cookies on our business pages
-Our business pages (getatlas.ca, /services, /pricing, /faq, /contact and /for/…) don't use advertising or analytics cookies. They load fonts from Google Fonts (section 7). Our network provider, Cloudflare, may set a strictly necessary security cookie.
+Our business pages (getatlas.ca, /services, /pricing, /faq, /contact and /for/…) don't use advertising or analytics cookies. They load fonts from Google Fonts (section 7). Our network security provider may set a strictly necessary security cookie.
 
 ## 13. Changes to this notice
 We will post any new version here with its effective date. If we want to use your information for a new purpose, we will ask for your consent first.

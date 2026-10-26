@@ -84,7 +84,7 @@ Apart from these, when you cancel, we do not refund the unused part of a billing
 To ask for a refund, email support@getatlas.ca from your account email with the date and amount of the charge. For Google Play purchases, you can also ask Google for a refund under Google Play's refund policies. We will reply within 5 business days, and send any refund to the original payment method. Contacting us first is usually the fastest way to fix a billing problem. It does not limit your right under consumer protection law to ask your credit card company to reverse a charge.
 
 ## 10. Your content and sharing
-- You keep ownership of what you write in the Planner. You allow us to store, process and display it to provide the Planner to you, including sending it to the AI providers listed in our [Privacy Policy](/privacy).
+- You keep ownership of what you write in the Planner. You allow us to store, process and display it to provide the Planner to you, including sending it to the AI service providers described in our [Privacy Policy](/privacy).
 - **Shared trips are public.** Anyone with the link can see them, and they can appear in search engines. Don't share personal details in a shared trip.
 - Community stories are reviewed before publication. We may decline or remove posts and comments that break these terms.
 - Don't post content that you don't have the right to share, or that is unlawful, hateful, harassing or misleading.

@@ -13,6 +13,7 @@ export function GET() {
       title: d.title,
       shortTitle: d.shortTitle,
       version: d.version,
+      noticeVersion: d.noticeVersion,
       effective: d.effective,
       url: `https://getatlas.ca${d.url}`,
       notice: d.notice,
