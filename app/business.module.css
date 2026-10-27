@@ -158,6 +158,14 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 .footerAreas span { color: var(--dim); margin-right: 4px; }
 .footerBottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; margin-top: 16px; font-size: 13px; }
 .footerBottom nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.threeGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 32px; }
+.whyGrid { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 40px; }
+.whyGrid li { padding: 22px 0; border-top: 1px solid var(--line); }
+.whyGrid h3 { font-size: 17px; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.01em; }
+.whyGrid p { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0; }
+.easierList { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 40px; }
+.easierList li { display: flex; gap: 12px; font-size: 16px; line-height: 1.55; color: var(--text); }
+.easierList svg { flex-shrink: 0; margin-top: 3px; color: var(--good); }
 .auditBand { padding: 40px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: radial-gradient(60% 120% at 50% 0%, rgba(215, 167, 68, 0.10), transparent 70%); }
 .auditBandInner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px 32px; }
 .auditBandInner h2 { font-size: clamp(20px, 2.4vw, 26px); font-weight: 700; letter-spacing: -0.01em; margin: 0 0 6px; }
@@ -165,6 +173,8 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 
 
 @media (max-width: 960px) {
+  .whyGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .threeGrid { grid-template-columns: minmax(0, 1fr); }
   .footerTop { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .footerBrand { grid-column: 1 / -1; }
   .heroGrid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
@@ -176,6 +186,7 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 }
 
 @media (max-width: 560px) {
+  .whyGrid, .easierList { grid-template-columns: minmax(0, 1fr); }
   .auditBandInner .primary { width: 100%; }
   .footer { padding-bottom: 96px; } /* room for the floating Ask Atlas button */
   .footerTop { gap: 32px 20px; }

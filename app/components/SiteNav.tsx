@@ -8,7 +8,8 @@ import AtlasLogo from './AtlasLogo';
 // Industry pages shown under "Who we help". Keep in sync with app/for/NichePage.tsx and the footer.
 const WHO_WE_HELP = [
   { href: '/for/trades', label: 'Trades & home services', note: 'Missed calls texted back while you work' },
-  { href: '/for/realtors', label: 'Realtors', note: 'Portal and website leads answered fast' },
+  { href: '/for/realtors', label: 'Real estate agents', note: 'Portal and website leads answered fast' },
+  { href: '/for/property-managers', label: 'Property managers', note: 'Tenant enquiries, showings and repairs' },
   { href: '/for/bookkeepers', label: 'Bookkeepers', note: 'Client intake and document checklists' },
   { href: '/for/salons', label: 'Salons & studios', note: 'Booking reminders, fewer no-shows' },
   { href: '/for/restaurants', label: 'Restaurants & shops', note: 'Catering enquiries and review requests' },

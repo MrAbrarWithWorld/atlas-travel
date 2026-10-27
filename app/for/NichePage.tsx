@@ -5,6 +5,7 @@ import SiteNav from '../components/SiteNav';
 import styles from '../business.module.css';
 import {
   AuditBand,
+  WhyUsSection,
   BusinessFooter,
   FaqSection,
   FinalCta,
@@ -24,11 +25,13 @@ type Niche = {
   intro: string;
   pains: string[];
   builds: string[];
+  /** Plain outcomes the owner will notice. No numbers or promised results. */
+  easier: string[];
   startWith: string;
   faqs: Faq[];
 };
 
-export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers' | 'salons' | 'restaurants' | 'agencies', Niche> = {
+export const NICHES: Record<'trades' | 'realtors' | 'property-managers' | 'bookkeepers' | 'salons' | 'restaurants' | 'agencies', Niche> = {
   trades: {
     slug: 'trades',
     metaTitle: 'Missed-Call Text-Back & Lead Follow-Up for Contractors in Toronto',
@@ -50,6 +53,12 @@ export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers' | 'salons' | '
       'All leads in one simple list, with reminders to call back',
       'Automatic quote follow-up and review request after the job',
     ],
+    easier: [
+      "You can stay on the job: callers get a reply even when you can't pick up.",
+      'Every enquiry sits in one list, not in your head or your text messages.',
+      'Quotes get a follow-up without you having to remember.',
+      'Happy customers are asked for a review while the job is fresh.',
+    ],
     startWith: 'lead-rescue',
     faqs: [
       {
@@ -68,10 +77,10 @@ export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers' | 'salons' | '
   },
   realtors: {
     slug: 'realtors',
-    metaTitle: 'Lead Follow-Up Automation for Realtors & Mortgage Agents in Toronto',
+    metaTitle: 'Lead Follow-Up Automation for Realtors, Brokerages & Mortgage Agents in Toronto',
     metaDescription:
       'Reply to portal and website leads in seconds, run a 7-day follow-up you approve and keep every contact tagged in one CRM. Built for GTA realtors and mortgage agents. Free audit.',
-    eyebrow: 'For realtors & mortgage agents',
+    eyebrow: 'For real estate agents, brokerages & mortgage agents',
     h1: 'Reply to every new lead before it goes cold.',
     intro:
       'Buyers and borrowers contact several agents at once. Atlas answers new leads in seconds in your voice, then runs a follow-up plan you approve, so you spend your time on showings, not inboxes.',
@@ -87,6 +96,12 @@ export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers' | 'salons' | '
       'Leads tagged by buyer, seller, rental or mortgage',
       'Anniversary and check-in reminders for past clients',
     ],
+    easier: [
+      'New leads hear from you within minutes, even during a showing.',
+      'Follow-ups go out on schedule, and you approve each one.',
+      'Past clients hear from you on anniversaries, which keeps referrals coming.',
+      'You can see at a glance who is buying, selling, renting or financing.',
+    ],
     startWith: 'follow-up-system',
     faqs: [
       {
@@ -100,6 +115,49 @@ export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers' | 'salons' | '
       {
         q: 'How much is it?',
         a: 'The Follow-Up System is $299 setup + $59/month (founding price). You can also start with Lead Rescue at $99 setup + $29/month.',
+      },
+    ],
+  },
+  'property-managers': {
+    slug: 'property-managers',
+    metaTitle: 'Tenant Enquiry, Showing & Maintenance Request Automation for Property Managers in Toronto',
+    metaDescription:
+      'For property managers, condo management offices and landlords: answer rental enquiries fast, book showings, log every maintenance request and keep owners updated. Free audit.',
+    eyebrow: 'For property managers & landlords',
+    h1: 'Faster replies to tenants. Fewer dropped requests.',
+    intro:
+      'Rental enquiries, showing requests and maintenance messages arrive all day by email, phone and portal. We set up a simple system that replies first, books what can be booked and keeps every request in one list your team can follow. Decisions stay with you.',
+    pains: [
+      'Rental enquiries wait hours for a reply, and good applicants rent elsewhere.',
+      'Showing times are arranged through long back-and-forth messages.',
+      'Maintenance requests come in by text, email and phone, and some get lost.',
+      'Owners and boards ask for updates that take hours to put together.',
+    ],
+    builds: [
+      'Instant reply to rental enquiries with a link to book a showing',
+      'Showing reminders and a follow-up for unfinished applications',
+      'One maintenance request form that logs each request and alerts the right person',
+      'A simple weekly summary of open requests for owners or boards',
+    ],
+    easier: [
+      'Prospects get an answer while they are still looking.',
+      'Every maintenance request has a record, a status and a person responsible.',
+      'Your team spends less time copying details between email and spreadsheets.',
+      'Approvals, tenant decisions and anything sensitive stay with a person.',
+    ],
+    startWith: 'process-automation',
+    faqs: [
+      {
+        q: 'Do I need to change my property management software?',
+        a: 'Usually not. We connect the tools you already use where they allow it, such as email, forms and calendars. We check this in the free audit before you pay anything.',
+      },
+      {
+        q: 'Who decides on applications and repairs?',
+        a: 'You do. The system replies, collects details and sends reminders. Approvals and tenant decisions stay with your team.',
+      },
+      {
+        q: 'How much is it?',
+        a: 'Simple enquiry replies can start with Lead Rescue at $99 setup + $29/month (founding price). Maintenance logs and owner reports are quoted in writing first, from $500.',
       },
     ],
   },
@@ -123,6 +181,12 @@ export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers' | 'salons' | '
       'A document checklist per client, based on their situation',
       'Automatic, friendly reminders until everything arrives',
       'A weekly list of who is ready, waiting or missing documents',
+    ],
+    easier: [
+      'Clients get one clear checklist instead of back-and-forth emails.',
+      'Reminders go out on their own, so you chase less in tax season.',
+      'New client details land in your records without retyping.',
+      'You can see at a glance who is ready and who is still missing documents.',
     ],
     startWith: 'follow-up-system',
     faqs: [
@@ -161,6 +225,12 @@ export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers' | 'salons' | '
       'A polite review request sent after the visit',
       'All enquiries saved in one simple list',
     ],
+    easier: [
+      'Clients can book from a text, even while you are with someone.',
+      'Reminders go out before appointments, so fewer people forget.',
+      'Clients are asked for a review after their visit.',
+      'Regulars who have gone quiet get a friendly note to come back.',
+    ],
     startWith: 'lead-rescue',
     faqs: [
       {
@@ -198,6 +268,12 @@ export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers' | 'salons' | '
       'A reminder list of quotes that still need a follow-up',
       'A review request sent after the order or event',
     ],
+    easier: [
+      'Catering and event enquiries get an answer the same hour.',
+      'Order and booking details land in one place instead of several inboxes.',
+      'Guests are asked for a review after their visit.',
+      'You spend less time on the phone and more time on the floor.',
+    ],
     startWith: 'lead-rescue',
     faqs: [
       {
@@ -234,6 +310,12 @@ export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers' | 'salons' | '
       'Client intake forms and onboarding checklists',
       'Monthly report and dashboard automation from your own data',
       'Proposal follow-up reminders you approve',
+    ],
+    easier: [
+      'You can offer automation to clients without hiring a developer.',
+      'Each build comes with notes your team can use to explain it.',
+      "Your clients' accounts stay in their name.",
+      'A fixed quote per project keeps your own margin clear.',
     ],
     startWith: 'workflow-automation',
     faqs: [
@@ -332,6 +414,19 @@ export function NicheView({ data }: { data: Niche }) {
           </div>
         </section>
 
+        <section className={styles.section} aria-labelledby="easier-title">
+          <div className={styles.wrap}>
+            <span className={styles.eyebrow}>After setup</span>
+            <h2 id="easier-title" className={styles.h2}>What gets easier</h2>
+            <ul className={styles.easierList}>
+              {data.easier.map((item) => (
+                <li key={item}><CheckCircle size={18} weight="fill" aria-hidden="true" /><span>{item}</span></li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <WhyUsSection />
         <PricingSection heading="Founding prices. Start free." />
         <AuditBand />
         <StepsSection />

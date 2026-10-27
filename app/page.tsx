@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 import {
   ArrowRight,
   Briefcase,
+  Buildings,
   Calculator,
   CheckCircle,
   ClockCountdown,
@@ -13,8 +14,6 @@ import {
   Storefront,
   Wrench,
   Scissors,
-  ShieldCheck,
-  Code,
 } from '@phosphor-icons/react/dist/ssr';
 import SiteNav from './components/SiteNav';
 import styles from './business.module.css';
@@ -22,6 +21,7 @@ import {
   BusinessFooter,
   FaqSection,
   AuditBand,
+  WhyUsSection,
   FinalCta,
   FlowSteps,
   PricingSection,
@@ -37,17 +37,17 @@ import { FAQS } from './lib/faqs';
 // Travel planner moved to /travel (and travel.getatlas.ca); see next.config.ts.
 
 export const metadata: Metadata = {
-  title: { absolute: 'Lead Follow-Up Automation for Small & Growing Businesses in Toronto | Atlas AI Technologies' },
+  title: { absolute: 'AI & Automation for Small and Growing Businesses in Toronto | Atlas AI Technologies' },
   description:
-    'Answer every lead in seconds. Missed-call text-back, instant web-form replies and follow-ups you approve, built in 2 weeks. Free missed-lead audit. Founding prices from $29/month.',
+    'Toronto studio building practical AI and automation for small and growing businesses: lead follow-up, client intake portals, reports, AI assistants and websites. Free audit. Plans from $29/month.',
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     url: 'https://getatlas.ca/',
     siteName: 'Atlas AI Technologies',
-    title: 'Every lead answered in seconds | Atlas AI Technologies',
+    title: 'AI and automation that take the busywork off your business | Atlas AI Technologies',
     description:
-      'Missed-call text-back, instant replies and follow-ups you approve. Free audit. Founding prices from $29/month.',
+      'Lead follow-up, client portals, reports, AI assistants and websites, built and supported from Toronto. Free audit. Plans from $29/month.',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
 };
@@ -72,7 +72,8 @@ const PROBLEMS = [
 
 const NICHES = [
   { Icon: Wrench, title: 'Trades & home services', text: 'HVAC, plumbing, roofing, renovation and cleaning.', href: '/for/trades' },
-  { Icon: HouseLine, title: 'Realtors & mortgage agents', text: 'Answer portal and website leads before they go cold.', href: '/for/realtors' },
+  { Icon: HouseLine, title: 'Real estate agents & brokerages', text: 'Answer portal and website leads before they go cold.', href: '/for/realtors' },
+  { Icon: Buildings, title: 'Property managers & landlords', text: 'Tenant enquiries, showings and maintenance requests in one place.', href: '/for/property-managers' },
   { Icon: Calculator, title: 'Bookkeepers & tax preparers', text: 'Client intake, document checklists and reminders.', href: '/for/bookkeepers' },
   { Icon: Scissors, title: 'Salons, spas & studios', text: 'Booking reminders, fewer no-shows, more reviews.', href: '/for/salons' },
   { Icon: Storefront, title: 'Restaurants & local shops', text: 'Catering enquiries answered and review requests sent.', href: '/for/restaurants' },
@@ -126,22 +127,22 @@ export default function HomePage() {
             <div className={styles.heroIn}>
               <span className={styles.eyebrow}>Atlas AI Technologies · Toronto &amp; GTA</span>
               <h1 className={styles.h1}>
-                Every lead answered in seconds. <em>Even when you&rsquo;re on the job.</em>
+                AI and automation that take the busywork off <em>your business.</em>
               </h1>
               <p className={styles.heroText}>
-                We set up simple automations for small and growing businesses: missed-call text-back, instant replies
-                to website enquiries, and follow-ups you approve with one tap. Built for you in about two weeks.
-                Founding prices from $29/month.
+                We are a Toronto studio that builds practical systems for small and growing businesses: lead
+                follow-up, client intake portals, reports and dashboards, AI assistants and websites. We set it up
+                with the tools you already use, test it with you and keep it running. Plans from $29/month.
               </p>
               <div className={styles.actions}>
                 <Link className={styles.primary} href={contactFor('free-audit')}>
-                  Get my free missed-lead audit <ArrowRight size={16} weight="bold" aria-hidden="true" />
+                  Get my free audit <ArrowRight size={16} weight="bold" aria-hidden="true" />
                 </Link>
-                <Link className={styles.secondary} href="#pricing">See prices</Link>
+                <Link className={styles.secondary} href="/services">See what we build</Link>
               </div>
               <div className={styles.trustRow}>
                 <span><CheckCircle size={18} weight="fill" aria-hidden="true" /> Free audit, no card</span>
-                <span><CheckCircle size={18} weight="fill" aria-hidden="true" /> You approve every follow-up</span>
+                <span><CheckCircle size={18} weight="fill" aria-hidden="true" /> You approve what customers see</span>
                 <span><CheckCircle size={18} weight="fill" aria-hidden="true" /> Cancel anytime</span>
                 <span><CheckCircle size={18} weight="fill" aria-hidden="true" /> 30-day money-back</span>
               </div>
@@ -271,38 +272,7 @@ export default function HomePage() {
 
         <FlowSteps />
 
-        <section className={styles.section} aria-labelledby="proof-title">
-          <div className={styles.wrap}>
-            <span className={styles.eyebrow}>Why trust us</span>
-            <h2 id="proof-title" className={styles.h2}>Proof through work, not promises.</h2>
-            <div className={styles.proofGrid}>
-              <div className={styles.card} data-reveal="">
-                <span className={styles.icon}><Code size={22} weight="duotone" aria-hidden="true" /></span>
-                <h3>Engineer-built, on proven tools</h3>
-                <p>
-                  Every system is built and tested by an automation engineer, not a template. Our own enquiries
-                  run on the same kind of system we sell: every lead is logged, tracked and followed up.
-                </p>
-                <div className={styles.stack}>
-                  {['Gmail & Outlook', 'Google Calendar', 'Webhooks & APIs', 'AI drafting'].map((tool) => (
-                    <span key={tool} className={styles.chip}>{tool}</span>
-                  ))}
-                </div>
-              </div>
-              <div className={styles.card} data-reveal="" style={{ '--d': '90ms' } as CSSProperties}>
-                <span className={styles.icon}><ShieldCheck size={22} weight="duotone" aria-hidden="true" /></span>
-                <h3>Low risk by design</h3>
-                <p>
-                  Start with a free audit. Pay a small setup fee only when you want the system. Month to month,
-                  30-day money-back on setup, and every message follows Canadian anti-spam rules (CASL).
-                </p>
-                <p className={styles.founder}>
-                  Designed, built and supported from <strong>Toronto, Canada</strong>.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+        <WhyUsSection />
 
         <FaqSection items={FAQS} more={{ href: '/faq', label: 'More questions →' }} />
 

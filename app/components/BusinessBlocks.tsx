@@ -224,6 +224,35 @@ export function FinalCta({
   );
 }
 
+// Reasons to work with us. Every line must stay true for a one-person Toronto studio: no client counts, results or awards.
+export const WHY_US: { title: string; text: string }[] = [
+  { title: 'One partner instead of five tools', text: 'We connect the email, forms, calendar and CRM you already use. You do not have to learn new software to get the result.' },
+  { title: 'A fixed price before any work', text: 'You get a written quote with the setup and monthly cost. No hourly surprises.' },
+  { title: 'You stay in control', text: 'Messages to your customers use your wording and wait for your approval at the start. Your data stays in your own accounts wherever possible.' },
+  { title: 'You talk to the person who builds it', text: 'No account managers or hand-offs. The engineer who designs your system is the one who answers your questions.' },
+  { title: 'Low risk to try', text: 'Free audit first, month-to-month plans and a 30-day money-back guarantee on the setup fee.' },
+  { title: 'Built in Canada, with the rules in mind', text: 'Every message follows Canadian anti-spam law (CASL) and privacy rules, whether you sell to homeowners or to other businesses.' },
+];
+
+export function WhyUsSection({ heading = 'Why owners work with us.' }: { heading?: string }) {
+  return (
+    <section className={styles.section} aria-labelledby="why-title">
+      <div className={styles.wrap}>
+        <span className={styles.eyebrow}>Why Atlas</span>
+        <h2 id="why-title" className={styles.h2}>{heading}</h2>
+        <ul className={styles.whyGrid}>
+          {WHY_US.map((item) => (
+            <li key={item.title}>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 /** Slim repeat of the free-audit offer, placed mid-page so visitors don't have to scroll back to the hero. */
 export function AuditBand({
   title = 'How many leads are you missing right now?',
@@ -261,7 +290,8 @@ const FOOTER_GROUPS: { title: string; links: MoreLink[] }[] = [
     title: 'Who we help',
     links: [
       { href: '/for/trades', label: 'Trades & home services' },
-      { href: '/for/realtors', label: 'Realtors' },
+      { href: '/for/realtors', label: 'Real estate agents' },
+      { href: '/for/property-managers', label: 'Property managers' },
       { href: '/for/bookkeepers', label: 'Bookkeepers' },
       { href: '/for/salons', label: 'Salons & studios' },
       { href: '/for/restaurants', label: 'Restaurants & shops' },
@@ -309,6 +339,7 @@ export function BusinessFooter({ extra = [] }: { extra?: MoreLink[] }) {
           <span>© {new Date().getFullYear()} Atlas AI Technologies</span>
           <nav aria-label="Legal">
             <Link href="/contact">Contact</Link>
+            <Link href="/partners">Partner with us</Link>
             <Link href="/legal/services/privacy">Privacy</Link>
             <Link href="/legal/services/terms">Terms</Link>
             <Link href="/legal">Legal</Link>
