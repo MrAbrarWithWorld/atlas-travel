@@ -240,8 +240,7 @@
 .body :global(.pull-quote p) { font-family: var(--b-serif); font-size: 26px; line-height: 1.4; font-style: italic; margin: 0; color: var(--b-ink); }
 .body :global(.pull-quote cite) { display: block; font-size: 14px; color: var(--b-muted); margin-top: 10px; font-style: normal; }
 .body :global(.atlas-verdict) { position: relative; background: var(--b-surface); border: 1px solid var(--b-line); border-radius: 16px; padding: 20px 22px; margin: 36px 0; }
-.body :global(.atlas-verdict::before) { content: 'Atlas verdict'; display: block; font-size: 14px; font-weight: 700; color: var(--b-accent); margin-bottom: 8px; }
-.body :global(.atlas-verdict-score) { position: absolute; top: 16px; right: 20px; font-family: var(--b-serif); font-size: 32px; color: var(--b-accent); line-height: 1; }
+.body :global(.atlas-verdict-score) { display: block; font-family: var(--b-serif); font-size: 22px; font-weight: 600; color: var(--b-accent); line-height: 1.2; margin-bottom: 8px; }
 .body :global(.atlas-verdict p) { margin: 0; }
 .body :global(.best-for) { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 1.4em; }
 .body :global(.best-for-tag) { padding: 5px 12px; border-radius: 999px; background: var(--b-accent-soft); color: var(--b-ink-2); font-size: 14px; }

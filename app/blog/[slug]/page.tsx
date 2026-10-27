@@ -19,7 +19,7 @@ interface RelatedPost {
 }
 
 function fmt(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 }
 
 function extractDestination(title: string): string {

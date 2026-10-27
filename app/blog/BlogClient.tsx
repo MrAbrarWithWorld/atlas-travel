@@ -19,7 +19,8 @@ interface Post {
 const REGIONS: BlogRegion[] = ['Europe', 'Asia', 'Bangladesh', 'Middle East & Africa', 'Americas'];
 
 function fmt(iso: string) {
-  return iso ? new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '';
+  // UTC so the server and the browser print the same month (avoids a hydration mismatch).
+  return iso ? new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }) : '';
 }
 
 function normalizeText(t: string) {
