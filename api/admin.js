@@ -3,6 +3,7 @@ import { createHash, timingSafeEqual } from 'crypto';
 import webpush from 'web-push';
 import nodemailer from 'nodemailer';
 import { runLegalNotices, legalNoticeStatus, sendLegalNoticeTest } from '../lib/legal-notice.js';
+import { newsletterStatus, sendNewsletterTest, sendNewsletter } from '../lib/newsletter.js';
 import { adminOverview, listCommunityPosts, moderateCommunityPost, siteHealth, chatTest } from '../lib/admin-insights.js';
 
 export const config = { maxDuration: 60 };
@@ -947,6 +948,21 @@ export default async function handler(req, res) {
 
     if (action === 'legal_notice_send') {
       try { return res.status(200).json(await runLegalNotices({ sb, timeBudgetMs: 40000 })); }
+      catch (e) { return res.status(500).json({ status: 'error', error: e.message }); }
+    }
+
+    if (action === 'newsletter_status') {
+      try { return res.status(200).json(await newsletterStatus({ sb })); }
+      catch (e) { return res.status(500).json({ status: 'error', error: e.message }); }
+    }
+
+    if (action === 'newsletter_test') {
+      try { return res.status(200).json(await sendNewsletterTest({ sb })); }
+      catch (e) { return res.status(500).json({ status: 'error', error: e.message }); }
+    }
+
+    if (action === 'newsletter_send') {
+      try { return res.status(200).json(await sendNewsletter({ sb, confirm: body.confirm })); }
       catch (e) { return res.status(500).json({ status: 'error', error: e.message }); }
     }
 

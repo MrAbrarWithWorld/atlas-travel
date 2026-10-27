@@ -106,6 +106,95 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   );
 }
 
+// ─── Newsletter (The Atlas Dispatch) ─────────────────────────────────────────
+
+type NewsletterInfo = {
+  status: string;
+  subscribers?: number;
+  posts?: { slug: string; title: string }[];
+  hasResendKey?: boolean;
+  hasMailingAddress?: boolean;
+  sent?: number;
+  total?: number;
+  to?: string;
+  error?: string;
+};
+
+const NL_LABELS: Record<string, string> = {
+  test_sent: 'Test sent',
+  sent: 'Sent',
+  no_posts: 'No published posts to send',
+  no_subscribers: 'No active subscribers yet',
+  missing_resend_key: 'RESEND_API_KEY is missing in Vercel',
+  missing_mailing_address: 'Add NEWSLETTER_MAILING_ADDRESS in Vercel first (required by Canadian anti-spam law)',
+  not_confirmed: 'Type SEND to confirm',
+  error: 'Error',
+};
+
+function NewsletterCard() {
+  const [info, setInfo] = useState<NewsletterInfo | null>(null);
+  const [msg, setMsg] = useState('');
+  const [confirming, setConfirming] = useState(false);
+  const [typed, setTyped] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(() => {
+    api('newsletter_status').then(({ data }) => setInfo(data as NewsletterInfo));
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  async function sendTest() {
+    setMsg('Sending test…');
+    const { data } = await api('newsletter_test');
+    const d = data as NewsletterInfo;
+    setMsg(d.status === 'test_sent' ? `Test sent to ${d.to}` : (d.error || NL_LABELS[d.status] || d.status));
+  }
+
+  async function sendAll() {
+    setBusy(true);
+    const { data } = await api('newsletter_send', { confirm: typed });
+    const d = data as NewsletterInfo;
+    setMsg(d.status === 'sent' ? `Sent to ${d.sent} of ${d.total} subscribers` : (d.error || NL_LABELS[d.status] || d.status));
+    setBusy(false);
+    setConfirming(false);
+    setTyped('');
+    load();
+  }
+
+  const n = info?.subscribers ?? 0;
+  const canSend = !!info && info.hasResendKey !== false && !!info.hasMailingAddress && n > 0;
+  return (
+    <div className="bg-[rgba(201,169,110,0.04)] border border-[rgba(201,169,110,0.12)] rounded-xl p-4 mb-8">
+      <div className="text-[0.58rem] tracking-[0.12em] uppercase text-[#8a7a5a] mb-1">Newsletter · The Atlas Dispatch</div>
+      <div className="text-sm text-[#e8dcc8] mb-1">{info ? `${n} active subscriber${n === 1 ? '' : 's'}` : '…'}</div>
+      {info?.posts?.length ? (
+        <div className="text-[0.72rem] text-[#8a7a5a] mb-2">Next issue: {info.posts.map((p) => p.title).join(' · ')}</div>
+      ) : null}
+      {info && !info.hasMailingAddress && (
+        <div className="text-[0.72rem] text-[#e8a070] mb-2">{NL_LABELS.missing_mailing_address}</div>
+      )}
+      <div className="text-[0.68rem] text-[#6a5a3a] mb-3">
+        The three newest blog posts, from noreply@getatlas.ca with an unsubscribe link. Send a test to yourself first.
+      </div>
+      <div className="flex gap-2 items-center flex-wrap">
+        <button className={BTN_GHOST} onClick={sendTest}>Send test to me</button>
+        {canSend && !confirming && (
+          <button className={BTN} onClick={() => setConfirming(true)}>Send to {n} subscriber{n === 1 ? '' : 's'}</button>
+        )}
+        {msg && <span className="text-[0.75rem] text-[#c9a96e]">{msg}</span>}
+      </div>
+      {confirming && (
+        <div className="flex gap-2 items-center flex-wrap mt-3">
+          <span className="text-[0.75rem] text-[#e8dcc8]">Type SEND to email {n} subscriber{n === 1 ? '' : 's'}:</span>
+          <input value={typed} onChange={(e) => setTyped(e.target.value)} className="bg-transparent border border-[rgba(201,169,110,0.3)] rounded px-2 py-1 text-sm text-[#e8dcc8] w-24" aria-label="Type SEND to confirm" />
+          <button className={BTN} disabled={busy || typed !== 'SEND'} onClick={sendAll}>{busy ? 'Sending…' : 'Send now'}</button>
+          <button className={BTN_GHOST} onClick={() => { setConfirming(false); setTyped(''); }}>Cancel</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Legal update emails ─────────────────────────────────────────────────────
 
 type LegalStatus = {
@@ -842,7 +931,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
       <main className="flex-1 min-w-0 px-4 md:px-8 pt-6 md:pt-8 pb-28 md:pb-10 max-w-5xl">
         {section === 'overview' && (
-          <OverviewPanel onGo={go} onNewPost={() => editPost(null)} onPending={setPending} legalCard={<LegalNoticeCard />} />
+          <OverviewPanel onGo={go} onNewPost={() => editPost(null)} onPending={setPending} legalCard={<><LegalNoticeCard /><NewsletterCard /></>} />
         )}
 
         {section === 'posts' && (
