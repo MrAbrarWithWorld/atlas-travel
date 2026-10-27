@@ -144,19 +144,28 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 .final .actions { justify-content: center; }
 
 /* Footer */
-.footer { border-top: 1px solid var(--line); padding: 32px 0; font-size: 13.5px; color: var(--dim); }
-.footerInner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
-.footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
-.footerAreas { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 16px; width: 100%; font-size: 13px; }
-.footerAreas span { color: var(--dim); }
+.footer { border-top: 1px solid var(--line); padding: 64px 0 32px; font-size: 14px; color: var(--dim); }
+.footer a { text-decoration: none; color: var(--muted); }
+.footer a:hover { color: var(--gold-bright); }
+.footerTop { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 40px; }
+.footerBrand p { margin: 16px 0 12px; max-width: 34ch; line-height: 1.6; color: var(--muted); }
+.footerMail { color: var(--gold-bright) !important; }
+.footerCol h2 { font-size: 14px; font-weight: 700; color: var(--text); margin: 4px 0 14px; letter-spacing: 0; }
+.footerCol ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.footerCol li { line-height: 1.4; }
+.footerAreas { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.footerAreas span { color: var(--dim); margin-right: 4px; }
+.footerBottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; margin-top: 16px; font-size: 13px; }
+.footerBottom nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 .auditBand { padding: 40px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: radial-gradient(60% 120% at 50% 0%, rgba(215, 167, 68, 0.10), transparent 70%); }
 .auditBandInner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px 32px; }
 .auditBandInner h2 { font-size: clamp(20px, 2.4vw, 26px); font-weight: 700; letter-spacing: -0.01em; margin: 0 0 6px; }
 .auditBandInner p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 62ch; }
-.footer a { text-decoration: none; color: var(--muted); }
-.footer a:hover { color: var(--gold-bright); }
+
 
 @media (max-width: 960px) {
+  .footerTop { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .footerBrand { grid-column: 1 / -1; }
   .heroGrid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .problems, .priceGrid, .nicheGrid { grid-template-columns: minmax(0, 1fr); }
   .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -167,6 +176,9 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 
 @media (max-width: 560px) {
   .auditBandInner .primary { width: 100%; }
+  .footer { padding-bottom: 96px; } /* room for the floating Ask Atlas button */
+  .footerTop { gap: 32px 20px; }
+  .footerCol li a { display: inline-block; padding: 4px 0; }
   .hero { padding: 104px 0 64px; }
   .section { padding: 68px 0; }
   .steps { grid-template-columns: minmax(0, 1fr); }

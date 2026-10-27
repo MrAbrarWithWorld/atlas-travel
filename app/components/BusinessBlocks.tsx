@@ -5,6 +5,7 @@ import styles from '../business.module.css';
 import { FREE_PLANS, OFFER_TERMS, PAID_PLANS, contactFor, type Plan } from '../lib/offer';
 import { Analytics } from '@vercel/analytics/next';
 import AskAtlas from './AskAtlas';
+import AtlasLogo from './AtlasLogo';
 import { AREAS } from '../lib/areas';
 
 export type Faq = { q: string; a: string };
@@ -66,11 +67,14 @@ export function PricingSection({
   heading,
   asPage = false,
   fx = false,
+  compact = false,
   more,
 }: {
   heading?: string;
   asPage?: boolean;
   fx?: boolean;
+  /** Homepage: show the three monthly plans only; project services stay on /pricing. */
+  compact?: boolean;
   more?: MoreLink;
 }) {
   const Title = asPage ? 'h1' : 'h2';
@@ -90,7 +94,7 @@ export function PricingSection({
           {FREE_PLANS.map((plan, i) => <PlanCard key={plan.id} plan={plan} free fx={fx} index={i} />)}
         </div>
         <div className={styles.priceGrid}>
-          {PAID_PLANS.map((plan, i) => <PlanCard key={plan.id} plan={plan} fx={fx} index={i} />)}
+          {(compact ? PAID_PLANS.filter((p) => !p.label) : PAID_PLANS).map((plan, i) => <PlanCard key={plan.id} plan={plan} fx={fx} index={i} />)}
         </div>
         <ul className={styles.terms} {...(fx ? { 'data-reveal': '' } : {})}>
           {OFFER_TERMS.map((term) => (
@@ -243,34 +247,74 @@ export function AuditBand({
   );
 }
 
+const FOOTER_GROUPS: { title: string; links: MoreLink[] }[] = [
+  {
+    title: 'Services',
+    links: [
+      { href: '/services', label: 'What we build' },
+      { href: '/pricing', label: 'Pricing' },
+      { href: contactFor('free-audit'), label: 'Free missed-lead audit' },
+      { href: '/faq', label: 'FAQ' },
+    ],
+  },
+  {
+    title: 'Who we help',
+    links: [
+      { href: '/for/trades', label: 'Trades & home services' },
+      { href: '/for/realtors', label: 'Realtors' },
+      { href: '/for/bookkeepers', label: 'Bookkeepers' },
+      { href: '/for/salons', label: 'Salons & studios' },
+      { href: '/for/restaurants', label: 'Restaurants & shops' },
+      { href: '/for/agencies', label: 'Agencies & freelancers' },
+    ],
+  },
+  {
+    title: 'Guides',
+    links: [
+      { href: '/guides/how-to-choose-an-automation-partner', label: 'Choosing an automation partner' },
+      { href: '/guides/diy-automation-vs-hiring-help', label: 'DIY or hire help?' },
+    ],
+  },
+];
+
 export function BusinessFooter({ extra = [] }: { extra?: MoreLink[] }) {
   return (
     <footer className={styles.footer}>
-      <div className={`${styles.wrap} ${styles.footerInner}`}>
-        <span>© {new Date().getFullYear()} Atlas AI Technologies · Toronto &amp; GTA — working with clients across Canada and internationally.</span>
-        <nav aria-label="Footer">
-          <Link href="/services">Services</Link>
-          <Link href="/pricing">Pricing</Link>
-          <Link href="/faq">FAQ</Link>
-          <Link href="/for/trades">Trades</Link>
-          <Link href="/for/realtors">Realtors</Link>
-          <Link href="/for/bookkeepers">Bookkeepers</Link>
-          <Link href="/for/salons">Salons</Link>
-          <Link href="/for/restaurants">Restaurants</Link>
-          <Link href="/for/agencies">Agencies</Link>
-          <Link href="/guides/how-to-choose-an-automation-partner">Guide</Link>
-          <Link href="/guides/diy-automation-vs-hiring-help">DIY vs hire</Link>
-          <Link href="/contact">Contact</Link>
-          <Link href="/legal/services/privacy">Privacy</Link>
-          <Link href="/legal/services/terms">Terms</Link>
-          <Link href="/legal">Legal</Link>
-          {extra.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
-          <Link href="/travel" prefetch={false}>Atlas Travel app</Link>
-        </nav>
-        <nav className={styles.footerAreas} aria-label="Service areas">
-          <span>Service areas:</span>
+      <div className={styles.wrap}>
+        <div className={styles.footerTop}>
+          <div className={styles.footerBrand}>
+            <AtlasLogo />
+            <p>Lead follow-up and workflow automation for small and growing businesses. Based in Toronto, working with clients in Canada and abroad.</p>
+            <a className={styles.footerMail} href="mailto:support@getatlas.ca">support@getatlas.ca</a>
+          </div>
+          {FOOTER_GROUPS.map((group) => (
+            <nav key={group.title} className={styles.footerCol} aria-label={group.title}>
+              <h2>{group.title}</h2>
+              <ul>
+                {group.links.map((link) => (
+                  <li key={link.href}><Link href={link.href}>{link.label}</Link></li>
+                ))}
+                {group.title === 'Guides' && extra.map((link) => (
+                  <li key={link.href}><Link href={link.href}>{link.label}</Link></li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
+        <div className={styles.footerAreas}>
+          <span>Service areas</span>
           {AREAS.map((area) => <Link key={area.slug} href={`/areas/${area.slug}`}>{area.name}</Link>)}
-        </nav>
+        </div>
+        <div className={styles.footerBottom}>
+          <span>© {new Date().getFullYear()} Atlas AI Technologies</span>
+          <nav aria-label="Legal">
+            <Link href="/contact">Contact</Link>
+            <Link href="/legal/services/privacy">Privacy</Link>
+            <Link href="/legal/services/terms">Terms</Link>
+            <Link href="/legal">Legal</Link>
+            <Link href="/travel" prefetch={false}>Atlas Travel app</Link>
+          </nav>
+        </div>
       </div>
       <AskAtlas />
       {/* Cookieless visit counts (Vercel Web Analytics), business pages only. See /legal/services/privacy §12. */}

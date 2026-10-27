@@ -240,7 +240,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <PricingSection fx more={{ href: '/pricing', label: 'All prices →' }} />
+        <PricingSection fx compact more={{ href: '/pricing', label: 'All prices, including website and AI assistant projects →' }} />
 
         <section className={styles.section} aria-labelledby="who-title">
           <div className={styles.wrap}>
