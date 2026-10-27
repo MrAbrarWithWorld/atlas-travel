@@ -25,6 +25,7 @@
 .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
 .section { padding: 96px 0; border-top: 1px solid var(--line); }
 .eyebrow { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+.h1, .h2 { text-wrap: balance; }
 .h2 { font-size: clamp(28px, 3.6vw, 42px); line-height: 1.12; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 16px; max-width: 760px; }
 .lead { font-size: 17px; line-height: 1.65; color: var(--muted); max-width: 680px; margin: 0; }
 
