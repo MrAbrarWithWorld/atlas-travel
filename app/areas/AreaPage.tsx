@@ -1,22 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { ArrowRight, CheckCircle, MapPin } from '@phosphor-icons/react/dist/ssr';
-import SiteNav from '../../components/SiteNav';
-import styles from '../../business.module.css';
-import { AuditBand, BusinessFooter, FaqSection, FinalCta, StepsSection, faqJsonLd, type Faq } from '../../components/BusinessBlocks';
-import { AREAS, getArea } from '../../lib/areas';
-import { contactFor, PAID_PLANS } from '../../lib/offer';
-import { SITE, breadcrumbs, businessNode, jsonLd } from '../../lib/schema';
+import SiteNav from '../components/SiteNav';
+import styles from '../business.module.css';
+import { AuditBand, BusinessFooter, FaqSection, FinalCta, StepsSection, faqJsonLd, type Faq } from '../components/BusinessBlocks';
+import { AREAS, getArea } from '../lib/areas';
+import { contactFor, PAID_PLANS } from '../lib/offer';
+import { SITE, breadcrumbs, businessNode, jsonLd } from '../lib/schema';
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return AREAS.map((a) => ({ city: a.slug }));
-}
-
-export async function generateMetadata({ params }: { params: Promise<{ city: string }> }): Promise<Metadata> {
-  const area = getArea((await params).city);
+export function areaMetadata(slug: string): Metadata {
+  const area = getArea(slug);
   if (!area) return {};
   const title = `Missed-Call Text-Back & Lead Follow-Up in ${area.name} | Atlas AI Technologies`;
   const description = `Lead follow-up and missed-call text-back for small businesses in ${area.name}. Free audit, fixed written quote, month-to-month. Remote setup by phone and video.`;
@@ -36,9 +29,9 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   };
 }
 
-export default async function AreaPage({ params }: { params: Promise<{ city: string }> }) {
-  const area = getArea((await params).city);
-  if (!area) notFound();
+export function AreaView({ slug }: { slug: string }) {
+  const area = getArea(slug);
+  if (!area) throw new Error(`Unknown service area: ${slug}`);
   const path = `/areas/${area.slug}`;
   const lead = PAID_PLANS[0];
 
