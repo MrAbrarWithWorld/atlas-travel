@@ -147,6 +147,12 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 .footer { border-top: 1px solid var(--line); padding: 32px 0; font-size: 13.5px; color: var(--dim); }
 .footerInner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
 .footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
+.footerAreas { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 16px; width: 100%; font-size: 13px; }
+.footerAreas span { color: var(--dim); }
+.auditBand { padding: 40px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: radial-gradient(60% 120% at 50% 0%, rgba(215, 167, 68, 0.10), transparent 70%); }
+.auditBandInner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px 32px; }
+.auditBandInner h2 { font-size: clamp(20px, 2.4vw, 26px); font-weight: 700; letter-spacing: -0.01em; margin: 0 0 6px; }
+.auditBandInner p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 62ch; }
 .footer a { text-decoration: none; color: var(--muted); }
 .footer a:hover { color: var(--gold-bright); }
 
@@ -160,6 +166,7 @@ a.niche:hover { border-color: var(--gold); transform: translateY(-2px); }
 }
 
 @media (max-width: 560px) {
+  .auditBandInner .primary { width: 100%; }
   .hero { padding: 104px 0 64px; }
   .section { padding: 68px 0; }
   .steps { grid-template-columns: minmax(0, 1fr); }

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { DESTINATION_SLUGS } from "./lib/destination-slugs";
+import { AREAS } from "./lib/areas";
 
 const BASE_URL = "https://getatlas.ca";
 
@@ -27,6 +28,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/for/restaurants`, lastModified: NEW_PAGES, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE_URL}/for/agencies`, lastModified: NEW_PAGES, changeFrequency: "monthly", priority: 0.8 },
     { url: `${BASE_URL}/guides/how-to-choose-an-automation-partner`, lastModified: NEW_PAGES, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE_URL}/guides/diy-automation-vs-hiring-help`, lastModified: NEW_PAGES, changeFrequency: "monthly", priority: 0.7 },
+    ...AREAS.map((area) => ({
+      url: `${BASE_URL}/areas/${area.slug}`,
+      lastModified: NEW_PAGES,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
     { url: `${BASE_URL}/travel`, lastModified: BUSINESS, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE_URL}/blog`, lastModified: BUSINESS, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/community`, lastModified: BUSINESS, changeFrequency: "weekly", priority: 0.7 },

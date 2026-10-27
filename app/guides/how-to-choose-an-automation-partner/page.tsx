@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, CheckCircle } from '@phosphor-icons/react/dist/ssr';
 import SiteNav from '../../components/SiteNav';
 import styles from '../../business.module.css';
-import { BusinessFooter, FaqSection, FinalCta, faqJsonLd, type Faq } from '../../components/BusinessBlocks';
+import { AuditBand, BusinessFooter, FaqSection, FinalCta, faqJsonLd, type Faq } from '../../components/BusinessBlocks';
 import { contactFor } from '../../lib/offer';
 import { SITE, breadcrumbs, jsonLd } from '../../lib/schema';
 
@@ -133,6 +133,8 @@ export default function GuidePage() {
           </div>
         </section>
 
+        <AuditBand />
+
         <section className={styles.section} aria-labelledby="start-title">
           <div className={styles.wrap}>
             <span className={styles.eyebrow}>A low-risk start</span>
@@ -140,6 +142,8 @@ export default function GuidePage() {
             <p className={styles.lead}>
               Before paying for anything, find out how many leads you lose today. A short audit tests how fast your website
               form, email and phone answer an enquiry and gives you a one-page fix plan, whether or not you hire anyone.
+              Not sure you need help at all? Read our fair look at{' '}
+              <Link href="/guides/diy-automation-vs-hiring-help">DIY automation vs hiring help</Link>.
             </p>
             <ul className={styles.features}>
               {[

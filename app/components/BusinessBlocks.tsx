@@ -5,6 +5,7 @@ import styles from '../business.module.css';
 import { FREE_PLANS, OFFER_TERMS, PAID_PLANS, contactFor, type Plan } from '../lib/offer';
 import { Analytics } from '@vercel/analytics/next';
 import AskAtlas from './AskAtlas';
+import { AREAS } from '../lib/areas';
 
 export type Faq = { q: string; a: string };
 
@@ -219,6 +220,29 @@ export function FinalCta({
   );
 }
 
+/** Slim repeat of the free-audit offer, placed mid-page so visitors don't have to scroll back to the hero. */
+export function AuditBand({
+  title = 'How many leads are you missing right now?',
+  text = 'Free missed-lead audit: we test how fast your website form, email and phone answer an enquiry, then send a one-page report. No card, no obligation.',
+}: {
+  title?: string;
+  text?: string;
+}) {
+  return (
+    <section className={styles.auditBand} aria-label="Free audit offer">
+      <div className={`${styles.wrap} ${styles.auditBandInner}`}>
+        <div>
+          <h2>{title}</h2>
+          <p>{text}</p>
+        </div>
+        <Link className={styles.primary} href={contactFor('free-audit')}>
+          Get my free audit <ArrowRight size={16} weight="bold" aria-hidden="true" />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export function BusinessFooter({ extra = [] }: { extra?: MoreLink[] }) {
   return (
     <footer className={styles.footer}>
@@ -235,12 +259,17 @@ export function BusinessFooter({ extra = [] }: { extra?: MoreLink[] }) {
           <Link href="/for/restaurants">Restaurants</Link>
           <Link href="/for/agencies">Agencies</Link>
           <Link href="/guides/how-to-choose-an-automation-partner">Guide</Link>
+          <Link href="/guides/diy-automation-vs-hiring-help">DIY vs hire</Link>
           <Link href="/contact">Contact</Link>
           <Link href="/legal/services/privacy">Privacy</Link>
           <Link href="/legal/services/terms">Terms</Link>
           <Link href="/legal">Legal</Link>
           {extra.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
           <Link href="/travel" prefetch={false}>Atlas Travel app</Link>
+        </nav>
+        <nav className={styles.footerAreas} aria-label="Service areas">
+          <span>Service areas:</span>
+          {AREAS.map((area) => <Link key={area.slug} href={`/areas/${area.slug}`}>{area.name}</Link>)}
         </nav>
       </div>
       <AskAtlas />

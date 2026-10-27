@@ -21,6 +21,7 @@ import styles from './business.module.css';
 import {
   BusinessFooter,
   FaqSection,
+  AuditBand,
   FinalCta,
   FlowSteps,
   PricingSection,
@@ -265,6 +266,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <AuditBand />
 
         <FlowSteps />
 

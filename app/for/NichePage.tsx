@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle, Lightning, Warning } from '@phosphor-icons/rea
 import SiteNav from '../components/SiteNav';
 import styles from '../business.module.css';
 import {
+  AuditBand,
   BusinessFooter,
   FaqSection,
   FinalCta,
@@ -332,6 +333,7 @@ export function NicheView({ data }: { data: Niche }) {
         </section>
 
         <PricingSection heading="Founding prices. Start free." />
+        <AuditBand />
         <StepsSection />
         <FaqSection items={data.faqs} />
         <FinalCta
