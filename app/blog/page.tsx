@@ -134,6 +134,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
               <Link href="/blog" style={{ fontSize: 12, color: "#c9a96e", textDecoration: "none", letterSpacing: "0.06em" }}>Blog</Link>
               <Link href="/privacy" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Privacy</Link>
               <Link href="/terms" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Terms</Link>
+              <Link href="/blog/advertise" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>Advertise</Link>
               <a href="https://app.getatlas.ca" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>App</a>
             </div>
           </div>
