@@ -9,6 +9,7 @@ import BackToTop from "./BackToTop";
 import TableOfContents from "./TableOfContents";
 import BlogNav from "../components/BlogNav";
 import NewsletterForm from "../NewsletterForm";
+import { pickRelated } from '../../lib/blog-taxonomy';
 
 export const revalidate = 60;
 
@@ -125,13 +126,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   if (!post) notFound();
 
-  const { data: related } = await supabase
+  // Related posts: same region, then same topic, then newest (was: always the 4 newest posts).
+  const { data: candidates } = await supabase
     .from("blog_posts")
     .select("id,title,slug,description,cover_image_url,category,read_time,date_published")
     .eq("is_published", true)
-    .neq("slug", slug).order("date_published", { ascending: false }).limit(4);
+    .neq("slug", slug).order("date_published", { ascending: false }).limit(60);
 
-  const relatedPosts: RelatedPost[] = related ?? [];
+  const relatedPosts: RelatedPost[] = pickRelated(post, (candidates ?? []) as RelatedPost[], 4);
   const highlights: string[] = post.highlights ?? [];
   const keyFactsRaw = post.key_facts ?? {};
   const keyFactsEntries: [string, string][] = Array.isArray(keyFactsRaw)

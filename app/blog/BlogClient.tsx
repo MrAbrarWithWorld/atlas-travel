@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { BLOG_TOPICS, blogTopic } from '../lib/blog-taxonomy';
 
 interface Post {
   id: string;
@@ -73,19 +74,21 @@ export default function BlogClient({
   }
 
   function formatCat(cat: string) {
-    if (cat === 'ALL') return 'All Articles';
-    return cat.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+    if (cat === 'ALL') return 'All articles';
+    return (BLOG_TOPICS as readonly string[]).includes(cat) ? cat : blogTopic(cat);
   }
 
+  // Chips show the three grouped topics (see app/lib/blog-taxonomy.ts), not every stored spelling.
   const categories = useMemo(() => {
-    const cats = Array.from(new Set(allPosts.map(p => p.category).filter(Boolean)));
-    return ['ALL', ...cats];
+    const present = new Set(allPosts.map(p => blogTopic(p.category)));
+    return ['ALL', ...BLOG_TOPICS.filter(t => present.has(t))];
   }, [allPosts]);
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { ALL: allPosts.length };
     allPosts.forEach(p => {
-      if (p.category) counts[p.category] = (counts[p.category] || 0) + 1;
+      const t = blogTopic(p.category);
+      counts[t] = (counts[t] || 0) + 1;
     });
     return counts;
   }, [allPosts]);
@@ -95,7 +98,9 @@ export default function BlogClient({
     if (activeCategory !== 'ALL') {
       // Partial match: ?cat=visa matches "visa-tips", "budget-visa", etc.
       const filterLower = activeCategory.toLowerCase();
+      const isTopic = (BLOG_TOPICS as readonly string[]).includes(activeCategory);
       posts = posts.filter(p => {
+        if (isTopic) return blogTopic(p.category) === activeCategory;
         const cat = (p.category ?? '').toLowerCase();
         return cat === filterLower || cat.includes(filterLower) || filterLower.includes(cat);
       });
@@ -241,7 +246,7 @@ export default function BlogClient({
                   <img src={featured.cover_image_url} alt={featured.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(28,25,20,0.88) 0%, rgba(28,25,20,0.4) 55%, rgba(28,25,20,0.15) 100%)" }} />
                   <div style={{ position: "absolute", bottom: 64, left: 64, right: 64, maxWidth: 720 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", color: "#c9a96e", marginBottom: 18, textTransform: "uppercase" }}>{featured.category}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", color: "#c9a96e", marginBottom: 18, textTransform: "uppercase" }}>{formatCat(featured.category)}</div>
                     <h2 style={{ fontFamily: "var(--font-cormorant-garamond),serif", fontSize: "clamp(32px,4.5vw,64px)", fontWeight: 600, lineHeight: 1.1, color: "#ede5d5", marginBottom: 18 }}>{featured.title}</h2>
                     {featured.description && <p style={{ fontSize: 15, color: "rgba(237,229,213,0.75)", lineHeight: 1.65, marginBottom: 28, maxWidth: 560 }}>{featured.description}</p>}
                     <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", color: "#c9a96e", textTransform: "uppercase", display: "inline-flex", alignItems: "center", gap: 10, borderBottom: "1px solid rgba(201,169,110,0.4)", paddingBottom: 2 }}>
