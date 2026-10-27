@@ -27,7 +27,7 @@ type Niche = {
   faqs: Faq[];
 };
 
-export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers', Niche> = {
+export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers' | 'salons' | 'restaurants' | 'agencies', Niche> = {
   trades: {
     slug: 'trades',
     metaTitle: 'Missed-Call Text-Back & Lead Follow-Up for Contractors in Toronto',
@@ -136,6 +136,117 @@ export const NICHES: Record<'trades' | 'realtors' | 'bookkeepers', Niche> = {
       {
         q: 'How much is it?',
         a: 'Most bookkeepers start with the Follow-Up System at $299 setup + $59/month (founding price). The missed-lead audit is free.',
+      },
+    ],
+  },
+  salons: {
+    slug: 'salons',
+    metaTitle: 'Booking Replies, Reminders & Review Requests for Salons and Spas in Toronto',
+    metaDescription:
+      'For salons, spas and studios: answer booking enquiries in seconds, send appointment reminders and ask for reviews automatically. Built for Toronto and GTA owners. Free audit.',
+    eyebrow: 'For salons, spas & studios',
+    h1: 'Fewer no-shows. More reviews. Less time on the phone.',
+    intro:
+      'You are with a client when the phone rings or a message arrives. We set up instant replies with your booking link, friendly appointment reminders and a review request after each visit, so the chair stays full without you glued to your phone.',
+    pains: [
+      'Booking enquiries wait until the end of the day, and the customer books somewhere else.',
+      'No-shows leave gaps you cannot refill at short notice.',
+      'Happy clients rarely leave a review unless someone asks.',
+      'Instagram, calls and web messages all land in different places.',
+    ],
+    builds: [
+      'Instant reply to every enquiry, with your booking link',
+      'Appointment reminders that make it easy to confirm or reschedule',
+      'A polite review request sent after the visit',
+      'All enquiries saved in one simple list',
+    ],
+    startWith: 'lead-rescue',
+    faqs: [
+      {
+        q: 'Do I have to change my booking software?',
+        a: 'No. We work with the booking link or calendar you already use. We check this in the free audit before you pay anything.',
+      },
+      {
+        q: 'Who writes the messages?',
+        a: 'We write them with you, in your tone, and you approve the wording before anything goes live.',
+      },
+      {
+        q: 'How much is it?',
+        a: 'Lead Rescue is $99 setup + $29/month with the first month free (founding price). Review requests are part of the Follow-Up System at $299 setup + $59/month.',
+      },
+    ],
+  },
+  restaurants: {
+    slug: 'restaurants',
+    metaTitle: 'Catering Enquiry Replies & Review Requests for Restaurants and Local Shops in Toronto',
+    metaDescription:
+      'For restaurants, cafes and local shops: answer catering and event enquiries in seconds, follow up on quotes and collect reviews automatically. Toronto and GTA. Free audit.',
+    eyebrow: 'For restaurants & local shops',
+    h1: 'Answer every catering enquiry while it is still hot.',
+    intro:
+      'Catering and event enquiries often go to whoever replies first. We set up an instant, friendly reply with your menu or quote link, remind you to follow up and ask happy customers for a review.',
+    pains: [
+      'Catering enquiries arrive during the lunch rush and get answered a day later.',
+      'Quotes are sent and nobody checks back.',
+      'Reviews depend on customers remembering to leave one.',
+      'Enquiries come by phone, email, Instagram and your website.',
+    ],
+    builds: [
+      'Instant reply to website and email enquiries, with your menu or quote link',
+      'Missed-call text-back during busy hours',
+      'A reminder list of quotes that still need a follow-up',
+      'A review request sent after the order or event',
+    ],
+    startWith: 'lead-rescue',
+    faqs: [
+      {
+        q: 'Does this work for a small, one-location business?',
+        a: 'Yes. The systems are built for owner-run businesses. Lead Rescue starts at $99 setup + $29/month (founding price).',
+      },
+      {
+        q: 'Will customers know it is automated?',
+        a: 'Messages are written in your voice and sent in your business name. Anything that needs a human answer is flagged to you right away.',
+      },
+      {
+        q: 'What does the free audit show?',
+        a: 'We test how fast your website form, email and phone answer an enquiry, then send a one-page report with a simple fix plan.',
+      },
+    ],
+  },
+  agencies: {
+    slug: 'agencies',
+    metaTitle: 'Automation Builds for Agencies and Freelancers in Canada',
+    metaDescription:
+      'For agencies, consultants and freelancers: lead capture, client intake, reports and follow-up automations built to a fixed written quote. Toronto-based. Free audit.',
+    eyebrow: 'For agencies & freelancers',
+    h1: 'Automations you can offer your own clients.',
+    intro:
+      'You sell the creative or consulting work; we build the plumbing. Lead capture, client intake forms, reporting and follow-ups, designed with you and quoted in writing before any work starts.',
+    pains: [
+      'Enquiries and onboarding run on email threads and spreadsheets.',
+      'Clients ask for reports you assemble by hand every month.',
+      'Follow-ups on proposals depend on your memory.',
+      'You turn down automation requests because you do not have time to build them.',
+    ],
+    builds: [
+      'Lead capture that saves every enquiry to one place',
+      'Client intake forms and onboarding checklists',
+      'Monthly report and dashboard automation from your own data',
+      'Proposal follow-up reminders you approve',
+    ],
+    startWith: 'workflow-automation',
+    faqs: [
+      {
+        q: 'How is custom work priced?',
+        a: 'Custom Automation starts from $500 and always begins with a fixed written quote, so you know the cost before work starts.',
+      },
+      {
+        q: 'Can you work to my own tools and brand?',
+        a: 'We connect to the tools you already use. What is possible depends on the tool, and we confirm it in the free audit before you pay.',
+      },
+      {
+        q: 'Where do I start?',
+        a: 'Book the free audit or describe one workflow you repeat every week. We will tell you honestly whether automating it is worth it.',
       },
     ],
   },

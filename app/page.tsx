@@ -73,9 +73,9 @@ const NICHES = [
   { Icon: Wrench, title: 'Trades & home services', text: 'HVAC, plumbing, roofing, renovation and cleaning.', href: '/for/trades' },
   { Icon: HouseLine, title: 'Realtors & mortgage agents', text: 'Answer portal and website leads before they go cold.', href: '/for/realtors' },
   { Icon: Calculator, title: 'Bookkeepers & tax preparers', text: 'Client intake, document checklists and reminders.', href: '/for/bookkeepers' },
-  { Icon: Scissors, title: 'Salons, spas & studios', text: 'Booking reminders, fewer no-shows, more reviews.', href: '' },
-  { Icon: Storefront, title: 'Restaurants & local shops', text: 'Catering enquiries answered and review requests sent.', href: '' },
-  { Icon: Briefcase, title: 'Agencies & freelancers', text: 'Automations you can resell to your own clients.', href: '' },
+  { Icon: Scissors, title: 'Salons, spas & studios', text: 'Booking reminders, fewer no-shows, more reviews.', href: '/for/salons' },
+  { Icon: Storefront, title: 'Restaurants & local shops', text: 'Catering enquiries answered and review requests sent.', href: '/for/restaurants' },
+  { Icon: Briefcase, title: 'Agencies & freelancers', text: 'Automations you can offer to your own clients.', href: '/for/agencies' },
 ];
 
 const leadRescue = PAID_PLANS.find((plan) => plan.id === 'lead-rescue')!;

@@ -459,6 +459,10 @@ function buildPage(dest, data) {
     </div>`).join('');
 
   const ctaUrl = `https://getatlas.ca/?dest=${encodeURIComponent(data.name)}`;
+  const otherDests = Object.entries(DESTINATIONS)
+    .filter(([key]) => key !== dest)
+    .map(([key, d]) => `<a href="/plan/${key}">${d.name}</a>`)
+    .join(' · ');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -514,6 +518,9 @@ ul li::before{content:'◆';position:absolute;left:0;color:#c9a96e;font-size:0.4
 .faq-item:last-child{border-bottom:none;}
 .faq-item h3{font-size:0.85rem;font-weight:500;color:#d4aa6e;margin-bottom:0.4rem;}
 .faq-item p{font-size:0.81rem;color:#a8a090;line-height:1.7;}
+.more-dests{font-size:0.8rem;line-height:2;color:#8a7a5a;}
+.more-dests a{color:#c9a96e;text-decoration:none;}
+.more-dests a:hover{text-decoration:underline;}
 footer{max-width:760px;margin:0 auto;padding:1.5rem;border-top:1px solid rgba(201,169,110,0.1);text-align:center;}
 footer p{font-size:0.7rem;color:#3a2a14;letter-spacing:0.05em;}
 footer a{color:#4a3a22;}
@@ -522,11 +529,11 @@ footer a{color:#4a3a22;}
 </head>
 <body>
 <header>
-  <a href="/" class="logo">A<span class="logo-dot"></span>TLAS</a>
-  <nav><a href="/">Plan a Trip</a></nav>
+  <a href="/travel" class="logo">A<span class="logo-dot"></span>TLAS</a>
+  <nav><a href="/travel">Plan a Trip</a></nav>
 </header>
 <main>
-  <div class="breadcrumb"><a href="/">Atlas</a><span>›</span>${data.name} Travel Guide</div>
+  <div class="breadcrumb"><a href="/travel">Atlas</a><span>›</span>${data.name} Travel Guide</div>
   <div class="hero-emoji">${data.emoji}</div>
   <h1>${data.name}, ${data.country}<br/>Travel Guide 2026</h1>
   <p class="subtitle">AI-powered trip planner — custom itinerary, visa info, hotels, and maps for ${data.name}.</p>
@@ -568,13 +575,18 @@ footer a{color:#4a3a22;}
     ${faqs}
   </section>
 
+  <section>
+    <div class="section-label">More destination guides</div>
+    <p class="more-dests">${otherDests}</p>
+  </section>
+
   <div class="cta-box">
     <p>Ready to plan your ${data.name} trip? Atlas AI creates a complete day-by-day itinerary personalised to your passport, budget, and travel style.</p>
     <a href="${ctaUrl}" class="cta-btn">✈️ Start Planning — It's Free</a>
   </div>
 </main>
 <footer>
-  <p><a href="/">Atlas AI Travel Planner</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
+  <p><a href="/travel">Atlas AI Travel Planner</a> · <a href="/blog">Travel blog</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
 </footer>
 </body>
 </html>`;
