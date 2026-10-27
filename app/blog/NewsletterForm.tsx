@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import s from './blog.module.css';
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState('');
@@ -28,63 +29,32 @@ export default function NewsletterForm() {
   };
 
   if (status === 'success') {
-    return (
-      <div style={{ textAlign: 'center', padding: '12px 0' }}>
-        <p style={{ fontSize: 15, color: '#c9a96e', fontWeight: 600 }}>✓ You&apos;re subscribed! Welcome to The Atlas Dispatch.</p>
-      </div>
-    );
+    return <p className={s.desc} role="status" style={{ fontWeight: 600, color: 'var(--b-accent)' }}>You are subscribed. Thanks for joining The Atlas Dispatch.</p>;
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{
-        display: 'flex',
-        gap: 12,
-        maxWidth: 440,
-        margin: '0 auto',
-      }}
-    >
-      <input
-        type="email"
-        placeholder="your@email.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        style={{
-          flex: 1,
-          background: '#1c1914',
-          border: '1px solid #3a3228',
-          borderRadius: 8,
-          padding: '12px 16px',
-          color: '#ede5d5',
-          fontSize: 14,
-          outline: 'none',
-        }}
-      />
-      <button
-        type="submit"
-        disabled={status === 'loading'}
-        style={{
-          background: 'none',
-          border: '1px solid #c9a96e',
-          borderRadius: 8,
-          padding: '12px 20px',
-          color: '#c9a96e',
-          fontSize: 13,
-          fontWeight: 600,
-          letterSpacing: '0.06em',
-          cursor: status === 'loading' ? 'not-allowed' : 'pointer',
-          whiteSpace: 'nowrap',
-          opacity: status === 'loading' ? 0.7 : 1,
-        }}
-      >
-        {status === 'loading' ? 'Subscribing...' : "Subscribe → It's Free"}
-      </button>
+    <form onSubmit={handleSubmit} aria-label="Newsletter signup">
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <label htmlFor="nl-email" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>Email address</label>
+        <input
+          id="nl-email"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+          style={{ flex: '1 1 220px', height: 48, padding: '0 16px', borderRadius: 999, border: '1px solid var(--b-line)', background: 'var(--b-surface)', color: 'var(--b-ink)', font: 'inherit', fontSize: 16 }}
+        />
+        <button type="submit" className={s.btn} disabled={status === 'loading'} style={{ height: 48, opacity: status === 'loading' ? 0.7 : 1 }}>
+          {status === 'loading' ? 'Subscribing…' : 'Subscribe'}
+        </button>
+      </div>
+      <p style={{ fontSize: 13, color: 'var(--b-muted)', margin: '10px 0 0' }}>
+        By subscribing you agree to receive travel guides by email from Atlas AI Technologies. Unsubscribe anytime.
+      </p>
       {status === 'error' && (
-        <p style={{ fontSize: 12, color: '#e07070', marginTop: 8, textAlign: 'center', width: '100%' }}>
-          Something went wrong. Please try again.
-        </p>
+        <p role="alert" style={{ fontSize: 14, color: '#c0392b', margin: '8px 0 0' }}>That did not work. Please check the address and try again.</p>
       )}
     </form>
   );

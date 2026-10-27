@@ -92,7 +92,7 @@ export default async function CommunityStoryPage({ params }: { params: Promise<{
 
   return (
     <div style={{ background: "#1c1914", minHeight: "100vh", color: "#ede5d5", fontFamily: "var(--font-dm-sans),sans-serif" }}>
-      <BlogNav activePath="/community" />
+      <BlogNav activePath="/community" dark />
 
       {/* Cover image */}
       {story.cover_photo && (

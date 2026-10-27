@@ -52,8 +52,8 @@ export default function TableOfContents({ content }: { content: string }) {
   if (items.length < 3) return null;
 
   return (
-    <nav aria-label="Table of contents" style={{ position:"sticky", top:80, maxHeight:"calc(100vh - 100px)", overflowY:"auto", paddingBottom:24 }}>
-      <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", color:"#a09070", textTransform:"uppercase", marginBottom:14 }}>IN THIS GUIDE</div>
+    <nav aria-label="Table of contents" style={{ paddingBottom:24 }}>
+      <div style={{ fontSize:14, fontWeight:700, color:"var(--b-ink)", marginBottom:12 }}>In this guide</div>
       {items.map(item => (
         <a
           key={item.id}
@@ -64,12 +64,12 @@ export default function TableOfContents({ content }: { content: string }) {
           }}
           style={{
             display:"block",
-            fontSize:13,
-            color: activeId === item.id ? "#c9a96e" : "#a09070",
+            fontSize:14,
+            color: activeId === item.id ? "var(--b-accent)" : "var(--b-muted)",
             textDecoration:"none",
             padding:"5px 0 5px 12px",
             paddingLeft: item.level === 3 ? 24 : 12,
-            borderLeft: activeId === item.id ? "2px solid #c9a96e" : "2px solid #3a3228",
+            borderLeft: activeId === item.id ? "2px solid var(--b-accent)" : "2px solid var(--b-line)",
             marginBottom:2,
             lineHeight:1.4,
             transition:"all 0.15s",

@@ -109,13 +109,14 @@ export default function WriteButton() {
       <button
         onClick={handleOpenWrite}
         style={{
-          background: "none", border: "1px solid #c9a96e", borderRadius: 6,
-          padding: "7px 16px", color: "#c9a96e", fontSize: 12, fontWeight: 600,
-          letterSpacing: "0.08em", cursor: "pointer", display: "flex",
+          // Theme-aware inside the blog nav (falls back to the old gold elsewhere).
+          background: "none", border: "1px solid var(--b-line, #c9a96e)", borderRadius: 999,
+          height: 40, padding: "0 16px", color: "var(--b-ink, #c9a96e)", fontSize: 14, fontWeight: 600,
+          fontFamily: "inherit", cursor: "pointer", display: "flex",
           alignItems: "center", gap: 6, whiteSpace: "nowrap",
         }}
       >
-        ✍️ Write
+        Write a story
       </button>
 
       {/* Modal overlay — portalled to document.body to escape nav stacking context */}

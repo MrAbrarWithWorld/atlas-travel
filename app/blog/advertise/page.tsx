@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import BlogNav from '../components/BlogNav';
+import BlogFooter from '../components/BlogFooter';
+import bs from '../blog.module.css';
 
 const URL = 'https://getatlas.ca/blog/advertise';
 const MAILTO = 'mailto:support@getatlas.ca?subject=Advertising%20on%20Atlas%20Travel';
@@ -18,10 +20,10 @@ export const metadata: Metadata = {
   },
 };
 
-const gold = '#c9a96e';
-const text = '#ede5d5';
-const muted = '#a09684';
-const line = '#3a3228';
+const gold = 'var(--b-accent)';
+const text = 'var(--b-ink)';
+const muted = 'var(--b-muted)';
+const line = 'var(--b-line)';
 const serif = 'var(--font-cormorant-garamond),serif';
 
 const FORMATS = [
@@ -47,14 +49,14 @@ export default function AdvertisePage() {
   const h2 = { fontFamily: serif, fontSize: 'clamp(28px,3.4vw,40px)', fontWeight: 400, color: text, margin: '56px 0 16px', lineHeight: 1.1 } as const;
   const p = { fontSize: 16, color: muted, lineHeight: 1.75, margin: '0 0 14px', maxWidth: 680 } as const;
   return (
-    <div style={{ background: '#1c1914', minHeight: '100vh', color: text, fontFamily: 'var(--font-dm-sans),sans-serif' }}>
+    <div className={`${bs.theme} ${bs.page}`}>
       <BlogNav />
       <main style={{ maxWidth: 960, margin: '0 auto', padding: '112px 24px 96px' }}>
         <Link href="/blog" style={{ fontSize: 13, color: gold, textDecoration: 'none' }}>← Back to the blog</Link>
         <h1 style={{ fontFamily: serif, fontSize: 'clamp(40px,6vw,72px)', fontWeight: 300, lineHeight: 1, letterSpacing: '-0.02em', margin: '24px 0 20px' }}>
           Advertise with <em style={{ fontStyle: 'italic', color: gold }}>Atlas Travel</em>
         </h1>
-        <p style={{ ...p, fontSize: 18, color: '#cfc6b4' }}>
+        <p style={{ ...p, fontSize: 18, color: 'var(--b-ink-2)' }}>
           Atlas Travel publishes destination guides, visa tips and budget routes, and runs a free AI trip planner. Our readers are
           people actively planning a trip. If your travel brand can help them, we would like to hear from you.
         </p>
@@ -68,7 +70,7 @@ export default function AdvertisePage() {
         <h2 style={h2}>Ways to work with us</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 16 }}>
           {FORMATS.map((f) => (
-            <div key={f.title} style={{ border: `1px solid ${line}`, borderRadius: 12, padding: 22, background: '#231f18' }}>
+            <div key={f.title} style={{ border: `1px solid ${line}`, borderRadius: 12, padding: 22, background: 'var(--b-surface)' }}>
               <h3 style={{ fontSize: 17, fontWeight: 600, color: text, margin: '0 0 8px' }}>{f.title}</h3>
               <p style={{ ...p, fontSize: 15, margin: 0 }}>{f.text}</p>
             </div>
@@ -87,7 +89,7 @@ export default function AdvertisePage() {
 
         <a
           href={MAILTO}
-          style={{ display: 'inline-block', marginTop: 24, padding: '14px 26px', borderRadius: 999, background: gold, color: '#1c1914', fontWeight: 700, fontSize: 15, textDecoration: 'none' }}
+          style={{ display: 'inline-block', marginTop: 24, padding: '14px 26px', borderRadius: 999, background: gold, color: 'var(--b-accent-ink)', fontWeight: 700, fontSize: 15, textDecoration: 'none' }}
         >
           Email us about advertising
         </a>
@@ -96,6 +98,7 @@ export default function AdvertisePage() {
           Atlas Travel is run by Atlas AI Technologies, Toronto, Canada. See our <Link href="/privacy" style={{ color: gold }}>Privacy Policy</Link>.
         </p>
       </main>
+      <BlogFooter />
     </div>
   );
 }

@@ -18,7 +18,7 @@ export default function ReadingProgress() {
 
   return (
     <div style={{ position:"fixed", top:0, left:0, right:0, zIndex:200, height:3, background:"transparent", pointerEvents:"none" }}>
-      <div style={{ height:"100%", background:"linear-gradient(to right,#c9a96e,#e8c994)", width:`${progress}%`, transition:"width 0.1s linear" }} />
+      <div style={{ height:"100%", background:"linear-gradient(to right,var(--b-accent),var(--b-accent))", width:`${progress}%`, transition:"width 0.1s linear" }} />
     </div>
   );
 }
