@@ -21,7 +21,7 @@ export const AREAS: Area[] = [
     districts: ['Downtown', 'North York', 'Scarborough', 'Etobicoke', 'East York', 'York'],
     fit: ['Renovation, plumbing, HVAC and cleaning companies', 'Salons, barbers and clinics taking bookings', 'Realtors and bookkeepers handling new enquiries'],
     localNote:
-      'Toronto owners often run from a van, a chair or a job site, so calls go unanswered for hours. We are based in Toronto and can speak with you in person if you prefer, though most setup is done by phone and video.',
+      'Toronto owners often run from a van, a chair or a job site, so calls go unanswered for hours. We are based in Toronto, and setup is done by phone and video.',
   },
   {
     slug: 'mississauga',

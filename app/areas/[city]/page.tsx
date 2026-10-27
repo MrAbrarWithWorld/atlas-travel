@@ -45,7 +45,7 @@ export default async function AreaPage({ params }: { params: Promise<{ city: str
   const faqs: Faq[] = [
     {
       q: `Do you work with businesses in ${area.name}?`,
-      a: `Yes. We are a Toronto-based studio and work with small businesses across the GTA, including ${area.name}. Setup is done by phone and video, so you do not need to visit an office.`,
+      a: `Yes. We are a Toronto-based studio. We work with small businesses across the GTA, including ${area.name}, and with clients in other countries too. Setup is done by phone and video, so you do not need to visit an office.`,
     },
     {
       q: `Does it work with ${area.areaCodes} phone numbers?`,
