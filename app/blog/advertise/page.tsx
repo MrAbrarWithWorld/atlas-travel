@@ -6,15 +6,15 @@ const URL = 'https://getatlas.ca/blog/advertise';
 const MAILTO = 'mailto:support@getatlas.ca?subject=Advertising%20on%20Atlas%20Travel';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Advertise with Atlas Travel — Sponsored guides & newsletter' },
+  title: { absolute: 'Advertise with Atlas Travel — Sponsored guides & partnerships' },
   description:
-    'Reach travellers planning their next trip on the Atlas Travel blog and newsletter. Sponsored guides, newsletter sponsorships and travel partnerships, always clearly labelled.',
+    'Reach travellers planning their next trip on the Atlas Travel blog. Sponsored guides and travel partnerships, always clearly labelled.',
   alternates: { canonical: URL },
   openGraph: {
     type: 'website',
     url: URL,
     title: 'Advertise with Atlas Travel',
-    description: 'Sponsored guides, newsletter sponsorships and travel partnerships, always clearly labelled.',
+    description: 'Sponsored guides and travel partnerships, always clearly labelled.',
   },
 };
 
@@ -26,7 +26,6 @@ const serif = 'var(--font-cormorant-garamond),serif';
 
 const FORMATS = [
   { title: 'Sponsored guide', text: 'A destination guide or story written with you, published on the blog and marked Sponsored at the top.' },
-  { title: 'Newsletter sponsorship', text: 'Your brand in an issue of The Atlas Dispatch, our travel newsletter, marked as a sponsor.' },
   { title: 'Travel partnership', text: 'Tours, stays, insurance, eSIMs and other travel services we can genuinely recommend, linked from relevant guides.' },
 ];
 
@@ -39,7 +38,7 @@ const RULES = [
 
 const STEPS = [
   'Email us with your brand, what you want to promote and your timing.',
-  'We reply with current reader and newsletter numbers and the options that fit.',
+  'We reply with current reader numbers and the options that fit.',
   'We agree the price, dates, wording and labels in writing before anything is published.',
   'After the campaign we share the results we can measure, such as views and clicks.',
 ];
@@ -63,7 +62,7 @@ export default function AdvertisePage() {
         <h2 style={h2}>Who reads Atlas Travel</h2>
         <p style={p}>
           Travellers researching where to go, what visas they need, how much a trip costs and how to plan each day. We share
-          current reader and newsletter numbers when you get in touch, so you can judge the fit with real data.
+          current reader numbers when you get in touch, so you can judge the fit with real data.
         </p>
 
         <h2 style={h2}>Ways to work with us</h2>

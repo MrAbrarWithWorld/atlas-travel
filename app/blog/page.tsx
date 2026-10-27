@@ -105,7 +105,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
             Hidden gems, budget routes, and destination inspiration — delivered to your inbox every week. No spam, just stories worth reading.
           </p>
           <NewsletterForm />
-          <p style={{ fontSize: 11, color: "#5a5248", marginTop: 16 }}>Join 2,000+ travellers already subscribed · Unsubscribe anytime</p>
+          <p style={{ fontSize: 11, color: "#5a5248", marginTop: 16 }}>Unsubscribe anytime</p>
         </div>
       </div>
 
@@ -138,7 +138,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
               <a href="https://app.getatlas.ca" style={{ fontSize: 12, color: "#8a8070", textDecoration: "none", letterSpacing: "0.06em" }}>App</a>
             </div>
           </div>
-          <p style={{ fontSize: 11, color: "#3a3228", textAlign: "center" }}>© {new Date().getFullYear()} Atlas Travel Inc. · All rights reserved · getatlas.ca</p>
+          <p style={{ fontSize: 11, color: "#3a3228", textAlign: "center" }}>© {new Date().getFullYear()} Atlas AI Technologies · All rights reserved · getatlas.ca</p>
         </div>
       </footer>
     </div>
