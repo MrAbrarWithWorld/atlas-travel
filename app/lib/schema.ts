@@ -11,7 +11,7 @@ export function businessNode(extra: Record<string, unknown> = {}) {
     name: 'Atlas AI Technologies',
     url: `${SITE}/`,
     description:
-      'Lead follow-up and workflow automation for small businesses: missed-call text-back, instant web-form replies, CRM setup and approved follow-ups.',
+      'Lead follow-up and workflow automation for small and growing businesses: missed-call text-back, instant web-form replies, CRM setup and approved follow-ups.',
     areaServed: [
       { '@type': 'City', name: 'Toronto' },
       { '@type': 'AdministrativeArea', name: 'Greater Toronto Area' },

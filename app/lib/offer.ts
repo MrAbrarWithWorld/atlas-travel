@@ -92,6 +92,7 @@ export const PAID_PLANS: Plan[] = [
       'Client intake portals and document checklists',
       'Reports and dashboards from your own data',
       'Connections between the tools you already use',
+      'Larger teams (100+ people): scoped as a custom project',
     ],
     cta: 'Describe your workflow',
   },

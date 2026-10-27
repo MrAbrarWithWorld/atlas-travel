@@ -4,11 +4,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://getatlas.ca"),
   title: {
-    default: "Atlas AI Technologies | Lead follow-up automation for small businesses",
+    default: "Atlas AI Technologies | Lead follow-up automation for small and growing businesses",
     template: "%s | Atlas",
   },
   description:
-    "Atlas AI Technologies builds lead follow-up and workflow automation for small businesses in Toronto and across Canada. Free missed-lead audit, founding prices from $29/month.",
+    "Atlas AI Technologies builds lead follow-up and workflow automation for small and growing businesses in Toronto, across Canada and internationally. Free missed-lead audit, founding prices from $29/month.",
   authors: [{ name: "Atlas AI Technologies" }],
   creator: "Atlas AI Technologies",
   openGraph: {
@@ -63,7 +63,7 @@ export default function RootLayout({
                 "sameAs": [
                   "https://play.google.com/store/apps/details?id=ca.getatlas.app"
                 ],
-                "description": "Lead follow-up and workflow automation for small businesses in Toronto and across Canada. Also the maker of the Atlas AI Travel Planner app."
+                "description": "Lead follow-up and workflow automation for small and growing businesses in Toronto, across Canada and internationally. Also the maker of the Atlas AI Travel Planner app."
               },
               {
                 "@context": "https://schema.org",

@@ -37,7 +37,7 @@ import { FAQS } from './lib/faqs';
 // Travel planner moved to /travel (and travel.getatlas.ca); see next.config.ts.
 
 export const metadata: Metadata = {
-  title: { absolute: 'Lead Follow-Up Automation for Small Businesses in Toronto | Atlas AI Technologies' },
+  title: { absolute: 'Lead Follow-Up Automation for Small & Growing Businesses in Toronto | Atlas AI Technologies' },
   description:
     'Answer every lead in seconds. Missed-call text-back, instant web-form replies and follow-ups you approve, built in 2 weeks. Free missed-lead audit. Founding prices from $29/month.',
   alternates: { canonical: '/' },
@@ -87,7 +87,7 @@ const businessJsonLd = {
   name: 'Atlas AI Technologies',
   url: 'https://getatlas.ca/',
   description:
-    'Lead follow-up and workflow automation for small businesses: missed-call text-back, instant web-form replies, CRM setup and approved follow-ups.',
+    'Lead follow-up and workflow automation for small and growing businesses: missed-call text-back, instant web-form replies, CRM setup and approved follow-ups.',
   areaServed: [
     { '@type': 'City', name: 'Toronto' },
     { '@type': 'AdministrativeArea', name: 'Greater Toronto Area' },
@@ -129,7 +129,7 @@ export default function HomePage() {
                 Every lead answered in seconds. <em>Even when you&rsquo;re on the job.</em>
               </h1>
               <p className={styles.heroText}>
-                We set up simple automations for small businesses: missed-call text-back, instant replies
+                We set up simple automations for small and growing businesses: missed-call text-back, instant replies
                 to website enquiries, and follow-ups you approve with one tap. Built for you in about two weeks.
                 Founding prices from $29/month.
               </p>

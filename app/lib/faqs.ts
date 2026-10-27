@@ -43,6 +43,13 @@ export const FAQ_AI_ASSISTANT: Faq & { group: FaqGroup } = {
   a: 'Yes. We set up a private AI assistant on your own server (a VPS — yours, or one we arrange for you), configured for your work, with training and handover included. It can work with WhatsApp, Telegram, Slack or Discord, your email (Gmail or Outlook), Google Calendar, Google Drive, Docs and Sheets, and your CRM or other business tools. For AI usage you can use your own AI account and pay only for what you use, or take a prepaid credit balance with a monthly limit you control; when it runs low we tell you, and you can top up or raise the limit anytime. Setup starts from CAD 249 for our Founding Pilot (our first 5 assistant clients); bigger setups are a fixed written quote after a short discussion, because no two clients need the same assistant.',
 };
 
-export const FAQS_PAGE = [...FAQS, FAQ_AI_ASSISTANT];
+// Proposed copy (not yet owner-approved): positioning for larger teams. Canada's ISED counts 1–99 employees as small, 100–499 as medium.
+export const FAQ_LARGER_TEAMS: Faq & { group: FaqGroup } = {
+  group: 'How it works',
+  q: 'Do you work with larger companies?',
+  a: 'Yes, as custom projects. Our starter plans are built for small businesses, and most of our work is there. For teams of 100 or more people, such as client portals, dashboards or connections between your tools, we scope the project on a short call and give you a fixed written quote first. We are a small studio, so if a project is too big or too regulated for us, we will tell you before you pay anything. We also work with clients outside Canada.',
+};
+
+export const FAQS_PAGE = [...FAQS, FAQ_AI_ASSISTANT, FAQ_LARGER_TEAMS];
 
 export const FAQ_GROUPS: FaqGroup[] = ['Prices', 'How it works', 'Trust'];
