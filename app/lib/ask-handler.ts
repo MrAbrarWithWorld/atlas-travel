@@ -118,7 +118,7 @@ async function askPrimary(msgs: Msg[]) {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5',
+      model: 'claude-haiku-5-5',
       max_tokens: MAX_OUTPUT_TOKENS,
       temperature: 0,
       system: ASSISTANT_SYSTEM,

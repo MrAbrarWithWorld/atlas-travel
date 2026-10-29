@@ -671,95 +671,20 @@ const travelContext = await getTravelContext(messages);
   }
 
   const tokensLeft = limits.tokens - user.tokensUsed;
-  const imageInMessages = hasImage(messages);
-  const useClaudeNow = needsClaudeQuality(messages) || imageInMessages || userTier === 'pro' || userTier === 'explorer';
   const plansLeft = Math.max(0, limits.plans - user.plansUsed);
 
-  if (!useClaudeNow && process.env.GROQ_API_KEY) {
-    try {
-      const groqMessages = messages.map(m => ({
-        role: m.role,
-        content: typeof m.content === "string"
-          ? m.content
-          : Array.isArray(m.content)
-            ? (m.content.find(c => c.type === "text")?.text || "")
-            : m.content
-      }));
-      const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "meta-llama/llama-4-scout-17b-16e-instruct",
-          max_tokens: Math.min(tokensLeft, 8000),
-          stream: true,
-          messages: [
-            { role: "system", content: SYSTEM_MSG + (travelContext ? travelContext : '') },
-            ...groqMessages.filter(m => m.role !== "system")
-          ],
-        }),
-      });
-      if (groqRes.ok) {
-        startSSE();
-        const reader = groqRes.body.getReader();
-        const decoder = new TextDecoder();
-        let buf = '', fullText = '', promptTok = 0, completionTok = 0;
-        outer: while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buf += decoder.decode(value, { stream: true });
-          const lines = buf.split('\n'); buf = lines.pop() || '';
-          for (const line of lines) {
-            if (!line.startsWith('data: ')) continue;
-            const json = line.slice(6).trim();
-            if (json === '[DONE]') break outer;
-            try {
-              const ev = JSON.parse(json);
-              const text = ev.choices?.[0]?.delta?.content;
-              if (text) { fullText += text; writeSSE({ type: 'delta', text }); }
-              if (ev.x_groq?.usage) { promptTok = ev.x_groq.usage.prompt_tokens || 0; completionTok = ev.x_groq.usage.completion_tokens || 0; }
-            } catch {}
-          }
-        }
-        await recordUsage(user, key, (promptTok + completionTok) || Math.ceil(fullText.length * 0.35), requestingNewPlan);
-        endStream(Math.max(0, limits.plans - user.plansUsed));
-        return;
-      }
-    } catch(e) {}
-  }
-
-  if (!useClaudeNow && process.env.GEMINI_API_KEY) {
-    try {
-      const geminiMessages = messages.filter(m => m.role !== "system").map(m => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: typeof m.content === "string"
-          ? m.content
-          : Array.isArray(m.content)
-            ? (m.content.find(c => c.type === "text")?.text || "")
-            : "" }]
-      }));
-      const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_MSG + (travelContext ? travelContext : '') }] },
-          contents: geminiMessages,
-          generationConfig: { maxOutputTokens: 4000, temperature: 0.7 }
-        }),
-      });
-      const geminiData = await geminiRes.json();
-      const geminiReply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (geminiReply) {
-        startSSE();
-        writeSSE({ type: 'delta', text: geminiReply });
-        await recordUsage(user, key, 2000, requestingNewPlan);
-        endStream(Math.max(0, limits.plans - user.plansUsed));
-        return;
-      }
-    } catch(e) {}
-  }
+  // ── Model choice ─────────────────────────────────────────────────
+  // Free / guest users: Claude Haiku 5.5 (fast, low cost, reads photos).
+  // Paying users (Pro, Explorer): Claude Sonnet 5.5 (deeper, more precise plans).
+  // The old Groq (Llama 4 Scout) and Gemini 2.0 Flash routes were removed: both models were shut down in 2026.
+  const MODEL_PRICES = {
+    'claude-haiku-5-5': { input: 0.10, output: 0.50 },
+    'claude-sonnet-5-5': { input: 2, output: 10 },
+  };
+  let chatModel = (userTier === 'pro' || userTier === 'explorer') ? 'claude-sonnet-5-5' : 'claude-haiku-5-5';
+  // Preview deployments only: allow a side-by-side model test with the x-atlas-model header.
+  const modelOverride = process.env.VERCEL_ENV === 'preview' ? req.headers['x-atlas-model'] : null;
+  if (typeof modelOverride === 'string' && MODEL_PRICES[modelOverride]) chatModel = modelOverride;
 
  try {
     const userPrefs=req.headers['x-user-prefs']?(()=>{try{return JSON.parse(decodeURIComponent(escape(atob(req.headers['x-user-prefs']))));}catch{return {};}})():{};
@@ -826,7 +751,7 @@ const travelContext = await getTravelContext(messages);
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
+        model: chatModel,
         max_tokens: Math.min(tokensLeft, 8000),
         stream: true,
         system: systemWithPrefs,
@@ -871,9 +796,10 @@ const travelContext = await getTravelContext(messages);
     await recordUsage(user, key, used, requestingNewPlan);
     endStream(Math.max(0, limits.plans - user.plansUsed));
     if (SUPABASE_SERVICE_KEY) {
-      const costUsd = (inputTok / 1_000_000) * 3 + (outputTok / 1_000_000) * 15;
+      const price = MODEL_PRICES[chatModel] || MODEL_PRICES['claude-sonnet-5-5'];
+      const costUsd = (inputTok / 1_000_000) * price.input + (outputTok / 1_000_000) * price.output;
       const sbLog = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-      sbLog.from('api_usage_log').insert({ user_id: userId || null, model: 'claude-sonnet-4', input_tokens: inputTok, output_tokens: outputTok, cost_usd: costUsd }).then(() => {}).catch(() => {});
+      sbLog.from('api_usage_log').insert({ user_id: userId || null, model: chatModel, input_tokens: inputTok, output_tokens: outputTok, cost_usd: costUsd }).then(() => {}).catch(() => {});
     }
   } catch (error) {
     if (!res.writableEnded) { writeSSE({ type: 'error', message: error.message }); res.end(); }
