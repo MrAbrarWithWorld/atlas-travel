@@ -1,6 +1,9 @@
 import { createHash } from "crypto";
 import { createClient } from '@supabase/supabase-js';
 
+// Full trip plans (web search + long answer) can run past 60 s; give the stream room to finish.
+export const config = { maxDuration: 300 };
+
 async function geocodeLocation(placeName) {
   try {
     const query = encodeURIComponent(placeName);
@@ -674,14 +677,17 @@ const travelContext = await getTravelContext(messages);
   const plansLeft = Math.max(0, limits.plans - user.plansUsed);
 
   // ── Model choice ─────────────────────────────────────────────────
-  // Free / guest users: Claude Haiku 5.5 (fast, low cost, reads photos).
-  // Paying users (Pro, Explorer): Claude Sonnet 5.5 (deeper, more precise plans).
+  // Quick questions: Claude Haiku 5.5 (fast, low cost, reads photos).
+  // Trip plans, follow-ups and all paying users: Claude Sonnet 5.5 (deeper, more precise plans).
   // The old Groq (Llama 4 Scout) and Gemini 2.0 Flash routes were removed: both models were shut down in 2026.
   const MODEL_PRICES = {
     'claude-haiku-5-5': { input: 0.10, output: 0.50 },
     'claude-sonnet-5-5': { input: 2, output: 10 },
   };
-  let chatModel = (userTier === 'pro' || userTier === 'explorer') ? 'claude-sonnet-5-5' : 'claude-haiku-5-5';
+  // Full trip plans and longer conversations need the stronger model even on the free tier
+  // (in tests Haiku answered quick questions well but asked extra questions instead of planning).
+  const isPaid = userTier === 'pro' || userTier === 'explorer';
+  let chatModel = (isPaid || requestingNewPlan || needsClaudeQuality(messages)) ? 'claude-sonnet-5-5' : 'claude-haiku-5-5';
   // Preview deployments only: allow a side-by-side model test with the x-atlas-model header.
   const modelOverride = process.env.VERCEL_ENV === 'preview' ? req.headers['x-atlas-model'] : null;
   if (typeof modelOverride === 'string' && MODEL_PRICES[modelOverride]) chatModel = modelOverride;
