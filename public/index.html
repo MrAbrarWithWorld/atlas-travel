@@ -3115,7 +3115,7 @@ async function setPlanTag(id,tag){
   const isPro=userTier==='pro'||userTier==='explorer';
   const canSend=(draft.trim()||photo)&&!busy;
 
-  return React.createElement("div",{style:{height:"100vh",display:"flex",flexDirection:"column",background:"#1c1914",overflow:"hidden"}},
+  return React.createElement("div",{style:{height:(window.CSS&&CSS.supports&&CSS.supports("height","100dvh"))?"100dvh":"100vh",display:"flex",flexDirection:"column",background:"#1c1914",overflow:"hidden"}},
     React.createElement(CookieBanner,null),
     showOnboarding&&React.createElement(OnboardingModal,{onDone:(prompt)=>{setShowOnboarding(false);if(prompt&&prompt!=="Let's start planning!")send(prompt);}}),
     showSettings&&React.createElement(SettingsModal,{user,userTier,onClose:()=>setShowSettings(false),onLogout:handleLogout,onUpgrade:()=>setShowPricing(true)}), showHelp&&React.createElement(HelpModal,{onClose:()=>setShowHelp(false)}),showLogin&&React.createElement(LoginModal,{onClose:()=>setShowLogin(false)}),
