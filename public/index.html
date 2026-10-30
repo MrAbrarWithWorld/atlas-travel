@@ -311,6 +311,14 @@ function getLocation(){return new Promise(resolve=>{if(!navigator.geolocation){r
 function getDateTime(){const now=new Date();const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];const months=['January','February','March','April','May','June','July','August','September','October','November','December'];const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;const h=now.getHours();return `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} — ${h%12||12}:${now.getMinutes().toString().padStart(2,'0')} ${h>=12?'PM':'AM'} (${tz})`;}
 function parseMapData(text){const m=text.match(/\[MAPDATA\]([\s\S]*?)\[\/MAPDATA\]/);if(!m)return null;try{const d=JSON.parse(m[1]);return d.places||null;}catch{return null;}}
 function stripMapData(text){return text.replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g,'').trim();}
+// ---- Web ⇄ app sync helpers ----
+// Plans saved on the web start with a hidden intro pair ("Who are you?" + Atlas intro). Plans saved in the
+// Android app do not. Remove the pair by content (never by position) so both open with every message.
+function isIntroMsg(m){const c=typeof m?.content==="string"?m.content:"";return (m?.role==="user"&&c.trim()==="Who are you?")||(m?.role==="assistant"&&c.includes("I am ATLAS. Tell me where you want to go."));}
+function cleanStoredMessages(list){return (Array.isArray(list)?list:[]).filter(m=>m&&(m.role==="user"||m.role==="assistant")&&!isIntroMsg(m));}
+function userTextOf(content){const t=typeof content==="string"?content:Array.isArray(content)?(content.find(c=>c.type==="text")?.text||""):"";return t.replace(/\s*\[Current date[\s\S]*$/i,'').trim();}
+// Google Maps directions through the plan's stops (Maps allows up to 9 waypoints + origin + destination).
+function routeUrl(places){const pts=(places||[]).filter(p=>typeof p.lat==="number"&&typeof p.lon==="number").slice(0,11).map(p=>p.lat+","+p.lon);if(pts.length<2)return null;const q=new URLSearchParams({api:"1",origin:pts[0],destination:pts[pts.length-1],travelmode:"driving"});if(pts.length>2)q.set("waypoints",pts.slice(1,-1).join("|"));return "https://www.google.com/maps/dir/?"+q.toString();}
 function formatDate(iso){const d=new Date(iso);const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;}
 const PLAN_TAGS=[
   {id:'solo',label:'Solo',bg:'#2a3a2a',color:'#6abf6a'},
@@ -1747,7 +1755,7 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier,onSettings,o
 }
 
 // ===================== SIDEBAR =====================
-function Sidebar({user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject,onAssignProject,onSetPlanTag}){
+function Sidebar({chats=[],onOpenChat,activeChatId,user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject,onAssignProject,onSetPlanTag}){
   const [activeProject,setActiveProject]=React.useState(null);
 const [assigningPlan,setAssigningPlan]=React.useState(null);
 const [tagPickerPlan,setTagPickerPlan]=React.useState(null);
@@ -1855,6 +1863,17 @@ const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id
                   React.createElement("button",{onClick:e=>{e.stopPropagation();onDeleteProject(proj.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.6rem",padding:"0.1rem",opacity:0.6}},"🗑")
                 )
               ))
+          ),
+
+          // Chats — the same list as the Android app (conversations), so a chat started on the phone continues here.
+          React.createElement("div",{style:{marginBottom:"1rem"}},
+            React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",paddingLeft:"0.25rem",marginBottom:"0.5rem"}},"Chats"),
+            chats.length===0
+              ?React.createElement("p",{style:{fontSize:"0.62rem",color:"#3a2a12",paddingLeft:"0.25rem"}},"No chats yet")
+              :chats.slice(0,12).map(c=>React.createElement("div",{key:c.id,className:`plan-item${activeChatId===c.id?" active":""}`,onClick:()=>{onOpenChat&&onOpenChat(c);onClose();}},
+                  React.createElement("p",{style:{fontSize:"0.76rem",color:"#d4c8a8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},"💬 "+(c.title||"Chat")),
+                  React.createElement("p",{style:{fontSize:"0.6rem",color:"#5a4a2a",marginTop:"0.15rem"}},formatDate(c.updated_at))
+                ))
           ),
 
           // Recent Trips
@@ -2598,6 +2617,7 @@ function App(){
   const [activePlanId,setActivePlanId]=useState(null);
   const [savingPlan,setSavingPlan]=useState(false);
   const [conversationId,setConversationId]=useState(null);
+  const [chats,setChats]=useState([]);
   const conversationIdRef=useRef(null);
   const [showSettings,setShowSettings]=useState(false); const [showHelp,setShowHelp]=useState(false);
   const [userTier,setUserTier]=useState('free');
@@ -2671,6 +2691,7 @@ function App(){
   if(user){
     loadPlans();
     loadProjects();
+    loadChats();
     checkTier(user.id,user.email);
     // Cross-device sync: load latest conversation if no local messages
     if(msgs.length===0){
@@ -2680,7 +2701,7 @@ function App(){
         conversationIdRef.current=cid;
         setConversationId(cid);
         // Reconstruct msgs and hist from DB
-        const reconstructedMsgs=dbMsgs.map((m,i)=>({id:m.id||Date.now()+i,from:m.role==='user'?'user':'ai',text:m.content||''}));
+        const reconstructedMsgs=dbMsgs.map((m,i)=>m.role==='user'?{id:m.id||Date.now()+i,from:'user',text:userTextOf(m.content)}:{id:m.id||Date.now()+i,from:'ai',text:m.content||'',locations:parseMapData(m.content||'')});
         const reconstructedHist=[...defaultHist,...dbMsgs.map(m=>({role:m.role,content:m.content||''}))];
         setMsgs(reconstructedMsgs);
         hist.current=reconstructedHist;
@@ -2695,6 +2716,22 @@ function App(){
     conversationIdRef.current=null;
   }
 },[user]);
+
+  // Chats from web AND the Android app (same conversations table), newest first.
+  async function loadChats(){
+    if(!user)return;
+    try{const{data}=await sb.from('conversations').select('id,title,updated_at').eq('user_id',user.id).order('updated_at',{ascending:false}).limit(30);setChats(data||[]);}catch{}
+  }
+  async function openChat(conv){
+    try{
+      const{data}=await sb.from('chat_messages').select('id,role,content,created_at').eq('conversation_id',conv.id).order('created_at',{ascending:true}).limit(200);
+      const rows=(data||[]).filter(m=>m.role==='user'||m.role==='assistant');
+      const rec=rows.map((m,i)=>m.role==='user'?{id:m.id||Date.now()+i,from:'user',text:userTextOf(m.content)}:{id:m.id||Date.now()+i,from:'ai',text:m.content||'',locations:parseMapData(m.content||'')});
+      if(window.speechSynthesis)window.speechSynthesis.cancel();
+      hist.current=[...defaultHist,...rows.map(m=>({role:m.role,content:m.role==='user'?userTextOf(m.content):(m.content||'')}))];
+      setMsgs(rec);setActivePlanId(null);conversationIdRef.current=conv.id;setConversationId(conv.id);saveLocal(rec,hist.current);
+    }catch(e){console.error(e);showToast('Could not open this chat');}
+  }
 
   async function loadProjects(){
   try{const{data}=await sb.from('trip_projects').select('*').order('created_at',{ascending:false});if(data)setProjects(data||[]);}catch{}
@@ -2719,19 +2756,21 @@ async function deleteProject(id){
   }
 
   async function savePlan(){
-    if(!user||msgs.length===0)return;
+    if(!user||msgs.length===0)return null;
+    let savedId=null;
     setSavingPlan(true);
     try{
       const title=extractTitle(hist.current);
       const locs=msgs.filter(m=>m.locations).flatMap(m=>m.locations||[]);
       if(activePlanId){
         const{error}=await sb.from('saved_plans').update({is_draft:false,title,messages:hist.current,locations:locs.length>0?locs:null}).eq('id',activePlanId);
-        if(!error){await loadPlans();showToast('✓ Trip saved!');try{if(window.gtag)window.gtag('event','plan_saved',{event_category:'engagement',plan_title:title,plan_type:'update'});}catch{}}
+        if(!error){savedId=activePlanId;await loadPlans();showToast('✓ Trip saved!');try{if(window.gtag)window.gtag('event','plan_saved',{event_category:'engagement',plan_title:title,plan_type:'update'});}catch{}}
       } else {
         const{data,error}=await sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null,is_draft:false}).select('id,share_id').single();
-        if(!error){await loadPlans();showToast('✓ Trip saved!');if(data?.id)setActivePlanId(data.id);try{if(window.gtag)window.gtag('event','plan_saved',{event_category:'engagement',plan_title:title,plan_type:'new'});}catch{}}
+        if(!error){await loadPlans();showToast('✓ Trip saved!');if(data?.id){setActivePlanId(data.id);savedId=data.id;}try{if(window.gtag)window.gtag('event','plan_saved',{event_category:'engagement',plan_title:title,plan_type:'new'});}catch{}}
       }
     }catch{}setSavingPlan(false);
+    return savedId;
   }
 
   function generatePDF(){
@@ -2865,9 +2904,11 @@ async function deleteProject(id){
 }
   
   async function sharePlan(){
-    if(!activePlanId)return;
+    // Chats are no longer auto-saved as drafts, so Share saves the trip first when needed.
+    const planId=activePlanId||await savePlan();
+    if(!planId)return;
     try{
-      const{data,error}=await sb.from('saved_plans').update({is_public:true}).eq('id',activePlanId).select('share_id').single();
+      const{data,error}=await sb.from('saved_plans').update({is_public:true}).eq('id',planId).select('share_id').single();
       if(!error&&data?.share_id){
         const shareUrl=`${window.location.origin}/trip/${data.share_id}`;
         await navigator.clipboard.writeText(shareUrl);
@@ -2899,10 +2940,10 @@ async function setPlanTag(id,tag){
     try{
       const{data,error}=await sb.from('saved_plans').select('messages').eq('id',plan.id).single();
       if(!error&&data){
-        hist.current=data.messages;
+        const stored=cleanStoredMessages(data.messages);
+        hist.current=[...defaultHist,...stored];
         const reconstructed=[];
-        const msgHistory=data.messages.slice(2);
-        for(const m of msgHistory){
+        for(const m of stored){
           if(m.role==="user"){
             const text=typeof m.content==="string"
               ?m.content.replace(/\s*\[Current date.*$/s,'').trim()
@@ -2915,6 +2956,8 @@ async function setPlanTag(id,tag){
         }
         setMsgs(reconstructed);
         setActivePlanId(plan.id);
+        conversationIdRef.current=null;setConversationId(null);
+        saveLocal(reconstructed,hist.current);
       }
     }catch(e){console.error(e);}
     setLoadingPlans(false);
@@ -2987,12 +3030,14 @@ async function setPlanTag(id,tag){
       let fullText='';let sseBuf='';
       // Throttled render: update DOM at 80ms intervals, not on every token
       const renderTimer=setInterval(()=>{const snap=fullText;setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:snap,streaming:true}:msg));},80);
-      function finalize(plansLeft){
+      let finalized=false;
+      function finalize(plansLeft,incomplete){
+        finalized=true;
         clearInterval(renderTimer);
         if(plansLeft!==undefined)setPlansLeft(plansLeft);
         const locations=parseMapData(fullText);
         hist.current=[...hist.current,{role:"assistant",content:fullText}];
-        setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:fullText,locations,streaming:false}:msg));
+        setMsgs(m=>m.map(msg=>msg.id===aiId?{...msg,text:fullText,locations,streaming:false,incomplete:!!incomplete}:msg));
         saveLocal([...newMsgs,{id:aiId,from:"ai",text:fullText,locations}],hist.current);
         setBusy(false);
         if(user){
@@ -3000,13 +3045,10 @@ async function setPlanTag(id,tag){
           const locs=[...newMsgs,{id:aiId,from:"ai",text:fullText,locations}].filter(m=>m.locations).flatMap(m=>m.locations||[]);
           if(activePlanId){
             sb.from('saved_plans').update({messages:hist.current,locations:locs.length>0?locs:null,title}).eq('id',activePlanId).then(()=>{});
-          } else {
-            sb.from('saved_plans').insert({user_id:user.id,title,messages:hist.current,locations:locs.length>0?locs:null,is_draft:true}).select('id,share_id').single().then(({data})=>{
-              if(data?.id){
-                setActivePlanId(data.id);loadPlans();
-                const _convCount=parseInt(localStorage.getItem('atlas_conv_count')||'0')+1;localStorage.setItem('atlas_conv_count',_convCount);if(!localStorage.getItem('atlas_review_shown')&&_convCount>=3){setTimeout(()=>setShowReviewPrompt(true),2500);}
-              }
-            });
+          } else if(!conversationIdRef.current){
+            // New chats are kept in Chats (conversations), the same list the Android app shows.
+            // They are no longer copied into Trips as DRAFT plans (that created many duplicate drafts).
+            const _convCount=parseInt(localStorage.getItem('atlas_conv_count')||'0')+1;localStorage.setItem('atlas_conv_count',_convCount);if(!localStorage.getItem('atlas_review_shown')&&_convCount>=3){setTimeout(()=>setShowReviewPrompt(true),2500);}
           }
           // Cross-device sync: save to conversations + chat_messages
           (async()=>{
@@ -3019,6 +3061,7 @@ async function setPlanTag(id,tag){
             if(cid){
               await saveMessage(user.id,cid,'user',displayText);
               await saveMessage(user.id,cid,'assistant',fullText);
+              loadChats();
             }
           })();
         }
@@ -3039,8 +3082,11 @@ async function setPlanTag(id,tag){
         }
       }
       if(streamErr)throw streamErr;
+      // The server always ends with a 'done' event. Without it the connection dropped part-way:
+      // keep what arrived and offer Continue (before, the answer stayed "writing" forever).
+      if(!finalized){if(fullText)finalize(undefined,true);else throw new Error('Empty response');}
     }catch(e){
-      setMsgs(m=>[...m,{id:Date.now()+1,from:"ai",isConnectionError:true,retryText:lastSendRef.current.text,text:""}]);setBusy(false);
+      setMsgs(m=>[...m.map(x=>x.streaming?{...x,streaming:false}:x),{id:Date.now()+1,from:"ai",isConnectionError:true,retryText:lastSendRef.current.text,text:""}]);setBusy(false);
     }
   }
 
@@ -3059,7 +3105,7 @@ async function setPlanTag(id,tag){
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
     showCalendar&&React.createElement(CalendarModal,{msgs,onClose:()=>setShowCalendar(false)}),
   showTools&&React.createElement(ToolsPanel,{onClose:()=>setShowTools(false)}),
-  showSidebar&&user&&React.createElement(Sidebar,{user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject,onSetPlanTag:setPlanTag}),
+  showSidebar&&user&&React.createElement(Sidebar,{chats,onOpenChat:openChat,activeChatId:conversationId,user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject,onSetPlanTag:setPlanTag}),
 
     // Header
     React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.12)"}},
@@ -3076,7 +3122,7 @@ async function setPlanTag(id,tag){
       ),
       React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.75rem"}},
         msgs.length>0&&user&&React.createElement("button",{onClick:savePlan,disabled:savingPlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},savingPlan?"Saving...":"Save trip"),
-        msgs.length>0&&user&&activePlanId&&React.createElement("button",{onClick:sharePlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"🔗 Share"),
+        msgs.length>0&&user&&React.createElement("button",{onClick:sharePlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"🔗 Share"),
         msgs.length>0&&React.createElement("button",{onClick:reset,style:{background:"none",border:"none",color:"#7a6a40",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"New"),
         user
           ?React.createElement(UserAvatar,{user,onLogout:handleLogout,onOpenSidebar:()=>setShowSidebar(true),onUpgrade:()=>setShowPricing(true),userTier,onSettings:()=>setShowSettings(true),onHelp:()=>setShowHelp(true)})
@@ -3131,7 +3177,12 @@ async function setPlanTag(id,tag){
                     :_streaming
                     ?React.createElement("div",null,React.createElement(Prose,{text:msg.text||""}),React.createElement("span",{className:"typing-cursor"}))
                     :(_isMulti?React.createElement(MultiDestDocument,{text:msg.text,msgs,destinations:_multiDests}):_isItin?React.createElement(TripDocument,{text:msg.text,msgs}):_isCmp?React.createElement(ComparisonCard,{text:msg.text,destinations:_cmpDests}):React.createElement(Prose,{text:msg.text})),
+                  msg.incomplete&&!busy&&msg.id===msgs[msgs.length-1]?.id&&React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem",flexWrap:"wrap",marginTop:"0.6rem",padding:"0.55rem 0.8rem",border:"1px solid rgba(201,169,110,0.2)",borderRadius:10}},
+                    React.createElement("span",{style:{fontSize:"0.74rem",color:"#8a7a50",flex:1}},"The answer was cut off (connection dropped)."),
+                    React.createElement("button",{onClick:()=>send("Please continue exactly where you stopped."),style:{background:"#c9a96e",border:"none",borderRadius:16,padding:"0.35rem 0.9rem",color:"#1c1914",cursor:"pointer",fontSize:"0.7rem",fontWeight:700}},"Continue")
+                  ),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
+                  msg.locations&&routeUrl(msg.locations)&&React.createElement("a",{href:routeUrl(msg.locations),target:"_blank",rel:"noopener noreferrer",style:{display:"inline-flex",alignItems:"center",gap:"0.4rem",marginTop:"0.5rem",padding:"0.45rem 0.9rem",borderRadius:18,background:"#c9a96e",color:"#1c1914",fontSize:"0.72rem",fontWeight:700,textDecoration:"none"}},"🧭 Open route in Google Maps · "+Math.min(msg.locations.length,11)+" stops"),
                   React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.5rem",flexWrap:"wrap"}},
                   hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen"),
                   React.createElement("button",{onClick:()=>setShowCalendar(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📅 Calendar"),
