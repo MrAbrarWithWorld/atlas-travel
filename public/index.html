@@ -225,7 +225,7 @@ button{-webkit-tap-highlight-color:transparent;}
 .login-btn:hover{background:rgba(201,169,110,0.12);border-color:rgba(201,169,110,0.4);}
 .login-btn svg{flex-shrink:0;}
 .user-menu{position:absolute;top:calc(100% + 8px);right:0;background:#252018;border:1px solid rgba(201,169,110,0.2);border-radius:10px;padding:0.5rem;min-width:180px;z-index:50;animation:slideUp 0.2s ease;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;background:#181410;border-right:1px solid rgba(201,169,110,0.1);display:flex;flex-direction:column;z-index:40;transition:transform 0.3s ease;}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:290px;max-width:86vw;background:#181410;border-right:1px solid rgba(201,169,110,0.1);display:flex;flex-direction:column;z-index:40;transition:transform 0.3s ease;}
 .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:39;animation:fadeIn 0.2s ease;}
 .plan-item{padding:0.6rem 0.75rem;border-radius:8px;cursor:pointer;transition:background 0.15s;border:1px solid transparent;margin-bottom:0.25rem;}
 .plan-item:hover{background:rgba(201,169,110,0.07);border-color:rgba(201,169,110,0.12);}
@@ -311,6 +311,12 @@ function getLocation(){return new Promise(resolve=>{if(!navigator.geolocation){r
 function getDateTime(){const now=new Date();const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];const months=['January','February','March','April','May','June','July','August','September','October','November','December'];const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;const h=now.getHours();return `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} — ${h%12||12}:${now.getMinutes().toString().padStart(2,'0')} ${h>=12?'PM':'AM'} (${tz})`;}
 function parseMapData(text){const m=text.match(/\[MAPDATA\]([\s\S]*?)\[\/MAPDATA\]/);if(!m)return null;try{const d=JSON.parse(m[1]);return d.places||null;}catch{return null;}}
 function stripMapData(text){return text.replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g,'').trim();}
+// ---- Home screen lists: the same as the Android app ----
+const HOME_FEATURED=[["🏙️","Ask me about Bangkok","Tell me about Bangkok, Thailand"],["🗻","Plan a trip to Japan","Plan a 10-day trip to Japan"],["🗼","Best hotels in Paris","What are the best hotels in Paris?"],["✈️","Cheap flights from Toronto","Find cheap flights from Toronto"]];
+const HOME_POPULAR=[["🏝️","Bali"],["🏯","Tokyo"],["🗼","Paris"],["🌊","Maldives"],["🌆","Dubai"],["🌴","Thailand"],["🇰🇷","Seoul"],["🧊","Iceland"],["🏔️","Nepal Trek"],["🕌","Morocco"],["🏛️","Greece"],["🛵","Vietnam"]];
+const HOME_QUICK=[["💸","Budget trip under $1,000"],["💍","Honeymoon destination ideas"],["🎒","Solo travel for a week"],["👨‍👩‍👧","Family-friendly vacation"],["🧗","Adventure & outdoor trip"],["🍜","Best food destinations"]];
+const chipStyle={background:"rgba(201,169,110,0.06)",border:"1px solid rgba(201,169,110,0.18)",borderRadius:20,padding:"0.45rem 0.9rem",color:"#ede5d5",cursor:"pointer",fontSize:"0.82rem",fontFamily:"'DM Sans',sans-serif"};
+const actChip={background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:16,padding:"0.32rem 0.75rem",color:"#b8b0a0",cursor:"pointer",fontSize:"0.72rem",fontFamily:"'DM Sans',sans-serif"};
 // ---- Web ⇄ app sync helpers ----
 // Plans saved on the web start with a hidden intro pair ("Who are you?" + Atlas intro). Plans saved in the
 // Android app do not. Remove the pair by content (never by position) so both open with every message.
@@ -1755,7 +1761,7 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier,onSettings,o
 }
 
 // ===================== SIDEBAR =====================
-function Sidebar({chats=[],onOpenChat,activeChatId,user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject,onAssignProject,onSetPlanTag}){
+function Sidebar({onOpenTools,onOpenSettings,onOpenHelp,onLogin,onPricing,chats=[],onOpenChat,activeChatId,user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject,onAssignProject,onSetPlanTag}){
   const [activeProject,setActiveProject]=React.useState(null);
 const [assigningPlan,setAssigningPlan]=React.useState(null);
 const [tagPickerPlan,setTagPickerPlan]=React.useState(null);
@@ -1837,8 +1843,20 @@ const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id
         // ---- MAIN VIEW ----
         :React.createElement("div",null,
 
+          // Menu — the same places as the Android app's ☰ menu
+          React.createElement("div",{style:{paddingBottom:"0.6rem",marginBottom:"0.8rem",borderBottom:"1px solid rgba(201,169,110,0.1)"}},
+            [["🧭","Explore & travel tools",onOpenTools],["📖","Travel guides",()=>{window.location.href="/blog";}],["👤",user?"Profile & Settings":"Sign in",user?onOpenSettings:onLogin],...(userTier==='pro'||userTier==='explorer'?[]:[["⭐","Plans & pricing",onPricing]]),["🛟","Help & support",onOpenHelp]].map(([ic,label,fn])=>
+              React.createElement("button",{key:label,onClick:()=>{onClose();fn&&fn();},style:{width:"100%",display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.62rem 0.5rem",background:"none",border:"none",borderRadius:8,cursor:"pointer",color:"#ede5d5",fontSize:"0.88rem",textAlign:"left",fontFamily:"'DM Sans',sans-serif"}},
+                React.createElement("span",{style:{width:22,textAlign:"center"}},ic),label))
+          ),
+          !user&&React.createElement("div",{style:{padding:"0.9rem",marginBottom:"1rem",border:"1px solid rgba(201,169,110,0.2)",borderRadius:12,background:"rgba(201,169,110,0.05)"}},
+            React.createElement("p",{style:{fontSize:"0.8rem",color:"#ede5d5",marginBottom:"0.3rem"}},"Keep your chats and trips"),
+            React.createElement("p",{style:{fontSize:"0.72rem",color:"#b8b0a0",lineHeight:1.5,marginBottom:"0.7rem"}},"Sign in free — your chats and saved trips stay in sync with the Atlas Android app."),
+            React.createElement("button",{onClick:()=>{onClose();onLogin&&onLogin();},style:{background:"#c9a96e",border:"none",borderRadius:16,padding:"0.4rem 1rem",color:"#181410",cursor:"pointer",fontWeight:700,fontSize:"0.75rem"}},"Sign in")
+          ),
+
           // Projects
-          React.createElement("div",{style:{marginBottom:"1rem"}},
+          user&&React.createElement("div",{style:{marginBottom:"1rem"}},
             React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}},
               React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",paddingLeft:"0.25rem"}},"Projects"),
               React.createElement("button",{onClick:()=>{const name=prompt("Project name:");if(name?.trim())onCreateProject(name.trim());},style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"0.9rem",lineHeight:1}},"+")
@@ -1866,7 +1884,7 @@ const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id
           ),
 
           // Chats — the same list as the Android app (conversations), so a chat started on the phone continues here.
-          React.createElement("div",{style:{marginBottom:"1rem"}},
+          user&&React.createElement("div",{style:{marginBottom:"1rem"}},
             React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",paddingLeft:"0.25rem",marginBottom:"0.5rem"}},"Chats"),
             chats.length===0
               ?React.createElement("p",{style:{fontSize:"0.62rem",color:"#3a2a12",paddingLeft:"0.25rem"}},"No chats yet")
@@ -1877,10 +1895,10 @@ const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id
           ),
 
           // Recent Trips
-          React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}},
+          user&&React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}},
             React.createElement("p",{style:{fontSize:"0.55rem",color:"#4a3a22",letterSpacing:"0.12em",textTransform:"uppercase",paddingLeft:"0.25rem"}},"Recent Trips")
           ),
-          loadingPlans
+          !user?null:loadingPlans
             ?React.createElement("div",{style:{textAlign:"center",padding:"2rem",color:"#4a3a22",fontSize:"0.72rem"}},"Loading...")
             :plans.length===0
               ?React.createElement("div",{style:{textAlign:"center",padding:"2rem 1rem",color:"#4a3a22",fontSize:"0.72rem",lineHeight:1.8}},"No saved trips yet.")
@@ -3090,7 +3108,7 @@ async function setPlanTag(id,tag){
     }
   }
 
-  function reset(){if(!confirm("Start a new journey?"))return;setMsgs([]);setDraft("");setEditingId(null);setPhoto(null);setActivePlanId(null);setConversationId(null);conversationIdRef.current=null;setHoldActive(false);if(window.speechSynthesis)window.speechSynthesis.cancel();hist.current=[...defaultHist];localStorage.removeItem(STORAGE_KEY);}
+  function reset(){if(!user&&msgs.length>0&&!confirm("Start a new chat? This chat is not saved (sign in to keep chats)."))return;setMsgs([]);setDraft("");setEditingId(null);setPhoto(null);setActivePlanId(null);setConversationId(null);conversationIdRef.current=null;setHoldActive(false);if(window.speechSynthesis)window.speechSynthesis.cancel();hist.current=[...defaultHist];localStorage.removeItem(STORAGE_KEY);}
 
   const hasSpeech=!!window.speechSynthesis;
   const hasVoice=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
@@ -3105,54 +3123,50 @@ async function setPlanTag(id,tag){
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
     showCalendar&&React.createElement(CalendarModal,{msgs,onClose:()=>setShowCalendar(false)}),
   showTools&&React.createElement(ToolsPanel,{onClose:()=>setShowTools(false)}),
-  showSidebar&&user&&React.createElement(Sidebar,{chats,onOpenChat:openChat,activeChatId:conversationId,user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject,onSetPlanTag:setPlanTag}),
+  showSidebar&&React.createElement(Sidebar,{onOpenTools:()=>setShowTools(true),onOpenSettings:()=>user?setShowSettings(true):setShowLogin(true),onOpenHelp:()=>setShowHelp(true),onLogin:()=>setShowLogin(true),onPricing:()=>setShowPricing(true),chats,onOpenChat:openChat,activeChatId:conversationId,user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject,onSetPlanTag:setPlanTag}),
 
-    // Header
-    React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.12)"}},
-      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem"}},
-        user&&React.createElement("button",{onClick:()=>setShowSidebar(true),style:{background:"none",border:"none",cursor:"pointer",padding:"0.2rem",display:"flex",flexDirection:"column",gap:"3.5px",marginRight:"0.1rem"}},
-          [0,1,2].map(i=>React.createElement("span",{key:i,style:{width:16,height:1.5,background:"#6a5a3a",borderRadius:1,display:"block"}}))
-        ),
-        React.createElement("svg",{width:"28",height:"28",viewBox:"0 0 400 400"},
-          React.createElement("circle",{cx:"200",cy:"200",r:"170",fill:"none",stroke:"#c9a96e",strokeWidth:"2.2"}),
-          React.createElement("circle",{cx:"200",cy:"200",r:"130",fill:"none",stroke:"#8a6a3a",strokeWidth:"1"}),
-          React.createElement("circle",{cx:"200",cy:"200",r:"18",fill:"#c9a96e"})
-        ),
-        React.createElement("span",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.2rem",fontWeight:300,letterSpacing:"0.3em",color:"#d4aa6e",textTransform:"uppercase"}},"Atlas")
+    // Header — same layout as the Android app: ☰ · Atlas · new chat · profile
+    React.createElement("div",{style:{position:"relative",height:58,padding:"0 0.85rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.1)"}},
+      React.createElement("button",{onClick:()=>setShowSidebar(true),"aria-label":"Menu",style:{width:40,height:40,background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",gap:4}},
+        [0,1,2].map(i=>React.createElement("span",{key:i,style:{width:19,height:1.6,background:"#8a6a3a",borderRadius:1,display:"block"}}))
       ),
-      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.75rem"}},
-        msgs.length>0&&user&&React.createElement("button",{onClick:savePlan,disabled:savingPlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},savingPlan?"Saving...":"Save trip"),
-        msgs.length>0&&user&&React.createElement("button",{onClick:sharePlan,style:{background:"none",border:"1px solid rgba(201,169,110,0.2)",borderRadius:6,padding:"0.3rem 0.6rem",color:"#8a7a50",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"🔗 Share"),
-        msgs.length>0&&React.createElement("button",{onClick:reset,style:{background:"none",border:"none",color:"#7a6a40",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"New"),
+      React.createElement("span",{style:{position:"absolute",left:"50%",transform:"translateX(-50%)",fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:"1.6rem",fontWeight:400,color:"#d4aa6e",pointerEvents:"none"}},"Atlas"),
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.5rem"}},
+        msgs.length>0&&React.createElement("button",{onClick:reset,title:"New chat","aria-label":"New chat",style:{width:36,height:36,borderRadius:"50%",background:"none",border:"1px solid rgba(201,169,110,0.22)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}},
+          React.createElement("svg",{width:"16",height:"16",viewBox:"0 0 24 24",fill:"none",stroke:"#c9a96e",strokeWidth:"1.8",strokeLinecap:"round",strokeLinejoin:"round"},React.createElement("path",{d:"M12 20h9"}),React.createElement("path",{d:"M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"}))
+        ),
         user
           ?React.createElement(UserAvatar,{user,onLogout:handleLogout,onOpenSidebar:()=>setShowSidebar(true),onUpgrade:()=>setShowPricing(true),userTier,onSettings:()=>setShowSettings(true),onHelp:()=>setShowHelp(true)})
-          :React.createElement(React.Fragment,null,
-              userTier!=='pro'&&userTier!=='explorer'&&React.createElement("button",{onClick:()=>setShowPricing(true),style:{background:"rgba(201,169,110,0.08)",border:"1px solid rgba(201,169,110,0.25)",borderRadius:8,padding:"0.35rem 0.7rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"⭐ Pro"),
-              React.createElement("button",{onClick:()=>setShowLogin(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.3)",borderRadius:8,padding:"0.35rem 0.75rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.65rem",letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"Sign in")
-            )
+          :React.createElement("button",{onClick:()=>setShowLogin(true),style:{background:"#c9a96e",border:"none",borderRadius:18,padding:"0.42rem 0.95rem",color:"#181410",cursor:"pointer",fontSize:"0.75rem",fontWeight:700,fontFamily:"'DM Sans',sans-serif"}},"Sign in")
       )
     ),
 
     // Messages
     React.createElement("div",{ref:chatContainerRef,style:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",display:"flex",flexDirection:"column",position:"relative"}},
-      msgs.length===0&&React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2rem",textAlign:"center"}},
-        React.createElement("div",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"2.2rem",fontWeight:300,color:"rgba(201,169,110,0.18)",letterSpacing:"0.25em",textTransform:"uppercase",marginBottom:"0.4rem"}},"ATLAS"),
-        React.createElement("p",{style:{fontSize:"0.62rem",color:"rgba(201,169,110,0.3)",letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:"2rem"}},"AI Travel Planner"),
-        React.createElement("p",{style:{fontSize:"0.8rem",color:"#5a4a2a",marginBottom:"1.25rem",lineHeight:1.6}},"Where would you like to go?"),
-        React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:"0.5rem",justifyContent:"center",maxWidth:340}},
-          [...[["🗼 Tokyo","Plan a 7-day trip to Tokyo, Japan"],["🗺 Paris","Plan a 5-day trip to Paris, France"],["🌴 Bali","Plan a 7-day trip to Bali, Indonesia"],["🗽 New York","Plan a 5-day trip to New York City"],["🦁 Kenya Safari","Plan a 10-day safari in Kenya"],["🏛 Rome","Plan a 5-day trip to Rome, Italy"],["🌸 Seoul","Plan a 6-day trip to Seoul, South Korea"],["🏔 Iceland","Plan a 7-day trip to Iceland"]],
-            ...(userTier==='explorer'?[["💎 Tokyo + Bali","Plan a 14-day multi-country trip: 7 days Tokyo Japan then 7 days Bali Indonesia back-to-back. Full itinerary for both destinations."],["💎 Compare destinations","Compare Tokyo vs Bali — which is better for a solo traveler on a $2000 budget?"]]:[])
-          ].map(([label,prompt])=>
-            React.createElement("button",{key:label,onClick:()=>send(prompt),style:{background:label.startsWith("💎")?"rgba(201,169,110,0.1)":"rgba(201,169,110,0.06)",border:`1px solid ${label.startsWith("💎")?"rgba(201,169,110,0.3)":"rgba(201,169,110,0.18)"}`,borderRadius:20,padding:"0.4rem 0.85rem",color:label.startsWith("💎")?"#c9a96e":"#7a6a45",cursor:"pointer",fontSize:"0.7rem",fontFamily:"'DM Sans',sans-serif",transition:"all 0.15s"},onMouseEnter:e=>{e.currentTarget.style.background="rgba(201,169,110,0.12)";e.currentTarget.style.color="#c9a96e";},onMouseLeave:e=>{e.currentTarget.style.background=label.startsWith("💎")?"rgba(201,169,110,0.1)":"rgba(201,169,110,0.06)";e.currentTarget.style.color=label.startsWith("💎")?"#c9a96e":"#7a6a45";}},label)
-          )
+      // Home — the same "Where to?" screen as the Android app
+      msgs.length===0&&React.createElement("div",{style:{width:"100%",maxWidth:760,margin:"0 auto",padding:"2.2rem 1rem 1.5rem",boxSizing:"border-box"}},
+        React.createElement("h1",{style:{textAlign:"center",fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontWeight:400,fontSize:"clamp(2.8rem,9vw,3.6rem)",lineHeight:1.1,color:"#d4aa6e",margin:"0.6rem 0 0.35rem"}},"Where to?"),
+        React.createElement("p",{style:{textAlign:"center",fontSize:"0.68rem",letterSpacing:"0.22em",color:"#b8b0a0",marginBottom:"1.6rem"}},"YOUR AI TRAVEL COMPANION"),
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",gap:"0.65rem",marginBottom:"1.9rem"}},
+          HOME_FEATURED.map(([emo,label,prompt])=>React.createElement("button",{key:label,onClick:()=>send(prompt),style:{display:"flex",alignItems:"center",gap:"0.85rem",textAlign:"left",background:"rgba(201,169,110,0.05)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:14,padding:"0.95rem 1rem",cursor:"pointer",color:"#ede5d5",fontSize:"0.92rem",fontFamily:"'DM Sans',sans-serif"}},
+            React.createElement("span",{style:{fontSize:"1.3rem"}},emo),label))
+        ),
+        React.createElement("p",{style:{textAlign:"center",fontSize:"0.62rem",letterSpacing:"0.2em",color:"#8a6a3a",marginBottom:"0.8rem"}},"✦ POPULAR DESTINATIONS"),
+        React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:"0.5rem",justifyContent:"center",marginBottom:"1.8rem"}},
+          HOME_POPULAR.map(([emo,label])=>React.createElement("button",{key:label,onClick:()=>send("Plan a trip to "+label),style:chipStyle},emo+" "+label))
+        ),
+        React.createElement("p",{style:{textAlign:"center",fontSize:"0.62rem",letterSpacing:"0.2em",color:"#8a6a3a",marginBottom:"0.8rem"}},"✦ QUICK IDEAS"),
+        React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:"0.5rem",justifyContent:"center"}},
+          HOME_QUICK.map(([emo,label])=>React.createElement("button",{key:label,onClick:()=>send(label),style:chipStyle},emo+" "+label)),
+          ...(userTier==='explorer'?[["💎 Tokyo + Bali","Plan a 14-day multi-country trip: 7 days Tokyo Japan then 7 days Bali Indonesia back-to-back. Full itinerary for both destinations."],["💎 Compare destinations","Compare Tokyo vs Bali — which is better for a solo traveler on a $2000 budget?"]]:[]).map(([label,prompt])=>React.createElement("button",{key:label,onClick:()=>send(prompt),style:{...chipStyle,borderColor:"rgba(201,169,110,0.35)"}},label))
         )
       ),
-      msgs.length>0&&React.createElement("div",{style:{padding:"1.25rem 1.5rem",display:"flex",flexDirection:"column",gap:"1.35rem"}},
+      msgs.length>0&&React.createElement("div",{style:{padding:"1.25rem 1rem",display:"flex",flexDirection:"column",gap:"1.35rem",width:"100%",maxWidth:820,margin:"0 auto",boxSizing:"border-box"}},
         ...msgs.map(msg=>{const _streaming=!!msg.streaming;const _multiDests=(!_streaming&&msg.from==="ai")?isMultiDestination(msg.text):null;const _isMulti=!!_multiDests;const _isItin=!_streaming&&!_isMulti&&msg.from==="ai"&&isItinerary(msg.text);const _cmpDests=(!_streaming&&!_isMulti&&!_isItin&&msg.from==="ai")?isComparison(msg.text):null;const _isCmp=!!_cmpDests;return React.createElement("div",{key:msg.id,className:"msg msg-wrap",style:{display:"flex",flexDirection:msg.from==="user"?"row-reverse":"row",gap:(_isItin||_isCmp||_isMulti)?"0.4rem":"0.75rem",alignItems:"flex-start"}},
-          React.createElement("div",{style:{flexShrink:0,width:(_isItin||_isCmp||_isMulti)?18:24,height:(_isItin||_isCmp||_isMulti)?18:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:(_isItin||_isCmp||_isMulti)?4:2}},
+          msg.from!=="user"&&React.createElement("div",{style:{flexShrink:0,width:(_isItin||_isCmp||_isMulti)?18:24,height:(_isItin||_isCmp||_isMulti)?18:24,borderRadius:"50%",border:`1px solid ${msg.from==="user"?"rgba(201,169,110,0.25)":"rgba(201,169,110,0.5)"}`,background:msg.from==="user"?"rgba(201,169,110,0.05)":"rgba(201,169,110,0.08)",display:"flex",alignItems:"center",justifyContent:"center",marginTop:(_isItin||_isCmp||_isMulti)?4:2}},
             React.createElement("span",{style:{fontSize:"0.42rem",color:"#c9a96e"}},msg.from==="user"?"U":"A")
           ),
-          React.createElement("div",{style:{maxWidth:(_isItin||_isCmp||_isMulti)?"100%":"88%",width:"100%"}},
+          React.createElement("div",{style:msg.from==="user"?{maxWidth:"85%",display:"flex",flexDirection:"column",alignItems:"flex-end"}:{maxWidth:(_isItin||_isCmp||_isMulti)?"100%":"92%",width:"100%"}},
             msg.from==="user"
               ?editingId===msg.id
                 ?React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:"0.5rem"}},
@@ -3164,7 +3178,7 @@ async function setPlanTag(id,tag){
                   )
                 :React.createElement("div",{style:{position:"relative"}},
                     msg.photoPreview&&React.createElement("img",{src:msg.photoPreview,style:{width:"100%",maxWidth:200,borderRadius:8,marginBottom:"0.4rem",display:"block",border:"1px solid rgba(201,169,110,0.2)"}}),
-                    msg.text&&React.createElement("p",{style:{fontSize:"0.84rem",color:"#e0d8c8",lineHeight:1.75,padding:"0.6rem 0.9rem",background:"rgba(201,169,110,0.07)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10}},msg.text),
+                    msg.text&&React.createElement("p",{style:{fontSize:"0.9rem",color:"#181410",lineHeight:1.6,padding:"0.65rem 0.95rem",background:"#c9a96e",borderRadius:"18px 18px 4px 18px",whiteSpace:"pre-wrap",wordBreak:"break-word"}},msg.text),
                     !busy&&React.createElement("button",{className:"edit-btn",onClick:()=>startEdit(msg),style:{position:"absolute",top:-8,left:-8,background:"#252018",border:"1px solid rgba(201,169,110,0.2)",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#8a7a50"}},React.createElement(EditIcon))
                   )
               :React.createElement("div",null,
@@ -3183,7 +3197,10 @@ async function setPlanTag(id,tag){
                   ),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
                   msg.locations&&routeUrl(msg.locations)&&React.createElement("a",{href:routeUrl(msg.locations),target:"_blank",rel:"noopener noreferrer",style:{display:"inline-flex",alignItems:"center",gap:"0.4rem",marginTop:"0.5rem",padding:"0.45rem 0.9rem",borderRadius:18,background:"#c9a96e",color:"#1c1914",fontSize:"0.72rem",fontWeight:700,textDecoration:"none"}},"🧭 Open route in Google Maps · "+Math.min(msg.locations.length,11)+" stops"),
-                  React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.5rem",flexWrap:"wrap"}},
+                  !msg.isConnectionError&&React.createElement("div",{style:{display:"flex",gap:"0.4rem",marginTop:"0.6rem",flexWrap:"wrap"}},
+                  React.createElement("button",{onClick:()=>{try{navigator.clipboard.writeText(stripMapData(msg.text));showToast('Copied');}catch{}},style:actChip},"📋 Copy"),
+                  user&&msg.id===msgs[msgs.length-1]?.id&&React.createElement("button",{onClick:savePlan,disabled:savingPlan,style:{...actChip,color:"#c9a96e",borderColor:"rgba(201,169,110,0.4)"}},savingPlan?"Saving…":"🔖 Save trip"),
+                  user&&msg.id===msgs[msgs.length-1]?.id&&React.createElement("button",{onClick:sharePlan,style:actChip},"🔗 Share link"),
                   hasSpeech&&React.createElement("button",{onClick:()=>toggleSpeak(msg.text),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:speaking?"#c9a96e":"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},speaking?"⏹ Stop":"🔊 Listen"),
                   React.createElement("button",{onClick:()=>setShowCalendar(true),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📅 Calendar"),
                   (_isItin||_isMulti)&&React.createElement("button",{onClick:()=>send("Based on this trip plan, generate a detailed packing list organized by category (clothing, documents, electronics, toiletries, etc). Tailor it to the destination and activities mentioned."),style:{background:"none",border:"1px solid rgba(201,169,110,0.18)",borderRadius:5,padding:"0.28rem 0.7rem",color:"#6a5a40",cursor:"pointer",fontSize:"0.58rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"}},"📦 Pack"),
@@ -3224,17 +3241,17 @@ async function setPlanTag(id,tag){
     ),
 
     // Input
-    React.createElement("div",{style:{padding:"0.75rem 1.25rem 1.25rem",flexShrink:0}},
+    React.createElement("div",{style:{padding:"0.6rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom))",flexShrink:0,width:"100%",maxWidth:820,margin:"0 auto",boxSizing:"border-box"}},
       photo&&React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"0.5rem",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.07)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:10}},
         React.createElement("img",{src:photo.preview,style:{width:40,height:40,objectFit:"cover",borderRadius:6,border:"1px solid rgba(201,169,110,0.3)"}}),
         React.createElement("span",{style:{fontSize:"0.72rem",color:"#c9a96e",flex:1}},"Photo ready — add a message or just send"),
         React.createElement("button",{onClick:()=>setPhoto(null),style:{background:"none",border:"none",color:"#6a5a40",cursor:"pointer",fontSize:"1rem",lineHeight:1}},"✕")
       ),
-      React.createElement("div",{style:{background:"#252018",border:`1.5px solid ${holdActive?"rgba(201,169,110,0.5)":"rgba(201,169,110,0.3)"}`,borderRadius:14,padding:"0.6rem 0.75rem",display:"flex",gap:"0.6rem",alignItems:"flex-end",boxShadow:"0 2px 20px rgba(0,0,0,0.3)",transition:"border-color 0.2s"}},
+      React.createElement("div",{style:{background:"#252018",border:`1.5px solid ${holdActive?"rgba(201,169,110,0.5)":"rgba(201,169,110,0.3)"}`,borderRadius:26,padding:"0.45rem 0.5rem 0.45rem 0.6rem",display:"flex",gap:"0.6rem",alignItems:"flex-end",boxShadow:"0 2px 20px rgba(0,0,0,0.3)",transition:"border-color 0.2s"}},
         React.createElement("input",{type:"file",accept:"image/*",ref:photoRef,style:{display:"none"},onChange:handlePhotoSelect}),
         React.createElement(PhotoButton,{photo,onClick:()=>photoRef.current?.click()}),
         hasVoice&&React.createElement(MicButton,{listening,onClick:toggleVoice}),
-        React.createElement("button",{onClick:()=>setShowTools(t=>!t),title:"Travel Tools",style:{background:showTools?"rgba(201,169,110,0.15)":"none",border:showTools?"1px solid rgba(201,169,110,0.4)":"1px solid transparent",borderRadius:8,cursor:"pointer",color:showTools?"#c9a96e":"#5a4a2a",fontSize:"1rem",padding:"0.35rem 0.4rem",flexShrink:0,transition:"all 0.15s",lineHeight:1}},"⚡"),
+        false&&React.createElement("button",{onClick:()=>setShowTools(t=>!t),title:"Travel Tools",style:{background:showTools?"rgba(201,169,110,0.15)":"none",border:showTools?"1px solid rgba(201,169,110,0.4)":"1px solid transparent",borderRadius:8,cursor:"pointer",color:showTools?"#c9a96e":"#5a4a2a",fontSize:"1rem",padding:"0.35rem 0.4rem",flexShrink:0,transition:"all 0.15s",lineHeight:1}},"⚡"),
         React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{   const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);   if(e.key==="Enter"&&!e.shiftKey&&!holdActive&&!isMobile){e.preventDefault();send();} },onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";},placeholder:listening?"Listening...":holdActive?"Add more to your message...":photo?"Add a message or just send the photo...":"Where would you like to go?",disabled:busy||listening,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:holdActive?"#e8d890":"#e0d8c8",fontSize:"0.9rem",resize:"none",lineHeight:1.7,maxHeight:100,overflowY:"auto",paddingTop:"0.2rem"}}),
         React.createElement("div",{style:{position:"relative",flexShrink:0}},
           holdActive&&React.createElement("div",{style:{position:"absolute",inset:-4,borderRadius:"50%",border:"2px solid rgba(201,169,110,0.55)",animation:"glow 1s ease-in-out infinite",pointerEvents:"none"}}),
@@ -3255,8 +3272,8 @@ async function setPlanTag(id,tag){
           )
         )
       ),
-      React.createElement("div",{style:{marginTop:"0.45rem",textAlign:"center",fontSize:"0.52rem",color:"#3a3020",letterSpacing:"0.09em",textTransform:"uppercase"}},
-  "AI may make mistakes · please double-check · ",
+      React.createElement("div",{style:{marginTop:"0.4rem",textAlign:"center",fontSize:"0.62rem",color:"#6a5a3a"}},
+  "AI may make mistakes · ",
   React.createElement("a",{href:"/privacy",target:"_blank",style:{color:"#5a4a28",textDecoration:"none"}},"Privacy"),
   " · ",
   React.createElement("a",{href:"/terms",target:"_blank",style:{color:"#5a4a28",textDecoration:"none"}},"Terms")
