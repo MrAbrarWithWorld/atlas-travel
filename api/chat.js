@@ -640,7 +640,14 @@ export default async function handler(req, res) {
   }
 
   // Get real-time travel context
-const travelContext = await getTravelContext(messages);
+  // Web search / YouTube / hotels / weather run before the AI starts. They had no time limit and sometimes took
+  // ~50 s, so the user saw nothing for a long time. Use what is ready after 12 s and start the answer.
+  const tCtx = Date.now();
+  const travelContext = await Promise.race([
+    getTravelContext(messages).catch(() => ''),
+    new Promise((resolve) => setTimeout(() => resolve(''), 12000)),
+  ]);
+  const ctxMs = Date.now() - tCtx;
   
   const requestingNewPlan = isNewPlan(messages);
   if (requestingNewPlan && user.plansUsed >= limits.plans) {
@@ -779,7 +786,8 @@ const travelContext = await getTravelContext(messages);
     }
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let buf = '', fullText = '', inputTok = 0, outputTok = 0, stopReason = null;
+    let buf = '', fullText = '', inputTok = 0, outputTok = 0, stopReason = null, firstTokMs = null;
+    const tAi = Date.now();
     outer: while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -791,6 +799,7 @@ const travelContext = await getTravelContext(messages);
           const ev = JSON.parse(line.slice(6));
           if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
             const text = ev.delta.text;
+            if (firstTokMs === null) firstTokMs = Date.now() - tAi;
             fullText += text;
             writeSSE({ type: 'delta', text });
           } else if (ev.type === 'message_start' && ev.message?.usage) {
@@ -805,6 +814,7 @@ const travelContext = await getTravelContext(messages);
         } catch {}
       }
     }
+    console.log(`[chat] model=${chatModel} tier=${userTier} ctxMs=${ctxMs} firstTokMs=${firstTokMs} totalMs=${Date.now() - tAi} stop=${stopReason} in=${inputTok} out=${outputTok} chars=${fullText.length}`);
     const used = inputTok + outputTok;
     await recordUsage(user, key, used, requestingNewPlan);
     endStream(Math.max(0, limits.plans - user.plansUsed), stopReason === 'max_tokens' ? { truncated: true } : undefined);
