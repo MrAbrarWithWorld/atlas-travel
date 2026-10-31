@@ -311,6 +311,72 @@ function getLocation(){return new Promise(resolve=>{if(!navigator.geolocation){r
 function getDateTime(){const now=new Date();const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];const months=['January','February','March','April','May','June','July','August','September','October','November','December'];const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;const h=now.getHours();return `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} — ${h%12||12}:${now.getMinutes().toString().padStart(2,'0')} ${h>=12?'PM':'AM'} (${tz})`;}
 function parseMapData(text){const m=text.match(/\[MAPDATA\]([\s\S]*?)\[\/MAPDATA\]/);if(!m)return null;try{const d=JSON.parse(m[1]);return d.places||null;}catch{return null;}}
 function stripMapData(text){return text.replace(/\[MAPDATA\][\s\S]*?\[\/MAPDATA\]/g,'').trim();}
+// A PDF is sent once, with the question it belongs to; older turns keep a short note instead (requests stay small).
+function stripOldDocs(list){const last=list.length-1;return list.map((m,i)=>i===last||!Array.isArray(m.content)?m:{...m,content:m.content.map(c=>c&&c.type==='document'?{type:'text',text:'(A PDF document was shared earlier in this chat.)'}:c)});}
+// ---- Trash: deleted trips and chats are kept 60 days, then removed for good ----
+const TRASH_DAYS=60;
+// Trash needs the deleted_at column. Until it exists, lists and delete work the old way.
+let _trashOk=null;
+async function trashReady(){if(_trashOk!==null)return _trashOk;try{const r=await sb.from('saved_plans').select('deleted_at').limit(1);_trashOk=!r.error;}catch{_trashOk=false;}return _trashOk;}
+function notDeleted(q){return _trashOk?q.is('deleted_at',null):q;}
+async function purgeTrash(userId){
+  if(!(await trashReady()))return;
+  try{
+    const cutoff=new Date(Date.now()-TRASH_DAYS*864e5).toISOString();
+    await sb.from('saved_plans').delete().eq('user_id',userId).lt('deleted_at',cutoff);
+    const{data:old}=await sb.from('conversations').select('id').eq('user_id',userId).lt('deleted_at',cutoff);
+    const ids=(old||[]).map(x=>x.id);
+    if(ids.length){await sb.from('chat_messages').delete().in('conversation_id',ids);await sb.from('conversations').delete().in('id',ids);}
+  }catch{}
+}
+function TrashModal({user,onClose,onChanged}){
+  const [items,setItems]=React.useState(null);
+  async function load(){
+    const[p,c]=await Promise.all([
+      sb.from('saved_plans').select('id,title,deleted_at').eq('user_id',user.id).not('deleted_at','is',null).order('deleted_at',{ascending:false}),
+      sb.from('conversations').select('id,title,deleted_at').eq('user_id',user.id).not('deleted_at','is',null).order('deleted_at',{ascending:false}),
+    ]);
+    setItems([...(p.data||[]).map(x=>({...x,kind:'trip'})),...(c.data||[]).map(x=>({...x,kind:'chat'}))].sort((a,b)=>b.deleted_at.localeCompare(a.deleted_at)));
+  }
+  React.useEffect(()=>{load();},[]);
+  const daysLeft=d=>Math.max(0,TRASH_DAYS-Math.floor((Date.now()-new Date(d).getTime())/864e5));
+  async function restore(it){await sb.from(it.kind==='trip'?'saved_plans':'conversations').update({deleted_at:null}).eq('id',it.id);showToast('Restored');await load();onChanged&&onChanged();}
+  async function removeForever(it){
+    if(!confirm('Delete "'+(it.title||'this item')+'" forever? This cannot be undone.'))return;
+    if(it.kind==='trip')await sb.from('saved_plans').delete().eq('id',it.id);
+    else{await sb.from('chat_messages').delete().eq('conversation_id',it.id);await sb.from('conversations').delete().eq('id',it.id);}
+    await load();
+  }
+  async function emptyAll(){
+    if(!items||!items.length||!confirm('Delete everything in Trash forever? This cannot be undone.'))return;
+    const trips=items.filter(i=>i.kind==='trip').map(i=>i.id),chats=items.filter(i=>i.kind==='chat').map(i=>i.id);
+    if(trips.length)await sb.from('saved_plans').delete().in('id',trips);
+    if(chats.length){await sb.from('chat_messages').delete().in('conversation_id',chats);await sb.from('conversations').delete().in('id',chats);}
+    await load();
+  }
+  const btn={background:"none",border:"1px solid rgba(201,169,110,0.25)",borderRadius:6,padding:"0.28rem 0.6rem",color:"#c9a96e",cursor:"pointer",fontSize:"0.6rem",letterSpacing:"0.08em",textTransform:"uppercase",fontFamily:"'DM Sans',sans-serif"};
+  return React.createElement("div",{style:{position:"fixed",inset:0,background:"rgba(10,8,5,0.9)",zIndex:120,display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem"},onClick:onClose},
+    React.createElement("div",{style:{width:"100%",maxWidth:520,maxHeight:"85vh",display:"flex",flexDirection:"column",background:"#1e1a14",border:"1px solid rgba(201,169,110,0.2)",borderRadius:14,overflow:"hidden"},onClick:e=>e.stopPropagation()},
+      React.createElement("div",{style:{padding:"1rem 1.25rem",borderBottom:"1px solid rgba(201,169,110,0.1)",display:"flex",alignItems:"center",justifyContent:"space-between"}},
+        React.createElement("div",null,
+          React.createElement("p",{style:{fontFamily:"'Cormorant Garamond',serif",fontSize:"1.3rem",letterSpacing:"0.2em",color:"#d4aa6e",textTransform:"uppercase"}},"Trash"),
+          React.createElement("p",{style:{fontSize:"0.68rem",color:"#8a7a50",marginTop:"0.15rem"}},"Deleted trips and chats stay here for 60 days, then they are removed.")),
+        React.createElement("button",{onClick:onClose,style:{background:"none",border:"none",color:"#6a5a3a",cursor:"pointer",fontSize:"1.1rem"}},"✕")),
+      React.createElement("div",{style:{flex:1,overflowY:"auto",padding:"0.6rem"}},
+        items===null?React.createElement("p",{style:{textAlign:"center",padding:"2rem",color:"#6a5a3a",fontSize:"0.75rem"}},"Loading…")
+        :items.length===0?React.createElement("p",{style:{textAlign:"center",padding:"2rem",color:"#6a5a3a",fontSize:"0.78rem"}},"Trash is empty.")
+        :items.map(it=>React.createElement("div",{key:it.kind+it.id,style:{display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.6rem 0.65rem",borderRadius:8,borderBottom:"1px solid rgba(201,169,110,0.06)"}},
+            React.createElement("span",null,it.kind==='trip'?"🧳":"💬"),
+            React.createElement("div",{style:{flex:1,minWidth:0}},
+              React.createElement("p",{style:{fontSize:"0.8rem",color:"#d4c8a8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},it.title||(it.kind==='trip'?'Trip':'Chat')),
+              React.createElement("p",{style:{fontSize:"0.6rem",color:"#5a4a2a",marginTop:"0.1rem"}},(it.kind==='trip'?'Trip':'Chat')+" · "+daysLeft(it.deleted_at)+" days left")),
+            React.createElement("button",{onClick:()=>restore(it),style:btn},"Restore"),
+            React.createElement("button",{onClick:()=>removeForever(it),style:{...btn,color:"#c98a6e",borderColor:"rgba(201,138,110,0.3)"}},"Delete forever")))
+      ),
+      items&&items.length>0&&React.createElement("div",{style:{padding:"0.75rem 1.25rem",borderTop:"1px solid rgba(201,169,110,0.1)",textAlign:"right"}},
+        React.createElement("button",{onClick:emptyAll,style:{...btn,color:"#c98a6e",borderColor:"rgba(201,138,110,0.3)"}},"Empty trash"))
+    ));
+}
 // ---- Web ⇄ app sync helpers ----
 // Plans saved on the web start with a hidden intro pair ("Who are you?" + Atlas intro). Plans saved in the
 // Android app do not. Remove the pair by content (never by position) so both open with every message.
@@ -364,7 +430,7 @@ const defaultHist=[{role:"user",content:"Who are you?"},{role:"assistant",conten
 // ===================== CROSS-DEVICE CHAT SYNC =====================
 async function loadLatestConversation(userId){
   try{
-    const{data:conv}=await sb.from('conversations').select('id,title').eq('user_id',userId).order('updated_at',{ascending:false}).limit(1).single();
+    const{data:conv}=await (await trashReady(),notDeleted(sb.from('conversations').select('id,title').eq('user_id',userId))).order('updated_at',{ascending:false}).limit(1).single();
     if(!conv)return null;
     const{data:messages}=await sb.from('chat_messages').select('id,role,content,created_at').eq('conversation_id',conv.id).order('created_at',{ascending:true});
     return{conversationId:conv.id,messages:messages||[]};
@@ -1755,7 +1821,7 @@ function UserAvatar({user,onLogout,onOpenSidebar,onUpgrade,userTier,onSettings,o
 }
 
 // ===================== SIDEBAR =====================
-function Sidebar({onOpenTools,onOpenSettings,onOpenHelp,onLogin,onPricing,chats=[],onOpenChat,activeChatId,user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject,onAssignProject,onSetPlanTag}){
+function Sidebar({onOpenTrash,onDeleteChat,onOpenTools,onOpenSettings,onOpenHelp,onLogin,onPricing,chats=[],onOpenChat,activeChatId,user,plans,loadingPlans,activePlanId,onSelectPlan,onNewJourney,onDeletePlan,onClose,userTier,onRenamePlan,projects,onCreateProject,onDeleteProject,onAssignProject,onSetPlanTag}){
   const [activeProject,setActiveProject]=React.useState(null);
 const [assigningPlan,setAssigningPlan]=React.useState(null);
 const [tagPickerPlan,setTagPickerPlan]=React.useState(null);
@@ -1839,7 +1905,7 @@ const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id
 
           // Menu — the same places as the Android app's ☰ menu
           React.createElement("div",{style:{paddingBottom:"0.6rem",marginBottom:"0.8rem",borderBottom:"1px solid rgba(201,169,110,0.1)"}},
-            [["🧭","Explore & travel tools",onOpenTools],["📖","Travel guides",()=>{window.location.href="/blog";}],["👤",user?"Profile & Settings":"Sign in",user?onOpenSettings:onLogin],...(userTier==='pro'||userTier==='explorer'?[]:[["⭐","Plans & pricing",onPricing]]),["🛟","Help & support",onOpenHelp]].map(([ic,label,fn])=>
+            [["🧭","Explore & travel tools",onOpenTools],["📖","Travel guides",()=>{window.location.href="/blog";}],["👤",user?"Profile & Settings":"Sign in",user?onOpenSettings:onLogin],...(user&&_trashOk?[["🗑️","Trash",onOpenTrash]]:[]),...(userTier==='pro'||userTier==='explorer'?[]:[["⭐","Plans & pricing",onPricing]]),["🛟","Help & support",onOpenHelp]].map(([ic,label,fn])=>
               React.createElement("button",{key:label,onClick:()=>{onClose();fn&&fn();},style:{width:"100%",display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.62rem 0.5rem",background:"none",border:"none",borderRadius:8,cursor:"pointer",color:"#ede5d5",fontSize:"0.88rem",textAlign:"left",fontFamily:"'DM Sans',sans-serif"}},
                 React.createElement("span",{style:{width:22,textAlign:"center"}},ic),label))
           ),
@@ -1883,8 +1949,11 @@ const projectPlans=activeProject?plans.filter(p=>p.project_id===activeProject.id
             chats.length===0
               ?React.createElement("p",{style:{fontSize:"0.62rem",color:"#3a2a12",paddingLeft:"0.25rem"}},"No chats yet")
               :chats.slice(0,12).map(c=>React.createElement("div",{key:c.id,className:`plan-item${activeChatId===c.id?" active":""}`,onClick:()=>{onOpenChat&&onOpenChat(c);onClose();}},
-                  React.createElement("p",{style:{fontSize:"0.76rem",color:"#d4c8a8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},"💬 "+(c.title||"Chat")),
-                  React.createElement("p",{style:{fontSize:"0.6rem",color:"#5a4a2a",marginTop:"0.15rem"}},formatDate(c.updated_at))
+                  React.createElement("div",{style:{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:"0.5rem"}},
+                    React.createElement("div",{style:{flex:1,minWidth:0}},
+                      React.createElement("p",{style:{fontSize:"0.76rem",color:"#d4c8a8",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},"💬 "+(c.title||"Chat")),
+                      React.createElement("p",{style:{fontSize:"0.6rem",color:"#5a4a2a",marginTop:"0.15rem"}},formatDate(c.updated_at))),
+                    React.createElement("button",{className:"plan-item-del",title:"Move to Trash",onClick:e=>{e.stopPropagation();onDeleteChat&&onDeleteChat(c.id);},style:{background:"none",border:"none",color:"#5a3a2a",cursor:"pointer",fontSize:"0.75rem"}},"🗑"))
                 ))
           ),
 
@@ -2364,13 +2433,15 @@ function TripDocument({text,msgs}){
 }
 
 function _renderInline(text,keyBase){
+  text=String(text).replace(/\\([*_#|\-])/g,'$1'); // the AI sometimes escapes markdown: \*\* → **
   const parts=[];let lastIdx=0;let k=0;
   const pat=/\*\*(.+?)\*\*|\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
   let m;
   while((m=pat.exec(text))!==null){
     if(m.index>lastIdx)parts.push(text.slice(lastIdx,m.index));
     if(m[0].startsWith('**')){
-      parts.push(React.createElement('strong',{key:(keyBase||'')+'-b'+(k++),style:{color:'#c9a96e',fontWeight:600}},m[1]));
+      // bold can hold a link: **[Visit Japan Web](https://…)**
+      parts.push(React.createElement('strong',{key:(keyBase||'')+'-b'+(k++),style:{color:'#c9a96e',fontWeight:600}},..._renderInline(m[1],(keyBase||'')+'-i'+k)));
     }else{
       parts.push(React.createElement('a',{key:(keyBase||'')+'-l'+(k++),href:m[3],target:'_blank',rel:'noopener noreferrer',style:{color:'#c9a96e',textDecoration:'underline',wordBreak:'break-all'}},m[2]));
     }
@@ -2379,13 +2450,33 @@ function _renderInline(text,keyBase){
   if(lastIdx<text.length)parts.push(text.slice(lastIdx));
   return parts;
 }
+function _isTableRow(t){return /^\|.*\|$/.test(t);}
+function _isTableSep(t){return /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/.test(t);}
+function _tableCells(t){return t.replace(/^\|/,'').replace(/\|$/,'').split('|').map(c=>c.trim());}
+function ProseTable({rows,k}){
+  const [head,...body]=rows;
+  const cell=(c,i,th)=>React.createElement(th?'th':'td',{key:i,style:{textAlign:'left',padding:'0.45rem 0.7rem',borderBottom:'1px solid rgba(201,169,110,0.12)',color:th?'#c9a96e':'#ede5d5',fontWeight:th?600:400,fontSize:th?'0.66rem':'0.8rem',letterSpacing:th?'0.08em':0,textTransform:th?'uppercase':'none',whiteSpace:'nowrap'}},..._renderInline(c,k+'-'+i));
+  return React.createElement('div',{style:{overflowX:'auto',margin:'0.35rem 0 0.6rem',border:'1px solid rgba(201,169,110,0.15)',borderRadius:10}},
+    React.createElement('table',{style:{borderCollapse:'collapse',width:'100%',fontFamily:"'DM Sans',sans-serif"}},
+      React.createElement('thead',null,React.createElement('tr',null,...head.map((c,i)=>cell(c,i,true)))),
+      React.createElement('tbody',null,...body.map((r,ri)=>React.createElement('tr',{key:ri},...r.map((c,i)=>cell(c,i,false)))))));
+}
 function Prose({text}){
   const clean=stripMapData(text);
   const lines=clean.split('\n');
   const els=[];let k=0;
-  for(const line of lines){
+  for(let li=0;li<lines.length;li++){
+    const line=lines[li];
     const t=line.trim();
     if(!t){els.push(React.createElement('div',{key:k++,style:{height:'0.35rem'}}));continue;}
+    // markdown table → a real table (was shown as raw | lines)
+    if(_isTableRow(t)){
+      const rows=[];let j=li;
+      while(j<lines.length&&_isTableRow(lines[j].trim())){const r=lines[j].trim();if(!_isTableSep(r))rows.push(_tableCells(r));j++;}
+      if(rows.length>=2){els.push(React.createElement(ProseTable,{key:k++,rows,k:'t'+k}));li=j-1;continue;}
+    }
+    // --- → a thin divider (was shown as "---")
+    if(/^(-{3,}|\*{3,}|_{3,})$/.test(t)){els.push(React.createElement('div',{key:k++,style:{height:1,background:'rgba(201,169,110,0.14)',margin:'0.7rem 0'}}));continue;}
     if(/^#{1,3}\s/.test(t)){
       const ht=t.replace(/^#{1,3}\s*/,'').replace(/\*\*/g,'');
       els.push(React.createElement('p',{key:k++,style:{fontSize:'0.62rem',color:'#c9a96e',letterSpacing:'0.13em',textTransform:'uppercase',fontWeight:700,marginTop:'0.7rem',marginBottom:'0.25rem',fontFamily:"'DM Sans',sans-serif"}},ht));
@@ -2647,6 +2738,9 @@ function App(){
   const editRef=useRef(null);
   const recognitionRef=useRef(null);
   const photoRef=useRef(null);
+  const docRef=useRef(null);
+  const [showAttach,setShowAttach]=useState(false);
+  const [showTrash,setShowTrash]=useState(false);
   const holdTimerRef=useRef(null);
   const lastSendRef=useRef({text:'',newMsgs:[]});
 
@@ -2701,9 +2795,8 @@ function App(){
 
   useEffect(()=>{
   if(user){
-    loadPlans();
+    purgeTrash(user.id).finally(()=>{loadPlans();loadChats();});
     loadProjects();
-    loadChats();
     checkTier(user.id,user.email);
     // Cross-device sync: load latest conversation if no local messages
     if(msgs.length===0){
@@ -2732,7 +2825,7 @@ function App(){
   // Chats from web AND the Android app (same conversations table), newest first.
   async function loadChats(){
     if(!user)return;
-    try{const{data}=await sb.from('conversations').select('id,title,updated_at').eq('user_id',user.id).order('updated_at',{ascending:false}).limit(30);setChats(data||[]);}catch{}
+    try{const{data}=await notDeleted(sb.from('conversations').select('id,title,updated_at').eq('user_id',user.id)).order('updated_at',{ascending:false}).limit(30);setChats(data||[]);}catch{}
   }
   async function openChat(conv){
     try{
@@ -2763,7 +2856,7 @@ async function deleteProject(id){
   
   async function loadPlans(){
     setLoadingPlans(true);
-    try{const{data,error}=await sb.from('saved_plans').select('id,title,created_at,is_draft,project_id,tag').order('created_at',{ascending:false});if(!error)setPlans(data||[]);}
+    try{const{data,error}=await notDeleted(sb.from('saved_plans').select('id,title,created_at,is_draft,project_id,tag')).order('created_at',{ascending:false});if(!error)setPlans(data||[]);}
     catch{}setLoadingPlans(false);
   }
 
@@ -2941,10 +3034,22 @@ async function setPlanTag(id,tag){
   await sb.from('saved_plans').update({tag:tag||null}).eq('id',id);
   setPlans(p=>p.map(x=>x.id===id?{...x,tag:tag||null}:x));
 }
+  // Delete = move to Trash. It stays 60 days (restore or delete forever from ☰ → Trash), then is removed.
   async function deletePlan(id){
-    await sb.from('saved_plans').delete().eq('id',id);
+    if(!(await trashReady())){if(!confirm('Delete this trip?'))return;await sb.from('saved_plans').delete().eq('id',id);setPlans(p=>p.filter(x=>x.id!==id));if(activePlanId===id)setActivePlanId(null);return;}
+    const{error}=await sb.from('saved_plans').update({deleted_at:new Date().toISOString()}).eq('id',id);
+    if(error){showToast('Could not delete. Please try again.');return;}
     setPlans(p=>p.filter(x=>x.id!==id));
     if(activePlanId===id)setActivePlanId(null);
+    showToast('Moved to Trash · kept 60 days');
+  }
+  async function deleteChat(id){
+    if(!(await trashReady())){if(!confirm('Delete this chat?'))return;await sb.from('chat_messages').delete().eq('conversation_id',id);await sb.from('conversations').delete().eq('id',id);setChats(c=>c.filter(x=>x.id!==id));return;}
+    const{error}=await sb.from('conversations').update({deleted_at:new Date().toISOString()}).eq('id',id);
+    if(error){showToast('Could not delete. Please try again.');return;}
+    setChats(c=>c.filter(x=>x.id!==id));
+    if(conversationIdRef.current===id){conversationIdRef.current=null;setConversationId(null);}
+    showToast('Moved to Trash · kept 60 days');
   }
 
   async function selectPlan(plan){
@@ -2989,7 +3094,9 @@ async function setPlanTag(id,tag){
 
   function toggleVoice(){if(!recognitionRef.current){alert("Voice not supported.");return;}if(listening){recognitionRef.current.stop();setListening(false);}else{if(window.speechSynthesis)window.speechSynthesis.cancel();recognitionRef.current.start();setListening(true);}}
   function toggleSpeak(text){if(!window.speechSynthesis)return;if(speaking){window.speechSynthesis.cancel();setSpeaking(false);return;}setSpeaking(true);const clean=stripMapData(text).replace(/##.*?\n/g,'').replace(/\*\*/g,'').replace(/[◆•]/g,'').slice(0,1000);const u=new SpeechSynthesisUtterance(clean);u.rate=0.95;const savedVoiceURI=localStorage.getItem('atlas_voice_uri');if(savedVoiceURI){const vv=window.speechSynthesis.getVoices();const sv=vv.find(v=>v.voiceURI===savedVoiceURI);if(sv)u.voice=sv;}u.onend=()=>setSpeaking(false);u.onerror=()=>setSpeaking(false);window.speechSynthesis.speak(u);}
-  function handlePhotoSelect(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');const MAX=600;let w=img.width,h=img.height;if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);const compressed=canvas.toDataURL('image/jpeg',0.5);setPhoto({base64:compressed.split(",")[1],mediaType:'image/jpeg',preview:compressed});};img.src=ev.target.result;};reader.readAsDataURL(file);e.target.value="";}
+  // PDF (tickets, bookings, visa letters): sent to Claude as a document block. Max 2 MB so the request stays small.
+  function handleDocSelect(e){const file=e.target.files[0];e.target.value="";if(!file)return;if(file.type!=='application/pdf'){showToast('Please choose a PDF file');return;}if(file.size>2*1024*1024){showToast('PDF is too large (max 2 MB)');return;}const reader=new FileReader();reader.onload=ev=>{const data=String(ev.target.result).split(',')[1];setPhoto({kind:'pdf',base64:data,mediaType:'application/pdf',name:file.name,preview:null});};reader.readAsDataURL(file);}
+  function handlePhotoSelect(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{const canvas=document.createElement('canvas');const MAX=1024;let w=img.width,h=img.height;if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);const compressed=canvas.toDataURL('image/jpeg',0.7);setPhoto({base64:compressed.split(",")[1],mediaType:'image/jpeg',preview:compressed});};img.src=ev.target.result;};reader.readAsDataURL(file);e.target.value="";}
   function startEdit(msg){setEditingId(msg.id);setEditText(msg.text);setTimeout(()=>editRef.current?.focus(),50);}
   async function submitEdit(msgId){const t=editText.trim();if(!t)return;setEditingId(null);const msgIndex=msgs.findIndex(m=>m.id===msgId);const newMsgs=msgs.slice(0,msgIndex);setMsgs(newMsgs);const baseHist=[...defaultHist];for(const m of newMsgs)baseHist.push({role:m.from==="user"?"user":"assistant",content:m.text});hist.current=baseHist;await send(t);}
   async function handleLogout(){await sb.auth.signOut();setUser(null);}
@@ -3015,9 +3122,9 @@ async function setPlanTag(id,tag){
     const currencyStr=`\nUser preferred currency: ${detectedCurrency}${_savedPrefs.currency?' (manually set)':' (detected from browser locale: '+lang+')'}`;
     const msgText=t||"";
     const msgWithTime=`${msgText}\n\n[Current date & time: ${dateTime}${locationStr}${userInfo}${currencyStr}]`;
-    const msgWithTime2=t?msgWithTime:`[Current date & time: ${dateTime}${locationStr}${userInfo}]`; const userContent=photo   ?[{type:"image",source:{type:"base64",media_type:photo.mediaType,data:photo.base64}},{type:"text",text:msgWithTime2}]   :msgWithTime;
+    const msgWithTime2=t?msgWithTime:`[Current date & time: ${dateTime}${locationStr}${userInfo}]`; const userContent=photo   ?[photo.kind==='pdf'?{type:"document",source:{type:"base64",media_type:"application/pdf",data:photo.base64}}:{type:"image",source:{type:"base64",media_type:photo.mediaType,data:photo.base64}},{type:"text",text:msgWithTime2}]   :msgWithTime;
     const displayText=msgText.replace(/\s*\[Current date.*$/s,'').trim();
-    const newMsgs=[...msgs,{id:Date.now(),from:"user",text:displayText,photoPreview:photo?.preview||null}];
+    const newMsgs=[...msgs,{id:Date.now(),from:"user",text:displayText,photoPreview:photo?.preview||null,fileName:photo?.kind==='pdf'?photo.name:null}];
     setMsgs(newMsgs);setBusy(true);hist.current=[...hist.current,{role:"user",content:userContent}];setPhoto(null);
     try{if(window.gtag)window.gtag('event','chat_message_sent',{event_category:'engagement',is_first_message:msgs.length===0,has_photo:!!photo,user_type:user?'logged_in':'guest'});}catch{}
     try{
@@ -3028,7 +3135,7 @@ async function setPlanTag(id,tag){
       if(user){const{data:{session}}=await sb.auth.getSession();if(session?.access_token)headers["Authorization"]=`Bearer ${session.access_token}`;}
       lastSendRef.current={text:t,newMsgs};
       const controller=new AbortController();const fetchTimeout=setTimeout(()=>controller.abort(),55000);
-      let res;try{res=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:[...hist.current.slice(0,3),...hist.current.slice(-14)]}),signal:controller.signal});}finally{clearTimeout(fetchTimeout);}
+      let res;try{res=await fetch("/api/chat",{method:"POST",headers,body:JSON.stringify({messages:stripOldDocs([...hist.current.slice(0,3),...hist.current.slice(-14)])}),signal:controller.signal});}finally{clearTimeout(fetchTimeout);}
       if(res.status===429){
         const data=await res.json();const msg=data.error?.message||"";
         if(msg.startsWith("LIMIT_REACHED|"))setModal({type:"limit",hours:parseInt(msg.split("|")[1])||6});
@@ -3088,7 +3195,7 @@ async function setPlanTag(id,tag){
           try{
             const ev=JSON.parse(line.slice(6));
             if(ev.type==='delta'&&ev.text){fullText+=ev.text;}
-            else if(ev.type==='done'){finalize(ev.plansLeft);break outer;}
+            else if(ev.type==='done'){finalize(ev.plansLeft,!!ev.truncated);break outer;}
             else if(ev.type==='error'){clearInterval(renderTimer);streamErr=new Error(ev.message||'Stream error');break outer;}
           }catch{}
         }
@@ -3117,7 +3224,8 @@ async function setPlanTag(id,tag){
     modal&&React.createElement(Modal,{hours:modal.hours,plansLeft:modal.type==="plan"?modal.left:undefined,onClose:()=>setModal(null),onLogin:()=>{setModal(null);setShowLogin(true);},onUpgrade:()=>{setModal(null);setShowPricing(true);}}),
     showCalendar&&React.createElement(CalendarModal,{msgs,onClose:()=>setShowCalendar(false)}),
   showTools&&React.createElement(ToolsPanel,{onClose:()=>setShowTools(false)}),
-  showSidebar&&React.createElement(Sidebar,{onOpenTools:()=>setShowTools(true),onOpenSettings:()=>user?setShowSettings(true):setShowLogin(true),onOpenHelp:()=>setShowHelp(true),onLogin:()=>setShowLogin(true),onPricing:()=>setShowPricing(true),chats,onOpenChat:openChat,activeChatId:conversationId,user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject,onSetPlanTag:setPlanTag}),
+  showTrash&&user&&React.createElement(TrashModal,{user,onClose:()=>setShowTrash(false),onChanged:()=>{loadPlans();loadChats();}}),
+  showSidebar&&React.createElement(Sidebar,{onOpenTrash:()=>setShowTrash(true),onDeleteChat:deleteChat,onOpenTools:()=>setShowTools(true),onOpenSettings:()=>user?setShowSettings(true):setShowLogin(true),onOpenHelp:()=>setShowHelp(true),onLogin:()=>setShowLogin(true),onPricing:()=>setShowPricing(true),chats,onOpenChat:openChat,activeChatId:conversationId,user,plans,loadingPlans,activePlanId,onSelectPlan:selectPlan,onNewJourney:reset,onDeletePlan:deletePlan,onClose:()=>setShowSidebar(false),userTier,onRenamePlan:renamePlan,projects,onCreateProject:createProject,onDeleteProject:deleteProject,onAssignProject:assignProject,onSetPlanTag:setPlanTag}),
 
     // Header
     React.createElement("div",{style:{padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,borderBottom:"1px solid rgba(201,169,110,0.12)"}},
@@ -3175,6 +3283,7 @@ async function setPlanTag(id,tag){
                     )
                   )
                 :React.createElement("div",{style:{position:"relative"}},
+                    msg.fileName&&React.createElement("div",{style:{display:"inline-flex",alignItems:"center",gap:"0.4rem",marginBottom:"0.4rem",padding:"0.35rem 0.7rem",borderRadius:8,border:"1px solid rgba(201,169,110,0.25)",color:"#c9a96e",fontSize:"0.75rem"}},"📄 "+msg.fileName),
                     msg.photoPreview&&React.createElement("img",{src:msg.photoPreview,style:{width:"100%",maxWidth:200,borderRadius:8,marginBottom:"0.4rem",display:"block",border:"1px solid rgba(201,169,110,0.2)"}}),
                     msg.text&&React.createElement("p",{style:{fontSize:"0.84rem",color:"#e0d8c8",lineHeight:1.75,padding:"0.6rem 0.9rem",background:"rgba(201,169,110,0.07)",border:"1px solid rgba(201,169,110,0.15)",borderRadius:10,whiteSpace:"pre-wrap",wordBreak:"break-word"}},msg.text),
                     !busy&&React.createElement("button",{className:"edit-btn",onClick:()=>startEdit(msg),style:{position:"absolute",top:-8,left:-8,background:"#252018",border:"1px solid rgba(201,169,110,0.2)",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#8a7a50"}},React.createElement(EditIcon))
@@ -3190,7 +3299,7 @@ async function setPlanTag(id,tag){
                     ?React.createElement("div",null,React.createElement(Prose,{text:msg.text||""}),React.createElement("span",{className:"typing-cursor"}))
                     :(_isMulti?React.createElement(MultiDestDocument,{text:msg.text,msgs,destinations:_multiDests}):_isItin?React.createElement(TripDocument,{text:msg.text,msgs}):_isCmp?React.createElement(ComparisonCard,{text:msg.text,destinations:_cmpDests}):React.createElement(Prose,{text:msg.text})),
                   msg.incomplete&&!busy&&msg.id===msgs[msgs.length-1]?.id&&React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.6rem",flexWrap:"wrap",marginTop:"0.6rem",padding:"0.55rem 0.8rem",border:"1px solid rgba(201,169,110,0.2)",borderRadius:10}},
-                    React.createElement("span",{style:{fontSize:"0.74rem",color:"#8a7a50",flex:1}},"The answer was cut off (connection dropped)."),
+                    React.createElement("span",{style:{fontSize:"0.74rem",color:"#8a7a50",flex:1}},"This answer stopped before the end."),
                     React.createElement("button",{onClick:()=>send("Please continue exactly where you stopped."),style:{background:"#c9a96e",border:"none",borderRadius:16,padding:"0.35rem 0.9rem",color:"#1c1914",cursor:"pointer",fontSize:"0.7rem",fontWeight:700}},"Continue")
                   ),
                   msg.locations&&msg.locations.length>0&&React.createElement(MapView,{locations:msg.locations,msgId:msg.id}),
@@ -3239,13 +3348,23 @@ async function setPlanTag(id,tag){
     // Input
     React.createElement("div",{style:{padding:"0.6rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom))",flexShrink:0,width:"100%",maxWidth:820,margin:"0 auto",boxSizing:"border-box"}},
       photo&&React.createElement("div",{style:{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"0.5rem",padding:"0.5rem 0.75rem",background:"rgba(201,169,110,0.07)",border:"1px solid rgba(201,169,110,0.2)",borderRadius:10}},
-        React.createElement("img",{src:photo.preview,style:{width:40,height:40,objectFit:"cover",borderRadius:6,border:"1px solid rgba(201,169,110,0.3)"}}),
-        React.createElement("span",{style:{fontSize:"0.72rem",color:"#c9a96e",flex:1}},"Photo ready — add a message or just send"),
+        photo.kind==='pdf'
+          ?React.createElement("span",{style:{fontSize:"1.4rem"}},"📄")
+          :React.createElement("img",{src:photo.preview,style:{width:40,height:40,objectFit:"cover",borderRadius:6,border:"1px solid rgba(201,169,110,0.3)"}}),
+        React.createElement("span",{style:{fontSize:"0.72rem",color:"#c9a96e",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}},photo.kind==='pdf'?(photo.name+" — ask about it or just send"):"Photo ready — add a message or just send"),
         React.createElement("button",{onClick:()=>setPhoto(null),style:{background:"none",border:"none",color:"#6a5a40",cursor:"pointer",fontSize:"1rem",lineHeight:1}},"✕")
       ),
       React.createElement("div",{style:{background:"#252018",border:`1.5px solid ${holdActive?"rgba(201,169,110,0.5)":"rgba(201,169,110,0.3)"}`,borderRadius:26,padding:"0.45rem 0.5rem 0.45rem 0.6rem",display:"flex",gap:"0.6rem",alignItems:"flex-end",boxShadow:"0 2px 20px rgba(0,0,0,0.3)",transition:"border-color 0.2s"}},
         React.createElement("input",{type:"file",accept:"image/*",ref:photoRef,style:{display:"none"},onChange:handlePhotoSelect}),
-        React.createElement(PhotoButton,{photo,onClick:()=>photoRef.current?.click()}),
+        React.createElement("input",{type:"file",accept:"application/pdf",ref:docRef,style:{display:"none"},onChange:handleDocSelect}),
+        React.createElement("div",{style:{position:"relative",flexShrink:0}},
+          showAttach&&React.createElement("div",{style:{position:"absolute",bottom:52,left:0,background:"#1e1a14",border:"1px solid rgba(201,169,110,0.25)",borderRadius:12,padding:"0.35rem",minWidth:200,boxShadow:"0 8px 30px rgba(0,0,0,0.5)",zIndex:30}},
+            [["📷","Photo or screenshot",()=>photoRef.current?.click()],["📄","PDF (ticket, booking, visa)",()=>docRef.current?.click()]].map(([ic,label,fn])=>
+              React.createElement("button",{key:label,onClick:()=>{setShowAttach(false);fn();},style:{width:"100%",display:"flex",alignItems:"center",gap:"0.6rem",padding:"0.55rem 0.7rem",background:"none",border:"none",borderRadius:8,cursor:"pointer",color:"#ede5d5",fontSize:"0.82rem",textAlign:"left",fontFamily:"'DM Sans',sans-serif"}},React.createElement("span",null,ic),label))
+          ),
+          React.createElement("button",{onClick:()=>setShowAttach(v=>!v),"aria-label":"Add photo or file",title:"Add photo or file",style:{width:42,height:42,borderRadius:"50%",border:`2px solid ${photo?"#c9a96e":"rgba(201,169,110,0.35)"}`,background:photo?"rgba(201,169,110,0.15)":"rgba(201,169,110,0.05)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0,overflow:"hidden",color:"#c9a96e",fontSize:"1.4rem",lineHeight:1}},
+            photo&&photo.preview?React.createElement("img",{src:photo.preview,style:{width:42,height:42,objectFit:"cover"}}):photo?"📄":"+")
+        ),
         hasVoice&&React.createElement(MicButton,{listening,onClick:toggleVoice}),
         false&&React.createElement("button",{onClick:()=>setShowTools(t=>!t),title:"Travel Tools",style:{background:showTools?"rgba(201,169,110,0.15)":"none",border:showTools?"1px solid rgba(201,169,110,0.4)":"1px solid transparent",borderRadius:8,cursor:"pointer",color:showTools?"#c9a96e":"#5a4a2a",fontSize:"1rem",padding:"0.35rem 0.4rem",flexShrink:0,transition:"all 0.15s",lineHeight:1}},"⚡"),
         React.createElement("textarea",{ref:taRef,value:draft,onChange:e=>setDraft(e.target.value),onKeyDown:e=>{   const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);   if(e.key==="Enter"&&!e.shiftKey&&!holdActive&&!isMobile){e.preventDefault();send();} },onInput:e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";},placeholder:listening?"Listening...":holdActive?"Add more to your message...":photo?"Add a message or just send the photo...":"Where would you like to go?",disabled:busy||listening,rows:1,style:{flex:1,background:"none",border:"none",outline:"none",color:holdActive?"#e8d890":"#e0d8c8",fontSize:"0.9rem",resize:"none",lineHeight:1.7,maxHeight:100,overflowY:"auto",paddingTop:"0.2rem"}}),

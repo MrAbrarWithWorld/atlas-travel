@@ -657,7 +657,8 @@ const travelContext = await getTravelContext(messages);
     res.flushHeaders();
   }
   function writeSSE(data) { res.write(`data: ${JSON.stringify(data)}\n\n`); }
-  function endStream(plansLeft) { writeSSE({ type: 'done', plansLeft }); res.end(); }
+  // truncated: the answer hit max_tokens (the page then offers "Continue").
+  function endStream(plansLeft, extra) { writeSSE({ type: 'done', plansLeft, ...(extra || {}) }); res.end(); }
 
   if (detectDestinationOnly(messages)) {
     const lastContent = messages.filter(m => m.role === "user").slice(-1)[0]?.content;
@@ -758,7 +759,12 @@ const travelContext = await getTravelContext(messages);
       },
       body: JSON.stringify({
         model: chatModel,
-        max_tokens: Math.min(tokensLeft, 8000),
+        // Sonnet 5.5 thinks before writing by default, and thinking counts toward max_tokens: with 8000 it
+        // spent most of the budget thinking (~45 s of silence) and long plans were cut off mid-sentence.
+        // Docs: thinking {type:'between_tools'} = no up-front thinking ('disabled' returns 400 on this model);
+        // effort 'medium' is the recommended level for chat. max_tokens covers the whole plan.
+        max_tokens: Math.min(tokensLeft, 16000),
+        ...(chatModel === 'claude-sonnet-5-5' ? { thinking: { type: 'between_tools' }, output_config: { effort: 'medium' } } : {}),
         stream: true,
         system: systemWithPrefs,
         messages: messages.filter(m => m.role !== "system"),
@@ -773,7 +779,7 @@ const travelContext = await getTravelContext(messages);
     }
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let buf = '', fullText = '', inputTok = 0, outputTok = 0;
+    let buf = '', fullText = '', inputTok = 0, outputTok = 0, stopReason = null;
     outer: while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -789,8 +795,9 @@ const travelContext = await getTravelContext(messages);
             writeSSE({ type: 'delta', text });
           } else if (ev.type === 'message_start' && ev.message?.usage) {
             inputTok = ev.message.usage.input_tokens || 0;
-          } else if (ev.type === 'message_delta' && ev.usage) {
-            outputTok = ev.usage.output_tokens || 0;
+          } else if (ev.type === 'message_delta') {
+            if (ev.usage) outputTok = ev.usage.output_tokens || 0;
+            if (ev.delta?.stop_reason) stopReason = ev.delta.stop_reason;
           } else if (ev.type === 'error') {
             writeSSE({ type: 'error', message: ev.error?.message || 'Stream error' });
             res.end(); return;
@@ -800,7 +807,7 @@ const travelContext = await getTravelContext(messages);
     }
     const used = inputTok + outputTok;
     await recordUsage(user, key, used, requestingNewPlan);
-    endStream(Math.max(0, limits.plans - user.plansUsed));
+    endStream(Math.max(0, limits.plans - user.plansUsed), stopReason === 'max_tokens' ? { truncated: true } : undefined);
     if (SUPABASE_SERVICE_KEY) {
       const price = MODEL_PRICES[chatModel] || MODEL_PRICES['claude-sonnet-5-5'];
       const costUsd = (inputTok / 1_000_000) * price.input + (outputTok / 1_000_000) * price.output;
