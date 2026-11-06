@@ -339,7 +339,6 @@ export function BusinessFooter({ extra = [] }: { extra?: MoreLink[] }) {
           <span>© {new Date().getFullYear()} Atlas AI Technologies</span>
           <nav aria-label="Legal">
             <Link href="/contact">Contact</Link>
-            <Link href="/partners">Partner with us</Link>
             <Link href="/legal/services/privacy">Privacy</Link>
             <Link href="/legal/services/terms">Terms</Link>
             <Link href="/legal">Legal</Link>
