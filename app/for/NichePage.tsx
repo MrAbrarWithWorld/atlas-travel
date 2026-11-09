@@ -28,6 +28,7 @@ type Niche = {
   /** Plain outcomes the owner will notice. No numbers or promised results. */
   easier: string[];
   startWith: string;
+  resource?: { href: string; label: string; note: string };
   faqs: Faq[];
 };
 
@@ -103,6 +104,7 @@ export const NICHES: Record<'trades' | 'realtors' | 'property-managers' | 'bookk
       'You can see at a glance who is buying, selling, renting or financing.',
     ],
     startWith: 'follow-up-system',
+    resource: { href: '/playbook', label: '25 AI Prompts Every GTA Realtor Should Be Using', note: 'the free playbook — copy-paste prompts for faster replies and follow-ups that land.' },
     faqs: [
       {
         q: 'Does it work with my brokerage tools?',
@@ -384,6 +386,13 @@ export function NicheView({ data }: { data: Niche }) {
               </Link>
               <Link className={styles.secondary} href={contactFor(data.startWith)}>Book a 15-minute call</Link>
             </div>
+            {data.resource && (
+              <p style={{ marginTop: 20, fontSize: 14.5, lineHeight: 1.6, color: "#a09070" }}>
+                Free resource:{" "}
+                <Link href={data.resource.href} style={{ color: "#c9a96e", fontWeight: 600 }}>{data.resource.label}</Link>
+                {" "}&mdash; {data.resource.note}
+              </p>
+            )}
           </div>
         </section>
 

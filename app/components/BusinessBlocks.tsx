@@ -303,6 +303,7 @@ const FOOTER_GROUPS: { title: string; links: MoreLink[] }[] = [
     links: [
       { href: '/guides/how-to-choose-an-automation-partner', label: 'Choosing an automation partner' },
       { href: '/guides/diy-automation-vs-hiring-help', label: 'DIY or hire help?' },
+      { href: '/playbook', label: 'Free realtor playbook: 25 AI prompts' },
     ],
   },
 ];
