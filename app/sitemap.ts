@@ -43,9 +43,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/community`, lastModified: BUSINESS, changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE_URL}/privacy`, lastModified: LEGAL, changeFrequency: "monthly", priority: 0.3 },
     { url: `${BASE_URL}/terms`, lastModified: LEGAL, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${BASE_URL}/legal`, lastModified: LEGAL, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${BASE_URL}/legal/services/privacy`, lastModified: LEGAL, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${BASE_URL}/legal/services/terms`, lastModified: LEGAL, changeFrequency: "monthly", priority: 0.3 },
     // Travel destination guides served by api/plan.js (/plan/:dest). Slug list is drift-checked by scripts/check-destination-slugs.mjs.
     ...DESTINATION_SLUGS.map((slug) => ({
       url: `${BASE_URL}/plan/${slug}`,
@@ -65,18 +62,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const [{ data: posts }, { data: trips }, { data: communityPosts }] = await Promise.all([
+    const [{ data: posts }, { data: communityPosts }] = await Promise.all([
       supabase
         .from("blog_posts")
         .select("slug, date_published")
         .eq("is_published", true)
         .order("date_published", { ascending: false }),
-      supabase
-        .from("saved_plans")
-        .select("share_id, created_at")
-        .not("share_id", "is", null)
-        .eq("is_public", true)
-        .limit(1000),
       supabase
         .from("user_posts")
         .select("slug, created_at")
@@ -92,13 +83,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-    const tripRoutes: MetadataRoute.Sitemap = (trips ?? []).map((trip) => ({
-      url: `${BASE_URL}/trip/${trip.share_id}`,
-      lastModified: trip.created_at ? new Date(trip.created_at) : undefined,
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
-    }));
-
     const communityRoutes: MetadataRoute.Sitemap = (communityPosts ?? [])
       .filter((p) => p.slug)
       .map((post) => ({
@@ -108,7 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.6,
       }));
 
-    return [...staticRoutes, ...blogRoutes, ...tripRoutes, ...communityRoutes];
+    return [...staticRoutes, ...blogRoutes, ...communityRoutes];
   } catch {
     return staticRoutes;
   }
